@@ -1,0 +1,211 @@
+@extends('gongchang.layout.master')
+@section('css')
+	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
+@endsection
+@section('content')
+	@include('gongchang.theme.sidebar')
+	 <div id="page-wrapper" class="gray-bg dashbard-1">
+		@include('gongchang.theme.header')
+		<div class="row border-bottom">
+			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
+				<li>
+					<a href="">生产管理</a>
+				</li>
+				<li class="active">
+					<a href=""><strong>奶站配送管理</strong></a>
+				</li>
+			</ol>
+		</div>
+			<div class="row">	
+<!--Table-->				
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content">
+
+                        <table class="footable table table-bordered" id="current_status" data-page-size="10">
+                            <thead>
+								<tr>
+									<th data-sort-ignore="true">序号</th>
+									<th data-sort-ignore="true">奶品</th>
+									<th data-sort-ignore="true">计划汇总量</th>
+									<th data-sort-ignore="true">实际生产总量</th>
+									<th data-sort-ignore="true">富余量</th>
+									<th data-sort-ignore="true">实际发货总量</th>
+									<th data-sort-ignore="true">库存结余</th>
+								</tr>
+                            </thead>
+                            <tbody>
+							<?php $i=0; ?>
+							@foreach($products as $p)
+								<?php $i++; ?>
+								<tr id="{{$p->id}}">
+									<td>{{$i}}</td>
+									<td>{{$p->name}}</td>
+									<td>{{$p->plan_count}}</td>
+									<td id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
+									<td></td>
+									<td id="total_confirm{{$p->id}}"></td>
+									<td id="rest{{$p->id}}"></td>
+								</tr>
+							@endforeach
+                            </tbody>
+							<tfoot>
+								<tr>
+									<td colspan="7">
+										<ul class="pagination pull-right"></ul>
+									</td>
+								</tr>
+							</tfoot>
+                        </table>
+                    </div>
+                </div>
+
+				<div class="ibox float-e-margins">
+                    <div class="ibox-content">
+
+                        <table class="footable table table-bordered" id="by_station" data-page-size="10">
+                            <thead>
+								<tr>
+									<th data-sort-ignore="true">序号</th>
+									<th data-sort-ignore="true">区域</th>
+									<th data-sort-ignore="true">奶站名称</th>
+									<th data-sort-ignore="true">奶品</th>
+									<th data-sort-ignore="true">计划订单(瓶)</th>
+									<th data-sort-ignore="true">站内零售（瓶）</th>
+									<th data-sort-ignore="true">试饮赠品（瓶）</th>
+									<th data-sort-ignore="true">团购业务（瓶）</th>
+									<th data-sort-ignore="true">渠道销售(瓶)</th>
+									<th data-sort-ignore="true">计划生产量</th>
+									<th data-sort-ignore="true">配送变化量</th>
+									<th data-sort-ignore="true">实际发货量</th>
+									<th data-sort-ignore="true">实际签收量</th>
+									<th data-sort-ignore="true">状态</th>
+									<th data-sort-ignore="true">操作</th>
+								</tr>
+                            </thead>
+                            <tbody>
+							<?php $i=0; ?>
+							@foreach($DeliveryStations_info as $di)
+								<?php $i++; $j=0; ?>
+								@foreach($di->station_plan as $ds)
+									<?php $j++; ?>
+								<tr id="tablerow{{$i}}" value="{{$ds->product_id}}" order="{{$i}}">
+									@if($j==1)
+									<td rowspan="{{count($di->station_plan)}}">{{$i}}</td>
+									<td rowspan="{{count($di->station_plan)}}">{{$di->area}}</td>
+									<td rowspan="{{count($di->station_plan)}}">{{$di->name}}</td>
+									@endif
+									<td>{{$ds->product_name}}</td>
+									<td>{{$ds->order_count}}</td>
+									<td>{{$ds->retail}}</td>
+									<td>{{$ds->test_drink}}</td>
+									<td>{{$ds->group_sale}}</td>
+									<td>{{$ds->channel_sale}}</td>
+									<td>{{$ds->subtotal_count}}</td>
+									<td>{{$ds->diff}}</td>
+									<td @if($ds->status < 6) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif class="confirm_count" id="confirm{{$i}}{{$ds->product_id}}" value="{{$ds->product_id}}">{{$ds->actual_count}}</td>
+									<td>{{$ds->confirm_count}}</td>
+									@if($j==1)
+									<td rowspan="{{count($di->station_plan)}}">@if($ds->status > 5) 已发货 @endif</td>
+											{{--已发货--}}
+									<td rowspan="{{count($di->station_plan)}}">
+										@if($ds->status > 5)
+											<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'" id="detail{{$i}}" type="button" >打印出库单</button>
+										@else
+											<button type="button" class="btn btn-success btn-md determine_count" value="{{$i}}" id="detail{{$i}}">发货确认</button>
+											<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'" id="f_detail{{$i}}" type="button" >打印出库单</button>
+										@endif
+									</td>
+									@endif
+									<input type="hidden" id="station_id{{$i}}" value="{{$di->id}}">
+								</tr>
+								@endforeach
+							@endforeach
+                            </tbody>
+							<tfoot>
+								<tr>
+									<td colspan="16">
+										<ul class="pagination pull-right"></ul>
+									</td>
+								</tr>
+							</tfoot>
+                        </table>
+                    </div>
+                </div>
+				<div class="ibox float-e-margins bg-white">
+					<div class="col-lg-offset-5 col-lg-2">
+						<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren')}}'" style="width: 100%;">看法</button>
+					</div>
+				</div>
+			</div>
+	</div>
+@endsection
+
+@section('script')
+	<!--Get API_URL-->
+	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
+	<!--Save & Update User Information-->
+	<script src="<?=asset('js/ajax/shengchan_naizhanpeisong_ajax.js') ?>"></script>
+    <script type="text/javascript">
+		$('#date_2 .input-group.date').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: false,
+            autoclose: true
+        });
+
+		$(document).ready(function() {
+			$('.footable').footable();
+
+
+			$('#current_status tr:not(:first,:last)').each(function(){
+				var id=$(this).attr('id');
+				var total_sum = 0;
+				$('#by_station tr:not(:first,:last)').each(function() {
+					var trval = $(this).attr('value');
+					var order = $(this).attr('order');
+					$('#f_detail'+order+'').hide();
+					var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
+					if(isNaN(content)){
+						content = 0;
+					}
+					else {
+						if (trval == id) {
+							total_sum += content;
+						}
+					}
+				})
+				$('#total_confirm'+id+'').html(total_sum);
+				var produced_count = parseInt($('#produce_count'+id+'').text());
+				$('#rest'+id+'').html(produced_count-total_sum);
+			})
+
+
+			$('#current_status tr:not(:first)').each(function(){
+				var plan_count = parseInt($(this).find("td").eq(2).html());
+				var produce_count = parseInt($(this).find("td").eq(3).html());
+				$(this).find("td").eq(4).html(produce_count-plan_count);
+			})
+		});
+		$(document).on('keyup','.confirm_count',function(){
+			var id = $(this).attr('value');
+			var total_sum = 0;
+			$('#by_station tr:not(:first,:last)').each(function() {
+				var trval = $(this).attr('value');
+				var order = $(this).attr('order');
+				var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
+				if(isNaN(content)){
+					content = 0;
+				}
+				else {
+					if (trval == id) {
+						total_sum += content;
+					}
+				}
+			})
+			$('#total_confirm'+id+'').html(total_sum);
+			var produced_count = parseInt($('#produce_count'+id+'').text());
+			$('#rest'+id+'').html(produced_count-total_sum);
+		})
+    </script>
+@endsection

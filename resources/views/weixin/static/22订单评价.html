@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <meta name="format-detection" content="telphone=no, email=no"/>
+    <title>订单评价</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/jquery-1.10.1.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="top">
+    <h1>订单评价</h1>
+    <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
+    <a class="topa2" href="jvascript:void(0)"></a></div>
+
+<div class="pj_t">订单号：602178888</div>
+
+<div class="pj_img">
+    <a href="#"><img src="images/23_03.png" border="0"></a>
+    <a href="#"><img src="images/23_03.png" border="0"></a>
+
+    <span><a href="#">共3种></a></span>
+
+</div>
+
+
+<div class="evali pa2">
+
+    <div class="start"><b>整体评价</b>
+        <span onclick="level_click(1)"></span>
+        <span onclick="level_click(2)"></span>
+        <span onclick="level_click(3)"></span>
+        <span onclick="level_click(4)"></span>
+        <span class="nostart" onclick="level_click(5)"></span>
+    </div>
+
+</div>
+
+<p align="center">
+    <textarea name="textarea" class="pj_k" placeholder="评价"></textarea>
+
+</p>
+
+<p align="center"><input type="submit" name="Submit" value="提交" class="pj_tj"></p>
+
+
+<div class="he50"></div>
+<div class="menu">
+    <ul class="menul">
+        <li class="curr">
+            <a class="curr" href="javascript:void(0)"><i class="mni1"></i>奶吧</a>
+        </li>
+        <li>
+            <a class="" href="javascript:void(0)"><i class="mni2"></i>快速订奶</a>
+        </li>
+        <li>
+            <a class="" href="javascript:void(0)"><i class="mni3"></i>购物车<span class="cartn">1</span></a>
+        </li>
+        <li>
+            <a class="" href="javascript:void(0)"><i class="mni4"></i>个人中心</a>
+        </li>
+    </ul>
+</div>
+
+<script language="javascript">
+    function level_click(level)
+    {
+        $(".start > span:gt(" + (level-1) + ")").addClass("nostart");
+        $(".start > span:lt(" + (level) + ")").removeClass("nostart");
+    }
+</script>
+
+</body>
+</html>

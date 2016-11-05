@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="description" content="订牛奶商城"/>
+        <meta name="keywords" content="订牛奶商城"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <meta name="format-detection" content="telphone=no, email=no"/>
+		<title>单日加减2</title>
+		<link rel="stylesheet" href="css/style.css">
+          <script src="js/jquery-1.10.1.min.js"></script>
+	</head>
+	<body>
+		<header>
+			<a class="headl fanh" href="javascript:void(0)"></a>
+			<h1>修改单日</h1>
+			
+		</header>
+		<div class="ordall pa2">
+        金额：￥32.1
+        </div>
+        <div class="ordrq">所选日期：<input class="qssj" name="" type="date" value="日期"></div>
+        
+        
+		
+     
+		
+        
+        <div class="dncon"><ul class="dnpro dnpro2">
+       
+        <li class="clearfix">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低温 </p>
+       <div class="ordye">金额：162元</div>
+       <span class="addSubtract">
+                  <a class="subtract" href="javascript:;">-</a>
+                    <input type="text" value="10" style="ime-mode: disabled;">
+                    <a class="add" href="javascript:;">+</a></span>
+       </li>
+        
+        <li class="clearfix">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低</p>
+       <div class="ordye">金额：162元</div>
+       <span class="addSubtract">
+                  <a class="subtract" href="javascript:;">-</a>
+                    <input type="text" value="10" style="ime-mode: disabled;">
+                    <a class="add" href="javascript:;">+</a></span>
+       </li>
+       
+       </ul>
+        </div>
+		
+        <div class="he50"></div>
+        <div class="dnsbt clearfix">
+         
+         <a class="tjord tjord3"  href="javascript:void(0);">提交</a>
+        </div>
+        
+        
+        
+        <script>
+
+$(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
+  $(".addSubtract .subtract").click(function() {
+	if(parseInt($(this).next().val())>10){
+    $(this).next().val(parseInt($(this).next().val()) - 1); 
+	$(this).removeClass("subtractDisable");}
+	if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });			
+</script>
+
+	</body>
+</html>

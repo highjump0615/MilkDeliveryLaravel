@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Javascript Webcam Demo - <MyCodingTricks/></title>
+<link href="http://mycodingtricks.com/demo/style.css" rel="stylesheet"/>
+<style>@-webkit-keyframes justified-gallery-show-caption-animation{from{opacity:0}to{opacity:.7}}@-moz-keyframes justified-gallery-show-caption-animation{from{opacity:0}to{opacity:.7}}@-o-keyframes justified-gallery-show-caption-animation{from{opacity:0}to{opacity:.7}}@keyframes justified-gallery-show-caption-animation{from{opacity:0}to{opacity:.7}}@-webkit-keyframes justified-gallery-show-entry-animation{from{opacity:0}to{opacity:1}}@-moz-keyframes justified-gallery-show-entry-animation{from{opacity:0}to{opacity:1}}@-o-keyframes justified-gallery-show-entry-animation{from{opacity:0}to{opacity:1}}@keyframes justified-gallery-show-entry-animation{from{opacity:0}to{opacity:1}}.justified-gallery{width:100%;position:relative;overflow:hidden}.justified-gallery>a,.justified-gallery>div{position:absolute;display:inline-block;overflow:hidden;opacity:0;filter:alpha(opacity=0)}.justified-gallery>a>img,.justified-gallery>div>img,.justified-gallery>a>a>img,.justified-gallery>div>a>img{position:absolute;top:50%;left:50%;margin:0;padding:0;border:0}.justified-gallery>a>.caption,.justified-gallery>div>.caption{display:none;position:absolute;bottom:0;padding:5px;background-color:#000;left:0;right:0;margin:0;color:#fff;font-size:12px;font-weight:300;font-family:sans-serif}.justified-gallery>a>.caption.caption-visible,.justified-gallery>div>.caption.caption-visible{display:initial;opacity:.7;filter:"alpha(opacity=70)";-webkit-animation:justified-gallery-show-caption-animation 500ms 0 ease;-moz-animation:justified-gallery-show-caption-animation 500ms 0 ease;-ms-animation:justified-gallery-show-caption-animation 500ms 0 ease}.justified-gallery>.entry-visible{opacity:1;filter:alpha(opacity=100);-webkit-animation:justified-gallery-show-entry-animation 500ms 0 ease;-moz-animation:justified-gallery-show-entry-animation 500ms 0 ease;-ms-animation:justified-gallery-show-entry-animation 500ms 0 ease}.justified-gallery>.spinner{position:absolute;bottom:0;margin-left:-24px;padding:10px 0;left:50%;opacity:initial;filter:initial;overflow:initial}.justified-gallery>.spinner>span{display:inline-block;opacity:0;filter:alpha(opacity=0);width:8px;height:8px;margin:0 4px;background-color:#000;border-top-left-radius:6px;border-top-right-radius:6px;border-bottom-right-radius:6px;border-bottom-left-radius:6px}</style>
+</head>
+<body>
+<div class="row"><center rel="advertisements"></center></div>
+<div class="row">
+ <div class="col-md-3" rel="advertisements"></div>
+ <div class="col-md-6">
+   <div class="list-group">
+     <a href="basic.html" class="list-group-item">Basic </a>
+     <a href="crop.html" class="list-group-item">Crop</a>
+     <a href="crop-large.html" class="list-group-item">Crop Large</a>
+     <a href="hd.html" class="list-group-item">HD</a>
+     <a href="large.html" class="list-group-item">Large</a>
+     <a href="preview.html" class="list-group-item">Preview</a>
+     <a href="sfx.html" class="list-group-item active">SFX</a>
+     <a href="combo.html" class="list-group-item">Combo</a>
+   </div>
+	<h3>Demonstrates simple capture &amp; display with a shutter sound effect</h3>
+	<h3>(Note: Sound implemented using HTML5 Audio, not part of WebcamJS)</h3>
+	
+	<div id="my_camera"></div>
+	<!-- A button for taking snaps -->
+	<form>
+		<input type=button class="btn btn-success" value="Take Snapshot" onClick="take_snapshot()">
+	</form>
+	<div id="results" class="well">Your captured image will appear here...</div>
+ </div>
+ <div class="col-md-3" rel="advertisements"></div>
+</div>
+<script src="http://mycodingtricks.com/demo/script.js"></script>
+
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="webcam.min.js"></script>
+	<script type="text/javascript" src="script.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			width: 320,
+			height: 240,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+		// preload shutter audio clip
+		var shutter = new Audio();
+		shutter.autoplay = false;
+		shutter.src = navigator.userAgent.match(/Firefox/) ? 'shutter.ogg' : 'shutter.mp3';
+		function take_snapshot() {
+			// play sound effect
+			shutter.play();
+			// take snapshot and get image data
+			Webcam.snap( function(data_uri) {
+				// display results in page
+				document.getElementById('results').innerHTML = 
+					'<h2>Here is your image:</h2>' + 
+					'<img src="'+data_uri+'"/>';
+                                Webcam.upload( data_uri, 'upload.php', function(code, text) {
+                                            // Upload complete!
+                                            // 'code' will be the HTTP response code from the server, e.g. 200
+                                            // 'text' will be the raw response content
+                                });
+			} );
+		}
+	</script>
+</body>
+</html>

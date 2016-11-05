@@ -1,0 +1,12 @@
+/vendor
+/node_modules
+Homestead.yaml
+Homestead.json
+.env
+/.idea
+/.svn
+/public/img/order/
+/public/img/product/
+/public/uploads/images/logo/
+/storage
+/public/ueditor/php/upload/

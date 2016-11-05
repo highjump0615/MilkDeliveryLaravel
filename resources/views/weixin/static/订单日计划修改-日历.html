@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="description" content="订牛奶商城"/>
+        <meta name="keywords" content="订牛奶商城"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <meta name="format-detection" content="telphone=no, email=no"/>
+		<title>订单日计划修改</title>
+		<link rel="stylesheet" href="css/style.css">
+               <link href='css/fullcalendar.min.css' rel='stylesheet' />
+          <script src="js/jquery-1.10.1.min.js"></script>
+            <script src='js/moment.min.js'></script>
+<script src='js/fullcalendar.min.js'></script>
+<script type="text/javascript">
+$(function() {
+		$('#calendar').fullCalendar({
+			header: {
+				left: 'prev',
+				center: 'title',
+				right: 'next'
+			},
+			firstDay:0,
+			editable: true,
+			events: [
+				{
+					title: '2',
+					start:'2016-09-01',
+					className:'ypsrl'
+					
+				},
+				{
+					//title: '2',
+					start:'2016-09-01',
+					rendering: 'background',
+					color: '#e1e1e1'
+				},{
+					title: '2',
+					start:'2016-09-28',
+					//className:'ypsrl'
+					
+				},
+				{
+					//title: '2',
+					start:'2016-09-28',
+					rendering: 'background',
+					color: '#00a040'
+				},
+				{
+					title: '5',
+					start:'2016-09-29',
+				},
+				{
+					//title: '5',
+					start:'2016-09-29',
+					rendering: 'background',
+					color: '#00a040'
+				},
+				{
+					title: '3',
+					start:'2016-09-30',
+				},
+				{
+					//title: '3',
+					start:'2016-09-30',
+					rendering: 'background',
+					color: '#00a040'
+				}
+			]
+		});
+		
+	});
+</script>
+	</head>
+	<body>
+		<header>
+			<a class="headl fanh" href="javascript:void(0)"></a>
+			<h1>我的订单计划</h1>
+			
+		</header>
+		
+		<div class="ordrxg">
+       <div id='calendar'></div>
+		
+        <dl class="ordjl">
+        <dt class="pa2t">订单记录：</dt>
+        <dd class="pa2t"><span>2016-06-02</span>已配送——1瓶</dd>
+       <dd class="pa2t"><span>2016-06-02</span>已配送——1瓶</dd>
+        <dd class="pa2t"><span>2016-06-02</span>已配送——1瓶</dd>
+        </dl>
+		</div>
+        <div class="he50"></div>
+        <div class="dnsbt clearfix">
+         
+         <a class="tjord"  href="javascript:void(0);">修改单日计划</a>
+        </div>
+        
+        
+        
+        <script>
+
+$(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
+  $(".addSubtract .subtract").click(function() {
+	if(parseInt($(this).next().val())>10){
+    $(this).next().val(parseInt($(this).next().val()) - 1); 
+	$(this).removeClass("subtractDisable");}
+	if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });			
+</script>
+
+	</body>
+</html>

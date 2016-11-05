@@ -1,0 +1,392 @@
+.inputable-cell{
+	background-color: #fff000;
+}
+
+.feed-element{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-bottom: 0;
+}
+
+.modal-title{
+    letter-spacing: 3px;
+}
+
+.pad-wrapper {
+    padding-top: 20px;
+}
+
+.btn-success[disabled]{
+    color: white;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.top-title {
+    margin-bottom: 20px;
+    color: #111111;
+    font-weight: 800;
+}
+
+.logo-text {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.bgimg {
+    background-image: url('../img/milk/milk3.jpg');
+    background-size: 100% 100%;
+    height: 30%;
+    text-align: center;
+}
+
+.label-padding {
+    padding-top: 5px;
+}
+
+table, th, td {
+    text-align: center;
+    vertical-align: middle !important;
+}
+
+.ibox-content {
+    overflow: auto;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.bottom-hr-div {
+    border-bottom: 1px solid;
+    overflow: auto;
+    margin-bottom: 30px;;
+}
+
+/*input element*/
+
+.upload-input.image-preview-input {
+    position: relative;
+    overflow: hidden;
+    margin: 0px;
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+
+}
+
+.upload-input input[type=file], .image-preview-input input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    max-width: 83.86px;
+}
+
+.upload-input-title, .image-preview-input-title {
+    margin-left: 2px;
+}
+
+/*font*/
+.text-italic {
+    font-style: italic;
+}
+
+.nav-tabs > li > a {
+    color: #1c84c6;
+}
+
+.nav-tabs > li.acitve > a {
+    color: #A7B1C2;
+}
+
+.wgray-bg {
+    background-color: #f7f7f7;
+}
+
+textarea {
+    width: 100%;
+}
+
+form {
+    padding: 20px;
+}
+
+td > .fill-cell {
+    padding: 0;
+    width: 150px;
+}
+
+td > .fill-cell > input {
+    height: 100%;
+    width: 100%;
+    display: inline-block;
+    position: relative;
+}
+
+.footable > thead > tr > th > span.footable-sort-indicator {
+    display: none;
+}
+
+.wrapper-content {
+    background-color: white;
+    overflow: auto;
+}
+
+ol.breadcrumb {
+    padding: 15px 10px 15px 50px;
+}
+
+/*sortable*/
+.ui-draggable, .ui-droppable {
+    background-position: top;
+}
+
+.sortablelist {
+    width: 100%;
+    min-height: 20px;
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 0 0 0;
+    float: left;
+}
+
+.sortablelist li {
+    margin: 5px auto;
+    padding: 5px;
+    font-size: 1.2em;
+    max-width: 150px;
+}
+
+.bottle_input {
+    border-style: none none solid none;
+}
+
+.inputable {
+    border-style: none;
+    width: 100%;
+    height: 100%;
+    padding-left: 10px;
+    text-align: center;
+}
+
+.table > tbody > tr > td.input_td {
+    padding: 0;
+}
+
+input.tip-input {
+    max-width: 20px;
+    display: block;
+    margin: 0 auto;
+    background-color: green;
+    color: white;
+}
+
+#order_table tbody tr td button, #order_table tbody tr td a {
+    display: block;
+    width: 100%;
+}
+
+#filter_table tbody tr td button, #filter_table tbody tr td a {
+    display: block;
+    width: 100%;
+}
+
+#filter_table {
+    display:none;
+}
+
+@media print {
+    a[href]:after {
+        content: "";
+    }
+    a{
+        content:"";
+    }
+    span{
+        display:none !important;
+    }
+    button{
+        display:none !important;
+    }
+}
+
+.button-div{
+    text-align: right;
+}
+
+/* modal spinner
+   $('.modal-spinner-frame').show();
+   $('.modal-spinner-frame').hide();
+*/
+.modal-spinner-frame {
+    display : none;
+     position:   fixed;
+     z-index:    1000;
+     top:        0;
+     left:       0;
+     height:     100%;
+     width:      100%;
+     background: rgba( 255, 255, 255, .8 )
+ }
+
+.modal-spinner {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}/*margin-top: 20px;*/
+
+.submit-spinner-frame{
+    display : none;
+    position:relative;
+    /*position:   fixed;*/
+    /*z-index:    1000;*/
+    /*top:        50%;*/
+    /*left:       50%;*/
+    /*height:     10%;*/
+    /*width:      10%;*/
+    /*background: rgba( 255, 255, 255, .8 )*/
+}
+
+.submit-spinner {
+    position:relative;
+    /*margin: 0;*/
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*left: 50%;*/
+    transform: translate(50%, 20%);
+}/*margin-top: 20px;*/
+
+.mt-20{
+    margin-top:20px;
+}
+
+tr:hover.row-hover-light-blue {
+    background-color: #eeeeee;
+    cursor: pointer
+}
+
+.station_receipt_img{
+    width: 300px;
+    height: auto;
+}
+
+/**
+ * 奶站账号添加/修改里面 - 配送范围
+ */
+#delivery_area {
+    overflow: inherit;
+    height: 50px;
+}
+
+#delivery_area section {
+    overflow: inherit;
+}
+
+#my_camera{
+    width: 400px;
+    height: 300px;
+}
+
+#my_camera img{
+    max-height: 100%;
+    border: 3px dotted darkgreen;
+}
+
+#origin_ticket_div img#ticket {
+    max-height: 100%;
+    border: 3px dotted darkgreen;
+}
+
+.remove_one_product{
+    border: none;
+    background: transparent;
+    outline: none;
+}
+
+input[type="number"].order_product_count_per, input[type="number"].one_product_total_count {
+    padding: 0 0 0 2px;
+}
+
+
+.tabs-container {
+    margin: 0 auto;
+    float: none;
+}
+
+.tabs-container .tab-pane .panel-body {
+    border: 1px solid #e7eaec;
+}
+
+.tabs-container ul.nav-tabs.closeable-tabs > li {
+    border-color: #e7eaec;
+    border-style: solid solid none;
+    border-width: 1px;
+}
+
+.tabs-container ul.nav-tabs.closeable-tabs > li.active {
+    border: 1px solid green;
+}
+
+.tabs-container ul.nav-tabs.closeable-tabs > li a {
+    display: inline-block;
+    border: none;
+}
+
+.tabs-container ul.nav-tabs.closeable-tabs > li a.close-tab {
+    padding-left: 0;
+    padding-right: 0;
+
+}
+
+.tabs-container ul.nav-tabs.closeable-tabs > li a:hover, .tabs-container ul.nav-tabs.closeable-tabs > li a:focus {
+    border: none;
+}
+
+.tabs-container .tab-content > .active {
+    border: 1px solid green;
+}
+
+#check_capture{
+    font-size: 35px;
+    color: green;
+    position: relative;
+    top: -160px;
+    left: 180px;
+    display:none;
+}
+
+
+.station_head{
+    padding: 0 10px;
+}
+
+/*Calendar*/
+.week_calendar table tbody tr td.disabled.day {
+    display: none;
+}
+
+.week_calendar .datepicker-switch{
+    display: none !important;
+}
+
+.month_calendar table tbody tr td.disabled.day {
+    visibility: hidden;
+}
+
+.month_calendar .datepicker-switch{
+    display: none !important;
+}
+
+.month_calendar .datepicker-days table thead tr:first-child,
+.week_calendar .datepicker-days table thead tr:first-child{
+    display:none;
+}

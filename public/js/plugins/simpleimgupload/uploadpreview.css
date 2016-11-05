@@ -1,0 +1,68 @@
+.image-preview {
+    height: 100px;
+    width: 100px;
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff;
+    margin-left: 10px;
+    color: #ecf0f1;
+    border: 1px solid gray;
+    display: inline-block;
+    background-size:contain;
+    background-repeat: no-repeat;
+}
+
+.image-preview input {
+    line-height: 200px;
+    font-size: 200px;
+    position: absolute;
+    opacity: 0;
+    z-index: 10;
+  }
+
+.image-preview label {
+    position: absolute;
+    z-index: 5;
+    opacity: 0;
+    cursor: pointer;
+    background-color: #bdc3c7;
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
+    line-height: 50px;
+    text-transform: uppercase;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    text-align: center;
+}
+
+div.file-panel {
+    position: absolute;
+    height: 0;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#80000000', endColorstr='#80000000')\0;
+    background: rgba( 0, 0, 0, 0.5 );
+    width: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 300;
+}
+
+div.file-panel span.cancel {
+    background-position: -48px -24px;
+}
+
+div.file-panel span {
+    width: 24px;
+    height: 24px;
+    display: inline;
+    float: right;
+    text-indent: -9999px;
+    overflow: hidden;
+    margin: 5px 1px 1px;
+    cursor: pointer;
+    background: url( {{ URL::asset('js/plugins/simpleimgupload/icons.png') }}) no-repeat;
+}

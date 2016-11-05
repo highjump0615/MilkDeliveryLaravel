@@ -1,0 +1,19 @@
+<script type="text/javascript">
+$(document).ready(function() {
+  $.simpleimgupload({
+    input_field: "#image-upload",
+    preview_box: "#image-preview",
+    label_field: "#image-label"
+  });
+});
+</script>
+
+<div id="imageset" class="col-md-8 imageset">
+	<div class="image-preview col-md-2" data-attached="0">
+	    <label for="image-upload" class="image-label">选择文件</label>
+	    <input type="file" name="logoimage[]" class="image-upload"/>
+	    <div class="file-panel" style="height: 0px;">
+	        <span class="cancel">删除</span>
+	    </div>
+	</div>
+</div>

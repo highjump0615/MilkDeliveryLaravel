@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Javascript Webcam Demo - <MyCodingTricks/></title>
+<link href="http://mycodingtricks.com/demo/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="row"><center rel="advertisements"></center></div>
+<div class="row">
+ <div class="col-md-3" rel="advertisements"></div>
+ <div class="col-md-6">
+	<div id="my_camera"></div>
+	<!-- A button for taking snaps -->
+	<form>
+		<input type=button class="btn btn-success" value="Take Snapshot" onClick="take_snapshot()">
+	</form>
+ </div>
+
+</div>
+
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="webcam.min.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			width: 320,
+			height: 240,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+		function take_snapshot() {
+			// take snapshot and get image data
+			Webcam.snap( function(data_uri) {
+				// display results in page
+
+				document.getElementById('my_camera').innerHTML = 
+					'<img src="'+data_uri+'"/>';
+                                Webcam.upload( data_uri, 'upload.php', function(code, text) {
+                                            // Upload complete!
+                                            // 'code' will be the HTTP response code from the server, e.g. 200
+                                            // 'text' will be the raw response content
+                                });
+			} );
+		}
+	</script>
+</body>
+</html>

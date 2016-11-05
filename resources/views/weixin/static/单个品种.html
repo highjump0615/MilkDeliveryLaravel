@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="description" content="订牛奶商城"/>
+        <meta name="keywords" content="订牛奶商城"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <meta name="format-detection" content="telphone=no, email=no"/>
+		<title>单个品种</title>
+		<link rel="stylesheet" href="css/style.css">
+          <script src="js/jquery-1.10.1.min.js"></script>
+	</head>
+	<body>
+		<header>
+			<a class="headl fanh" href="javascript:void(0)"></a>
+			<h1>修改订单</h1>
+			
+	</header>
+		
+		
+      <div class="ordtop pa2t clearfix">
+      <img class="ordpro" src="images/zfx.jpg">
+      <p>蒙牛纯甄酸奶低温 <span>剩余数量：32</span></p>
+      <div class="ordye">金额：162元</div>
+      </div> 
+	  
+	  <div class="dnsli clearfix dnsli2">
+       <div class="dnsti">更改奶品：</div><select class="dnsel" name=""><option>换一种奶</option><option>换多种奶</option></select>
+       
+       
+   </div>
+		
+		
+		<div class="dnsli clearfix dnsli2">
+       <div class="dnsti">配送规则：</div><select class="dnsel" name=""><option>天天送</option><option>隔日送</option><option>按周送</option><option>随心送</option></select>
+   </div>
+        
+        <div class="dncon"><ul class="dnpro">
+       <li class="pa2">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低温  <input class="ordfx" name="" type="checkbox" value="" checked><span class="khpro">可换：12瓶</span></p>
+       <div class="ordye">￥162</div>
+       </li>
+        <li class="pa2">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低温  <input class="ordfx" name="" type="checkbox" value=""></p>
+       <div class="ordye">￥162</div>
+       </li>
+        <li class="pa2">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低温  <input class="ordfx" name="" type="checkbox" value=""></p>
+       <div class="ordye">￥162</div>
+       </li>
+        <li class="pa2">
+       <img class="ordpro" src="images/zfx.jpg">
+       <p>蒙牛纯甄酸奶低温  <input class="ordfx" name="" type="checkbox" value=""></p>
+       <div class="ordye">￥162</div>
+       </li>
+       
+       </ul>
+        </div>
+		
+        <div class="he50"></div>
+        <div class="dnsbt clearfix">
+         
+         <a class="tjord"  href="javascript:void(0);">提交</a>
+        </div>
+        
+        
+        
+        <script>
+
+$(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
+  $(".addSubtract .subtract").click(function() {
+	if(parseInt($(this).next().val())>10){
+    $(this).next().val(parseInt($(this).next().val()) - 1); 
+	$(this).removeClass("subtractDisable");}
+	if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });			
+</script>
+
+	</body>
+</html>
