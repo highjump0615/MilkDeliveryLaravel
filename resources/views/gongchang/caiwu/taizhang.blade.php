@@ -174,7 +174,7 @@
                                         <th data-sort-ignore="true">金额</th>
                                         <th data-sort-ignore="true">配送数量（瓶）</th>
                                         <th data-sort-ignore="true">金额</th>
-                                        <th data-sort-ignore="true">订单生育数量（瓶）</th>
+                                        <th data-sort-ignore="true">订单剩余数量（瓶）</th>
                                         <th data-sort-ignore="true">金额</th>
                                     </tr>
                                     </thead>

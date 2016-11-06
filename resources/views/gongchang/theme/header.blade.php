@@ -46,5 +46,5 @@
 ?>
 
 <script language="JavaScript">
-	var F = "{{$s_timeCurrent}}";
+	var s_timeCurrent = "{{$s_timeCurrent}}";
 </script>

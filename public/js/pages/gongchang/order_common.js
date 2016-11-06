@@ -7,7 +7,6 @@ $(document).ready(function () {
         jpeg_quality: 90
     });
 
-
     show_camera();
 
     $('[data-target="#card_info"]').on("change", function () {
@@ -30,29 +29,15 @@ $(document).ready(function () {
     // 解析当前服务器的时间 (2014-08-12 09:25:24)
     var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
     time = time.split(':');
-    var date = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
+    dateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
 
-    firstm = new Date(date.getFullYear(), date.getMonth(), 1);
-    lastm = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
+    lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
 
-    var today = date;
-    var able_date = date;
-    if (gap_day)
-        able_date.setDate(today.getDate() + gap_day);
-    else {
-        gap_day = 3; //default
-        able_date.setDate(today.getDate() + 3);
-    }
+    initStartDateCalendar();
 
-    //Single and Multiple Datepicker
-    $('.single_date').datepicker({
-        todayBtn: false,
-        keyboardNavigation: false,
-        forceParse: false,
-        calendarWeeks: false,
-        autoclose: true,
-        startDate: able_date,
-    });
+    // 初始化订单起送日期
+    $('#order_start_at').val(dateToString(getStartDate()));
 
     //Create Switchery
     if (Array.prototype.forEach) {
@@ -109,23 +94,31 @@ function trigger_factory_order_type_change() {
 $('body').on('change', '#product_table tbody tr.one_product select.factory_order_type', function () {
 
     var current_order_type = $(this).val();
-
     var tr = $(this).closest('.one_product');
-    var select_order_count = $(tr).find('select.one_product_total_count_select');
 
-    var selected_option = $(select_order_count).find('option[data-otid="' + current_order_type + '"]');
-    selected_option.prop("selected", true);
-
-    //Set New Min value for one product total count
-    var count = $(select_order_count).val();
+    var count = getOrderTypeBottleNum(tr, current_order_type);
     $(tr).find('.one_product_total_count').val(count);
-    $(tr).find('.one_product_total_count').attr('min', count);
+    // $(tr).find('.one_product_total_count').attr('min', count);
 
     calculate_current_product_value(tr);
     set_avg_count(tr);
 
 });
 
+/**
+ * 获取订单类型相应的数量
+ * @param tr - parent tr
+ * @param index
+ * @returns {Number}
+ */
+function getOrderTypeBottleNum(tr, index) {
+    var select_order_count = $(tr).find('select.one_product_total_count_select');
+
+    var selected_option = $(select_order_count).find('option[data-otid="' + index + '"]');
+    selected_option.prop("selected", true);
+
+    return parseInt($(select_order_count).val());
+}
 
 //Calculate the current product value
 function calculate_current_product_value(tr) {
@@ -191,13 +184,13 @@ function set_avg_count(tr) {
     var origin_count = $(tr).find('.one_product_total_count_select').val();
 
     var inputed_count = $(tr).find('.one_product_total_count').val();
-    if (inputed_count % 30 != 0) {
-        show_dismissable_warning_msg('数量应为30的倍数');
-
-        $(tr).find('.one_product_total_count').val(origin_count);
-        avg_input.val(1);
-        return;
-    }
+    // if (inputed_count % 30 != 0) {
+    //     show_dismissable_warning_msg('数量应为30的倍数');
+    //
+    //     $(tr).find('.one_product_total_count').val(origin_count);
+    //     avg_input.val(1);
+    //     return;
+    // }
 
     avg = (inputed_count / origin_count).toPrecision(2);
     avg_input.val(avg);
@@ -213,41 +206,25 @@ function add_product() {
         return;
     }
 
-    if (!copy_tr_data)
-        copy_tr_data = $("#first_data").html();
-
-    console.log(copy_tr_data);
-
-    var rowCount = $('#product_table tbody tr').length;
-    var trclass = "footable-even";
-    if (rowCount % 2 !== 0)
-        trclass = "footable-odd";
-    var content = '<tr class="' + trclass + ' one_product">' + copy_tr_data + '</tr>';
-
-    $("#product_table tbody").append(content);
-
-    //after add new product, caculate the product price automatically
-    tr = $('#product_table tbody tr:last');
-    $(tr).find('.factory_order_type').trigger('change');
+    add_new_product_line();
 }
 
 //check whether the last one product line has empty value
 function check_input_empty_for_one_product(tr) {
     var result = false;
     var order_type = $(tr).find('select.order_delivery_type').val();
-    if (order_type == 1 || order_type == 2) {
+    if (order_type == 1 || order_type == 2) {   // 天天送、隔日送
         $(tr).find('input').each(function () {
             if (($(this).val() == "" || !$(this).val()) && (!$(this).hasClass('delivery_dates'))) {
                 result = true;
             }
         });
-
-    } else {
+    }
+    else {  // 按周送、随心送
         $(tr).find('input').each(function () {
             if (($(this).val() == "" || !$(this).val()) && (!$(this).hasClass('order_product_count_per'))) {
                 result = true;
             }
-
         });
     }
     return result;
@@ -290,14 +267,15 @@ $('body').on('change', '#product_table tbody tr.one_product input.one_product_to
 //According to the delivery type, we should show  or hide the calendar or product_count_per_day
 $('body').on('change', 'select.order_delivery_type', function () {
 
-    var tr = $(this).parent().parent().parent();
+    var tr = $(this).parent().parent();
     var calendar = tr.find('.calendar_show')[0];
     var bottle_number = tr.find('div.bottle_number')[0];
 
     //remove all previous data and set new data
     $(calendar).html('');
-    var dd = '<div class="col-sm-4"> <label class="control-label">配送日期</label> </div> <div class="input-group date col-sm-8 picker">' +
-        '<input type="text" class="form-control delivery_dates" name="delivery_dates[]"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>';
+    var dd = '<div class="input-group date picker">'
+        + '<input type="text" class="form-control delivery_dates" name="delivery_dates[]"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>'
+        + '</div>';
     $(calendar).html(dd);
 
     var pick = tr.find('.picker')[0];
@@ -316,6 +294,7 @@ $('body').on('change', 'select.order_delivery_type', function () {
                 forceParse: false,
                 calendarWeeks: false,
                 showNum: true,
+                bottleNum: 1,
                 startDate: firstday,
                 endDate: lastday,
                 class:'week_calendar'
@@ -330,6 +309,7 @@ $('body').on('change', 'select.order_delivery_type', function () {
                 forceParse: false,
                 calendarWeeks: false,
                 showNum: true,
+                bottleNum: 1,
                 startDate: firstm,
                 endDate: lastm,
                 class:'month_calendar',
@@ -338,13 +318,13 @@ $('body').on('change', 'select.order_delivery_type', function () {
 
         $(calendar).show();
         $(calendar).find('input').attr('required', true);
-        $(bottle_number).hide();
-        $(bottle_number).find('input').removeAttr('required');
+        // $(bottle_number).hide();
+        // $(bottle_number).find('input').removeAttr('required');
     } else {
 
         $(calendar).hide();
         $(bottle_number).show();
-        $(bottle_number).find('input').attr('required', true);
+        // $(bottle_number).find('input').attr('required', true);
         $(calendar).find('input').removeAttr('required');
     }
 });
@@ -355,20 +335,47 @@ $('body').on('change', '#product_table tbody tr.one_product select.order_product
     set_avg_count(tr);
 });
 
+// 按周送和随心送也需要每次数量
+$('body').on('change', 'input.order_product_count_per', function () {
+    var tr = $(this).closest('tr');
+    var pick = tr.find('.picker')[0];
+    if (pick) {
+        $(pick).datepicker('setBottleNum', $(this).val());
+    }
+});
+
+// 订单起送日期为奶品的起送日期中最早的
+$('body').on('change', '.single_date', function () {
+    var tr = $(this).closest('tbody');
+    var dateMin = $(this).datepicker('getDate');
+
+    $(tr).find('.single_date').each(function () {
+        var dateEach = $(this).datepicker('getDate');
+
+        if (dateMin > dateEach) {
+            dateMin = dateEach;
+        }
+    });
+
+    $('#order_start_at').val(dateToString(dateMin));
+});
 
 //Remove one product line
 $(document).on('click', 'button.remove_one_product', function () {
 
     var tr = $(this).closest('tr');
     var count = $('#product_table tbody tr.one_product').length;
-    if (count > 1)
+    if (count > 1) {
         $(tr).remove();
+
+        // 重新计算订单金额
+        get_order_statics();
+    }
     else {
-        show_warning_msg('您无法删除所有产品');
+        show_warning_msg('至少要有一种奶品');
         return;
     }
 });
-
 
 // Card Verfiy
 $('.verify-card').click(function () {
@@ -427,18 +434,77 @@ $('.cancel-card').click(function () {
 });
 
 function init_product_lines() {
+    $('#product_table').find('tbody > tr').remove();
+    add_new_product_line();
+}
+
+/**
+ * 添加新的产品
+ */
+function add_new_product_line() {
     if (!copy_tr_data)
         copy_tr_data = $("#first_data").html();
 
-    $('#product_table').find('tbody > tr').remove();
-
-    var trclass = "footable-odd";
-
-    var content = '<tr class="' + trclass + ' one_product">' + copy_tr_data + '</tr>';
+    var content = '<tr class="one_product">' + copy_tr_data + '</tr>';
 
     $("#product_table tbody").append(content);
 
     //after add new product, caculate the product price automatically
     tr = $('#product_table tbody tr:last');
     $(tr).find('.factory_order_type').trigger('change');
+
+    initStartDateCalendar();
+}
+
+/**
+ * 初始化起送日期控制
+ */
+function initStartDateCalendar() {
+
+    var dateStart = getStartDate();
+
+    //Single and Multiple Datepicker
+    $('.single_date').datepicker({
+        todayBtn: false,
+        keyboardNavigation: false,
+        forceParse: false,
+        calendarWeeks: false,
+        autoclose: true,
+        startDate: dateStart
+    });
+
+    // 默认选择第一天
+    $('.single_date').datepicker('setDate', dateStart);
+}
+
+/**
+ * 获取默认起送日期
+ * @returns {Date}
+ */
+function getStartDate() {
+    var able_date = new Date();
+    $.extend(able_date, dateToday);
+
+    if (gap_day)
+        able_date.setDate(dateToday.getDate() + gap_day);
+    else {
+        gap_day = 3; //default
+        able_date.setDate(dateToday.getDate() + 3);
+    }
+
+    return able_date;
+}
+
+/**
+ * 日期格式化
+ * @param date
+ * @returns {string}
+ */
+function dateToString(date) {
+    var day = date.getDate();
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+    var strDate = year + '-' + month + '-' + day;
+
+    return strDate;
 }

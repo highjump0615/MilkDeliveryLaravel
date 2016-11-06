@@ -27,6 +27,7 @@ class OrderProduct extends Model
         'total_amount',
         'product_price',
         'avg',
+        'start_at'
     ];
 
     protected $appends = [

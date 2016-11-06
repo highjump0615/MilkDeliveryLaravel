@@ -2760,14 +2760,14 @@ class OrderCtrl extends Controller
             $receipt_path = $request->input('receipt_path');
 
             //order info
-            $started_at = $request->input('started_at');
-            $started_at = date_create($started_at);
+            $start_at = $request->input('start_at');
+            $start_at = date_create($start_at);
 
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
             $today = date_create($today);
 
-            $diff = date_diff($started_at, $today);
+            $diff = date_diff($start_at, $today);
             $diff = intval($diff->days);
 
             $gap_day = intval($factory->gap_day);
@@ -3188,7 +3188,6 @@ class OrderCtrl extends Controller
             $milk_card_id = null;
             $milk_card_code = null;
 
-
             //insert customer info
             $customer_id = $request->input('customer_id');
             $phone = $request->input('phone');
@@ -3199,8 +3198,12 @@ class OrderCtrl extends Controller
 
             //station info
             $station_id = $request->input('station');
-
             $milkman_id = $request->input('milkman_id');
+            $delivery_station_id = $request->input('station');
+
+            if (!$milkman_id) {
+                return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
+            }
 
             //save customer
             $customer = Customer::find($customer_id);
@@ -3220,14 +3223,14 @@ class OrderCtrl extends Controller
             $delivery_time = $request->input('delivery_noon');
 
             //order info
-            $started_at = $request->input('started_at');
-            $started_at = date_create($started_at);
+            $order_start_at = $request->input('order_start_at');
+            $order_start_at = date_create($order_start_at);
 
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
             $today = date_create($today);
 
-            $diff = date_diff($started_at, $today);
+            $diff = date_diff($order_start_at, $today);
             $diff = intval($diff->days);
 
             $gap_day = intval($factory->gap_day);
@@ -3249,7 +3252,6 @@ class OrderCtrl extends Controller
             else
                 $payment_type = PaymentType::PAYMENT_TYPE_WECHAT;//wechat
 
-
             //Card Check
             if ($order_by_milk_card == 1) {
 
@@ -3264,7 +3266,7 @@ class OrderCtrl extends Controller
                     return response()->json(['status' => 'fail', 'message' => '卡钱比订单钱少.']);
                 } else {
 
-                    $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
+                    $milk_card->pay_status = MlkCard::MILKCARD_PAY_STATUS_ACTIVE;
                     $milk_card->save();
 
                     $remain_from_card = $milk_card->balance - $total_amount;
@@ -3274,11 +3276,12 @@ class OrderCtrl extends Controller
             //check for 10% of delivery credit balance
             $station = DeliveryStation::find($station_id);
 
-            if ((!$order_by_milk_card) && ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10))
+            if ((!$order_by_milk_card) &&
+                ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10))
                 return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
 
             //other data
-            $status = Order::ORDER_WAITING_STATUS;
+            $status = Order::ORDER_NEW_WAITING_STATUS;
             $trans_check = 0;
             $ordered_at = $today;
             $delivery_station_id = $request->input('station');
@@ -3321,7 +3324,7 @@ class OrderCtrl extends Controller
             $order->payment_type = $payment_type;
             $order->status = $status;
             $order->ordered_at = $ordered_at;
-            $order->start_at = $started_at;
+            $order->start_at = $order_start_at;
             $order->delivery_time = $delivery_time;
             $order->flat_enter_mode_id = $flat_enter_mode_id;
             $order->delivery_station_id = $delivery_station_id;
@@ -3345,14 +3348,6 @@ class OrderCtrl extends Controller
             //save order products
             $count = count($request->input('order_product_id'));
 
-            if (!$milkman_id) {
-                $order->delete();
-                return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
-            }
-
-            if (!$milkman_id)
-                $milkman_id = $order->milkman_id;
-
             for ($i = 0; $i < $count; $i++) {
                 $pid = $request->input('order_product_id')[$i];
                 $otype = $request->input('factory_order_type')[$i];
@@ -3361,6 +3356,7 @@ class OrderCtrl extends Controller
                 $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
                 $delivery_type = $request->input('order_delivery_type')[$i];
                 $avg = $request->input('avg')[$i];
+                $product_start_at = $request->input('start_at')[$i];
 
                 $op = new OrderProduct;
                 $op->order_id = $order_id;
@@ -3371,18 +3367,17 @@ class OrderCtrl extends Controller
                 $op->total_count = $total_count;
                 $op->total_amount = $one_amount;
                 $op->avg = $avg;
+                $op->start_at = $product_start_at;
 
-
-                if ($delivery_type == "1" || $delivery_type == "2") {
+                if ($delivery_type == "1" || $delivery_type == "2") {   // 天天送、隔日送
                     $op->count_per_day = $request->input('order_product_count_per')[$i];
-                } else {
+                }
+                else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == "3") {
-                        //Week Delivery
+                    if ($delivery_type == "3") {    // 按周送
                         $result = $this->get_week_delivery_info($custom_dates);
-
-                    } else {
-                        //Month Delivery
+                    }
+                    else {  // 随心送
                         $result = $this->get_month_delivery_info($custom_dates);
                     }
                     $result = rtrim($result, ',');
@@ -3393,9 +3388,7 @@ class OrderCtrl extends Controller
 
                 //establish plan
                 $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
-
             }
-
 
             //set flag on first order delivery plan
             $plans = $order->first_delivery_plans;
@@ -3406,7 +3399,6 @@ class OrderCtrl extends Controller
                     $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
                     $plan->save();
                 }
-
             }
 
             $customer = Customer::find($customer_id);
@@ -3776,6 +3768,8 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
 
+        $order_property = OrderProperty::all();
+
         $order_checkers = $factory->ordercheckers;
 
         $products = $factory->active_products;
@@ -3783,8 +3777,6 @@ class OrderCtrl extends Controller
         $order_delivery_types = $factory->order_delivery_types;
 
         $delivery_stations = $factory->active_stations;//get only active stations
-
-        $order_property = OrderProperty::all();
 
         $province = Address::where('level', 1)->where('factory_id', $factory_id)
             ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
@@ -5229,7 +5221,7 @@ class OrderCtrl extends Controller
         $total_count = $op->total_count;
         $delivery_type = $op->delivery_type;
 
-        $deliver_at = $order->start_at;
+        $deliver_at = $op->start_at;
 
         if ($delivery_type == 1) {
 

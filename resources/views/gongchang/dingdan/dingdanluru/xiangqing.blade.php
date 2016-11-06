@@ -42,7 +42,7 @@
                     <label class="col-md-6">{{$order->status_name}}</label>
 
                 </div>
-                <div class="feed-element col-md-4 col-md-offset-4">
+                <div class="feed-element col-md-5 col-md-offset-3">
 
                     @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS
                     || $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS)

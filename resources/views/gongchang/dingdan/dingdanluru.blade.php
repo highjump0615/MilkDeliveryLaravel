@@ -2,7 +2,7 @@
 @section('css')
     <style>
         select, input {
-            height: 35px;
+            /*height: 35px;*/
             width: 100%;
         }
 
@@ -62,7 +62,7 @@
         </div>
         <br>
         <div class="row">
-            <!--ustomer insert-->
+            <!-- customer insert-->
             <div id="customer_info">
                 <form method="POST" enctype="multipart/form-data" id="customer_form">
                     <div class="feed-element col-md-12">
@@ -196,15 +196,12 @@
                     <div class="col-md-12 gray-bg section-name">
                         <label class="col-sm-12">订单内容</label>
                     </div>
-
                     <div class="feed-element col-md-12">
                         <label class="col-md-1 control-label" style="padding-top:7px;">起送日期</label>
-                        <div class="input-group date single_date col-md-2">
-                            <input required type="text" class="form-control" id="started_at" name="started_at"><span
-                                    class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        <div class="input-group col-md-2">
+                            <input required type="text" class="form-control" id="order_start_at" name="order_start_at" readonly="readonly" >
                         </div>
                     </div>
-
                     <div class="feed-element col-md-12">
                         <div class="col-md-1">
                             <label>奶箱安装</label>
@@ -234,7 +231,7 @@
                     <br>
 
                     <div class="feed-element col-md-12">
-                        <label class="control-label col-md-1">配送时间:</label>
+                        <label class="control-label col-md-1">配送时间</label>
                         &nbsp;
                         <div class="col-md-2">
                             <select required class="form-control" id="delivery_noon" name="delivery_noon">
@@ -248,11 +245,47 @@
                         <button class="btn btn-outline btn-success" onclick="add_product();" type="button"><i
                                     class="fa fa-plus"></i> 添加奶品
                         </button>
-                        <div class="ibox-content" style="padding: 20px 0;">
-                            <table class="table table-bordered" id="product_table" style="font-size: 14px;">
+                        <div class="ibox-content" style="padding: 20px 0; margin: 0 -15px;">
+                            <table class="table" id="product_table" style="font-size: 14px;">
+                                <!-- 奶品选择头部 -->
+                                <thead>
+                                <tr>
+                                    <td class="col-sm-2">
+                                        奶品
+                                    </td>
+                                    <td class="col-sm-1">
+                                        订单类型
+                                    </td>
+                                    <td class="col-sm-1">
+                                        数量
+                                    </td>
+                                    <td class="col-sm-1">
+                                        配送规则
+                                    </td>
+                                    <td class="col-sm-1">
+                                        每次（瓶）
+                                    </td>
+                                    <td class="col-sm-2">
+                                        配送日期
+                                    </td>
+                                    <td class="col-sm-2">
+                                        起送日期
+                                    </td>
+                                    <td class="col-sm-1">
+                                        单数
+                                    </td>
+                                    <td class="col-sm-1">
+                                        金额
+                                    </td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                </thead>
+
+                                <!-- 奶品信息 -->
                                 <tbody>
                                 <tr id="first_data" class="one_product">
-                                    <td class="col-sm-1">
+                                    <td>
                                         <select required class="form-control order_product_id"
                                                 name="order_product_id[]"
                                                 style="height:34px;">
@@ -265,32 +298,24 @@
                                             @endif
                                         </select>
                                     </td>
-                                    <td class="col-sm-2">
-                                        <div class="col-sm-4">
-                                            <label class="control-label">订单类型</label>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <select required class="form-control factory_order_type"
-                                                    name="factory_order_type[]">
-                                                @if (isset($factory_order_types))
-                                                    @foreach ($factory_order_types as $fot)
-                                                        <option value="{{$fot->order_type}}"
-                                                                data-content="{{$fot->id}}">{{$fot->order_type_name}}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="none">没有订单类型</option>
-                                                @endif
-                                            </select>
-                                        </div>
+                                    <td>
+                                        <select required class="form-control factory_order_type"
+                                                name="factory_order_type[]">
+                                            @if (isset($factory_order_types))
+                                                @foreach ($factory_order_types as $fot)
+                                                    <option value="{{$fot->order_type}}"
+                                                            data-content="{{$fot->id}}">{{$fot->order_type_name}}</option>
+                                                @endforeach
+                                            @else
+                                                <option value="none">没有订单类型</option>
+                                            @endif
+                                        </select>
                                     </td>
-                                    <td class="col-sm-1">
-                                        <div class="col-sm-5">
-                                            <label class="control-label">数量</label>
-                                        </div>
-                                        <div class="col-sm-7">
+                                    <td>
+                                        <div>
                                             <input required name="one_product_total_count[]"
-                                                   class="one_product_total_count form-control" step="30"
-                                                   type="number" min="30"
+                                                   class="one_product_total_count form-control"
+                                                   type="number" min="1" value="30"
                                                    style="padding-left: 2px;"/>
                                             <select class="one_product_total_count_select control hidden form-control">
                                                 @if(isset($products_count_on_fot))
@@ -302,65 +327,53 @@
                                             </select>
                                         </div>
                                     </td>
-                                    <td class="col-sm-2">
-                                        <div class="col-sm-6">
-                                            <label class="control-label">配送规则</label>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <select required class="form-control order_delivery_type "
-                                                    name="order_delivery_type[]">
-                                                @if (isset($order_delivery_types))
-                                                    @foreach ($order_delivery_types as $odt)
-                                                        <option value="{{$odt->delivery_type}}"
-                                                                data-content="{{$odt->id}}">{{$odt->name}}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="">没有配送规则</option>
-                                                @endif
-                                            </select>
-                                        </div>
-                                    </td>
-                                    <td class="col-sm-1">
-                                        <div class="bottle_number">
-                                            <div class="col-sm-5">
-                                                <label class="control-label">每次</label>
-                                            </div>
-                                            <div class="col-sm-5">
-                                                <input type="number" min="1" required name="order_product_count_per[]"
-                                                       class="form-control order_product_count_per"
-                                                       style="display:inline-block;">
-                                            </div>
-                                            <div class="col-sm-2">
-                                                <label class="control-label">瓶</label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="col-sm-3">
-                                        <div class="calendar_show" style="display: none;">
-                                            <div class="col-sm-4">
-                                                <label class="control-label">配送日期</label>
-                                            </div>
-                                            <div class="input-group date col-sm-8 picker">
-                                                <input type="text" class="form-control delivery_dates"
-                                                       name="delivery_dates[]"><span class="input-group-addon"><i
-                                                            class="fa fa-calendar"></i></span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="col-sm-1">
-                                        <label class="control-label product_count_per_day"
-                                               style="padding-top: 7px;">单数:
-                                            <input type="text" required name="avg[]" class="avg" readonly/></label>
-                                    </td>
-                                    <td class="col-sm-1">
-                                        <label class="control-label total_amount_per_product"
-                                               style="padding-top: 7px;">金额:
-                                            <input type="text" required name="one_p_amount[]" class="one_p_amount"
-                                                   readonly/></label>
+                                    <td>
+                                        <select required class="form-control order_delivery_type " name="order_delivery_type[]">
+                                            @if (isset($order_delivery_types))
+                                                @foreach ($order_delivery_types as $odt)
+                                                    <option value="{{$odt->delivery_type}}"
+                                                            data-content="{{$odt->id}}">{{$odt->name}}</option>
+                                                @endforeach
+                                            @else
+                                                <option value="">没有配送规则</option>
+                                            @endif
+                                        </select>
                                     </td>
                                     <td>
-                                        <button type="button" class="remove_one_product"><i class="fa fa-trash-o"
-                                                                                            aria-hidden="true"></i>
+                                        <div class="bottle_number">
+                                            <input type="number" min="1" required name="order_product_count_per[]"
+                                                   class="form-control order_product_count_per" value="1"
+                                                   style="display:inline-block;">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="calendar_show" style="display: none;">
+                                            <div class="input-group date picker">
+                                                <input type="text" class="form-control delivery_dates" name="delivery_dates[]">
+                                                    <span class="input-group-addon">
+                                                        <i class="fa fa-calendar"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group date single_date">
+                                            <input required type="text" class="form-control start_at" name="start_at[]"><span
+                                                    class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label class="control-label product_count_per_day" style="padding-top: 7px;">
+                                            <input type="text" required name="avg[]" class="avg" readonly value="1.0"/>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label class="control-label total_amount_per_product" style="padding-top: 7px;">
+                                            <input type="text" required name="one_p_amount[]" class="one_p_amount" readonly/>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="remove_one_product"><i class="fa fa-trash-o" aria-hidden="true"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -451,7 +464,7 @@
             });
         }
 
-        var firstday, lastday, firstm, lastm;
+        var firstday, lastday, firstm, lastm, dateToday;
 
         var customer_id, station_id, station_name;
 

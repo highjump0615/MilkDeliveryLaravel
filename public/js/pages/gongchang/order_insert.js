@@ -281,6 +281,28 @@ $('#order_form').on('submit', function (e) {
         return;
     }
 
+    // 验证产品数量和订单类型的规则
+    var nMinBottleNum = 0;
+    $('.factory_order_type').each(function(){
+
+        var tr = $(this).closest('.one_product');
+        var index = $(this).val();
+
+        var nBottleNum = getOrderTypeBottleNum(tr, index);
+        nMinBottleNum = Math.max(nMinBottleNum, nBottleNum)
+    });
+
+    // 数量总和
+    var nTotalBottleNum = 0;
+    $('.one_product_total_count').each(function(){
+        nTotalBottleNum += parseInt($(this).val());
+    });
+
+    if (nTotalBottleNum < nMinBottleNum) {
+        show_warning_msg("订单数量总合得符合订单类型条件")
+        return;
+    }
+
     $('#order_form button[type="submit"]').prop('disabled', true);
 
     var sendData = $('#order_form').serializeArray();

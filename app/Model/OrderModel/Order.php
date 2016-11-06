@@ -101,16 +101,16 @@ class Order extends Model
     const ORDER_TRANS_CHECK_TRUE = 1;
     const ORDER_TRANS_CHECK_FALSE = 0;
     
-//    const ORDER_NEW_WAITING_STATUS          = 1;    // 新订单待审核
+    const ORDER_NEW_WAITING_STATUS          = 1;    // 新订单待审核
     const ORDER_PASSED_STATUS               = 2;    // 未启奶
     const ORDER_ON_DELIVERY_STATUS          = 3;    // 在配送
     const ORDER_FINISHED_STATUS             = 7;    // 已完成
-//    const ORDER_NEW_NOT_PASSED_STATUS       = 5;    // 新订单未通过
+    const ORDER_NEW_NOT_PASSED_STATUS       = 5;    // 新订单未通过
     const ORDER_STOPPED_STATUS              = 4;    // 暂停
     const ORDER_CANCELLED_STATUS            = 6;    // 退订
 
-    const ORDER_WAITING_STATUS              = 1;    // 订单审核
-    const ORDER_NOT_PASSED_STATUS           = 5;    // 订单未通过
+    const ORDER_WAITING_STATUS              = 8;    // 订单审核
+    const ORDER_NOT_PASSED_STATUS           = 9;    // 订单未通过
 
     const ORDER_FLAT_ENTER_MODE_CALL_DEFAULT = 2;
     const ORDER_FLAT_ENTER_MODE_PASSWORD_DEFAULT = 1;
