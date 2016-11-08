@@ -48,9 +48,22 @@
 @endsection
 
 @section('content')
+
+<!-- 奶站需要奶站的菜单 -->
+@if (isset($station))
+    @include('naizhan.theme.sidebar')
+@else
     @include('gongchang.theme.sidebar')
+@endif
+
     <div id="page-wrapper" class="white-bg">
+
+    @if (isset($station))
+        @include('naizhan.theme.header')
+    @else
         @include('gongchang.theme.header')
+    @endif
+
         <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
@@ -650,6 +663,21 @@
     </div>
 @endsection
 
+<!-- 奶站订单录入，获取配送范围地址 -->
+<?php
+
+if (isset($station)) {
+    $strStreet = "";
+    $strVillage = "";
+    if (count($station->delivery_area) > 0) {
+        $strStreet = $station->delivery_area[0]->street_name;
+        $strVillage = $station->delivery_area[0]->village_name;
+    }
+}
+
+?>
+
+
 @section('script')
     <script type="text/javascript" src="<?=asset('webcam/webcam.min.js') ?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
@@ -681,6 +709,8 @@
         @elseif (isset($station))
             city_name = "{{$station->city}}";
             district_name = "{{$station->district}}";
+            station_street = "{{$strStreet}}";
+            station_village = "{{$strVillage}}";
         @endif
 
         @if(isset($gap_day))

@@ -2131,6 +2131,8 @@ class OrderCtrl extends Controller
     private $order_delivery_types;
     private $product_count_on_fot;
     private $delivery_stations;
+    
+    private $station;
 
     /**
      * 初始化奶厂订单参数
@@ -2142,12 +2144,32 @@ class OrderCtrl extends Controller
 
         $this->order_property = OrderProperty::all();
 
+        $this->initBaseFromOrderInput();
+    }
+
+    private function initShowStationPage() {
+        $suser = Auth::guard('naizhan')->user();
+
+        $station_id = $suser->id;
+        $this->station = DeliveryStation::find($station_id);
+
+        $this->factory = Factory::find($this->station->factory_id);
+
+        $this->initBaseFromOrderInput();
+    }
+
+    /**
+     * 初始化订单录入的基础信息
+     */
+    private function initBaseFromOrderInput() {
+        $this->order_property = OrderProperty::all();
+
         $this->products = $this->factory->active_products;
         $this->factory_order_types = $this->factory->factory_order_types;
         $this->order_delivery_types = $this->factory->order_delivery_types;
         $this->delivery_stations = $this->factory->active_stations;//get only active stations
 
-        $this->province = Address::where('level', 1)->where('factory_id', $factory_id)
+        $this->province = Address::where('level', 1)->where('factory_id', $this->factory->id)
             ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
 
         $this->product_count_on_fot = [];
@@ -3859,41 +3881,13 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//show insert dingdan page in gongchang
+    //show insert dingdan page in gongchang
     public
     function show_insert_order_page_in_naizhan()
     {
-        $suser = Auth::guard('naizhan')->user();
+        $this->initShowStationPage();
 
-        $station_id = $suser->id;
-        $station = DeliveryStation::find($station_id);
-
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
-
-        $order_checkers = $station->active_order_checkers;
-
-        $products = $factory->active_products;
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-        $delivery_stations = $factory->active_stations;
-
-        $order_property = OrderProperty::all();
-
-        //For other orders' order, the province is factory's area
-//        $province = $station->province_name;
-        $province = Address::where('level', 1)->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
-
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
-
-        //get gap day
-        $gap_day = $factory->gap_day;
+        $order_checkers = $this->station->active_order_checkers;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -3901,21 +3895,29 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
 
         return view('naizhan.dingdan.dingdanluru', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order_property' => $order_property,
-            'province' => $province,
-            'order_checkers' => $order_checkers,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'order_delivery_types' => $order_delivery_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'delivery_stations' => $delivery_stations,
-            'station_id' => $station_id,
-            'station' => $station,
-            'gap_day' => $gap_day,
+            // 菜单关联信息
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            // 是否修改订单
+            'is_edit'               => false,
+
+            // 录入订单基础信息
+            'order_property'        => $this->order_property,
+            'province'              => $this->province,
+            'order_checkers'        => $order_checkers,
+            'products'              => $this->products,
+            'factory_order_types'   => $this->factory_order_types,
+            'order_delivery_types'  => $this->order_delivery_types,
+            'products_count_on_fot' => $this->product_count_on_fot,
+            'delivery_stations'     => $this->delivery_stations,
+            'gap_day'               => $this->factory->gap_day,
+            'remain_amount'         => 0,
+
+            // 奶站信息
+            'station'               => $this->station
         ]);
     }
 
