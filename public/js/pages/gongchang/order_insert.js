@@ -318,8 +318,17 @@ $('#order_form').on('submit', function (e) {
     });
 
     if (nTotalBottleNum < nMinBottleNum) {
-        show_warning_msg("订单数量总合得符合订单类型条件")
+        show_err_msg("订单数量总合得符合订单类型条件")
         return;
+    }
+
+    // 订单修改，更改后金额不能超过订单余额
+    if (gbIsEdit) {
+        var fRemainCost = $('#remaining_after').val();
+        if (fRemainCost < 0) {
+            show_err_msg("更改后金额不能超过订单余额")
+            return;
+        }
     }
 
     $('#order_form button[type="submit"]').prop('disabled', true);

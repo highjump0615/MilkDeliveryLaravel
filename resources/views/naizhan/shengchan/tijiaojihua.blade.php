@@ -17,7 +17,8 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-			<label id="limit_alert" style="color: red; padding-left: 20px; font-size: 18px; display: none">你的钱不足以生产这些产品! 信用商业钱超过</label>
+				<label id="limit_alert" style="color: red; padding-left: 20px; font-size: 18px; display: none">你的钱不足以生产这些产品! 信用商业钱超过</label>
+
 				<div class="ibox-content">
 					<div class="feed-element">
 						<div class="col-md-2">
@@ -71,7 +72,7 @@
 									{{--<td><button class="btn btn-success btn-sm confirm" id="confirm{{$pl->id}}" value="{{$pl->id}}">确认提交</button></td>--}}
 									@if($i==1)
 									<td rowspan="{{$j}}">
-										<button class="btn btn-success btn-sm confirm" id="confirm{{$pl->id}}" value="{{$pl->id}}" @if($is_sent>0)style="display: none" @endif>确认提交</button>
+										<button class="btn btn-success btn-sm confirm_submit" id="confirm{{$pl->id}}" value="{{$pl->id}}" @if($is_sent>0)style="display: none" @endif>确认提交</button>
 										<button class="btn btn-success btn-sm modify" id="modify{{$pl->id}}" value="{{$pl->id}}" @if($is_sent==0)style="display: none" @endif>修改</button>
 									</td>
 									@endif

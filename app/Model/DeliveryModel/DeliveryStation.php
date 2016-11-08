@@ -262,7 +262,8 @@ class DeliveryStation extends Authenticatable
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -339,7 +340,7 @@ class DeliveryStation extends Authenticatable
     public function getBusinessTermStartAmountAttribute()
     {
         $term_start = ($this->business_credit_balance) - ($this->business_in) + ($this->business_out);
-        return $term_start;
+        return round($term_start, 2);
     }
 
     public function getBusinessInAttribute()
@@ -462,8 +463,8 @@ class DeliveryStation extends Authenticatable
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
         $orders = Order::where('station_id', '!=', $this->id)->where('ordered_at', '>=', $first_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('ordered_at', '<=', $last_m)->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
@@ -478,8 +479,8 @@ class DeliveryStation extends Authenticatable
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
         $orders = Order::where('station_id', '!=', $this->id)->where('ordered_at', '>=', $first_m)->where('ordered_at', '<=', $last_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('delivery_station_id', '=', $this->id)->get();
@@ -494,8 +495,8 @@ class DeliveryStation extends Authenticatable
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
         $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
@@ -512,8 +513,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)->get();
@@ -529,8 +530,8 @@ class DeliveryStation extends Authenticatable
         $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)->get();
@@ -546,8 +547,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)->get();
@@ -562,8 +563,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', $today)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -592,8 +593,8 @@ class DeliveryStation extends Authenticatable
         $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('delivery_station_id', '=', $this->id)->get();
@@ -608,8 +609,8 @@ class DeliveryStation extends Authenticatable
         $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('delivery_station_id', '!=', $this->id)->get();
@@ -660,8 +661,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '<=', $last_m)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -680,8 +681,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -778,8 +779,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })->get();
         return $orders;
@@ -792,9 +793,9 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })->get();
         return $orders;
     }
@@ -809,8 +810,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -832,8 +833,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -856,8 +857,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)
             ->whereRaw('station_id != delivery_station_id')->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -879,8 +880,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('station_id', $this->id)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -897,8 +898,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -912,8 +913,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -931,8 +932,8 @@ class DeliveryStation extends Authenticatable
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('station_id', $this->id)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
@@ -954,8 +955,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })->get();
 
@@ -977,8 +978,8 @@ class DeliveryStation extends Authenticatable
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })->get();
 

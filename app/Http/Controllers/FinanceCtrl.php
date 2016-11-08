@@ -418,27 +418,36 @@ class FinanceCtrl extends Controller
 
             $orders = Order::where('factory_id', $factory_id)
                 ->whereRaw('station_id != delivery_station_id')
-                ->where('ordered_at', '<=', $end_date)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+                ->where('ordered_at', '<=', $end_date)
+                ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
                 ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                ->where('transaction_id', null)->where('status', '!=', Order::ORDER_WAITING_STATUS)
-                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+                ->where('transaction_id', null)
+                ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+                ->get();
 
         } else if($start_date && !$end_date)
         {
-            $orders = Order::where('factory_id', $factory_id)->where('ordered_at', '>=', $start_date)
+            $orders = Order::where('factory_id', $factory_id)
+                ->where('ordered_at', '>=', $start_date)
                 ->whereRaw('station_id != delivery_station_id')
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
                 ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                ->where('transaction_id', null)->where('status', '!=', Order::ORDER_WAITING_STATUS)
-                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+                ->where('transaction_id', null)
+                ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+                ->get();
         }
         else{
 
-            $orders = Order::where('factory_id', $factory_id)->where('ordered_at', '>=', $start_date)
+            $orders = Order::where('factory_id', $factory_id)
+                ->where('ordered_at', '>=', $start_date)
                 ->whereRaw('station_id != delivery_station_id')
-                ->where('ordered_at', '<=', $end_date)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+                ->where('ordered_at', '<=', $end_date)
+                ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
                 ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                ->where('transaction_id', null)->where('status', '!=', Order::ORDER_WAITING_STATUS)
+                ->where('transaction_id', null)
+                ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
                 ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
         }
 
@@ -1791,8 +1800,12 @@ class FinanceCtrl extends Controller
 
         $orders = Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->orderBy('ordered_at')->get();
+            ->where(function($query) {
+                $query->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS);
+                $query->orWhere('status', '!=', Order::ORDER_WAITING_STATUS);
+            })
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->orderBy('ordered_at')->get();
 
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';

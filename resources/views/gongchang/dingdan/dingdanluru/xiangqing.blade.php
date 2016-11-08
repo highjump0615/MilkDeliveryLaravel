@@ -44,8 +44,11 @@
                 </div>
                 <div class="feed-element col-md-5 col-md-offset-3">
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS
-                    || $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS ||
+                         $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                         $order->status == \App\Model\OrderModel\Order::ORDER_NEW_NOT_PASSED_STATUS)
+
                         <a href="{{URL::to('/gongchang/dingdan/dingdanxiugai/'.$order->id)}}"
                            class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
                     @endif
@@ -69,14 +72,14 @@
                         </button>
                     @endif
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                         <button class="btn btn-success btn-outline btn-md  col-md-3"
                                 data-orderid="{{$order->id}}"
                                 id="postpone_order_bt">顺延订单
                         </button>
                     @endif
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                         <button class="btn btn-success btn-outline btn-md  col-md-2"
                                 data-orderid="{{$order->id}}"
                                 id="cancel_order_bt">退订

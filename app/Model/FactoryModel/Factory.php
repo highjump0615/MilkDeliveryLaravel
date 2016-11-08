@@ -136,10 +136,13 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->whereRaw('station_id != delivery_station_id')->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->whereRaw('station_id != delivery_station_id')
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
         return $orders;
     }
@@ -150,9 +153,11 @@ class Factory extends Model
     {
         $orders = Order::where('factory_id', $this->id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->whereRaw('station_id != delivery_station_id')->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+            ->whereRaw('station_id != delivery_station_id')
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
 
         return $orders;
     }
@@ -163,10 +168,12 @@ class Factory extends Model
        $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->whereRaw('station_id != delivery_station_id')
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
 
         $total = 0;
@@ -181,11 +188,15 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            -> whereRaw('station_id != delivery_station_id') ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            -> whereRaw('station_id != delivery_station_id')
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
 
         $total = 0;
         foreach ($orders as $order) {
@@ -200,12 +211,15 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->whereRaw('station_id != delivery_station_id')->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
-
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->whereRaw('station_id != delivery_station_id')
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
 
         $total = 0;
         foreach ($orders as $order) {
@@ -221,10 +235,14 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
+
         return $orders;
     }
 
@@ -234,11 +252,15 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
+
         return $orders;
     }
 
@@ -249,8 +271,10 @@ class Factory extends Model
         $orders = Order::where('factory_id', $this->id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+            ->get();
+
         return $orders;
     }
 
@@ -261,15 +285,18 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
 
         $total = 0;
         foreach ($orders as $order) {
             $total += $order->total_amount;
         }
+
         return $total;
     }
 
@@ -278,10 +305,12 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
 
         $total = 0;
@@ -296,10 +325,12 @@ class Factory extends Model
         $first_m = date('Y-m-01');
         $last_m = date('Y-m-d');
 
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('factory_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where('status', '!=', Order::ORDER_WAITING_STATUS)
+            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
 
         $total = 0;

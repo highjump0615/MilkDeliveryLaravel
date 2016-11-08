@@ -51,14 +51,17 @@
     @include('gongchang.theme.sidebar')
     <div id="page-wrapper" class="white-bg">
         @include('gongchang.theme.header')
+        <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
                     <a href="">订单管理</a>
                 </li>
                 <li>
-                    @if (isset($order))
+                    @if ($is_edit)
                         <strong>订单修改</strong>
+                    @elseif (isset($order))
+                        <strong>续单</strong>
                     @else
                         <a href=""><strong>订单录入</strong></a>
                     @endif
@@ -76,7 +79,12 @@
                             <select required id="order_property" name="order_property" class="form-control">
                                 @if (isset($order_property))
                                     @foreach($order_property as $orp)
-                                        <option value="{{$orp->id}}">{{$orp->name}}</option>
+                                        <!-- 续单需要默认选择 -->
+                                        @if (!$is_edit && isset($order) && $orp->id == 2)
+                                            <option value="{{$orp->id}}" selected>{{$orp->name}}</option>
+                                        @else
+                                            <option value="{{$orp->id}}">{{$orp->name}}</option>
+                                        @endif
                                     @endforeach
                                 @endif
                             </select>
@@ -106,8 +114,8 @@
                                     @if (isset($province))
                                         <?php
                                         $province_name = "";
-                                        if (isset($address))   // 修改订单
-                                            $province_name = $address[0];
+                                        if (isset($order))   // 修改订单
+                                            $province_name = $order->getAddrProvince();
                                         else if (isset($station))   // 奶站订单录入
                                             $province_name = $station->province_name;
                                         ?>
@@ -145,7 +153,7 @@
                         <div class="col-md-3 col-md-offset-2">
                             <input type="text" placeholder="填写详细地址" id="sub_addr" name="c_sub_addr"
                                    class="form-control"
-                                   value="@if (isset($address)) {{$address[5]}} @endif">
+                                   value="@if (isset($order)) {{$order->getAddrHouseNumber()}} @endif">
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
@@ -156,6 +164,11 @@
                 </form>
             </div>
             <form method="POST" enctype="multipart/form-data" id="order_form">
+
+                @if ($is_edit)
+                    <input type="hidden" name="order_id"
+                           value="{{$order->id}}">
+                @endif
 
                 <!--Station Info-->
                 <div id="station_info">
@@ -291,11 +304,13 @@
                                         class="fa fa-plus"></i> 添加奶品
                                 </button>
                             </div>
-                            @if (isset($order))
-                                <div class="col-md-8 col-md-offset-2"> 
-                                    <label class="col-md-3 col-md-offset-2">订单金额: <span class="init_total_sp">{{$order->total_amount}}</span></label> 
-                                    <label class="col-md-3">订单余额: <span class="current_total_sp">{{$order->remain_order_money}}</span></label> 
-                                    <label class="col-md-3">更改订单金额: <span class="updated_total_sp">{{$order->remain_order_money}}</span></label> 
+
+                            @if ($is_edit)
+                                <!-- 订单修改 -->
+                                <div class="col-md-2 col-md-offset-8"> 
+                                    {{--<label class="col-md-3 col-md-offset-2">订单金额: <span class="init_total_sp">{{$order->total_amount}}</span></label> --}}
+                                    <label>订单余额: <span class="current_total_sp">{{$order->remain_order_money}}</span></label> 
+                                    {{--<label class="col-md-3">更改订单金额: <span class="updated_total_sp">{{$order->remain_order_money}}</span></label> --}}
                                 </div>
                             @endif
                         </div>
@@ -560,33 +575,49 @@
                         <div class="col-lg-9 col-md-8"></div>
                         <div class="col-lg-3 col-md-4 statics">
                             <div>
-                                <label for="total_amount" class="control-label col-md-7">订单金额：</label>
+                                <label for="total_amount" class="control-label col-md-7">
+                                    @if ($is_edit)
+                                        更改后金额：
+                                    @else
+                                        订单金额：
+                                    @endif
+                                </label>
                                 <div class="col-md-5">
                                     <input required readonly id="total_amount" name="total_amount" value="0"/>
                                 </div>
                             </div>
-                            <div>
-                                <label for="remaining" class="control-label col-md-7">账户余额：</label>
-                                <div class="col-md-5">
-                                    <input required readonly id="remaining" name="remaining" value="0"/>
+                            @if ($is_edit)
+                                <div>
+                                    <label for="edit_remaining" class="control-label col-md-7">差额：</label>
+                                    <div class="col-md-5">
+                                        <input required readonly id="remaining_after" name="remaining_after" value="0"/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label for="real_amount" class="control-label col-md-7">本次应收金额：</label>
-                                <div class="col-md-5">
-                                    <input required readonly id="acceptable_amount" name="acceptable_amount"
-                                           value="0"/>
+                            @else
+                                <div>
+                                    <label for="remaining" class="control-label col-md-7">账户余额：</label>
+                                    <div class="col-md-5">
+                                        <input required readonly id="remaining" name="remaining" value="{{$remain_amount}}"/>
+                                    </div>
                                 </div>
-                            </div>
+                                <div>
+                                    <label for="real_amount" class="control-label col-md-7">本次应收金额：</label>
+                                    <div class="col-md-5">
+                                        <input required readonly id="acceptable_amount" name="acceptable_amount"
+                                               value="0"/>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
                 <div class="feed-element col-md-12" style="margin-top: 40px;">
                     <div class="col-md-2 col-md-offset-10">
-                        <button type="submit" class="btn btn-success btn-w-m" type="submit">提交</button>
+                        <button type="submit" class="btn btn-success btn-w-m" type="submit">
+                            提交@if ($is_edit)修改 @endif
+                        </button>
                     </div>
                 </div>
-
 
                 <div class="modal inmodal fade" id="card_info" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-md">
@@ -642,11 +673,11 @@
         var customer_id, station_id, station_name;
         var city_name, district_name, street_name, village_name;
 
-        @if (isset($address))
-            city_name = "{{$address[1]}}";
-            district_name = "{{$address[2]}}";
-            street_name = "{{$address[3]}}";
-            village_name = "{{$address[4]}}";
+        @if (isset($order))
+            city_name = "{{$order->getAddrCity()}}";
+            district_name = "{{$order->getAddrDistrict()}}";
+            street_name = "{{$order->getAddrStreet()}}";
+            village_name = "{{$order->getAddrVillage()}}";
         @elseif (isset($station))
             city_name = "{{$station->city}}";
             district_name = "{{$station->district}}";

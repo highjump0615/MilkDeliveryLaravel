@@ -59,13 +59,13 @@ $(document).on('keyup','.sales_val',function(){
     })
 })
 
-$(document).on('click','.confirm',function(e){
+$(document).on('click','.confirm_submit',function(e){
     used_money = $('#total_amount').text() - $('#total_ordered_money').val();
     var status = 1;
     if(used_money > parseFloat(limit_money,2)){
         $.confirm({
             icon: 'fa fa-warning',
-            title: '警报',
+            title: '信用余额不足',
             text:'你的钱不足以生产这些产品! 信用商业钱超过。你想发送计划？',
             confirmButton: "是",
             cancelButton: "不",
@@ -97,7 +97,7 @@ function send_plan() {
         }
     })
 
-    $('.confirm').prop("disabled",true);
+    $('.confirm_submit').prop("disabled",true);
 
     var table_info = [];
     var i = 0;
@@ -132,7 +132,7 @@ function send_plan() {
         processData: false,
         data: JSON.stringify(table_info),
         success: function (data) {
-            $('.confirm').hide();
+            $('.confirm_submit').hide();
             $('.modify').show();
             $('#balance').replaceWith('<label id="balance" class="col-lg-3" style="font-size:20px; color:white; background-color:#ff0000;">自营业务余额：'+data.business_balance+'</label>')
             console.log(data);
@@ -219,7 +219,7 @@ function modify_plan() {
         processData: false,
         data: JSON.stringify(table_info),
         success: function (data) {
-            $('.confirm').hide();
+            $('.confirm_submit').hide();
             $('.modify').prop("disabled",false);
             $('#balance').replaceWith('<label id="balance" class="col-lg-3" style="font-size:20px; color:white; background-color:#ff0000;">自营业务余额：'+data.business_balance+'</label>')
             console.log(data);

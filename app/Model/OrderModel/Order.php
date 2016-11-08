@@ -61,6 +61,7 @@ class Order extends Model
         'customer_name',
         'payment_type_name',
         'order_property_name',
+        'order_checker',
         'order_checker_name',
         'station_name',
         'delivery_station_name',
@@ -109,7 +110,7 @@ class Order extends Model
     const ORDER_STOPPED_STATUS              = 4;    // 暂停
     const ORDER_CANCELLED_STATUS            = 6;    // 退订
 
-    const ORDER_WAITING_STATUS              = 8;    // 订单审核
+    const ORDER_WAITING_STATUS              = 8;    // 订单待审核
     const ORDER_NOT_PASSED_STATUS           = 9;    // 订单未通过
 
     const ORDER_FLAT_ENTER_MODE_CALL_DEFAULT = 2;
@@ -249,6 +250,7 @@ class Order extends Model
     {
         switch($this->status)
         {
+            case $this::ORDER_NEW_WAITING_STATUS:
             case $this::ORDER_WAITING_STATUS:
                 $status_name="待审核";
                 break;
@@ -264,6 +266,7 @@ class Order extends Model
             case $this::ORDER_FINISHED_STATUS:
                 $status_name="已完成";
                 break;
+            case $this::ORDER_NEW_NOT_PASSED_STATUS:
             case $this::ORDER_NOT_PASSED_STATUS:
                 $status_name="未通过";
                 break;
@@ -617,18 +620,32 @@ class Order extends Model
         }
         else
             return "";
-    }    
-    
-    public function getOrderCheckerNameAttribute()
+    }
+
+    /**
+     * 获取征订员信息
+     * @return OrderChecker
+     */
+    public function getOrderCheckerAttribute()
     {
+        $order_checker = null;
+
         if($this->order_checker_id)
         {
             $order_checker = OrderCheckers::find($this->order_checker_id);
-            if($order_checker)
-                return $order_checker->name;
-            else
-                return "";
         }
+
+        return $order_checker;
+    }
+
+    /**
+     * 获取征订员名称
+     * @return string
+     */
+    public function getOrderCheckerNameAttribute()
+    {
+        if ($this->order_checker)
+            return $this->order_checker->name;
         else
             return "";
     }

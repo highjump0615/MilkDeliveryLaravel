@@ -404,6 +404,9 @@ class DSStatistics extends Controller
         $child = 'peisongyuanwei';
         $parent = 'tongji';
         $current_page = 'peisongyuanwei';
+
+        $current_station_id = Auth::guard('naizhan')->user()->id;
+
         $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
 
         $milkman_name = $request->input('milkman_name');
@@ -431,7 +434,12 @@ class DSStatistics extends Controller
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         
         $milkman_delivers = array();
-        $milkman_info = MilkMan::where('name','LIKE','%'.$milkman_name.'%')->where('number','LIKE','%'.$milkman_number.'%')->get(['id']);
+
+        $milkman_info = MilkMan::where('station_id', $current_station_id)
+            ->where('name','LIKE','%'.$milkman_name.'%')
+            ->where('number','LIKE','%'.$milkman_number.'%')
+            ->get(['id']);
+
         foreach ($milkman_info as $key=>$mi) {
             $milkmandelivery_plans = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('milkman_id', $mi->id)->wherebetween('deliver_at', [$start_date, $end_date])->
             where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();

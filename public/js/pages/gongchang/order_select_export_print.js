@@ -331,11 +331,13 @@ $('body').on('click', '#order_table tbody tr', function () {
     //weiqinai, zanting
     var url = url1 + order_id;
 
-    if(at_page == 'daishenhe' || at_page == "quanbu" && status == "1")
+    alert(status);
+
+    if (at_page == 'daishenhe' || at_page == "quanbu" && (status == "1" || status == "8"))
     {
         url = url3+order_id;
-
-    } else if( at_page == "xudan")
+    }
+    else if( at_page == "xudan")
     {
         url =url2+order_id;
     }

@@ -1,3 +1,5 @@
+var gbIsEdit = false;
+
 $(document).ready(function () {
     //Web Camera: this should be here
     Webcam.set({
@@ -74,6 +76,13 @@ $(document).ready(function () {
         set_avg_count(this);
     });
 
+    // 判断订单录入或修改
+    if ($('.current_total_sp').length > 0) {
+        gbIsEdit = true;
+    }
+    else {
+        gbIsEdit = false;
+    }
 });
 
 //Show Camera function
@@ -248,6 +257,10 @@ function check_input_empty_for_one_product(tr) {
 
 //get Total Order statics under the product table
 function get_order_statics() {
+
+    var fRemainCost;
+    var fCurrentCost = parseFloat($('.current_total_sp').html());
+
     var pamounts = $('#product_table tbody tr.one_product input.one_p_amount');
 
     var gos = 0;
@@ -256,12 +269,19 @@ function get_order_statics() {
         gos += parseInt($(pa).val());
     }
 
-    var remaining = $('#remaining').val();
-    var acceptable_amount = gos - remaining;
-
     $('#total_amount').val(gos);
-    $('#acceptable_amount').val(acceptable_amount);
 
+    // 修改订单
+    if (gbIsEdit) {
+        fRemainCost = fCurrentCost - gos;
+        $('#remaining_after').val(fRemainCost);
+    }
+    // 录入订单
+    else {
+        fRemainCost = $('#remaining').val();
+        var acceptable_amount = gos - fRemainCost;
+        $('#acceptable_amount').val(acceptable_amount);
+    }
 }
 
 //Reset Order Statics
@@ -352,7 +372,10 @@ $('body').on('change', 'select.order_delivery_type', function () {
 
 $('body').on('change', '#product_table tbody tr.one_product select.order_product_id', function () {
     var tr = $(this).closest('.one_product');
-    $(tr).find('.factory_order_type').trigger('change');
+    // $(tr).find('.factory_order_type').trigger('change');
+
+    // 重新计算价格和单数
+    calculate_current_product_value(tr);
     set_avg_count(tr);
 });
 
@@ -494,20 +517,12 @@ function initStartDateCalendar() {
         startDate: dateStart
     });
 
-    // 修改要改成以保存的
     $('.single_date').each(function () {
         var input = $(this).find('.start_at');
 
-        if ($(input).val().length > 0) {
+        // 修改要改成以保存的
+        if (gbIsEdit && $(input).val().length > 0) {
             $(this).datepicker('setDate', new Date($(input).val()));
-
-            // 已选好的起送日期不能改
-            // $(this).datepicker().on('show', function(e){
-            //     $('.day').click(function(event) {
-            //         event.preventDefault();
-            //         event.stopPropagation();
-            //     });
-            // });
         }
         else {
             // 默认选择第一天

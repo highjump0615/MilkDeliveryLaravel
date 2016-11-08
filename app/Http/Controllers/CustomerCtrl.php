@@ -64,7 +64,8 @@ class CustomerCtrl extends Controller
             $state = "多态";
         }
         elseif (count($customer_orders)==1){
-            if($customer_orders->first()->status == Order::ORDER_WAITING_STATUS){
+            if ($customer_orders->first()->status == Order::ORDER_WAITING_STATUS ||
+                $customer_orders->first()->status == Order::ORDER_NEW_WAITING_STATUS) {
                 $state = "待审核";
             }
             elseif ($customer_orders->first()->status == Order::ORDER_PASSED_STATUS){
@@ -76,7 +77,8 @@ class CustomerCtrl extends Controller
             elseif ($customer_orders->first()->status == Order::ORDER_STOPPED_STATUS){
                 $state = "暂停";
             }
-            elseif ($customer_orders->first()->status == Order::ORDER_NOT_PASSED_STATUS){
+            elseif ($customer_orders->first()->status == Order::ORDER_NOT_PASSED_STATUS ||
+                    $customer_orders->first()->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
                 $state = "未通过";
             }
             elseif ($customer_orders->first()->status == Order::ORDER_CANCELLED_STATUS){

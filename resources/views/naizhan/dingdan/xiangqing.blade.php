@@ -42,8 +42,11 @@
                 </div>
                 <div class="feed-element col-md-4 col-md-offset-4">
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS
-                    || $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NEW_NOT_PASSED_STATUS)
+
                         <a href="{{URL::to('/naizhan/dingdan/xiugai/'.$order->id)}}"
                            class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
                     @endif
@@ -231,7 +234,7 @@
                                     <td>{{$i+1}}</td>
                                     <td>{{$gpp['time']}}</td>
                                     <td>{{$gpp['product_name']}}</td>
-                                    @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED || $order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
+                                    @if ($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED || $order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
                                         <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
                                     @else
                                         <td>

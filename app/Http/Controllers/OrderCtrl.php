@@ -2126,18 +2126,16 @@ class OrderCtrl extends Controller
     private $factory;
     private $order_property;
     private $province;
-    private $order_checkers;
     private $products;
     private $factory_order_types;
     private $order_delivery_types;
     private $product_count_on_fot;
     private $delivery_stations;
-    private $gap_day;
 
     /**
      * 初始化奶厂订单参数
      */
-    private function initFactoryPage() {
+    private function initShowFactoryPage() {
         $fuser = Auth::guard('gongchang')->user();
         $factory_id = $fuser->factory_id;
         $this->factory = Factory::find($factory_id);
@@ -2147,7 +2145,6 @@ class OrderCtrl extends Controller
         $this->products = $this->factory->active_products;
         $this->factory_order_types = $this->factory->factory_order_types;
         $this->order_delivery_types = $this->factory->order_delivery_types;
-
         $this->delivery_stations = $this->factory->active_stations;//get only active stations
 
         $this->province = Address::where('level', 1)->where('factory_id', $factory_id)
@@ -2158,34 +2155,43 @@ class OrderCtrl extends Controller
             $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
             array_push($this->product_count_on_fot, $pcof);
         }
-        //get gap day
-        $this->gap_day = $this->factory->gap_day;
+    }
+
+    /**
+     * 查询初始化订单录入页面需要的征订员信息
+     * @param $order
+     * @return 征订员列表
+     */
+    private function initShowOrderChecker($order) {
+        // 征订员信息，奶站或奶厂的征订员
+        $order_checkers = null;
+        if ($order->order_checker->station) {
+            $order_checkers = $order->order_checker->station->all_order_checkers;
+        }
+        else {
+            $order_checkers = $this->factory->ordercheckers;
+        }
+
+        return $order_checkers;
     }
 
     //show xiugai order page in gongchang
     public
     function show_order_revise_in_gongchang($order_id)
     {
-        $this->initFactoryPage();
+        $this->initShowFactoryPage();
 
         $order = Order::find($order_id);
 
-        $payment_types = PaymentType::get()->all();
-
-        $this->order_checkers = $order->deliveryStation->all_order_checkers;
+        $order_checkers = $this->initShowOrderChecker($order);
 
         $customer = $order->customer;
         $milkman = $order->milkman;
-        if (!$milkman) {
-            $milkman_id = $customer->milkman_id;
-            $milkman = MilkMan::find($milkman_id);
-        }
 
         $order_products = $order->order_products;
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
 
         // 解析收货地址
-        $address = explode(' ', $order->address);
+        $order->resolveAddress();
 
         $child = '';
         $parent = 'dingdan';
@@ -2193,27 +2199,32 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.dingdan.dingdanluru.dingdanxiugai', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'factory' => $this->factory,
-            'address' => $address,
-            'order_property' => $this->order_property,
-            'payment_types' => $payment_types,
-            'customer' => $customer,
-            'milkman' => $milkman,
-            'grouped_plans_per_product' => $grouped_plans_per_product,
-            'order_products' => $order_products,
-            'products' => $this->products,
-            'factory_order_types' => $this->factory_order_types,
-            'products_count_on_fot' => $this->product_count_on_fot,
-            'order_delivery_types' => $this->order_delivery_types,
-            'order_checkers' => $this->order_checkers,
-            'delivery_stations' => $this->delivery_stations,
-            'province' => $this->province,
-            'gap_day' => $this->gap_day,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 是否修改订单
+            'is_edit'                   => true,
+
+            // 录入订单基础信息
+            'order_property'            => $this->order_property,
+            'province'                  => $this->province,
+            'order_checkers'            => $order_checkers,
+            'products'                  => $this->products,
+            'factory_order_types'       => $this->factory_order_types,
+            'order_delivery_types'      => $this->order_delivery_types,
+            'products_count_on_fot'     => $this->product_count_on_fot,
+            'delivery_stations'         => $this->delivery_stations,
+            'gap_day'                   => $this->factory->gap_day,
+            'remain_amount'             => 0,
+
+            // 初始化录入页面
+            'order'                     => $order,
+            'order_products'            => $order_products,
+            'customer'                  => $customer,
+            'milkman'                   => $milkman
         ]);
     }
 
@@ -3200,10 +3211,19 @@ class OrderCtrl extends Controller
     function insert_order_in_gongchang(Request $request)
     {
         if ($request->ajax()) {
+
+            $order = null;
+
             //factory id
             $fuser = Auth::guard('gongchang')->user();
             $factory_id = $fuser->factory_id;
             $factory = Factory::find($factory_id);
+
+            // 录入订单还是修改订单
+            $order_id = $request->input('order_id');
+            if ($order_id) {
+                $order = Order::find($order_id);
+            }
 
             //init
             $milk_card_id = null;
@@ -3302,8 +3322,20 @@ class OrderCtrl extends Controller
                 ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10))
                 return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
 
+            // 状态, 默认是审核订单
+            $status = Order::ORDER_WAITING_STATUS;
+            
+            // 新订单未通过和新订单录入，是审核新订单
+            if ($order) {
+                if ($order->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
+                    $status = Order::ORDER_NEW_WAITING_STATUS;
+                }
+            }
+            else {
+                $status = Order::ORDER_NEW_WAITING_STATUS;
+            }
+
             //other data
-            $status = Order::ORDER_NEW_WAITING_STATUS;
             $trans_check = 0;
             $ordered_at = $today;
             $delivery_station_id = $request->input('station');
@@ -3311,7 +3343,9 @@ class OrderCtrl extends Controller
             //flatenter mode: default 2 -> call
             $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
 
-            $order = new Order;
+            if (!$order) {
+                $order = new Order;
+            }
             $order->factory_id = $factory_id;
             $order->customer_id = $customer_id;
             $order->phone = $phone;
@@ -3360,12 +3394,17 @@ class OrderCtrl extends Controller
                 $milk_card->save();
             }
 
-
-            $order_id = $order->id;
-            $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order_id);
-            //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
-            $order->save();
-
+            // 订单修改要删除以前的配送明细和奶品信息
+            if ($order_id) {
+                $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
+            }
+            // 新订单生成订单编号
+            else {
+                $order_id = $order->id;
+                $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order_id);
+                //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
+                $order->save();
+            }
 
             //save order products
             $count = count($request->input('order_product_id'));
@@ -3393,7 +3432,7 @@ class OrderCtrl extends Controller
 
                 $op->count_per_day = $request->input('order_product_count_per')[$i];
 
-                if ($delivery_type == "1" || $delivery_type == "2") {   // 天天送、隔日送
+                if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
 //                    $op->count_per_day = $request->input('order_product_count_per')[$i];
                 }
                 else {
@@ -3439,8 +3478,7 @@ class OrderCtrl extends Controller
             //Caiwu Related
 
             //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
-
-            if (!$order_by_milk_card) {
+            if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
                 $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
                 $station->save();
 
@@ -3464,8 +3502,8 @@ class OrderCtrl extends Controller
             }
             else {
                 //add card amount remained to customer account
-                $customer->remain_amount += $remain_from_card;
-                $customer->save();
+//                $customer->remain_amount += $remain_from_card;
+//                $customer->save();
             }
 
             return response()->json(['status' => 'success', 'order_id' => $order_id]);
@@ -3718,7 +3756,7 @@ class OrderCtrl extends Controller
         }
     }
 
-//show detial of every order, especially after saved order
+    //show detial of every order, especially after saved order
     function show_detail_order_in_gongchang($order_id)
     {
         $fuser = Auth::guard('gongchang')->user();
@@ -3727,12 +3765,9 @@ class OrderCtrl extends Controller
 
         //check this order is current factory's order
         $order = Order::find($order_id);
-
         $order_products = $order->order_products;
 
         $grouped_plans_per_product = $order->grouped_plans_per_product;
-
-        $gap_day = $factory->gap_day;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -3740,18 +3775,21 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.dingdan.dingdanluru.xiangqing', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_products' => $order_products,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 订单内容
+            'order'                     => $order,
+            'order_products'            => $order_products,
             'grouped_plans_per_product' => $grouped_plans_per_product,
-            'gap_day' => $gap_day,
+            'gap_day'                   => $factory->gap_day
         ]);
     }
 
-//show detail of order in naizhan
+    //show detail of order in naizhan
     function show_detail_order_in_naizhan($order_id)
     {
         $station = Auth::guard('naizhan')->user();
@@ -3788,9 +3826,9 @@ class OrderCtrl extends Controller
     public
     function show_insert_order_page_in_gongchang()
     {
-        $this->initFactoryPage();
+        $this->initShowFactoryPage();
 
-        $this->order_checkers = $this->factory->ordercheckers;
+        $order_checkers = $this->factory->ordercheckers;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -3798,19 +3836,26 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.dingdan.dingdanluru', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order_property' => $this->order_property,
-            'province' => $this->province,
-            'order_checkers' => $this->order_checkers,
-            'products' => $this->products,
-            'factory_order_types' => $this->factory_order_types,
-            'order_delivery_types' => $this->order_delivery_types,
+            // 菜单关联信息
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            // 是否修改订单
+            'is_edit'               => false,
+
+            // 录入订单基础信息
+            'order_property'        => $this->order_property,
+            'province'              => $this->province,
+            'order_checkers'        => $order_checkers,
+            'products'              => $this->products,
+            'factory_order_types'   => $this->factory_order_types,
+            'order_delivery_types'  => $this->order_delivery_types,
             'products_count_on_fot' => $this->product_count_on_fot,
-            'delivery_stations' => $this->delivery_stations,
-            'gap_day' => $this->gap_day,
+            'delivery_stations'     => $this->delivery_stations,
+            'gap_day'               => $this->factory->gap_day,
+            'remain_amount'         => 0
         ]);
     }
 
@@ -3905,6 +3950,19 @@ class OrderCtrl extends Controller
             $addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu . ' ' . $sub_addr;
             $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
 
+            //select avaiable one station and milkman
+            $station_milkman = $this->get_station_milkman_with_address_from_factory($factory_id, $d_addr);
+
+            if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
+                return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
+            }
+            else if ($station_milkman == $this::NOT_EXIST_STATION) {
+                return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
+            }
+            else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
+                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+            }
+
             $ext_customer = Customer::where('phone', $phone)->where('factory_id', $factory_id)->get()->first();
 
             if ($ext_customer) {
@@ -3916,6 +3974,7 @@ class OrderCtrl extends Controller
                         $remain_amount = $ext_customer->remain_amount;
                     else
                         $remain_amount=0;
+
                     $station_id = $ext_customer->station_id;
                     $milkman_id = $ext_customer->milkman_id;
                     $station = DeliveryStation::find($station_id);
@@ -3923,10 +3982,17 @@ class OrderCtrl extends Controller
                     $ext_customer->is_deleted = 0;
                     $ext_customer->name = $name;
                     $ext_customer->save();
-                    return response()->json(['status' => 'success', 'customer_id' => $id, 'station_name' => $station_name,
-                        'station_id' => $station_id, 'milkman_id' => $milkman_id, 'remain_amount' => $remain_amount]);
 
-                } else {
+                    return response()->json([
+                        'status'        => 'success',
+                        'customer_id'   => $id,
+                        'station_name'  => $station_name,
+                        'station_id'    => $station_id,
+                        'milkman_id'    => $milkman_id,
+                        'remain_amount' => $remain_amount
+                    ]);
+                }
+                else {
                     //this customer has changed the address, so change ths station
                     $ext_customer->milkman_id = null;
                     $ext_customer->address = $addr;
@@ -3935,18 +4001,6 @@ class OrderCtrl extends Controller
                     $ext_customer->save();
                 }
             }
-
-            //select avaiable one station and milkman
-            $station_milkman = $this->get_station_milkman_with_address_from_factory($factory_id, $d_addr);
-
-            if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
-                return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
-            } else if ($station_milkman == $this::NOT_EXIST_STATION) {
-                return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-            } else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
-            }
-
 
             foreach ($station_milkman as $delivery_station_id => $milkman_id) {
                 $station = DeliveryStation::find($delivery_station_id);
@@ -3964,10 +4018,17 @@ class OrderCtrl extends Controller
                     else
                         $remain_amount=0;
 
-                    return response()->json(['status' => 'success', 'customer_id' => $id, 'station_name' => $station_name,
-                        'station_id' => $delivery_station_id, 'milkman_id' => $milkman_id, 'remain_amount' => $remain_amount]);
+                    return response()->json([
+                        'status'        => 'success',
+                        'customer_id'   => $id,
+                        'station_name'  => $station_name,
+                        'station_id'    => $delivery_station_id,
+                        'milkman_id'    => $milkman_id,
+                        'remain_amount' => $remain_amount
+                    ]);
 
-                } else {
+                }
+                else {
                     $customer = new Customer;
                     $customer->name = $name;
                     $customer->phone = $phone;
@@ -3981,9 +4042,15 @@ class OrderCtrl extends Controller
                     $customer->save();
                     $id = $customer->id;
                     $remain_amount = 0;
-                    return response()->json(['status' => 'success', 'customer_id' => $id, 'station_name' => $station_name,
-                        'station_id' => $delivery_station_id, 'milkman_id' => $milkman_id, 'remain_amount' => $remain_amount]);
 
+                    return response()->json([
+                        'status'        => 'success',
+                        'customer_id'   => $id,
+                        'station_name'  => $station_name,
+                        'station_id'    => $delivery_station_id,
+                        'milkman_id'    => $milkman_id,
+                        'remain_amount' => $remain_amount
+                    ]);
                 }
             }
         }
@@ -4197,8 +4264,12 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->where('status', Order::ORDER_NOT_PASSED_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->where(function($query) {
+                $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
+                $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
         $child = 'weitongguodingdan';
         $parent = 'dingdan';
@@ -4391,44 +4462,28 @@ class OrderCtrl extends Controller
     public
     function show_xudan_dingdan_in_gongchang($order_id)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-        $factory = Factory::find($factory_id);
-
-        $order_checkers = $factory->ordercheckers;
-        $products = $factory->active_products;
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-        $delivery_stations = $factory->active_stations;//get only active stations
-
-        $order_property = OrderProperty::all();
-
-        $province = Address::where('level', 1)
-            ->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)
-            ->orderBy('id', 'desc')->get();
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
-        //get gap day
-        $gap_day = $factory->gap_day;
+        $this->initShowFactoryPage();
 
         $order = Order::find($order_id);
         if (!$order) {
             return;
         }
 
-        $customer = $order->customer;
+        $order_checkers = $this->initShowOrderChecker($order);
 
-        if($customer->has_not_order)
+        $customer = $order->customer;
+        $milkman = $order->milkman;
+
+        // 账户余额，只能把所有订单结束了之后才能用
+        $remain_amount = 0;
+        if ($customer->has_not_order) {
             $remain_amount = $customer->remain_amount;
-        else
-            $remain_amount=0;
+        }
 
         $order_products = $order->order_products;
+
+        // 解析收货地址
+        $order->resolveAddress();
 
         $child = 'xudanliebiao';
         $parent = 'dingdan';
@@ -4436,23 +4491,32 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.dingdan.dingdanluru.xudan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_property' => $order_property,
-            'province' => $province,
-            'order_checkers' => $order_checkers,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'order_delivery_types' => $order_delivery_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'delivery_stations' => $delivery_stations,
-            'customer' => $customer,
-            'order_products' => $order_products,
-            'gap_day' => $gap_day,
-            'remain_amount'=>$remain_amount,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 是否修改订单
+            'is_edit'                   => false,
+
+            // 录入订单基础信息
+            'order_property'            => $this->order_property,
+            'province'                  => $this->province,
+            'order_checkers'            => $order_checkers,
+            'products'                  => $this->products,
+            'factory_order_types'       => $this->factory_order_types,
+            'order_delivery_types'      => $this->order_delivery_types,
+            'products_count_on_fot'     => $this->product_count_on_fot,
+            'delivery_stations'         => $this->delivery_stations,
+            'gap_day'                   => $this->factory->gap_day,
+            'remain_amount'             => $remain_amount,
+
+            // 初始化录入页面
+            'order'                     => $order,
+            'order_products'            => $order_products,
+            'customer'                  => $customer,
+            'milkman'                   => $milkman
         ]);
     }
 
@@ -4688,7 +4752,8 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('status', Order::ORDER_WAITING_STATUS)
             ->where('factory_id', $factory_id)
-            ->orderBy('id', 'desc')->get();//add time condition
+            ->orderBy('id', 'desc')
+            ->get();//add time condition
 
 
         $child = 'daishenhedingdan';
@@ -4839,7 +4904,12 @@ class OrderCtrl extends Controller
         // 只显示本站录入的订单
         $orders = Order::where('is_deleted', "0")
             ->where('station_id', $station_id)
-            ->where('status', Order::ORDER_WAITING_STATUS)->orderBy('id', 'desc')->get();
+            ->where(function($query) {
+                $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
+                $query->orWhere('status', Order::ORDER_WAITING_STATUS);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
         $child = 'daishenhe';
         $parent = 'dingdan';
@@ -5120,6 +5190,11 @@ class OrderCtrl extends Controller
                 $order->remaining_amount = 0;
                 $order->save();
 
+                // 把订单余额加到配送信用余额和结算账户
+                $order->station->calculation_balance += $remain_amount;
+                $order->station->delivery_credit_balance += $remain_amount;
+                $order->station->save();
+
 
                 //add order's remain amount to customer account's remain amount
 //                if ($remain_amount > 0) {
@@ -5154,14 +5229,18 @@ class OrderCtrl extends Controller
         $parent = 'dingdan';
         $current_page = 'daishenhe-dingdanxiangqing';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         return view('gongchang.dingdan.daishenhedingdan.daishenhe-dingdanxiangqing', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_products' => $order_products,
-            'grouped_plans_per_product' => $grouped_plans_per_product,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 订单内容
+            'order'                     => $order,
+            'order_products'            => $order_products,
+            'grouped_plans_per_product' => $grouped_plans_per_product
         ]);
     }
 
