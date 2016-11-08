@@ -1,7 +1,8 @@
 @extends('weixin.layout.master')
 @section('title','填写收货地址')
 @section('css')
-
+    <link rel="stylesheet" href="<?=asset('weixin/css/city-picker.css')?>">
+    <link rel="stylesheet" href="<?=asset('weixin/css/city-main.css')?>">
 @endsection
 @section('content')
     <header>
@@ -10,30 +11,58 @@
     </header>
 
     <div class="addrbox">
-        <ul class="adrul">
-            <li>
-                <label>收货人：</label><input name="" type="text">
-            </li>
-            <li>
-                <label>电话：</label><input name="" type="text">
-            </li>
-            <li>
-                <label>所在地区：</label><a class="adrxz" href="javascript:void(0);">请选择</a>
-            </li>
-            <li>
-                <label>门牌号：</label><input name="" type="text" placeholder="如：7-3-503">
-            </li>
+        <form method="post" action="{{url('/weixin/dizhitianxie')}}">
+            <input type="hidden" name="wxuser_id" value="{{$wxuser_id}}">
+            @if(isset($address_id))
+            <input type="hidden" name="address_id" value="{{$address_id}}">
+            @endif
+            <ul class="adrul">
+                <li>
+                    <label>收货人：</label><input name="name" type="text" value="{{$name}}">
+                </li>
+                <li>
+                    <label>电话：</label><input name="phone" type="text" value="{{$phone}}">
+                </li>
+                <li>
+                    <div style="position: relative;">
+                        <span>所在地区：</span>
+                        <div style="display: inline-block; ">
+                            <input id="city-picker3" name="address" class="form-control" readonly type="text"
+                                   value="{{$address}}" data-toggle="city-picker">
+                        </div>
+                    </div>
 
-            <li>
-                <label>设为默认地址：</label>
+
+                </li>
+                <li>
+                    <label>门牌号：</label><input name="sub_address" type="text" placeholder="如：7-3-503"
+                                              value="{{$sub_address}}">
+                </li>
+
+                <li>
+                    <label>设为默认地址：</label>
                 <span class='tg-list-item'>
-                <input class='tgl tgl-ios' id='cb2' type='checkbox'>
+                <input name="primary" class='tgl tgl-ios' id='cb2' type='checkbox'
+                       @if($primary)
+                       checked
+                        @endif
+                >
                 <label class='tgl-btn' for='cb2'></label>
                 </span>
-            </li>
-        </ul>
-        <a class="ordqr" href="天天送.html">确认</a>
+                </li>
+            </ul>
+
+            <input type="submit" class="ordqr" value="确认">
+        </form>
     </div>
 @endsection
 @section('script')
+    <script type="text/javascript">
+        <?php
+        $avail = json_encode($address_list);
+        echo "var ChineseDistricts = " . $avail;
+        ?>
+    </script>
+    <script src="<?=asset('weixin/js/city-picker.js')?>"></script>
+    <script src="<?=asset('weixin/js/city-main.js')?>"></script>
 @endsection

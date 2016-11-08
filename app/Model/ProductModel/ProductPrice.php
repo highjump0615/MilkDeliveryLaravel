@@ -22,12 +22,22 @@ class ProductPrice extends Model
 	public $timestamps = false;
 
     public static function priceTemplateFromAddress($product_id, $target_address) {
+        
         $tar_addrs = explode(" ", $target_address);
 
-        if(count($tar_addrs)<3)
+        $count = count($tar_addrs);
+
+        if( $count < 2 )
             return null;
 
-        $district = $tar_addrs[0]." ".$tar_addrs[1]." ".$tar_addrs[2];
+        if($count == 2)
+        {
+            $district = $tar_addrs[0]." ".$tar_addrs[1];
+        } else if($count >= 3)
+        {
+            $district = $tar_addrs[0]." ".$tar_addrs[1]." ".$tar_addrs[2];
+        }
+
         $candidates = ProductPrice::where('product_id', $product_id)->where('sales_area', 'like', '%'.$district.'%')->get();
 
         foreach($candidates as $pp) {
@@ -35,10 +45,9 @@ class ProductPrice extends Model
             foreach($addresses as $address) {
                 $addr_parts = explode(' ', $address);
 
-                if($tar_addrs[0] == $addr_parts[0] &&
-                    $tar_addrs[1] == $addr_parts[1] &&
-                    $tar_addrs[2] == $addr_parts[2]
-                ) {
+                if($count >=3 && $tar_addrs[0] == $addr_parts[0] && $tar_addrs[1] == $addr_parts[1] && $tar_addrs[2] == $addr_parts[2] ) {
+                    return $pp;
+                } else if($count == 2 && $tar_addrs[0] == $addr_parts[0] && $tar_addrs[1] == $addr_parts[1]){
                     return $pp;
                 }
             }
@@ -46,4 +55,5 @@ class ProductPrice extends Model
 
         return null;
     }
+
 }

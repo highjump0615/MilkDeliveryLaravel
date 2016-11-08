@@ -41,6 +41,7 @@ class Product extends Model
     protected $appends = [
     	'category_name',
         'bottle_type_name',
+        'settle_price'
     ];
 
 	public $timestamps = false;
@@ -73,5 +74,12 @@ class Product extends Model
         $bottle_type = FactoryBottleType::find($this->bottle_type);
         if($bottle_type)
             return $bottle_type->name;
+    }
+
+    public function getSettlePriceAttribute()
+    {
+        //Todo
+        //ProductPrice::where('product_id', $this->id)->where('sales_area', )
+         return 6.8;
     }
 }

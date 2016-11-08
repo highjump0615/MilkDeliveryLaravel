@@ -182,7 +182,7 @@ class DeliveryStation extends Authenticatable
         $total2 = $this->getSumOfOrders($this->wechat_orders_really_got);
         $total3 = $this->getSumOfOrders($this->card_orders_really_got);
         $total4 = $this->getSumOfOrders($this->other_orders_really_got);
-        $total = $total1+$total2+$total3+$total4;
+        $total = round($total1+$total2+$total3+$total4, 2);
         return $total;
     }
 

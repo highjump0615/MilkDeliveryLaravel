@@ -1,7 +1,7 @@
 @extends('weixin.layout.master')
-@section('title', '投诉建议');
+@section('title', '投诉建议')
+
 @section('css')
-    <link rel="stylesheet" href="css/swiper.min.css">
     <style>
         .swiper-container {
             width: 100%;
@@ -49,10 +49,8 @@
         }
 
     </style>
-
-
-
 @endsection
+
 @section('content')
 
     <div class="top">
@@ -70,7 +68,8 @@
                         </div>
                     @else
                         <div class="swiper-slide">
-                            <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id)}}" onclick="">{{$c->name}}</a></div>
+                            <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id)}}"
+                                    onclick="">{{$c->name}}</a></div>
                         </div>
                     @endif
                 @endforeach
@@ -78,31 +77,36 @@
         </div>
     </div>
 
-    @foreach($products as $p)
-        @if($p->category == $category)
-            <dl class="pr_dl">
-                <img src="<?=asset('/img/product/logo/', $p->photo_url1)?>">
-                <dt>{{$p->name}}</dt>
-                <dd>包装：</dd>
-                <dd>储存条件：</dd>
-                <dd><b>￥4.8</b></dd>
-
-            </dl>
-        @endif
-    @endforeach
+    @if(isset($products))
+        @foreach($products as $p)
+            @if($p->category == $category)
+                <dl class="pr_dl">
+                    <a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
+                        <img src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                    </a>
+                    <dt>{{$p->name}}</dt>
+                    <dd>包装：{{$p->bottle_type_name}}</dd>
+                    <dd>储存条件：{{$p->guarantee_req}}</dd>
+                    <dd><b>￥{{$p->settle_price}}</b></dd>
+                </dl>
+            @endif
+        @endforeach
+    @endif
 
     @include('weixin.layout.footer')
 @endsection
 
 @section('script')
-    <script src="js/swiper.min.js"></script>
     <script>
         var swiper = new Swiper('.swiper-container', {
             spaceBetween: 30,
             slidesPerView: 4,
             freeMode: true,
         });
-    </script>
 
-    <script src='js/moment.min.js'></script>
+        var current_menu = 1;
+        $(document).ready(function(){
+            set_current_menu();
+        });
+    </script>
 @endsection

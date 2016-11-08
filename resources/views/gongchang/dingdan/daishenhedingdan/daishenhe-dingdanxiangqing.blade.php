@@ -86,7 +86,9 @@
             </div>
             <div class="feed-element col-md-12">
                 <div class="col-md-offset-2">
-                    <img id="ticket" src="<?=asset('img/order/' . $order->receipt_path)?>" class="img-responsive"/>
+                    @if($order->receipt_path)
+                        <img id="ticket" src="<?=asset('img/order/' . $order->receipt_path)?>" class="img-responsive"/>
+                    @endif
                 </div>
             </div>
 
@@ -181,11 +183,11 @@
                 <table class="footable table table-bordered" data-page-size="10">
                     <thead>
                     <tr>
-                       <th data-sort-ignore="true">序号</th>
-                       <th data-sort-ignore="true">配送时间</th>
-                       <th data-sort-ignore="true">奶品</th>
-                       <th data-sort-ignore="true">数量</th>
-                       <th data-sort-ignore="true">状态</th>
+                        <th data-sort-ignore="true">序号</th>
+                        <th data-sort-ignore="true">配送时间</th>
+                        <th data-sort-ignore="true">奶品</th>
+                        <th data-sort-ignore="true">数量</th>
+                        <th data-sort-ignore="true">状态</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -201,7 +203,7 @@
                                         <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
                                     @else
                                         <td>
-                                            <label > {{$gpp['count']}}(余{{$gpp['remain']}})</label>
+                                            <label> {{$gpp['count']}}(余{{$gpp['remain']}})</label>
                                         </td>
                                     @endif
                                     <td>{{$gpp['status_name']}}</td>
@@ -243,7 +245,7 @@
                         if (data.message) {
                             show_success_msg(data.message);
                         }
-                        window.location = SITE_URL+"gongchang/dingdan/daishenhedingdan";
+                        window.location = SITE_URL + "gongchang/dingdan/daishenhedingdan";
                     } else {
                         if (data.message) {
                             show_warning_msg(data.message);
@@ -271,7 +273,7 @@
                         if (data.message) {
                             show_success_msg(data.message);
                         }
-                        window.location = SITE_URL+"gongchang/dingdan/daishenhedingdan";
+                        window.location = SITE_URL + "gongchang/dingdan/daishenhedingdan";
                     } else {
                         if (data.message) {
                             show_warning_msg(data.message);
@@ -295,7 +297,7 @@
             var new_sub_addr = $('#sub_addr').val().trim();
             var origin_sub_addr = $('#sub_addr').data('origin');
 
-            var order_id =$('#pass_order').data('orderid');
+            var order_id = $('#pass_order').data('orderid');
 
             if (new_sub_addr != origin_sub_addr) {
                 //submit new name
@@ -307,23 +309,21 @@
                         'new_sub_addr': new_sub_addr,
                         'order_id': order_id,
                     },
-                    success:function(data){
+                    success: function (data) {
 
-                        if(data.status == "success")
-                        {
+                        if (data.status == "success") {
                             $('#save_sub_addr').hide();
                             $('#change_sub_addr').show();
                             $('#sub_addr').prop('disabled', true);
                         } else {
-                            if(data.message)
-                            {
+                            if (data.message) {
                                 show_warning_msg(data.message);
                                 $('#sub_addr').val(origin_sub_addr);
                                 $('#sub_addr').prop('disabled', true);
                             }
                         }
                     },
-                    error: function(data){
+                    error: function (data) {
                         console.log(data);
                     }
                 })

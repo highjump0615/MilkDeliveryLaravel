@@ -24,10 +24,15 @@
 
       <div class="evali pa2">
 
-            <div class="start"><b>整体评价</b><span></span> <span></span> <span></span> <span></span> <span class="nostart"></span> </div>
+            <div class="start"><b>整体评价</b>
+                  <span @if($marks < 1) class="nostart" @endif></span>
+                  <span @if($marks < 2) class="nostart" @endif></span>
+                  <span @if($marks < 3) class="nostart" @endif></span>
+                  <span @if($marks < 4) class="nostart" @endif></span>
+                  <span @if($marks < 5) class="nostart" @endif></span>
+            </div>
             <div class="evaxx">
-                  &nbsp;&nbsp;&nbsp;&nbsp;快递员很准时每天都有按时送达，牛奶很好很，味道很鲜美，足不
-                  出户就能喝到这木新鲜的牛奶感觉真是好极了。
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{$content}}
             </div>
       </div>
 

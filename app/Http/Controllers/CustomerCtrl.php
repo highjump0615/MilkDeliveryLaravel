@@ -96,7 +96,7 @@ class CustomerCtrl extends Controller
         $child = 'kehudangan';
         $parent = 'kehu';
         $current_page = 'kehudangan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $customers = Customer::where('is_deleted','<>',1)->where('station_id',$current_station_id)->get();
         foreach ($customers as $cu){
             $addr = explode(" ",$cu->address);

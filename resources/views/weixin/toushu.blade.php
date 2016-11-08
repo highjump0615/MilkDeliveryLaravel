@@ -13,13 +13,13 @@
 
 
     <ul class="tsjy_ul">
-        <li><span>010-222-112</span>客服电话：</li>
+        <li><span>{{$phone1}}</span>客服电话：</li>
 
-        <li><span>010-222-112</span>投诉电话：</li>
+        <li><span>{{$phone2}}</span>投诉电话：</li>
     </ul>
 
 
-    @include('weixin.layout.footer');
+    @include('weixin.layout.footer')
 
 
 @endsection

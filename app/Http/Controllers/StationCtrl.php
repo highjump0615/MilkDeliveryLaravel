@@ -20,7 +20,7 @@ class StationCtrl extends Controller
         $child = 'jibenziliao';
         $parent = 'naizhan';
         $current_page = 'jibenziliao';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $dsinfo = DeliveryStation::find($current_station_id);
         $billing_bank = Bank::find($dsinfo->billing_bank_id);
         $freepay_bank = Bank::find($dsinfo->freepay_bank_id);

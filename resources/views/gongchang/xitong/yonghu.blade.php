@@ -21,100 +21,100 @@
 				<input type="hidden" id="current_factory_id" value="{{$current_factory_id}}">
 				<div class="ibox-content white-bg vertical-align">
 					<a data-toggle="modal" id="btn-add" class="btn btn-success" href="#modal-form" type="button">添加账号</a>
-                            <div id="modal-form" class="modal fade" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-										<div class="modal-header">
-											<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-											<h4 class="modal-title">新管</h4>
-										</div>
-                                        <div class="modal-body">
-                                            <div class="row">
-                                                <div class="col-sm-12"><h3 class="m-t-none m-b"></h3>                                   
+					<div id="modal-form" class="modal fade" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+									<h4 class="modal-title">新管</h4>
+								</div>
+								<div class="modal-body">
+									<div class="row">
+										<div class="col-sm-12"><h3 class="m-t-none m-b"></h3>
 
-                                                    <form role="form" class="form-horizontal">
-                                                        <div class="form-group"><label class="col-sm-3">登陆名:</label> 
-														<div class="col-sm-9"><input type="" placeholder="" class="form-control" id="username" onKeyup="checkusername(); return false;"></div></div>
-														<div class="form-group"><label class="col-sm-3"></label>
-															<div class="col-sm-9"><span id="userconfirmMessage" class="userconfirmMessage"></span></div></div>
-                                                        <div class="form-group"><label class="col-sm-3">密码:</label> 
-														<div class="col-sm-9"><input type="password" placeholder="" class="form-control" id="password" onKeyup="clearalert();"></div></div>
-														<div class="form-group"><label class="col-sm-3"></label>
-															<div class="col-sm-9"><span id="passwordMessage" class="passwordMessage"></span></div></div>
-														<div class="form-group"><label class="col-sm-3">确认密码:</label>
-														<div class="col-sm-9"><input id="password2" type="password" onKeyup="checkpassword(); return false;" placeholder="" class="form-control"></div></div>
-														<div class="form-group"><label class="col-sm-3"></label>
-															<div class="col-sm-9"><span id="confirmMessage" class="confirmMessage"></span></div></div>
-														<div class="form-group"><label class="col-sm-3">昵称:</label>
-														<div class="col-sm-9"><input type="" placeholder="" class="form-control" id="nickname"></div></div>
-														<div id="permission_info">
-															<div class="form-group"><label class="col-sm-3">账号状态:</label>
-																<div class="col-sm-9">
-																	<div class="input-group">
-																		<select data-placeholder="Choose a Country..." class="chosen-select" style="min-width:365px; height:35px;" id="status">
-																			<option value="1">启用</option>
-																			<option value="0">停用</option>
-																		</select>
-																	</div>
-																</div>
-															</div>
-
-															<div class="form-group"><label class="col-sm-3">角色</label>
-																<div class="col-sm-9">
-																	<div class="input-group">
-																		<select data-placeholder="Choose..." class="chosen-select" style="min-width:365px; height:35px;" id="permission">
-																			@foreach($role_name as $rn)
-																				@if($rn->id != 1)
-																					<option value="{{$rn->id}}">{{$rn->name}}</option>
-																				@endif
-																			@endforeach
-																		</select>
-																	</div>
-																</div>
+											<form role="form" class="form-horizontal">
+												<div class="form-group"><label class="col-sm-3">登陆名:</label>
+													<div class="col-sm-9"><input type="" placeholder="" class="form-control" id="username" onKeyup="checkusername(); return false;"></div></div>
+												<div class="form-group"><label class="col-sm-3"></label>
+													<div class="col-sm-9"><span id="userconfirmMessage" class="userconfirmMessage"></span></div></div>
+												<div class="form-group"><label class="col-sm-3">密码:</label>
+													<div class="col-sm-9"><input type="password" placeholder="" class="form-control" id="password" onKeyup="clearalert();"></div></div>
+												<div class="form-group"><label class="col-sm-3"></label>
+													<div class="col-sm-9"><span id="passwordMessage" class="passwordMessage"></span></div></div>
+												<div class="form-group"><label class="col-sm-3">确认密码:</label>
+													<div class="col-sm-9"><input id="password2" type="password" onKeyup="checkpassword(); return false;" placeholder="" class="form-control"></div></div>
+												<div class="form-group"><label class="col-sm-3"></label>
+													<div class="col-sm-9"><span id="confirmMessage" class="confirmMessage"></span></div></div>
+												<div class="form-group"><label class="col-sm-3">昵称:</label>
+													<div class="col-sm-9"><input type="" placeholder="" class="form-control" id="nickname"></div></div>
+												<div id="permission_info">
+													<div class="form-group"><label class="col-sm-3">账号状态:</label>
+														<div class="col-sm-9">
+															<div class="input-group">
+																<select data-placeholder="Choose a Country..." class="chosen-select" style="min-width:365px; height:35px;" id="status">
+																	<option value="1">启用</option>
+																	<option value="0">停用</option>
+																</select>
 															</div>
 														</div>
-														
-														{{--<div class="form-group"><label class="col-sm-3">分组</label>--}}
-															{{--<div class="col-sm-9">--}}
-																{{--<div class="input-group">--}}
-																{{--<select data-placeholder="Choose..." class="chosen-select" style="min-width:395px; height:35px;" tabindex="2" id="group">--}}
-																{{--<option value="产品分析">产品分析</option>--}}
-																{{--</select>--}}
-																{{--</div>--}}
-															{{--</div>--}}
-														{{--</div>--}}
-														
-                                                    </form>
-                                                </div>
-											</div>
-										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-white" id="btn-save" value="add">确定</button>
-											<button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
-											<input type="hidden" id="user_id" name="user_id" value="0">
-										</div>
-                                    </div>
+													</div>
 
-									<div class="modal-spinner-frame">
-										<div class="modal-spinner">
-											<div class="sk-spinner sk-spinner-circle">
-												<div class="sk-circle1 sk-circle"></div>
-												<div class="sk-circle2 sk-circle"></div>
-												<div class="sk-circle3 sk-circle"></div>
-												<div class="sk-circle4 sk-circle"></div>
-												<div class="sk-circle5 sk-circle"></div>
-												<div class="sk-circle6 sk-circle"></div>
-												<div class="sk-circle7 sk-circle"></div>
-												<div class="sk-circle8 sk-circle"></div>
-												<div class="sk-circle9 sk-circle"></div>
-												<div class="sk-circle10 sk-circle"></div>
-												<div class="sk-circle11 sk-circle"></div>
-												<div class="sk-circle12 sk-circle"></div>
-											</div>
+													<div class="form-group"><label class="col-sm-3">角色</label>
+														<div class="col-sm-9">
+															<div class="input-group">
+																<select data-placeholder="Choose..." class="chosen-select" style="min-width:365px; height:35px;" id="permission">
+																	@foreach($role_name as $rn)
+																		@if($rn->id != 1)
+																			<option value="{{$rn->id}}">{{$rn->name}}</option>
+																		@endif
+																	@endforeach
+																</select>
+															</div>
+														</div>
+													</div>
+												</div>
+
+												{{--<div class="form-group"><label class="col-sm-3">分组</label>--}}
+												{{--<div class="col-sm-9">--}}
+												{{--<div class="input-group">--}}
+												{{--<select data-placeholder="Choose..." class="chosen-select" style="min-width:395px; height:35px;" tabindex="2" id="group">--}}
+												{{--<option value="产品分析">产品分析</option>--}}
+												{{--</select>--}}
+												{{--</div>--}}
+												{{--</div>--}}
+												{{--</div>--}}
+
+											</form>
 										</div>
 									</div>
-                                </div>
-							</div>					
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-white" id="btn-save" value="add">确定</button>
+									<button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+									<input type="hidden" id="user_id" name="user_id" value="0">
+								</div>
+							</div>
+
+							<div class="modal-spinner-frame">
+								<div class="modal-spinner">
+									<div class="sk-spinner sk-spinner-circle">
+										<div class="sk-circle1 sk-circle"></div>
+										<div class="sk-circle2 sk-circle"></div>
+										<div class="sk-circle3 sk-circle"></div>
+										<div class="sk-circle4 sk-circle"></div>
+										<div class="sk-circle5 sk-circle"></div>
+										<div class="sk-circle6 sk-circle"></div>
+										<div class="sk-circle7 sk-circle"></div>
+										<div class="sk-circle8 sk-circle"></div>
+										<div class="sk-circle9 sk-circle"></div>
+										<div class="sk-circle10 sk-circle"></div>
+										<div class="sk-circle11 sk-circle"></div>
+										<div class="sk-circle12 sk-circle"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 				
 <!--User_Admin_Table-->				

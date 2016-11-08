@@ -17,137 +17,14 @@
     <script src="js/jquery-1.10.1.min.js"></script>
     <script src="js/ui/jquery-ui.js"></script>
     <script src='js/moment.min.js'></script>
-    <script src='js/fullcalendar.min.js'></script>
+    <script src="js/mycalendar.js"></script>
+    <script src="js/myweek.js"></script>
     <script type="text/javascript">
+        var calen, week;
         $(function () {
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev',
-                    center: 'title',
-                    right: 'next'
-                },
-                firstDay: 0,
-                editable: true,
-                events: [
-                    {
-                        title: '2',
-                        start: '2016-09-28',
-                        type: 'count',
+            calen = new mycalendar("calendar");
+            week = new myweek("week");
 
-                    },
-                    {
-                        title: 'cls',
-                        start: '2016-09-28',
-                        type: 'clear',
-
-                    },
-                    {
-                        start: '2016-09-28',
-                        rendering: 'background',
-                        color: '#00a040',
-                        type: 'render',
-                    }
-                ],
-                dayClick: function (date, jsEvent, view) {
-                    var events = $('#calendar').fullCalendar('clientEvents');
-                    var calCountEvent = null;
-                    for (var i = 0; i < events.length; i++) {
-                        if (moment(date).isSame(moment(events[i].start))) {
-                            if (events[i].type == "count") {
-                                calCountEvent = events[i];
-                                break;
-                            }
-                        }
-                    }
-                    if (calCountEvent == null) {
-                        var countEvent = new Object();
-                        countEvent.start = date;
-                        countEvent.title = '1';
-                        countEvent.type = 'count';
-
-                        var clearEvent = new Object();
-                        clearEvent.start = date;
-                        clearEvent.title = 'cls';
-                        clearEvent.type = 'clear';
-
-                        var addEventSource = [
-                            {
-                                title: '1',
-                                start: date,
-                                type: 'count',
-
-                            },
-                            {
-                                title: 'cls',
-                                start: date,
-                                type: 'clear',
-
-                            },
-                            {
-                                start: date,
-                                rendering: 'background',
-                                color: '#00a040',
-                                type: 'render',
-                            }
-                        ];
-
-                        $('#calendar').fullCalendar('addEventSource', addEventSource);
-                    }
-                },
-                eventClick: function (calEvent, jsEvent, view) {
-                    if (calEvent.type == "count") {
-                        calEvent.title = parseInt(calEvent.title) + 1;
-                        $('#calendar').fullCalendar('updateEvent', calEvent);
-                    }
-                    else if (calEvent.type == "clear") {
-                        var events = $('#calendar').fullCalendar('clientEvents');
-                        var calCountEvent;
-                        var renderEvent;
-                        for (var i = 0; i < events.length; i++) {
-                            if (moment(calEvent.start).isSame(moment(events[i].start))) {
-                                if (events[i].type == "count") {
-                                    calCountEvent = events[i];
-                                }
-                                else if (events[i].type == "render") {
-                                    renderEvent = events[i];
-                                }
-                            }
-                        }
-                        $('#calendar').fullCalendar('removeEvents', calEvent._id);
-                        $('#calendar').fullCalendar('removeEvents', calCountEvent._id);
-                        $('#calendar').fullCalendar('removeEvents', renderEvent._id);
-                    }
-                }
-
-            });
-            $("table.psgzb td > div").click(function(){
-                if($(this).is(":first-child"))
-                {
-                    $(this).children().html(parseInt($(this).children().html())+1);
-                }
-                else
-                {
-                    $(this).parent().html("");
-                }
-                return false;
-            });
-            $("table.psgzb td").click(function(){
-                if($(this).children().length != 2)
-                {
-                    $(this).html("<div><p>1</p></div><div><p>cls</p></div>");
-                    $(this).children().click(function(){
-                        if($(this).is(":first-child"))
-                        {
-                            $(this).children().html(parseInt($(this).children().html())+1);
-                        }
-                        else
-                        {
-                            $(this).parent().html("");
-                        }
-                        return false;
-                    });
-                }
-            });
             dnsel_changed();
         });
     </script>
@@ -193,34 +70,7 @@
 </div>
 
 <div class="dnsli clearfix dnsel_item" id="dnsel_0_3">
-    <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0">
-        <tr>
-            <th scope="col">周一</th>
-            <th scope="col">周二</th>
-            <th scope="col">周三</th>
-            <th scope="col">周四</th>
-            <th scope="col">周五</th>
-            <th scope="col">周六</th>
-            <th scope="col">周日</th>
-        </tr>
-        <tr height="55px">
-            <td>
-                <div><p>1</p></div>
-                <div><p>cls</p></div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>
-                <div><p>5</p></div>
-                <div><p>cls</p></div>
-            </td>
-            <td>
-                <div><p>5</p></div>
-                <div><p>cls</p></div>
-            </td>
-        </tr>
+    <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
     </table>
 </div>
 
@@ -253,7 +103,9 @@
 
 <div class="dnsel_item" id="dnsel_0_4">
     <div class="clear"></div>
-    <div id='calendar'></div>
+    <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
+
+    </table>
 </div>
 
 <div class="he50"></div>

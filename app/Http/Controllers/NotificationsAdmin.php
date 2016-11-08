@@ -78,7 +78,7 @@ class NotificationsAdmin extends Controller
         $child = 'zhongxin';
         $parent = 'xiaoxi';
         $current_page = 'zhongxin';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $categories = NotificationCategory::where('type',NotificationCategory::TYPE_MILK_STATION)->get();
         $dsnotification = DSNotification::where('station_id',$current_station_id)->orderby('created_at','desc')->get();
         foreach ($dsnotification as $dn){
@@ -98,7 +98,7 @@ class NotificationsAdmin extends Controller
         $child = 'zhongxin';
         $parent = 'xiaoxi';
         $current_page = 'xianqing';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $dsnotifications = DSNotification::find($id);
         $dsnotifications->read = DSNotification::READ_STATUS;
         $dsnotifications->save();

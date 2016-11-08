@@ -918,7 +918,7 @@ class StationManageCtrl extends Controller
         $child = 'jibenziliao';
         $parent = 'naizhan';
         $current_page = 'jibenziliao';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.naizhan.jibenziliao', [
             'pages' => $pages,

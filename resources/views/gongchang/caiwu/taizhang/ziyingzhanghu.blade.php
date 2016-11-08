@@ -35,7 +35,7 @@
                         <label class="title">期初余额</label>
                     </div>
                     <div class="col-md-8">
-                        <label class="gray-bg">{{$station->business_term_start_amount}}</label>
+                        <label class="gray-bg">{{round($station->business_term_start_amount, 2)}}</label>
                     </div>
                     <div class="col-md-4">
                         <label class="title">本期增加</label>

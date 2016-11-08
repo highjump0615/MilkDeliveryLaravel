@@ -44,8 +44,91 @@ $(document).ready(function () {
     });
 
     show_district_list();
-});
 
+
+    $(document).on('click', '.multi_date_week', function(){
+
+        var init_value = $(this).find('input').val();
+
+        $(this).datepicker({
+            multidate: true,
+            todayBtn: false,
+            clearBtn: true,
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: false,
+            showNum: true,
+            startDate: firstday,
+            endDate: lastday,
+            class: 'week_calendar',
+            initValue:init_value,
+        });
+
+
+    });
+
+    // $(document).on('click', '.multi_date_week input', function(){
+    //
+    //     var init_value = $(this).val();
+    //
+    //     $(this).datepicker({
+    //         multidate: true,
+    //         todayBtn: false,
+    //         clearBtn: true,
+    //         keyboardNavigation: false,
+    //         forceParse: false,
+    //         calendarWeeks: false,
+    //         showNum: true,
+    //         startDate: firstday,
+    //         endDate: lastday,
+    //         class: 'week_calendar',
+    //         initValue:init_value,
+    //     });
+    //
+    //
+    // });
+
+
+    $(document).on('click', '.multi_date', function(){
+
+        var init_value = $(this).find('input').val();
+
+        $(this).datepicker({
+            multidate: true,
+            todayBtn: false,
+            clearBtn: true,
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: false,
+            showNum: true,
+            startDate: firstm,
+            endDate: lastm,
+            class: 'month_calendar',
+            initValue:init_value,
+        });
+    });
+
+    // $(document).on('click', '.multi_date input', function(){
+    //
+    //     var init_value = $(this).val();
+    //
+    //     $(this).datepicker({
+    //         multidate: true,
+    //         todayBtn: false,
+    //         clearBtn: true,
+    //         keyboardNavigation: false,
+    //         forceParse: false,
+    //         calendarWeeks: false,
+    //         showNum: true,
+    //         startDate: firstm,
+    //         endDate: lastm,
+    //         class: 'month_calendar',
+    //         initValue:init_value,
+    //     });
+    // });
+
+
+});
 
 //Show Camera function
 function show_camera() {
@@ -120,7 +203,6 @@ function calculate_current_product_value(tr) {
         'product_id': product_id, 'order_type': order_type, 'product_count': product_count,
         'customer_id': customer_id, 'province': customer_province, 'city': customer_city, 'district': customer_district
     };
-    console.log(sendData);
 
     $.ajax({
         url: API_URL + 'order/get_order_product_price',
@@ -179,8 +261,6 @@ function add_product() {
 
     if (!copy_tr_data)
         copy_tr_data = $("#first_data").html();
-
-    console.log(copy_tr_data);
 
     var rowCount = $('#product_table tbody tr').length;
     var trclass = "footable-even";
@@ -281,6 +361,7 @@ $('body').on('change', 'select.order_delivery_type', function () {
             });
         } else {
             //show monthday
+            console.log(id);
             $(pick).datepicker({
                 multidate: true,
                 todayBtn: false,
@@ -320,12 +401,15 @@ $(document).on('click', 'button.remove_one_product', function () {
     var tr = $(this).closest('tr');
     var count = $('#product_table tbody tr.one_product').length;
     if (count > 1)
+    {
         $(tr).remove();
-    else {
+        get_order_statics();
+    }    else {
         show_warning_msg('您无法删除所有产品');
         return;
     }
 });
+
 
 function init_product_lines() {
     if (!copy_tr_data)

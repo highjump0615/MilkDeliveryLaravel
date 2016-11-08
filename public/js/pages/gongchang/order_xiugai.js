@@ -100,8 +100,6 @@ $('#order_submit').click(function(e){
 
     e.preventDefault();
 
-
-
     //check empty of one product calendar and count_per_day
     var empty_tr = false;
     $('#product_table tbody tr').each(function(){
@@ -127,7 +125,6 @@ $('#order_submit').click(function(e){
         return;
     }
 
-
     //check all amount is bigger than intial order amount
     var real_total  = parseFloat($('.updated_total_sp').html()) ;
     var origin_total = current_order_total;
@@ -140,6 +137,7 @@ $('#order_submit').click(function(e){
     $('#order_form').submit();
 
 })
+
 
 $('#order_form').on('submit', function(e){
 

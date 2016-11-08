@@ -10,62 +10,52 @@
 		<h1>订单列表</h1>
 
 	</header>
+	@if(isset($order))
 	<div class="ordsl">
 		<div class="ordnum">
-			<span>2017-06-08</span>
-			订单号：6048545
+			<span>{{$order->ordered_at}}</span>
+			订单号 : {{$order->number}} &emsp; 状态 : {{$order->status_name}}
 		</div>
-		<div class="addrli addrli2">
+		<div class="addrli2">
 			<div class="adrtop pa2t">
-				<p>张天 4854545<br>广西壮族自治区</p>
-				<p>17-2-2016</p></div></div>
-		<!--<div class="ordnum">
+				<p>{{$order->customer_name}} {{$order->phone}}<br>{{$order->address}}</p>
 
-        配送站：6048545
-        <br>
-         配送员：李生 6048545
-        </div> -->
+			</div>
+		</div>
 		<div class="ordnum lastcd">
 
-			起送时间：6048545
-
 		</div>
 
+		@forelse($order->order_products as $op)
 		<div class="ordtop clearfix">
-			<img class="ordpro" src="images/zfx.jpg">
-			<span class="ordlr">修改</span>
+			<img class="ordpro" src="<?=asset('img/product/logo/' . $op->product->photo_url1)?>">
+			@if($order->status == App\Model\OrderModel\Order::ORDER_PASSED_STATUS  ||
+			$order->status == App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+				<span class="ordlr"><a href="{{url('/weixin/dingdanxiugai?order-item=').$op->id}}">修改</a></span>
+			@endif
 			<div class="ord-r">
-				蒙牛纯甄酸奶低温
+				{{$op->product_name}}
 				<br>
-				单价：
+				单价：{{$op->product_price}}元
 				<br>
-				订单数量：32瓶
+				订单数量：{{$op->total_count}}
 			</div>
-			<div class="ordye">金额：162元</div>
+			<div class="ordye">金额：{{$op->total_amount}}元</div>
 		</div>
-		<div class="ordtop clearfix lastcd">
-			<img class="ordpro" src="images/zfx.jpg">
-			<span class="ordlr">修改</span>
-
-			<div class="ord-r">
-				蒙牛纯甄酸奶低温
-				<br>
-				单价：
-				<br>
-				订单数量：32瓶
-			</div>
-			<div class="ordye">金额：162元</div>
-		</div>
+		@empty
+			没有项目
+		@endforelse
 		<h3 class="dnh3">我的订奶计划</h3>
 		<div id='calendar'></div>
 		<div class="ordbot">
-			<textarea class="btxt" name="" cols="" rows="" placeholder="备注"></textarea>
+			<textarea class="btxt" name="" cols="" rows="" placeholder="备注" >{{$comment}}</textarea>
 		</div>
 	</div>
+	@else
+		<p>没有数据</p>
+	@endif
 @endsection
 @section('script')
-	<script src="js/jquery-1.10.1.min.js"></script>
-	<script src='js/moment.min.js'></script>
 	<script src='js/fullcalendar.min.js'></script>
 	<script type="text/javascript">
 		$(function() {
@@ -76,63 +66,21 @@
 					right: 'next'
 				},
 				firstDay:0,
-				editable: true,
+				editable: false,
+
 				events: [
+						@foreach($plans as $p)
 					{
-						title: '2',
-						start:'2016-09-01',
-						className:'ypsrl'
+						title: "{{$p->product_name}} {{$p->changed_plan_count}}",
+						start: '{{$p->deliver_at}}',
+						className:'ypsrl',
+						textColor: '#00cc00'
 
 					},
-					{
-						//title: '2',
-						start:'2016-09-01',
-						rendering: 'background',
-						color: '#a3e2c3'
-					},{
-						title: '2',
-						start:'2016-09-28',
-						//className:'ypsrl'
-
-					},
-					{
-						//title: '2',
-						start:'2016-09-28',
-						rendering: 'background',
-						color: '#00a040'
-					},
-					{
-						title: '5',
-						start:'2016-09-29',
-					},
-					{
-						//title: '5',
-						start:'2016-09-29',
-						rendering: 'background',
-						color: '#00a040'
-					},
-					{
-						title: '3',
-						start:'2016-09-30',
-					},
-					{
-						//title: '3',
-						start:'2016-09-30',
-						rendering: 'background',
-						color: '#00a040'
-					}
-				]
+					@endforeach
+				],
 			});
 
 		});
-	</script>
-	<script>
-
-		$(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
-		$(".addSubtract .subtract").click(function() {
-			if(parseInt($(this).next().val())>10){
-				$(this).next().val(parseInt($(this).next().val()) - 1);
-				$(this).removeClass("subtractDisable");}
-			if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });
 	</script>
 @endsection

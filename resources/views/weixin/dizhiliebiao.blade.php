@@ -7,62 +7,86 @@
     <header>
         <a class="headl fanh" href="javascript:void(0)"></a>
         <h1>管理收货地址</h1>
-
     </header>
 
+    @forelse($address_list as $a)
+        <div class="addrbox">
+            <form id="select-form{{$a->id}}" method="post" action="{{url('/weixin/select_address')}}">
+                <input type="hidden" name="user" value="{{$wxuser_id}}">
+                <input type="hidden" name="address" value="{{$a->id}}">
+                <div class="adrtop pa2t" onclick="select_address({{$a->id}})">
+                    <p>{{$a->name}} {{$a->phone}}<br>{{$a->address}}</p>
+                    <p>{{$a->sub_address}}</p>
+                </div>
+            </form>
+            <div class="mrsz clearfix pa2t">
+                    <span class="adrdz">
+                        <input name="dzrad" type="radio" value=""
+                               @if($a->primary == 1)
+                               checked
+                                @endif
+
+                               onclick="select_address({{$a->id}})"
+                        >默认地址
+                    </span>
+
+                <span style="float:right">
+
+                    <form id='delete-form{{$a->id}}' method="post" action="{{url('/weixin/delete_address')}}">
+                        <a href="{{url('/weixin/dizhitianxie?user=').$wxuser_id.'&address='.$a->id}}">
+                        <span class="glyphicon glyphicon-edit">编辑</span></a> &nbsp;
+
+                        <input type="hidden" name="user" value="{{$wxuser_id}}">
+                        <input type="hidden" name="address" value="{{$a->id}}">
+                        <span class="glyphicon glyphicon-trash" onclick="delete_address({{$a->id}});"
+                              style="cursor:pointer">删除</span>
+                    </form>
+                </span>
+            </div>
+            <hr>
+        </div>
+
+    @empty
+    @endforelse
+
     <div class="addrbox">
-
-        <div class="addrli">
-            <div class="adrtop pa2t">
-                <p>张天 4854545<br>广西壮族自治区</p>
-                <p>17-2-2016</p></div>
-            <div class="mrsz clearfix pa2t">
-                <span class="adrdz"><input name="dzrad" type="radio" value="" checked>默认地址</span>
-                <span class="adrsc">删除</span>
-            </div>
-
+        <div class="adrtop pa2t">
+            <a href="{{url('/weixin/dizhitianxie?user=').$wxuser_id}}">
+                <span class="glyphicon glyphicon-plus">添加地址</span></a> &nbsp;
         </div>
-
-
-        <div class="addrli">
-            <div class="adrtop pa2t">
-                <p>张天 4854545<br>广西壮族自治区</p>
-                <p>17-2-2016</p></div>
-            <div class="mrsz clearfix pa2t">
-                <span class="adrdz"><input name="dzrad" type="radio" value="">默认地址</span>
-                <span class="adrsc">删除</span>
-            </div>
-
-        </div>
-
-
     </div>
+
     <div class="rqtc">
         <div class="rqtti rqtadr">确认要删除该地址吗？</div>
-
-
         <div class="rqbot">
-            <span><a class="rqbot1" href="javascript:void(0)">确定</a></span>
-            <span> <a class="rqbot2" href="javascript:void(0)">取消</a></span>
+            <span><button class="rqbot1">确定</button></span>
+            <span><button class="rqbot2">取消</button></span>
         </div>
-
-
     </div>
+
 @endsection
 @section('script')
     <script>
-        $('.adrsc').click(function() {
+        $('.adrsc').click(function () {
             $('.rqtc').show();
-
-
-
         });
-        $('.rqbot1').click(function() {
+
+        $('.rqbot1').click(function () {
+            delete_address();
             $('.rqtc').hide();
         });
-        $('.rqbot2').click(function() {
-            $('.rqtc').hide();
 
+        $('.rqbot2').click(function () {
+            $('.rqtc').hide();
         });
+
+        function delete_address(id) {
+            $('#delete-form'+id).submit();
+        }
+
+        function select_address(id) {
+            $('#select-form'+id).submit();
+        }
+
     </script>
 @endsection

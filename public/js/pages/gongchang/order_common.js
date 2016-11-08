@@ -341,6 +341,7 @@ $('body').on('change', 'select.order_delivery_type', function () {
             });
         }
         else {
+            console.log(id);
             //show monthday
             $(pick).datepicker({
                 multidate: true,
@@ -420,6 +421,8 @@ $(document).on('click', 'button.remove_one_product', function () {
         return;
     }
 });
+
+
 
 // Card Verfiy
 $('.verify-card').click(function () {

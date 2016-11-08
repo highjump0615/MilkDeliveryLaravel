@@ -333,12 +333,28 @@ class FactoryStatistics extends Controller
         $current_page = 'kehuxingweitongji';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
         $addr = Address::where('level',1)->get();
-        
+        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
 
+        $province = ProvinceData::all();
         $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
         $date_start = $date_start->format('Y-m-d');
-        $date_end = new DateTime('now',new DateTimeZone('Asia/Shanghai'));
+        $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $date_end = $date_end->format('Y-m-d');
+
+        $station_name = $request->input('station_name');
+        $station_number = $request->input('station_number');
+        $addrs = $request->input('province')." ".$request->input('city');
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addrs.'%')->get();
+
+        if($start_date == ''){
+            $start_date = $date_start;
+        }
+        if($end_date == ''){
+            $end_date = $date_end;
+        }
 
         $stations = array(); //result station array
 
@@ -353,7 +369,7 @@ class FactoryStatistics extends Controller
         }
         /* 1. 新增客户数 newly registered customers */
         $new_customers = Customer::where('is_deleted', 0)
-            ->whereBetween('created_at', array($date_start, $date_end))
+            ->whereBetween('created_at', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count')
             ->get();
@@ -367,7 +383,7 @@ class FactoryStatistics extends Controller
         /* 2. 订单金额 */
         $new_orders = Order::where('is_deleted', 0)
 //            ->where('order_property_id', OrderProperty::ORDER_PROPERTY_NEW_ORDER)
-            ->whereBetween('ordered_at', array($date_start, $date_end))
+            ->whereBetween('ordered_at', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, sum(total_amount) as sum, count(*) as count')
             ->get();
@@ -382,7 +398,7 @@ class FactoryStatistics extends Controller
 
         $finished_orders = Order::where('is_deleted', 0)
             ->where('status', Order::ORDER_FINISHED_STATUS)
-            ->whereBetween('status_changed_at', array($date_start, $date_end))
+            ->whereBetween('status_changed_at', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count')
             ->get();
@@ -401,10 +417,10 @@ class FactoryStatistics extends Controller
             AND
             id in (select customer_id from orders where status_changed_at between :start_date2 and :end_date2 and (status = :status_finish2 OR status = :status_cancel2) and is_deleted=0)
             group by station_id;'), array(
-            'start_date1' => $date_start,
-            'end_date1' => $date_end,
-            'start_date2' => $date_start,
-            'end_date2' => $date_end,
+            'start_date1' => $start_date,
+            'end_date1' => $end_date,
+            'start_date2' => $start_date,
+            'end_date2' => $end_date,
             'status_finish1' => ORDER::ORDER_FINISHED_STATUS,
             'status_cancel1' => ORDER::ORDER_CANCELLED_STATUS,
             'status_finish2' => ORDER::ORDER_FINISHED_STATUS,
@@ -425,9 +441,9 @@ class FactoryStatistics extends Controller
             AND
             id in (select customer_id from orders where status_changed_at between :start_date2 and :end_date2 and (status = :status_finish2 OR status = :status_cancel2) and is_deleted=0)
             group by station_id;'), array(
-            'start_date1' => $date_start,
-            'start_date2' => $date_start,
-            'end_date2' => $date_end,
+            'start_date1' => $start_date,
+            'start_date2' => $start_date,
+            'end_date2' => $end_date,
             'status_finish1' => ORDER::ORDER_FINISHED_STATUS,
             'status_cancel1' => ORDER::ORDER_CANCELLED_STATUS,
             'status_finish2' => ORDER::ORDER_FINISHED_STATUS,
@@ -442,7 +458,7 @@ class FactoryStatistics extends Controller
 
         $xudans = Order::where('is_deleted', 0)
             ->where('order_property_id', OrderProperty::ORDER_PROPERTY_XUDAN_ORDER)
-            ->whereBetween('ordered_at', array($date_start, $date_end))
+            ->whereBetween('ordered_at', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(total_amount) as sum')
             ->get();
@@ -462,7 +478,7 @@ class FactoryStatistics extends Controller
 
         $ended_orders = Order::where('is_deleted', 0)
             ->where('status', Order::ORDER_CANCELLED_STATUS)
-            ->whereBetween('status_changed_at', array($date_start, $date_end))
+            ->whereBetween('status_changed_at', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(remaining_amount)')
             ->get();
@@ -486,7 +502,7 @@ class FactoryStatistics extends Controller
         }
         /* 11. 划转公司奶款金额 */
         $res = DSCalcBalanceHistory::where('type', DSCalcBalanceHistory::DSCBH_OUT_TRANSFER_MILK_FACTORY)
-            ->whereBetween('time', array($date_start, $date_end))
+            ->whereBetween('time', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -501,7 +517,7 @@ class FactoryStatistics extends Controller
                 $query->where('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_DELIVERY_COST);
                 $query->orWhere('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_ROBATE_ROYALTY);
             })
-            ->whereBetween('time', array($date_start, $date_end))
+            ->whereBetween('time', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -511,7 +527,7 @@ class FactoryStatistics extends Controller
         }
         /* 13. 其他划转金额 */
         $res = DSCalcBalanceHistory::where('type', DSCalcBalanceHistory::DSCBH_OUT_OTHER_USES)
-            ->whereBetween('time', array($date_start, $date_end))
+            ->whereBetween('time', array($start_date, $end_date))
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -596,6 +612,14 @@ class FactoryStatistics extends Controller
             $stations[$r->station_id]['total_orders_delivered_amount'] = $r->sum;
             $stations[$r->station_id]['total_orders_remaining_amount'] = $stations[$o->station_id]['total_orders_amount'] - $r->sum;
         }
+        $result = array();
+        foreach ($filtered_stations as $fs){
+            foreach ($stations as $station_id=>$station_info){
+                if($fs->id == $station_id){
+                    $result[$station_id] = $station_info;
+                }
+            }
+        }
 
         return view('gongchang.tongjifenxi.kehuxingweitongji', [
             'pages' => $pages,
@@ -603,7 +627,14 @@ class FactoryStatistics extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'address'=>$addr,
-            'stations'=>$stations
+            'stations'=>$result,
+            'province'=>$province,
+            'current_station_name'=>$station_name,
+            'current_station_number'=>$station_number,
+            'current_province'=>$request->input('province'),
+            'current_city'=>$request->input('city'),
+            'currrent_start_date'=>$start_date,
+            'current_end_date'=>$end_date,
         ]);
     }
 
@@ -613,20 +644,37 @@ class FactoryStatistics extends Controller
         $parent = 'tongjifenxi';
         $current_page = 'kehudingdanxiugui';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
 
-
+        $province = ProvinceData::all();
         $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
         $date_start = $date_start->format('Y-m-d');
-        $date_end = new DateTime('now',new DateTimeZone('Asia/Shanghai'));
+        $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $date_end = $date_end->format('Y-m-d');
+
+        $station_name = $request->input('station_name');
+        $station_number = $request->input('station_number');
+        $addrs = $request->input('province')." ".$request->input('city');
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addrs.'%')->get();
+
+        if($start_date == ''){
+            $start_date = $date_start;
+        }
+        if($end_date == ''){
+            $end_date = $date_end;
+        }
+
 
         $res = DB::select(DB::raw(
             'select o.station_id as station_id, count(*) as count 
             from orderchanges oc, orders o 
             where oc.order_id=o.id  and oc.type=:type and oc.created_at between :start_date and :end_date;'), array(
             'type' => OrderChanges::ORDERCHANGES_TYPE_ADDRESS,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -638,8 +686,8 @@ class FactoryStatistics extends Controller
             from orderchanges oc, orders o 
             where oc.order_id=o.id  and oc.type=:type and oc.created_at between :start_date and :end_date;'), array(
             'type' => OrderChanges::ORDERCHANGES_TYPE_PHONE,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -649,7 +697,7 @@ class FactoryStatistics extends Controller
 
         $res = Order::where('is_deleted', 0)
             ->where('status', Order::ORDER_STOPPED_STATUS)
-            ->whereBetween('status_changed_at', array($date_start, $date_end))
+            ->whereBetween('status_changed_at', array($start_date, $end_date))
             ->selectRaw('station_id, count(*) as count')
             ->get();
 
@@ -667,8 +715,8 @@ class FactoryStatistics extends Controller
              and oc.original_value < oc.changed_value
             and oc.created_at between :start_date and :end_date;'), array(
             'type' => OrderChanges::ORDERCHANGES_TYPE_DELIVERY_COUNT,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -683,8 +731,8 @@ class FactoryStatistics extends Controller
              and oc.original_value > oc.changed_value
             and oc.created_at between :start_date and :end_date;'), array(
             'type' => OrderChanges::ORDERCHANGES_TYPE_DELIVERY_COUNT,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -702,8 +750,8 @@ class FactoryStatistics extends Controller
             'type' => OrderChanges::ORDERCHANGES_TYPE_PRODUCT,
             'product1' => Product::PRODUCT_PROPERTY_PURE_MILK,
             'product2' => Product::PRODUCT_PROPERTY_YOGURT,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -722,8 +770,8 @@ class FactoryStatistics extends Controller
             'type' => OrderChanges::ORDERCHANGES_TYPE_PRODUCT,
             'product1' => Product::PRODUCT_PROPERTY_YOGURT,
             'product2' => Product::PRODUCT_PROPERTY_PURE_MILK,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -742,8 +790,8 @@ class FactoryStatistics extends Controller
             'type' => OrderChanges::ORDERCHANGES_TYPE_PRODUCT,
             'product1' => Product::PRODUCT_PROPERTY_YOGURT,
             'product2' => Product::PRODUCT_PROPERTY_KOUWEI,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -756,8 +804,8 @@ class FactoryStatistics extends Controller
             from orderchanges oc, orders o 
             where oc.order_id=o.id  and oc.type=:type and oc.created_at between :start_date and :end_date;'), array(
             'type' => OrderChanges::ORDERCHANGES_TYPE_DELIVERY_RULE,
-            'start_date' => $date_start,
-            'end_date' => $date_end,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
         ));
 
         foreach($res as $r) {
@@ -769,13 +817,28 @@ class FactoryStatistics extends Controller
             if($station)
                 $stations[$station_id]['name'] = $station->name;
         }
+        $result = array();
+        foreach ($filtered_stations as $fs){
+            foreach ($stations as $station_id=>$station_info){
+                if($fs->id == $station_id){
+                    $result[$station_id] = $station_info;
+                }
+            }
+        }
 
         return view('gongchang.tongjifenxi.kehudingdanxiugui', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'stations' => $stations,
+            'stations'=>$result,
+            'province'=>$province,
+            'current_station_name'=>$station_name,
+            'current_station_number'=>$station_number,
+            'current_province'=>$request->input('province'),
+            'current_city'=>$request->input('city'),
+            'currrent_start_date'=>$start_date,
+            'current_end_date'=>$end_date,
         ]);
     }
 

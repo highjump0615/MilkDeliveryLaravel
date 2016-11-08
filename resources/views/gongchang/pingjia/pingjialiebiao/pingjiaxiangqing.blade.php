@@ -31,18 +31,18 @@
 		<div class="row border-bottom">
                 <div class="col-lg-12" style="background-color:white">
                     <div class="ibox float-e-margins">
-                        <div class="ibox-content">
+                        <div class="ibox">
                             <form method="get" class="form-horizontal">
                                 <div class="row">
                                     <div class="form-group">
 
                                         <label class="col-sm-2 control-label" style="padding-top: 15px;">综合评价</label>
-                                        <input type="text" class="kv-fa rating-loading" value="5" data-size="xs" title="" readonly>
+                                        <input type="text" class="kv-fa rating-loading" value="{{$review->mark}}" data-size="xs" title="" readonly>
                                     </div>
 								</div>
                                 <div class="hr-line-dashed"></div>
 								<div class="ibox">
-									<label style="padding-left: 120px;">配送员很准时，客服服务态度也很好，奶的质量也非常棒！</label>
+									<label style="padding-left: 120px;">{{$review->content}}</label>
 								</div>
                             </form>
                         </div>

@@ -2,9 +2,11 @@
 
 namespace App\Model\BasicModel;
 
+use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use Illuminate\Database\Eloquent\Model;
 use App\Factory;
 use App\Model\DeliveryModel\DSDeliveryArea;
+use App\Model\OrderModel\Order;
 
 
 class Customer extends Model
@@ -29,7 +31,19 @@ class Customer extends Model
         'street',
         'xiaoqu',
         'sub_addr',
+        'has_milkbox',
     ];
+
+    public function getHasMilkboxAttribute()
+    {
+        $orders = $this->Order();
+        if(count($orders) > 0)
+        {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public function Order()
     {
@@ -140,5 +154,27 @@ class Customer extends Model
     }
 
 
+    public function get_wechat_plans_for_date($date)
+    {
+        $customer_id = $this->id;
+        $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->where(function ($query) {
+                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+            })
+            ->orderBy('id', 'desc')
+            ->get()->all();
+
+        $plans = array();
+        foreach($orders as $order)
+        {
+            $order_id = $order->id;
+            $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $date)->get()->first();
+            if($plan)
+                array_push($plans, $plan);
+        }
+
+        return $plans;
+    }
 
 }
