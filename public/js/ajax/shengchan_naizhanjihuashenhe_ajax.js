@@ -111,7 +111,7 @@ $(document).on('click','.cancel',function(e){
     });
 })
 
-$(document).on('click','#produce_determine',function (e) {
+$(document).on('click','.produce_determine',function (e) {
     var station_id = $(this).val();
 
     var store_url = API_URL + 'gongchang/shengchan/naizhanjihuashenhe/determine_station_plan';
@@ -128,6 +128,8 @@ $(document).on('click','#produce_determine',function (e) {
     }
     console.log(store_formData);
 
+    var tr = $(this).closest('tr');
+
     var store_type = "POST"; //for creating new resource
 
     $.ajax({
@@ -141,10 +143,11 @@ $(document).on('click','#produce_determine',function (e) {
             var new_status='<td class="status'+station_id+'">正常</td>';
             $('#plan_sent').find('td.status'+station_id+'').each(function () {
                 $('.status'+station_id+'').replaceWith(new_status);
-            })
-            $('#produce_determine').hide();
-            $('#produce_cancel').hide();
-            $('#produce_determine').parent().parent().find('.pendding_status').val('0');
+            });
+
+            tr.find('.produce_determine').hide();
+            tr.find('.produce_cancel').hide();
+            tr.find('.pendding_status').val('0');
         },
         error: function (data) {
             console.log('Error:', data);
@@ -152,7 +155,7 @@ $(document).on('click','#produce_determine',function (e) {
     });
 })
 
-$(document).on('click','#produce_cancel',function (e) {
+$(document).on('click','.produce_cancel',function (e) {
     var station_id = $(this).val();
 
     var store_url = API_URL + 'gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan';
@@ -169,6 +172,8 @@ $(document).on('click','#produce_cancel',function (e) {
     }
     console.log(store_formData);
 
+    var tr = $(this).closest('tr');
+
     var store_type = "POST"; //for creating new resource
 
     $.ajax({
@@ -182,10 +187,11 @@ $(document).on('click','#produce_cancel',function (e) {
             var new_status='<td class="status'+station_id+'">生产取消</td>';
             $('#plan_sent').find('td.status'+station_id+'').each(function () {
                 $('.status'+station_id+'').replaceWith(new_status);
-            })
-            $('#produce_determine').hide();
-            $('#produce_cancel').hide();
-            $('#produce_cancel').parent().parent().find('.pendding_status').val('0');
+            });
+
+            tr.find('.produce_determine').hide();
+            tr.find('.produce_cancel').hide();
+            tr.find('.pendding_status').val('0');
             location.reload();
         },
         error: function (data) {

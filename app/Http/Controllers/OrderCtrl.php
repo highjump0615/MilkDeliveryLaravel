@@ -2123,18 +2123,56 @@ class OrderCtrl extends Controller
         ]);
     }
 
+    private $factory;
+    private $order_property;
+    private $province;
+    private $order_checkers;
+    private $products;
+    private $factory_order_types;
+    private $order_delivery_types;
+    private $product_count_on_fot;
+    private $delivery_stations;
+    private $gap_day;
+
+    /**
+     * 初始化奶厂订单参数
+     */
+    private function initFactoryPage() {
+        $fuser = Auth::guard('gongchang')->user();
+        $factory_id = $fuser->factory_id;
+        $this->factory = Factory::find($factory_id);
+
+        $this->order_property = OrderProperty::all();
+
+        $this->products = $this->factory->active_products;
+        $this->factory_order_types = $this->factory->factory_order_types;
+        $this->order_delivery_types = $this->factory->order_delivery_types;
+
+        $this->delivery_stations = $this->factory->active_stations;//get only active stations
+
+        $this->province = Address::where('level', 1)->where('factory_id', $factory_id)
+            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
+
+        $this->product_count_on_fot = [];
+        foreach ($this->factory_order_types as $fot) {
+            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
+            array_push($this->product_count_on_fot, $pcof);
+        }
+        //get gap day
+        $this->gap_day = $this->factory->gap_day;
+    }
+
     //show xiugai order page in gongchang
     public
     function show_order_revise_in_gongchang($order_id)
     {
+        $this->initFactoryPage();
+
         $order = Order::find($order_id);
 
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-        $factory = Factory::find($factory_id);
-
-        $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
+
+        $this->order_checkers = $order->deliveryStation->all_order_checkers;
 
         $customer = $order->customer;
         $milkman = $order->milkman;
@@ -2143,56 +2181,39 @@ class OrderCtrl extends Controller
             $milkman = MilkMan::find($milkman_id);
         }
 
-        $order_checkers = $factory->ordercheckers;
         $order_products = $order->order_products;
-        $products = $factory->active_products;
-
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
-
         $grouped_plans_per_product = $order->grouped_plans_per_product;
 
-        $delivery_stations = $factory->active_stations;//get only active stations
+        // 解析收货地址
+        $address = explode(' ', $order->address);
 
-        $province = Address::where('level', 1)->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
-
-        //get gap day
-        $gap_day = $factory->gap_day;
-
-        $customer = $order->customer;
-
-        $child = 'zaipeisongdingdan';
+        $child = '';
         $parent = 'dingdan';
         $current_page = 'dingdanxiugai';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         return view('gongchang.dingdan.dingdanluru.dingdanxiugai', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
             'order' => $order,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
+            'factory' => $this->factory,
+            'address' => $address,
+            'order_property' => $this->order_property,
             'payment_types' => $payment_types,
             'customer' => $customer,
             'milkman' => $milkman,
             'grouped_plans_per_product' => $grouped_plans_per_product,
             'order_products' => $order_products,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'order_delivery_types' => $order_delivery_types,
-            'order_checkers' => $order_checkers,
-            'delivery_stations' => $delivery_stations,
-            'province' => $province,
-            'gap_day' => $gap_day,
+            'products' => $this->products,
+            'factory_order_types' => $this->factory_order_types,
+            'products_count_on_fot' => $this->product_count_on_fot,
+            'order_delivery_types' => $this->order_delivery_types,
+            'order_checkers' => $this->order_checkers,
+            'delivery_stations' => $this->delivery_stations,
+            'province' => $this->province,
+            'gap_day' => $this->gap_day,
         ]);
     }
 
@@ -3245,6 +3266,7 @@ class OrderCtrl extends Controller
                 $milk_card_id = $request->input('card_id');
                 $milk_card_code = $request->input('card_code');
             }
+
             if ($order_by_milk_card == 0)
                 $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
             elseif ($order_by_milk_card == 1)
@@ -3369,8 +3391,10 @@ class OrderCtrl extends Controller
                 $op->avg = $avg;
                 $op->start_at = $product_start_at;
 
+                $op->count_per_day = $request->input('order_product_count_per')[$i];
+
                 if ($delivery_type == "1" || $delivery_type == "2") {   // 天天送、隔日送
-                    $op->count_per_day = $request->input('order_product_count_per')[$i];
+//                    $op->count_per_day = $request->input('order_product_count_per')[$i];
                 }
                 else {
                     $custom_dates = $request->input('delivery_dates')[$i];
@@ -3420,24 +3444,25 @@ class OrderCtrl extends Controller
                 $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
                 $station->save();
 
-                //add calc history if this is the money order
-                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
-                $dsdelivery_history->station_id = $station_id;
-                if ($station_id == $delivery_station_id)
-                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY;
-                else
-                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION;
-
-                $dsdelivery_history->io_type = DSDeliveryCreditBalanceHistory::DSDCBH_IO_TYPE_IN;
-
-                if ($acceptable_amount > 0)
-                    $dsdelivery_history->amount = $acceptable_amount;
-                else
-                    $dsdelivery_history->amount = $total_amount;
-
-                $dsdelivery_history->time = $today;
-                $dsdelivery_history->save();
-            } else {
+//                //add calc history if this is the money order
+//                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
+//                $dsdelivery_history->station_id = $station_id;
+//                if ($station_id == $delivery_station_id)
+//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY;
+//                else
+//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION;
+//
+//                $dsdelivery_history->io_type = DSDeliveryCreditBalanceHistory::DSDCBH_IO_TYPE_IN;
+//
+//                if ($acceptable_amount > 0)
+//                    $dsdelivery_history->amount = $acceptable_amount;
+//                else
+//                    $dsdelivery_history->amount = $total_amount;
+//
+//                $dsdelivery_history->time = $today;
+//                $dsdelivery_history->save();
+            }
+            else {
                 //add card amount remained to customer account
                 $customer->remain_amount += $remain_from_card;
                 $customer->save();
@@ -3759,35 +3784,13 @@ class OrderCtrl extends Controller
         ]);
     }
 
-
 //show insert dingdan page in gongchang
     public
     function show_insert_order_page_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initFactoryPage();
 
-        $order_property = OrderProperty::all();
-
-        $order_checkers = $factory->ordercheckers;
-
-        $products = $factory->active_products;
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-
-        $delivery_stations = $factory->active_stations;//get only active stations
-
-        $province = Address::where('level', 1)->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
-        //get gap day
-        $gap_day = $factory->gap_day;
+        $this->order_checkers = $this->factory->ordercheckers;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -3799,15 +3802,15 @@ class OrderCtrl extends Controller
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'order_property' => $order_property,
-            'province' => $province,
-            'order_checkers' => $order_checkers,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'order_delivery_types' => $order_delivery_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'delivery_stations' => $delivery_stations,
-            'gap_day' => $gap_day,
+            'order_property' => $this->order_property,
+            'province' => $this->province,
+            'order_checkers' => $this->order_checkers,
+            'products' => $this->products,
+            'factory_order_types' => $this->factory_order_types,
+            'order_delivery_types' => $this->order_delivery_types,
+            'products_count_on_fot' => $this->product_count_on_fot,
+            'delivery_stations' => $this->delivery_stations,
+            'gap_day' => $this->gap_day,
         ]);
     }
 
@@ -4750,18 +4753,17 @@ class OrderCtrl extends Controller
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
 
-            $order->status = Order::ORDER_PASSED_STATUS;
-
-            // 激活订单
-//            $order->activated_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+            // 订单通过
+            if ($order->status == Order::ORDER_NEW_WAITING_STATUS || $order->status == Order::ORDER_WAITING_STATUS) {
+                $order->status = Order::ORDER_ON_DELIVERY_STATUS;
+            }
             $order->save();
 
-            $station_id = Order::find($order_id)->station_id;
-            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
+            $customer_name = $order->customer->name;
 
             // 发送通知
             $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "订单审核已经通过", $customer_name . "用户订单审核已经通过！！");
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过 -- ", $customer_name . "用户订单审核已经通过！！");
 
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
@@ -4774,7 +4776,7 @@ class OrderCtrl extends Controller
         }
     }
 
-//pass waiting order in gongchang
+    //pass waiting order in gongchang
     public
     function not_pass_waiting_dingdan_in_gongchang(Request $request)
     {
@@ -4786,25 +4788,30 @@ class OrderCtrl extends Controller
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
 
-            $order->status = Order::ORDER_NOT_PASSED_STATUS;
+            // 新订单不通过
+            if ($order->status == Order::ORDER_NEW_WAITING_STATUS) {
+                $order->status = Order::ORDER_NEW_NOT_PASSED_STATUS;
+
+                // 如果是现金订单，需要返还配送信用余额
+                if ($order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
+                    $station = $order->station;
+
+                    $station->delivery_credit_balance += $order->total_amount;
+                    $station->save();
+                }
+            }
+            // 订单不通过
+            else if ($order->status == Order::ORDER_WAITING_STATUS) {
+                $order->status = Order::ORDER_NOT_PASSED_STATUS;
+            }
+
             $order->save();
 
-            $station_id = Order::find($order_id)->station_id;
-            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
-
-            // 把配送信用余额加回去
-//            if ($order->payment_type == 1) {    // 只针对现金订单
-//                if (!$order->activated_at) {    // 只有一次都没被审核通过
-//                    $station = $order->station;
-//
-//                    $station->delivery_credit_balance += $order->total_amount;
-//                    $station->save();
-//                }
-//            }
+            $customer_name = $order->customer->name;
 
             // 发送通知
             $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "订单审核未通过", $customer_name . "用户订单审核未通过！！");
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过 --- ", $customer_name . "用户订单审核未通过！！");
 
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;

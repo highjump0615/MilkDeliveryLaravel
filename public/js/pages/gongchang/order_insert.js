@@ -27,7 +27,7 @@ $('.province_list').on('change', function () {
                 for (var i = 0; i < cities.length; i++) {
                     city = cities[i];
 
-                    if (i == 0) {
+                    if (city == city_name) {
                         citydata = '<option value="' + city + '" selected>' + city + '</option>';
                     } else {
                         citydata = '<option value="' + city + '">' + city + '</option>';
@@ -77,7 +77,7 @@ $('.city_list').on('change', function () {
                     var district = districts[i];
                     var districtdata;
 
-                    if (i == 0) {
+                    if (district == district_name) {
                         districtdata = '<option value="' + district + '" selected>' + district + '</option>';
                     }
                     else {
@@ -90,6 +90,11 @@ $('.city_list').on('change', function () {
                 var current_district = district_list.val();
                 if (current_district)
                     district_list.trigger('change');
+
+                // 计算价格
+                $('#product_table tbody tr').each(function () {
+                    calculate_current_product_value(this);
+                });
 
             } else {
                 show_info_msg('没有区');
@@ -133,7 +138,14 @@ $('.district_list').on('change', function () {
 
                 for (var i = 0; i < streets.length; i++) {
                     var street = streets[i];
-                    streetdata = '<option data-street-id="'+street[0]+'" value="' + street[1] + '">' + street[1] + '</option>';
+
+                    if (street[1] == street_name) {
+                        streetdata = '<option data-street-id="' + street[0] + '" value="' + street[1] + '" selected>' + street[1] + '</option>';
+                    }
+                    else {
+                        streetdata = '<option data-street-id="' + street[0] + '" value="' + street[1] + '">' + street[1] + '</option>';
+                    }
+
                     street_list.append(streetdata);
                 }
                 var current_street = street_list.val();
@@ -177,12 +189,19 @@ $('.street_list').on("change", function () {
 
             for (var i = 0; i < xiaoqus.length; i++) {
                 var xiaoqu = xiaoqus[i];
-                xiaodata = '<option data-xiaoqu-id="'+xiaoqu[0]+'" value = "' + xiaoqu[1] + '">' + xiaoqu[1] + '</option>';
+
+                if (xiaoqu[1] == village_name) {
+                    xiaodata = '<option data-xiaoqu-id="' + xiaoqu[0] + '" value = "' + xiaoqu[1] + '" selected>' + xiaoqu[1] + '</option>';
+                }
+                else {
+                    xiaodata = '<option data-xiaoqu-id="' + xiaoqu[0] + '" value = "' + xiaoqu[1] + '">' + xiaoqu[1] + '</option>';
+                }
+
                 xiaoqu_list.append(xiaodata);
             }
 
             //Reset the Station Info
-            $('#station_list').empty();
+            // $('#station_list').empty();
         },
         error: function (data) {
             console.log(data);

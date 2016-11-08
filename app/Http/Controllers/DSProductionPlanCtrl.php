@@ -89,13 +89,21 @@ class DSProductionPlanCtrl extends Controller
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
         $currentDate_str = $currentDate->format('Y-m-d');
 
-        $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$currentDate_str)->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])->get());
-        $is_sent = count(DSProductionPlan::where('station_id',$current_station_id)
+        $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
             ->where('produce_start_at',$currentDate_str)
-            ->where('status',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
-            ->orwhere('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN)
-            ->where('produce_start_at',$currentDate_str)
+            ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])
             ->get());
+
+        $is_sent = count(
+            DSProductionPlan::where(function($query) use ($current_station_id, $currentDate_str) {
+                $query->where('station_id',$current_station_id);
+                $query->where('produce_start_at',$currentDate_str);
+                $query->where('status',DSProductionPlan::DSPRODUCTION_SENT_PLAN);
+            })->orWhere(function($query) use ($current_station_id, $currentDate_str) {
+                $query->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN);
+                $query->where('produce_start_at',$currentDate_str);
+                $query->where('station_id',$current_station_id);
+            })->get());
 
         if($is_passed > 0){
             return redirect()->route('naizhan_shengchan_jihuaguanli')->with('alert_message','计划已经被牛奶厂接受。');
@@ -449,9 +457,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $parent = 'shengchan';
         $current_page = 'naizhanjihuashenhe';
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
+
         $currentDate_str = $currentDate->format('Y-m-d');
+
         $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name','production_period']);
         foreach($products as $p){
             $plan_info = DSProductionPlan::where('produce_start_at',$currentDate->format('Y-m-d'))->where('status','<>',DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL)
@@ -480,8 +491,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $total_ordered_count = 0;
             $order_product = OrderProduct::where('product_id',$p->id)->get(['id']);
             foreach($order_product as $op){
-                $changed_counts = MilkManDeliveryPlan::where('produce_at',$currentDate->format('Y-m-d'))->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->
-                where('order_product_id',$op->id)->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)->get(['changed_plan_count']);
+                $changed_counts = MilkManDeliveryPlan::where('produce_at',$currentDate->format('Y-m-d'))
+                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                    ->where('order_product_id',$op->id)
+                    ->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                    ->get(['changed_plan_count']);
                 if($changed_counts != null){
                     foreach($changed_counts as $cc){
                         $total_ordered_count += $cc->changed_plan_count;
@@ -490,7 +504,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             }
 
             $plan_ordered_count = 0;
-            $plan_ordered = DSProductionPlan::where('product_id',$p->id)->where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)->where('produce_start_at',$currentDate->format('Y-m-d'))->get();
+            $plan_ordered = DSProductionPlan::where('product_id',$p->id)
+                ->where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
+                ->where('produce_start_at',$currentDate->format('Y-m-d'))
+                ->get();
             foreach($plan_ordered as $po){
                 $plan_ordered_count += $po->order_count;
             }

@@ -7,7 +7,17 @@ $(document).ready(function () {
         jpeg_quality: 90
     });
 
-    show_camera();
+    // 录入订单
+    if ($('#my_camera').html().trim().length == 0) {
+        show_camera();
+    }
+    // 修改订单，如果有图片
+    else {
+        $('#capture_camera').hide();
+        $('#reset_camera').show();
+        if($('video').attr('src') != '')
+            $('#check_capture').show();
+    }
 
     $('[data-target="#card_info"]').on("change", function () {
         $('#card_msg').hide();
@@ -34,10 +44,10 @@ $(document).ready(function () {
     firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
     lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
 
+    // 初始化奶品起送日期
     initStartDateCalendar();
 
-    // 初始化订单起送日期
-    $('#order_start_at').val(dateToString(getStartDate()));
+    $('select.order_delivery_type').trigger('change');
 
     //Create Switchery
     if (Array.prototype.forEach) {
@@ -58,6 +68,11 @@ $(document).ready(function () {
 
     if ($('.province_list').val() != "none")
         $('.province_list').trigger('change');
+
+    // 计算单数
+    $('#product_table tbody tr').each(function () {
+        set_avg_count(this);
+    });
 
 });
 
@@ -131,10 +146,10 @@ function calculate_current_product_value(tr) {
     var tt = $(tr).find('td .total_amount_per_product .one_p_amount');
 
     //customer id
-    var customer_id = $('input#customer_id').val();
-
-    if (!customer_id)
-        return;
+    // var customer_id = $('input#customer_id').val();
+    //
+    // if (!customer_id)
+    //     return;
 
     //or get addr from customer form's addr
     var province = $('select#province').val();
@@ -147,7 +162,7 @@ function calculate_current_product_value(tr) {
 
     var sendData = {
         'product_id': product_id, 'order_type': order_type, 'product_count': product_count,
-        'customer_id': customer_id, 'province': province, 'city': city, 'district': district
+        /*'customer_id': customer_id,*/ 'province': province, 'city': city, 'district': district
     };
     console.log(sendData);
 
@@ -184,6 +199,7 @@ function set_avg_count(tr) {
     var origin_count = $(tr).find('.one_product_total_count_select').val();
 
     var inputed_count = $(tr).find('.one_product_total_count').val();
+
     // if (inputed_count % 30 != 0) {
     //     show_dismissable_warning_msg('数量应为30的倍数');
     //
@@ -271,6 +287,10 @@ $('body').on('change', 'select.order_delivery_type', function () {
     var calendar = tr.find('.calendar_show')[0];
     var bottle_number = tr.find('div.bottle_number')[0];
 
+    // 获取输入的每次瓶数
+    var inputBottleNum = tr.find('.order_product_count_per')[0];
+    var nBottleNum = parseInt($(inputBottleNum).val());
+
     //remove all previous data and set new data
     $(calendar).html('');
     var dd = '<div class="input-group date picker">'
@@ -294,12 +314,13 @@ $('body').on('change', 'select.order_delivery_type', function () {
                 forceParse: false,
                 calendarWeeks: false,
                 showNum: true,
-                bottleNum: 1,
+                bottleNum: nBottleNum,
                 startDate: firstday,
                 endDate: lastday,
                 class:'week_calendar'
             });
-        } else {
+        }
+        else {
             //show monthday
             $(pick).datepicker({
                 multidate: true,
@@ -309,7 +330,7 @@ $('body').on('change', 'select.order_delivery_type', function () {
                 forceParse: false,
                 calendarWeeks: false,
                 showNum: true,
-                bottleNum: 1,
+                bottleNum: nBottleNum,
                 startDate: firstm,
                 endDate: lastm,
                 class:'month_calendar',
@@ -473,8 +494,26 @@ function initStartDateCalendar() {
         startDate: dateStart
     });
 
-    // 默认选择第一天
-    $('.single_date').datepicker('setDate', dateStart);
+    // 修改要改成以保存的
+    $('.single_date').each(function () {
+        var input = $(this).find('.start_at');
+
+        if ($(input).val().length > 0) {
+            $(this).datepicker('setDate', new Date($(input).val()));
+
+            // 已选好的起送日期不能改
+            // $(this).datepicker().on('show', function(e){
+            //     $('.day').click(function(event) {
+            //         event.preventDefault();
+            //         event.stopPropagation();
+            //     });
+            // });
+        }
+        else {
+            // 默认选择第一天
+            $('.single_date').datepicker('setDate', dateStart);
+        }
+    });
 }
 
 /**

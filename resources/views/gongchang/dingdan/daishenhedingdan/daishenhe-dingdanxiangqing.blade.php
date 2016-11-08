@@ -107,7 +107,7 @@
             </div>
             <div class="col-md-12">
                 <div class="ibox-content">
-                    <table class="footable table table-bordered" data-sort-ignore="true" data-page-size="5">
+                    <table class="table table-bordered">
                         <thead>
                         <tr>
                             <th data-sort-ignore="true">序号</th>
@@ -118,6 +118,7 @@
                             <th data-sort-ignore="true">单数</th>
                             <th data-sort-ignore="true">瓶/次</th>
                             <th data-sort-ignore="true">配送规则</th>
+                            <th data-sort-ignore="true">起送日期</th>
                             <th data-sort-ignore="true">订单余额</th>
                         </tr>
                         </thead>
@@ -133,18 +134,12 @@
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td>{{$order_products[$i]->count_per_day}}</td>
                                     <td>{{$order_products[$i]->delivery_type_name}}</td>
+                                    <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->total_amount}}</td>
                                 </tr>
                             @endfor
                         @endif
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="9">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -152,7 +147,8 @@
 
             <div class="feed-element col-md-12">
                 <div class="col-md-4 col-md-offset-4">
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NEW_WAITING_STATUS)
                         <button type="button" class="btn btn-success col-sm-5" id="pass_order"
                                 data-orderid="{{$order->id}}"><i class="fa fa-play" area-hidden="true"></i> 审核通过
                         </button>
@@ -162,7 +158,8 @@
                         </button>
                     @endif
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NEW_WAITING_STATUS)
                         <button type="button" class="btn btn-warning col-sm-5 col-sm-offset-2" id="no_pass_order"
                                 data-orderid="{{$order->id}}"><i class="fa fa-pause" area-hidden="true"></i> 审核未通过
                         </button>

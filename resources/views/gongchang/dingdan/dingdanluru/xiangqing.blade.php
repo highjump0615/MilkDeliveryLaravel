@@ -162,7 +162,7 @@
             </div>
             <div class="col-md-12">
                 <div class="ibox-content">
-                    <table class="footable table table-bordered" data-sort-ignore="true" data-page-size="5">
+                    <table class="table table-bordered">
                         <thead>
                         <tr>
                             <th data-sort-ignore="true">序号</th>
@@ -173,7 +173,7 @@
                             <th data-sort-ignore="true">单数</th>
                             <th data-sort-ignore="true">瓶/次</th>
                             <th data-sort-ignore="true">配送规则</th>
-                            <th data-sort-ignore="true">配送日期</th>
+                            <th data-sort-ignore="true">起送日期</th>
                             <th data-sort-ignore="true">订单余额</th>
                         </tr>
                         </thead>
@@ -189,31 +189,15 @@
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td>{{$order_products[$i]->count_per_day}}</td>
                                     <td>{{$order_products[$i]->delivery_type_name}}</td>
-                                    <td>
-                                        @if($order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY && $order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY  )
-                                            <button class="btn btn-outline">查看日历</button>
-                                        @endif
-                                    </td>
+                                    <td>{{$order_products[$i]->start_at}}</td>
+                                    <!--<td>
+                                        <button class="btn btn-outline">查看日历</button>
+                                    </td>-->
                                     <td>{{$order_products[$i]->total_amount}}</td>
                                 </tr>
                             @endfor
-                        @else
-                            <td>10</td>
-                            <td>32</td>
-                            <td>0.3?</td>
-                            <td>3</td>
-                            <td>天天送</td>
-                            <td>256.9</td>
-                            </tr>
                         @endif
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="100%">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>

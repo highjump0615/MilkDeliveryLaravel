@@ -149,8 +149,8 @@
 										@if($j == 1)
 										<td rowspan="{{count($si->station_plan)}}">
 											@if($ss->status == 2)
-											<button class="btn btn-success btn-sm" id="produce_determine" value="{{$ss->station_id}}" style="width: 55px;">生产</button><br>
-											<button class="btn btn-success btn-sm" id="produce_cancel" value="{{$ss->station_id}}" style="width: 55px;">不生产</button>
+											<button class="btn btn-success btn-sm produce_determine" value="{{$ss->station_id}}" style="width: 55px;">同意</button><br>
+											<button class="btn btn-success btn-sm produce_cancel" value="{{$ss->station_id}}" style="width: 55px;">拒绝</button>
 											@endif
 										</td>
 										<td rowspan="{{count($si->station_plan)}}"></td>
