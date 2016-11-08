@@ -203,7 +203,6 @@ $('.editable_amount').on('keyup',function(){
     calc_total();
 })
 
-
 $(document).on('click','#save_distribution',function(e){
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_distribution';
     $.ajaxSetup({

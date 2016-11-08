@@ -221,7 +221,7 @@ class TotalStatisticsCtrl extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        $filtered_stations = DeliveryStation::where('name','LIKE','%'.$station_name.'%')->where('address','LIKE','%'.$addr.'%')->get();
+        $filtered_stations = DeliveryStation::where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addr.'%')->get();
 
         if($start_date == ''){
             $start_date = $date_start;
@@ -483,12 +483,20 @@ class TotalStatisticsCtrl extends Controller
             $stations[$station_id]['name'] = $station->name;
         }
 
+        $result = array();
+        foreach ($filtered_stations as $fs){
+            foreach ($stations as $station_id=>$station_info){
+                if($fs->id == $station_id){
+                    $result[$station_id] = $station_info;
+                }
+            }
+        }
         return view('zongpingtai.tongji.kehuxingwei', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'stations'=>$stations,
+            'stations'=>$result,
             'province'=>$province,
             'current_station_name'=>$station_name,
             'current_station_number'=>$station_number,
@@ -520,7 +528,7 @@ class TotalStatisticsCtrl extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        $filtered_stations = DeliveryStation::where('name','LIKE','%'.$station_name.'%')->where('address','LIKE','%'.$addr.'%')->get();
+        $filtered_stations = DeliveryStation::where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addr.'%')->get();
 
         if($start_date == ''){
             $start_date = $date_start;
@@ -678,13 +686,21 @@ class TotalStatisticsCtrl extends Controller
             if($station)
                 $stations[$station_id]['name'] = $station->name;
         }
+        $result = array();
+        foreach ($filtered_stations as $fs){
+            foreach ($stations as $station_id=>$station_info){
+                if($fs->id == $station_id){
+                    $result[$station_id] = $station_info;
+                }
+            }
+        }
 
         return view('zongpingtai.tongji.kehudingdanxiugai', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'stations' => $stations,
+            'stations' => $result,
             'province'=>$province,
             'current_station_name'=>$station_name,
             'current_station_number'=>$station_number,

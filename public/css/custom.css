@@ -374,6 +374,10 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
     display: none;
 }
 
+.week_calendar .datepicker-days table tbody tr td label.date{
+    display: none;
+}
+
 .week_calendar .datepicker-switch{
     display: none !important;
 }

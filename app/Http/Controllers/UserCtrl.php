@@ -52,10 +52,15 @@ class UserCtrl extends Controller
         return Response::json($user);
     }
 
-    public function getPage($user_id)
+    public function getPage($user_id=null)
     {
-        $userinfo = User::find($user_id);
-        return Response::json($userinfo);
+        if($user_id == null){
+            return Response::json(['status'=>'failed']);
+        }
+        else{
+            $userinfo = User::find($user_id);
+            return Response::json($userinfo);
+        }
     }
 
     public function addAccount(Request $request)

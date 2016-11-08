@@ -27,10 +27,11 @@ class OrderProduct extends Model
         'total_amount',
         'product_price',
         'avg',
-        'start_at'
+        'start_at',
     ];
 
     protected $appends = [
+        'product',
         'product_name',
         'order_type_name',
         'delivery_type_name',
@@ -40,9 +41,18 @@ class OrderProduct extends Model
         'custom_order_dates_on_this_month',
         'last_deliver_plan',
         'finished_money_amount',
+        'delivery_plans_sent_to_production_plan',
     ];
 
     public $timestamps = false;
+
+    public function getDeliveryPlansSentToProductionPlanAttribute()
+    {
+        //delivery_plans_sent_to_production_plan
+        $dps = MilkManDeliveryPlan::where('order_product_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get();
+        return $dps;
+    }
 
     public function getFinishedMoneyAmountAttribute(){
         //$this->total_amount;
@@ -84,7 +94,7 @@ class OrderProduct extends Model
     {
         $product = Product::find($this->product_id);
         if($product)
-            return $product->name;
+            return $product->simple_name;
         else
             return "";
     }

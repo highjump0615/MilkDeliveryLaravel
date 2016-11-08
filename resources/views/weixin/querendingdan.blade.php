@@ -1,161 +1,104 @@
 @extends('weixin.layout.master')
 @section('title','确认订单')
 @section('css')
-    <link href='css/fullcalendar.min.css' rel='stylesheet'/>
-    <link rel="stylesheet" href="css/themes/base/jquery-ui.css"/>
+    <link href='<?=asset("weixin/css/fullcalendar.min.css")?>' rel='stylesheet'/>
 @endsection
 @section('content')
 
     <header>
         <a class="headl fanh" href="javascript:void(0)"></a>
         <h1>确认订单</h1>
-
     </header>
     <div class="ordsl">
-
+        <input type="hidden" id="group_id" value="{{$group_id}}"/>
+        <input type ="hidden" id="wxuser_id" value="{{$wxuser_id}}">
         <div class="addrli addrli2" onclick="onGoPage1();">
-            <div class="adrtop pa2t">
-                <p>张天 4854545<br>广西壮族自治区</p>
-                <p>17-2-2016</p></div>
+            @if(isset($customer) && ($customer != null))
+                <div class="adrtop pa2t">
+                    <p>{{$customer->name}} {{$customer->phone}}<br>
+                        {{$customer->address}}
+                    </p>
+                </div>
+            @else
+                <div class="adrtop pa2t">
+                    <p>请插入您的信息</p>
+                </div>
+            @endif
         </div>
 
-        <div class="ordnum">
-
-            起送时间：2016-09-28
-
-        </div>
-
-        <div class="ordtop clearfix">
-            <img class="ordpro" src="images/zfx.jpg">
-            <span class="ordlr"><A href="#" onclick="onGoPage2();">修改</A></span>
-            <div class="ord-r">
-                蒙牛纯甄酸奶低温
-                <br>
-                单价：
-                <br>
-                订单数量：32瓶
+        @forelse($wechat_order_products as $wop)
+            <div class="ordtop clearfix">
+                <img class="ordpro" src="<?=asset('img/product/logo/' . $wop->product->photo_url1)?>">
+                <span class="ordlr"><button data-pid="{{$wop->id}}" class="edit_order_product">编辑</button></span>
+                <div class="ord-r">
+                    蒙牛纯甄酸奶低温
+                    <br>
+                    单价：{{$wop->product_price}}
+                    <br>
+                    订单数量：{{$wop->total_count}}瓶
+                </div>
+                <div class="ordye">金额：{{$wop->total_amount}}元</div>
             </div>
-            <div class="ordye">金额：162元</div>
-        </div>
-        <div class="ordtop clearfix">
-            <img class="ordpro" src="images/zfx.jpg">
-            <span class="ordlr"><A href="#" onclick="onGoPage2();">修改</A></span>
+        @empty
 
-            <div class="ord-r">
-                蒙牛纯甄酸奶低温
-                <br>
-                单价：
-                <br>
-                订单数量：32瓶
-            </div>
-            <div class="ordye">金额：162元</div>
-        </div>
-        <h3 class="dnh3">订奶计划预览</h3>
-        <div id='calendar'></div>
+        @endforelse
+
         <div class="ordbot">
-            <textarea class="btxt" name="" cols="" rows="" placeholder="备注"></textarea>
+            <textarea class="btxt" name="comment" id="comment" cols="" rows="" placeholder="备注"></textarea>
         </div>
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-
-        <a class="tjord tjord2" href="javascript:void(0);">去付款</a>
-    </div>
-
-
-    <div id="dialog-message" title="Calender Clicked" style="display: none">
-        <p id="message-content">
-            Your files have downloaded successfully into the My Downloads folder.
-        </p>
+        @if(count($wechat_order_products) > 0)
+            <button class="tjord tjord2" id="make_order">去付款</button>
+        @else
+            <button class="tjord tjord2" disabled >去付款</button>
+        @endif
     </div>
 @endsection
 @section('script')
-
-    <script src="js/jquery-1.10.1.min.js"></script>
-    <script src="js/ui/jquery-ui.js"></script>
-    <script src='js/moment.min.js'></script>
-    <script src='js/fullcalendar.min.js'></script>
     <script type="text/javascript">
-        $(function () {
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev',
-                    center: 'title',
-                    right: 'next'
-                },
-                firstDay: 0,
-                editable: true,
-                events: [
-                    {
-                        title: '2',
-                        start: '2016-09-28',
-                        //className:'ypsrl'
 
-                    },
+        //make order based on cart
+        $('#make_order').click(function () {
+            var comment = $('#comment').val();
+            var group_id =$('#group_id').val();
+
+            $.ajax({
+                type: "POST",
+                url: SITE_URL + "weixin/api/make_order_by_group",
+                data: {'comment': comment, 'group_id':group_id},
+                success: function (data) {
+                    console.log(data);
+                    if(data.status == 'success')
                     {
-                        //title: '2',
-                        start: '2016-09-28',
-                        rendering: 'background',
-                        color: '#00a040'
-                    },
-                    {
-                        title: '5',
-                        start: '2016-09-29',
-                    },
-                    {
-                        //title: '5',
-                        start: '2016-09-29',
-                        rendering: 'background',
-                        color: '#00a040'
-                    },
-                    {
-                        title: '3',
-                        start: '2016-09-30',
-                    },
-                    {
-                        //title: '3',
-                        start: '2016-09-30',
-                        rendering: 'background',
-                        color: '#00a040'
-                    }
-                ],
-                dayClick: function (date, jsEvent, view) {
-                    $("#message-content").html(date.format());
-                    $("#dialog-message").dialog({
-                        modal: true,
-                        buttons: {
-                            Ok: function () {
-                                $(this).dialog("close");
-                            }
+                        var order_id = data.order_id;
+                        window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
+                    } else {
+                        if(data.message)
+                        {
+                            show_err_msg(data.message);
                         }
-                    });
-                }
-            });
-
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                },
+            })
         });
 
         function onGoPage1() {
-            window.location = "地址列表.html";
+            var group_id = $('#group_id').val();
+            var wechat_user_id = $('#wxuser_id').val();
+            window.location = SITE_URL + "weixin/dizhiliebiao?user="+wechat_user_id+"&&group_id="+group_id;
         }
 
-        function onGoPage2() {
-            window.location = "修改订单-不换奶-按周送.html";
-        }
-    </script>
+        //edit order product
+        $('button.edit_order_product').click(function () {
+            var wechat_order_product_id = $(this).data('pid');
+            var group_id = $('#group_id').val();
+            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+"&&group_id="+group_id;
+        })
 
-    <script>
-
-        $(".addSubtract .add").click(function () {
-            $(this).prev().val(parseInt($(this).prev().val()) + 1);
-        });
-        $(".addSubtract .subtract").click(function () {
-            if (parseInt($(this).next().val()) > 10) {
-                $(this).next().val(parseInt($(this).next().val()) - 1);
-                $(this).removeClass("subtractDisable");
-            }
-            if (parseInt($(this).next().val()) <= 10) {
-                $(this).addClass("subtractDisable");
-            }
-        });
     </script>
 @endsection

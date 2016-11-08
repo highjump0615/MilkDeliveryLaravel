@@ -35,7 +35,7 @@
         <dl class="prob clearfix">
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
-                <dd class="prol"><a href="天天送.html">
+                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
                     <img class="bimg" src="<?=asset('img/product/logo/'.$p->photo_url1)?>">
                     <h3 class="proh3">{{$p->name}}</h3>
                     <div class="proml">{{$p->bottle_type_name}}</div>
@@ -97,6 +97,12 @@
 
     <!-- Initialize Swiper -->
     <script>
+
+        var address = "{{$address}}";
+
+        var current_menu = 0;
+        set_current_menu();
+
         var swiper = new Swiper('.swiper-container', {
             pagination: '.swiper-pagination',
             paginationClickable: true,
@@ -105,5 +111,6 @@
         $('.addr1').click(function () {
             $('.adrtc').stop().slideToggle();
         });
+
     </script>
 @endsection

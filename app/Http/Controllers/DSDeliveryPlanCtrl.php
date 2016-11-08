@@ -40,7 +40,7 @@ class DSDeliveryPlanCtrl extends Controller
         $deliver_date_str = $currentDate->format('Y-m-d');
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $currentDate_str = $currentDate->format('Y-m-d');
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $DSProduction_plans = DSProductionPlan::where('station_id',$current_station_id)->where('produce_end_at',$currentDate_str)->orderby('product_id')->get();
         $is_distributed = 0;
         foreach($DSProduction_plans as $dp){
@@ -201,7 +201,7 @@ class DSDeliveryPlanCtrl extends Controller
         $child = 'peisongguanli';
         $parent = 'shengchan';
         $current_page = 'ziyingdingdan';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $delivery_plans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->get();
         $total_remain_product_count = 0;
         foreach ($delivery_plans as $dp){
@@ -583,7 +583,7 @@ class DSDeliveryPlanCtrl extends Controller
         $child = 'jinripeisongdan';
         $parent = 'shengchan';
         $current_page = 'jinripeisongdan';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
         wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])->get()->groupBy(function($sort){return $sort->milkman_id;});
 
@@ -855,7 +855,7 @@ class DSDeliveryPlanCtrl extends Controller
         $child = 'peisongfanru';
         $parent = 'shengchan';
         $current_page = 'peisongfanru';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $milkman = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get();
         $current_milkman = $request->input('milkman_id');
         if($current_milkman == ''){

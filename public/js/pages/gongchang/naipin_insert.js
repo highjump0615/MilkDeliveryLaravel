@@ -44,7 +44,7 @@ function insert_product_price_template(pid) {
             console.log("result: " + data);
             if (data.status == "success") {
                 // var product_id = data.price_added_product_id;
-                show_success_msg("success");
+                show_success_msg("奶品录入成功");
                 // var url = SITE_URL+'gongchang/jichuxinxi/shangpin/shangpinxiangqing/'+product_id;
                 var url = SITE_URL+'gongchang/jichuxinxi/shangpin';
                 window.location.replace(url);

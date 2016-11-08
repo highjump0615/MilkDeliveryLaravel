@@ -45,7 +45,12 @@ Route::get('api/order/get_order_product_price', 'OrderCtrl@get_order_product_pri
 
 //Test
 Route::get('/tests', function () {
-    return multiexplode(array(',', ' '), 'welcome to our city, beautiful place');
+    $a = "1.2345";
+    $b = "2.3456";
+
+    $term_start = (float)$a - (float)$b;
+    var_dump($term_start);
+    echo $term_start;
 });
 
 /*Send hourly notification*/
@@ -327,7 +332,20 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/jichuxinxi/naizhan/peisongfanwei-chakanbianji/change_delivery_area', 'StationManageCtrl@change_delivery_area');
     /*delete area-street*/
     Route::post('api/gongchang/jichuxinxi/naizhan/peisongfanwei-chakanbianji/delete_delivery_area', 'StationManageCtrl@delete_delivery_area');
-
+    /*show Pingjia Page*/
+    Route::get('/gongchang/pingjia/pingjialiebiao','ReviewCtrl@showPingjiaPage');
+    /*delete userpingjia*/
+    Route::delete('api/gongchang/pingjia/pingjialiebiao/remove/{review_id}','ReviewCtrl@deleteUserPingjia');
+    /*pass userpingjia*/
+    Route::post('api/gongchang/pingjia/pingjialiebiao/pass','ReviewCtrl@passUserPingjia');
+    /*isolate userpingjia*/
+    Route::post('api/gongchang/pingjia/pingjialiebiao/isolate','ReviewCtrl@isolateUserPingjia');
+    /*modify userpingjia*/
+    Route::post('api/gongchang/pingjia/pingjialiebiao/modify','ReviewCtrl@modifyUserPingjia');
+    /*isolate userpingjia*/
+    Route::get('api/gongchang/pingjia/pingjialiebiao/current_info/{review_id}','ReviewCtrl@getCurrentInfo');
+    /*show Pingjialiebiao Page*/
+    Route::get('/gongchang/pingjia/pingjiaxiangqing/{review_id}','ReviewCtrl@showPingjialiebiaoPage');
 });
 
 Route::post('/gongchang/login', 'GongchangAuth\AuthController@login');
@@ -345,32 +363,6 @@ Route::get('/gongchang/shouye', function (Request $request) {
 
     ]);
 });
-
-Route::get('/gongchang/pingjia/pingjialiebiao', function (Request $request) {
-    $child = 'pingjialiebiao';
-    $parent = 'pingjia';
-    $current_page = 'pingjialiebiao';
-    $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
-    return view('gongchang.pingjia.pingjialiebiao', [
-        'pages' => $pages,
-        'child' => $child,
-        'parent' => $parent,
-        'current_page' => $current_page
-    ]);
-});
-Route::get('/gongchang/pingjia/pingjiaxiangqing', function (Request $request) {
-    $child = 'pingjialiebiao';
-    $parent = 'pingjia';
-    $current_page = 'pingjiaxiangqing';
-    $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
-    return view('gongchang.pingjia.pingjialiebiao.pingjiaxiangqing', [
-        'pages' => $pages,
-        'child' => $child,
-        'parent' => $parent,
-        'current_page' => $current_page
-    ]);
-});
-
 
 /*N-A-I-Z-H-A-N*/
 Route::get('/naizhan', function () {
@@ -551,6 +543,20 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangjiru', 'FinanceCtrl@show_card_transaction_record_in_naizhan');
     //show milk card delivery detail
     Route::get('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhangdanmingxi/{trs_id}', 'FinanceCtrl@show_card_transaction_detail_in_naizhan');
+
+    Route::get('/naizhan/shouye', function (Request $request) {
+        $child = '';
+        $parent = 'shouye';
+        $current_page = 'shouye';
+        $pages = App\Model\UserModel\Page::where('backend_type', '3')->where('parent_page', '0')->orderby('order_no')->get();
+        return view('naizhan.shouye', [
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page
+
+        ]);
+    });
 
 });
 
@@ -888,6 +894,36 @@ Route::group(['prefix'=>'/weixin'], function(){
     /* product list */
     Route::get('/shangpinliebiao', 'WeChatCtrl@shangpinliebiao');
 
+    /* show order item */
+    Route::get('/tianjiadingdan', 'WeChatCtrl@tianjiadingdan');
+    // add order item to cart
+    Route::post('api/insert_order_item_to_cart', 'WeChatCtrl@insert_order_item_to_cart');
+    //make order directly
+    Route::post('api/make_order_directly', 'WeChatCtrl@make_order_directly');
+
+
+    /* shopping cart */
+    Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
+    Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
+    Route::get('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
+
+    /* confirm order before purchase */
+    Route::get('/querendingdan', 'WeChatCtrl@querendingdan')->name('querendingdan');
+    //make order from cart
+    Route::post('/api/make_order_by_group', 'WeChatCtrl@make_order_by_group');
+
+    //edit order product
+    Route::get('/bianjidingdan', 'WeChatCtrl@bianjidingdan');
+    Route::post('/bianjidingdan/save_changed_order_item', 'WeChatCtrl@save_changed_order_item');
+
+
+    /* addresses */
+    Route::get('/dizhiliebiao', 'WeChatCtrl@dizhiliebiao')->name('dizhiliebiao');
+    Route::get('/dizhitianxie', 'WeChatCtrl@dizhitianxie');
+    Route::post('/dizhitianxie', 'WeChatCtrl@addOrUpdateAddress');
+    Route::post('/delete_address', 'WeChatCtrl@deleteAddress');
+    Route::post('/select_address', 'WeChatCtrl@selectAddress');
+
     /* contact */
     Route::get('/toushu', 'WeChatCtrl@toushu');
 
@@ -903,17 +939,16 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/xinxizhongxin', 'WeChatCtrl@xinxizhongxin');
 
     /* view review */
-    Route::get('/wodepingjia', 'WeChatCtrl@wodepingjia');
+    Route::get('/wodepingjia/{order_id?}', 'WeChatCtrl@wodepingjia')->name('wodepingjia');
 
     /* write review */
     Route::get('/dingdanpingjia', 'WeChatCtrl@dingdanpingjia');
-
-
+    /* add review */
+    Route::post('/dingdanpingjia/addpingjia','WeChatCtrl@addPingjia');
     /* order schedule */
     Route::get('/dingdanrijihua',  'WeChatCtrl@dingdanrijihua');
 
-    /* confirm order before purchase */
-    Route::get('/querendingdan', 'WeChatCtrl@querendingdan');
+
 
     /* order list */
     Route::get('/dingdanliebiao', 'WeChatCtrl@dingdanliebiao');
@@ -922,25 +957,18 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/dingdanxiangqing', 'WeChatCtrl@dingdanxiangqing');
 
     /* xuedan */
-    Route::get('/xuedan', 'WeChatCtrl@xuedan');
+    Route::get('api/show_xuedan', 'WeChatCtrl@show_xuedan');
+    //make xudan based on created wechat order products
+    Route::post('/api/make_order_from_wopids', 'WeChatCtrl@make_order_from_wopids');
 
     /* change order */
     Route::get('/dingdanxiugai', 'WeChatCtrl@dingdanxiugai');
+    Route::post('api/change_order_product', 'WeChatCtrl@change_order_product');
 
     /* change order per day */
     Route::get('/danrixiugai', 'WeChatCtrl@danrixiugai');
+    Route::post('api/change_delivery_plan_for_one_date', 'WeChatCtrl@change_delivery_plan_for_one_date');
 
-    /* addresses */
-    Route::get('/dizhiliebiao', 'WeChatCtrl@dizhiliebiao');
-
-    /* fill in address */
-    Route::get('/dizhitianxie', 'WeChatCtrl@dizhitianxie');
-
-    /* add order item */
-    Route::get('/tianjiadingdan', 'WeChatCtrl@tianjiadingdan');
-
-    /* shopping cart */
-    Route::get('/gouwuche', 'WeChatCtrl@gouwuche');
 });
 //
 //Route::any('{undefinedRoute}', function(){

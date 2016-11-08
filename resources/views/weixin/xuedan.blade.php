@@ -2,122 +2,99 @@
 @section('title','续单')
 @section('css')
 
-	<link href='css/fullcalendar.min.css' rel='stylesheet' />
-	<link rel="stylesheet" href="css/swiper.min.css">
+    <link href='css/fullcalendar.min.css' rel='stylesheet'/>
+    <link rel="stylesheet" href="css/swiper.min.css">
 @endsection
 @section('content')
-	<header>
-		<a class="headl fanh" href="javascript:void(0)"></a>
-		<h1>我的购物车</h1>
+    <header>
+        <a class="headl fanh" href="javascript:void(0)"></a>
+        <h1>我的购物车</h1>
 
-	</header>
-	<div class="ordsl">
-		<div class="dnsli clearfix">
-			<div class="dnsti">起送日期 &nbsp;</div><input class="qssj" name="" type="date">
-		</div>
-		<div class="ordtop clearfix">
-			<img class="ordpro" src="images/zfx.jpg">
+    </header>
+    <div class="ordsl">
+        <div class="addrli addrli2" onclick="onGoPage1();">
+            @if(isset($customer) && ($customer != null))
+                <div class="adrtop pa2t">
+                    <p>{{$customer->name}} {{$customer->phone}}<br>
+                        {{$customer->address}}
+                    </p>
+                </div>
+            @else
+                <div class="adrtop pa2t">
+                    <p>请插入您的信息</p>
+                </div>
+            @endif
+        </div>
 
-			<div class="ord-r">
-				<input class="ordxz" name="" type="checkbox" value="" checked>
-				蒙牛纯甄酸奶低温
-				<br>
-				单价：
-				<br>
-				订单数量：32瓶
-			</div>
-			<div class="ordye">金额：162元</div>
-		</div>
-		<div class="ordtop clearfix">
-			<img class="ordpro" src="images/zfx.jpg">
+        @forelse($wechat_order_products as $wop)
 
+            <div class="ordtop clearfix">
+                <img class="ordpro" src="<?=asset('img/product/logo/' . $wop->product->photo_url1)?>">
+                <span class="ordlr"><button data-pid="{{$wop->id}}" class="edit_order_product">编辑</button></span>
+                <div class="ord-r">
+                    蒙牛纯甄酸奶低温
+                    <br>
+                    单价：{{$wop->product_price}}
+                    <br>
+                    订单数量：{{$wop->total_count}}瓶
+                </div>
+                <div class="ordye">金额：{{$wop->total_amount}}元</div>
+            </div>
+        @empty
 
-			<div class="ord-r"><input class="ordxz" name="" type="checkbox" value="">
-				蒙牛纯甄酸奶低温
-				<br>
-				单价：
-				<br>
-				订单数量：32瓶
-			</div>
-			<div class="ordye">金额：162元</div>
-		</div>
-	</div>
-	<!-- <h3 class="dnh3">订奶计划预览</h3>
-          <div id='calendar'></div> -->
+        @endforelse
 
-	<div class="account clearfix">
-		<div class="ac-l">
-			共90瓶<br>
-			享受：季单优惠
-		</div>
-		<div class="ac-r">
-			<span>总计：￥474</span>
-			<a class="" href="javascript:void(0)">结算</a>
-		</div>
-	</div>
-	<div class="he50"></div>
+        <div class="ordbot">
+            <textarea class="btxt" name="comment" id="comment" cols="" rows="" placeholder="备注"></textarea>
+        </div>
+    </div>
+
+    <div class="he50"></div>
+    <div class="dnsbt clearfix">
+        @if(count($wechat_order_products) > 0)
+            <button class="tjord tjord2" id="make_order" data-wpoids = "{{$wopids}}" >去付款</button>
+        @else
+            <button class="tjord tjord2" id="make_order" disabled>去付款</button>
+        @endif
+    </div>
 @endsection
 @section('script')
+    <script type="text/javascript">
+        //make order based on cart
+        $('#make_order').click(function () {
+            var comment = $('#comment').val();
+            var wopids = $(this).data('wopids');
 
+            $.ajax({
+                type: "POST",
+                url: SITE_URL + "weixin/api/make_order_from_wopids",
+                data: {'comment': comment, 'wopids':wopids},
+                success: function (data) {
+                    console.log(data);
+                    if (data.status == 'success') {
+                        var order_id = data.order_id;
+                        window.location = SITE_URL + "weixin/zhifuchenggong/?order=" + order_id;
+                    } else {
+                        if (data.message) {
+                            show_err_msg(data.message);
+                        }
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                },
+            })
+        });
 
-	<script src='js/moment.min.js'></script>
-	<script src='js/fullcalendar.min.js'></script>
-	<script type="text/javascript">
-		$(function() {
-			$('#calendar').fullCalendar({
-				header: {
-					left: 'prev',
-					center: 'title',
-					right: 'next'
-				},
-				firstDay:0,
-				editable: true,
-				events: [
-					{
-						title: '2',
-						start:'2016-09-28',
-						//className:'ypsrl'
+        function onGoPage1() {
+            window.location = SITE_URL + "weixin/dizhiliebiao";
+        }
 
-					},
-					{
-						//title: '2',
-						start:'2016-09-28',
-						rendering: 'background',
-						color: '#00a040'
-					},
-					{
-						title: '5',
-						start:'2016-09-29',
-					},
-					{
-						//title: '5',
-						start:'2016-09-29',
-						rendering: 'background',
-						color: '#00a040'
-					},
-					{
-						title: '3',
-						start:'2016-09-30',
-					},
-					{
-						//title: '3',
-						start:'2016-09-30',
-						rendering: 'background',
-						color: '#00a040'
-					}
-				]
-			});
+        //edit order product
+        $('button.edit_order_product').click(function () {
+            var wechat_order_product_id = $(this).data('pid');
+            window.location = SITE_URL + "weixin/bianjidingdan/" + wechat_order_product_id;
+        })
 
-		});
-	</script>
-
-	<script>
-
-		$(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
-		$(".addSubtract .subtract").click(function() {
-			if(parseInt($(this).next().val())>10){
-				$(this).next().val(parseInt($(this).next().val()) - 1);
-				$(this).removeClass("subtractDisable");}
-			if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });
-	</script>
+    </script>
 @endsection

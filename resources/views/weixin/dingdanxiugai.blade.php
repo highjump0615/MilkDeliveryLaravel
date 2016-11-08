@@ -1,287 +1,231 @@
 @extends('weixin.layout.master')
 @section('title','订单修改')
 @section('css')
-    <link rel="stylesheet" href="css/themes/base/jquery-ui.css"/>
-    <link href='css/fullcalendar.min.css' rel='stylesheet'/>
-    <link rel="stylesheet" href="css/swiper.min.css">
+
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="javascript:history.back()"></a>
         <h1>修改订单</h1>
     </header>
 
     <div class="ordtop pa2t clearfix">
-        <img class="ordpro" src="images/zfx.jpg">
-        <p>蒙牛纯甄酸奶低温 <span>剩余数量：32</span></p>
-        <div class="ordye">金额：162元</div>
+        <img class="ordpro" src="<?=asset('img/product/logo/' . $order_product->product->photo_url1)?>">
+        <p>{{$order_product->product_name}} <span>剩余数量：{{$order_product->total_count}}</span></p>
+        <div class="ordye">金额：{{$order_product->total_amount}}元</div>
     </div>
+
+    <input type="hidden" id="opid" value = "{{$order_product->id}}"/>
+    <input type="hidden" id="order_id" value = "{{$order_product->order_id}}"/>
 
     <div class="dnsli clearfix dnsli2">
         <div class="dnsti">更改奶品：</div>
-        <select class="dnsel" name="" id="dnsel1" onChange="javascript:dnsel_changed()">
-            <option value="1">不换奶</option>
-            <option value="2">换一种奶</option>
-            <option value="3">换多种奶</option>
+        <select class="dnsel" name="" id="product_list">
+            @foreach($products as $product)
+                @if($product->id == $order_product->product_id)
+                    <option selected value="{{$product->id}}">{{$product->name}}</option>
+                @else
+                    <option value="{{$product->id}}">{{$product->name}}</option>
+                @endif
+            @endforeach
         </select>
     </div>
 
-    <div class="dnsli clearfix dnsli2">
+    <div class="dnsli clearfix">
         <div class="dnsti">配送规则：</div>
-        <select class="dnsel" name="" id="dnsel2" onChange="javascript:dnsel_changed()">
-            <option value="1">天天送</option>
-            <option value="2">隔日送</option>
-            <option value="3">按周送</option>
-            <option value="4">随心送</option>
+        <select class="dnsel" id="delivery_type" onChange="javascript:dnsel_changed(this.value)">
+            <option value="dnsel_item0"
+                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送
+            </option>
+            <option value="dnsel_item1"
+                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送
+            </option>
+            <option value="dnsel_item2"
+                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送
+            </option>
+            <option value="dnsel_item3"
+                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送
+            </option>
         </select>
-
+        <div class="clear"></div>
     </div>
 
-    <div class="dnsli clearfix dnsel_item" id="dnsel_0_2">
-        <div class="dnsti">每天送：</div>
-    <span class="addSubtract">
-                  <a class="subtract" href="javascript:;">-</a>
-                    <input type="text" value="1" style="ime-mode: disabled;">
-                    <a class="add" href="javascript:;">+</a></span>（瓶）
+    <!-- combo box change -->
+    <!-- 天天送 -->
+    <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
+        <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
     </div>
 
-    <div class="dnsli clearfix dnsel_item" id="dnsel_0_3">
-        <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-                <th scope="col">周一</th>
-                <th scope="col">周二</th>
-                <th scope="col">周三</th>
-                <th scope="col">周四</th>
-                <th scope="col">周五</th>
-                <th scope="col">周六</th>
-                <th scope="col">周日</th>
-            </tr>
-            <tr height="55px">
-                <td>
-                    <div><p>1</p></div>
-                    <div><p>cls</p></div>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div><p>5</p></div>
-                    <div><p>cls</p></div>
-                </td>
-                <td>
-                    <div><p>5</p></div>
-                    <div><p>cls</p></div>
-                </td>
-            </tr>
+    <!--隔日送 -->
+    <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
+        <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
+    </div>
+
+    <!-- 按周规则 -->
+    <div class="dnsli clearfix dnsel_item" id="dnsel_item2">
+        <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
         </table>
     </div>
 
-    <div class="dncon dnsel_item" id="dnsel_2_0">
-        <ul class="dnpro">
-            <li class="pa2">
-                <img class="ordpro" src="images/zfx.jpg">
-                <p>蒙牛纯甄酸奶低温 <input class="ordfx" name="" type="checkbox" value="" checked><span class="khpro">可换：12瓶</span>
-                </p>
-                <div class="ordye">￥162</div>
-            </li>
-            <li class="pa2">
-                <img class="ordpro" src="images/zfx.jpg">
-                <p>蒙牛纯甄酸奶低温 <input class="ordfx" name="" type="checkbox" value=""></p>
-                <div class="ordye">￥162</div>
-            </li>
-            <li class="pa2">
-                <img class="ordpro" src="images/zfx.jpg">
-                <p>蒙牛纯甄酸奶低温 <input class="ordfx" name="" type="checkbox" value=""></p>
-                <div class="ordye">￥162</div>
-            </li>
-            <li class="pa2">
-                <img class="ordpro" src="images/zfx.jpg">
-                <p>蒙牛纯甄酸奶低温 <input class="ordfx" name="" type="checkbox" value=""></p>
-                <div class="ordye">￥162</div>
-            </li>
-
-        </ul>
-    </div>
-
-    <div class="dnsel_item" id="dnsel_0_4">
-        <div class="clear"></div>
-        <div id='calendar'></div>
+    <!-- 随心送 -->
+    <div class="dnsel_item" id="dnsel_item3">
+        <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
+        </table>
     </div>
 
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-
-        <a class="tjord tjord2" href="javascript:void(0);">提交</a>
+        <button class="tjord tjord2" id="change_order_product">提交</button>
     </div>
 @endsection
 @section('script')
-    <script src="js/jquery-1.10.1.min.js"></script>
-    <script src="js/ui/jquery-ui.js"></script>
-    <script src='js/moment.min.js'></script>
-    <script src='js/fullcalendar.min.js'></script>
+    <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
+    <script src="<?=asset('weixin/js/showmyweek.js')?>"></script>
+
     <script type="text/javascript">
+
+        var calen, week;
         $(function () {
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev',
-                    center: 'title',
-                    right: 'next'
-                },
-                firstDay: 0,
-                editable: true,
-                events: [
-                    {
-                        title: '2',
-                        start: '2016-09-28',
-                        type: 'count',
+            calen = new showfullcalendar("calendar");
+            week = new showmyweek("week");
+            dnsel_changed("dnsel_item0");
 
-                    },
-                    {
-                        title: 'cls',
-                        start: '2016-09-28',
-                        type: 'clear',
-
-                    },
-                    {
-                        start: '2016-09-28',
-                        rendering: 'background',
-                        color: '#00a040',
-                        type: 'render',
-                    }
-                ],
-                dayClick: function (date, jsEvent, view) {
-                    var events = $('#calendar').fullCalendar('clientEvents');
-                    var calCountEvent = null;
-                    for (var i = 0; i < events.length; i++) {
-                        if (moment(date).isSame(moment(events[i].start))) {
-                            if (events[i].type == "count") {
-                                calCountEvent = events[i];
-                                break;
-                            }
-                        }
-                    }
-                    if (calCountEvent == null) {
-                        var countEvent = new Object();
-                        countEvent.start = date;
-                        countEvent.title = '1';
-                        countEvent.type = 'count';
-
-                        var clearEvent = new Object();
-                        clearEvent.start = date;
-                        clearEvent.title = 'cls';
-                        clearEvent.type = 'clear';
-
-                        var addEventSource = [
-                            {
-                                title: '1',
-                                start: date,
-                                type: 'count',
-
-                            },
-                            {
-                                title: 'cls',
-                                start: date,
-                                type: 'clear',
-
-                            },
-                            {
-                                start: date,
-                                rendering: 'background',
-                                color: '#00a040',
-                                type: 'render',
-                            }
-                        ];
-
-                        $('#calendar').fullCalendar('addEventSource', addEventSource);
-                    }
-                },
-                eventClick: function (calEvent, jsEvent, view) {
-                    if (calEvent.type == "count") {
-                        calEvent.title = parseInt(calEvent.title) + 1;
-                        $('#calendar').fullCalendar('updateEvent', calEvent);
-                    }
-                    else if (calEvent.type == "clear") {
-                        var events = $('#calendar').fullCalendar('clientEvents');
-                        var calCountEvent;
-                        var renderEvent;
-                        for (var i = 0; i < events.length; i++) {
-                            if (moment(calEvent.start).isSame(moment(events[i].start))) {
-                                if (events[i].type == "count") {
-                                    calCountEvent = events[i];
-                                }
-                                else if (events[i].type == "render") {
-                                    renderEvent = events[i];
-                                }
-                            }
-                        }
-                        $('#calendar').fullCalendar('removeEvents', calEvent._id);
-                        $('#calendar').fullCalendar('removeEvents', calCountEvent._id);
-                        $('#calendar').fullCalendar('removeEvents', renderEvent._id);
-                    }
-                }
-
-            });
-            $("table.psgzb td > div").click(function(){
-                if($(this).is(":first-child"))
-                {
-                    $(this).children().html(parseInt($(this).children().html())+1);
-                }
-                else
-                {
-                    $(this).parent().html("");
-                }
-                return false;
-            });
-            $("table.psgzb td").click(function(){
-                if($(this).children().length != 2)
-                {
-                    $(this).html("<div><p>1</p></div><div><p>cls</p></div>");
-                    $(this).children().click(function(){
-                        if($(this).is(":first-child"))
-                        {
-                            $(this).children().html(parseInt($(this).children().html())+1);
-                        }
-                        else
-                        {
-                            $(this).parent().html("");
-                        }
-                        return false;
-                    });
-                }
-            });
-            dnsel_changed();
+            init_wechat_order_product();
         });
-    </script>
 
-    <script>
-        function dnsel_changed() {
-            var combo1 = $("#dnsel1").val();
-            var combo2 = $("#dnsel2").val();
+        function dnsel_changed(id) {
             $(".dnsel_item").css("display", "none");
-            if( combo1 == 1 && combo2 == 1 )
-            {
-                $("#dnsel_0_2").css("display", "block");
-            }
-            $("#dnsel_" + combo1 + "_" + combo2).css("display", "block");
-            $("#dnsel_0_" + combo2).css("display", "block");
-            $("#dnsel_" + combo1 + "_0").css("display", "block");
+            $("#" + id).css("display", "block");
         }
-    </script>
 
-    <script>
+        function init_wechat_order_product() {
+            var delivery_type = parseInt("{{$order_product->delivery_type}}");
 
-        $(".addSubtract .add").click(function () {
-            $(this).prev().val(parseInt($(this).prev().val()) + 1);
-        });
-        $(".addSubtract .subtract").click(function () {
-            if (parseInt($(this).next().val()) > 10) {
-                $(this).next().val(parseInt($(this).next().val()) - 1);
-                $(this).removeClass("subtractDisable");
+            $('#delivery_type').find('option[data-value="'+delivery_type+'"]').prop('selected', true);
+
+            $('#delivery_type').trigger('change');
+
+
+            if(delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}"))
+            {
+                var count_per = parseInt("{{$order_product->count_per_day}}");
+                $('#dnsel_item0 input').val(count_per);
+
+            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}"))
+            {
+                var count_per = parseInt("{{$order_product->count_per_day}}");
+                $('#dnsel_item1 input').val(count_per);
+
+            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}"))
+            {
+                //show custom bottle count on week
+                week.custom_dates = "{{$order_product->custom_order_dates}}";
+                week.set_custom_date();
+
+            } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
+
+                calen.custom_dates = "{{$order_product->custom_order_dates}}";
+                calen.set_custom_date();
+
+            } else {
+                return;
             }
-            if (parseInt($(this).next().val()) <= 10) {
-                $(this).addClass("subtractDisable");
+
+        }
+
+        $('#change_order_product').click(function(){
+
+            var order_id = $('#order_id').val();
+
+            var send_data = new FormData();
+
+            var order_product_id = $('#opid').val();
+            send_data.append('order_product_id', order_product_id);
+
+            var product_id = $('#product_list').val();
+            send_data.append('product_id', product_id);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
             }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            console.log(send_data);
+
+            $.ajax({
+                type: "POST",
+                url: SITE_URL + "weixin/api/change_order_product",
+                data: send_data,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        show_success_msg("更改奶品成功");
+                        //go to dingdan xiangqing
+                        window.location.href = SITE_URL + "weixin/dingdanxiangqing?order="+order_id;
+                    } else
+                    {
+                        if(data.message)
+                        {
+                            show_warning_msg(data.message);
+                        }
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    show_warning_msg("附加产品失败");
+                }
+            });
+
         });
+
     </script>
 @endsection

@@ -27,7 +27,7 @@ class DSStatistics extends Controller
         $child = 'dingdan';
         $parent = 'tongji';
         $current_page = 'dingdan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
@@ -144,7 +144,7 @@ class DSStatistics extends Controller
         $child = 'dingdanshenyuliang';
         $parent = 'tongji';
         $current_page = 'dingdanshenyuliang';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
         $current_station_id = Auth::guard('naizhan')->user()->id;
@@ -290,7 +290,7 @@ class DSStatistics extends Controller
         $child = 'naipinpeisongri';
         $parent = 'tongji';
         $current_page = 'naipinpeisongri';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $endDate_str = $currentDate->format('Y-m-d');
         $currentDate_str = $currentDate->format('Y-m-01');
@@ -404,10 +404,8 @@ class DSStatistics extends Controller
         $child = 'peisongyuanwei';
         $parent = 'tongji';
         $current_page = 'peisongyuanwei';
-
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $current_station_id = Auth::guard('naizhan')->user()->id;
-
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
 
         $milkman_name = $request->input('milkman_name');
         if($milkman_name == null){

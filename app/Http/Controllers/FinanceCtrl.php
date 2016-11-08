@@ -1325,7 +1325,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'taizhang';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.taizhang', [
             'pages' => $pages,
@@ -1414,7 +1414,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'benzhandingdan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.taizhang.benzhandingdan', [
             'pages' => $pages,
@@ -1465,7 +1465,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhanghuyue';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
 
@@ -1490,7 +1490,7 @@ class FinanceCtrl extends Controller
         $child = 'ziyingzhanghujiru';
         $parent = 'caiwu';
         $current_page = 'ziyingzhanghujiru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.ziyingzhanghujiru', [
             'pages' => $pages,
@@ -1522,7 +1522,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'xianjinzhuanzhangjiru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         return view('naizhan.caiwu.taizhang.qitanaizhanzhuanzhang.xianjinzhuanzhangjiru', [
             'pages' => $pages,
             'child' => $child,
@@ -1564,7 +1564,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhuanzhangzhangdan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.taizhang.qitanaizhanzhuanzhang.zhuanzhangzhangdan', [
             'pages' => $pages,
@@ -1622,7 +1622,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhuanzhangjiru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.taizhang.qitanaizhanzhuanzhang.zhuanzhangjiru', [
             'pages' => $pages,
@@ -1673,7 +1673,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'dingdanjiru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.dingdanjiru', [
             'pages' => $pages,
             'child' => $child,
@@ -1714,7 +1714,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhuanzhangzhangdan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.zhuanzhangzhangdan', [
             'pages' => $pages,
             'child' => $child,
@@ -1751,7 +1751,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhuanzhangjiru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.zhuanzhangjiru', [
             'pages' => $pages,
@@ -1775,7 +1775,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhangdanmingxi';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.zhangdanmingxi', [
             'pages' => $pages,
             'child' => $child,

@@ -1,18 +1,17 @@
 @extends('weixin.layout.master')
 @section('title','个人中心')
 @section('css')
-
 @endsection
 @section('content')
 
     <div class="top">
         <h1>个人中心</h1>
-        <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-        <a class="topa2" href="jvascript:void(0)"></a></div>
+        <a class="topa1" href="javascript:history.back();">&nbsp;</a>
+        <a class="topa2" href="javascript:void(0)"></a></div>
 
     <div class="cen_t">
-        <img src="images/11.jpg">
-        <p>小明</p>
+        <img src="{{$user->image_url}}">
+        <p>{{$user->name}}</p>
 
     </div>
 
@@ -25,22 +24,28 @@
 
         <ul class="cen_ul">
             <li><p>待付款</p>
-                <a href="修改后的订单列表.html"><img src="images/dfk.png" border="0"></a></li>
+                <a href="{{url('/weixin/gouwuche')}}"><img src="<?=asset('/weixin/images/dfk.png')?>" border="0"></a></li>
             <li style="margin-left:25%"><p>已付款</p>
-                <a href="修改后的订单列表.html"><img src="images/yfk.png" border="0"></a></li>
+                <a href="{{url('/weixin/dingdanliebiao?type=daishenhe')}}"><img src="<?=asset('/weixin/images/yfk.png')?>" border="0"></a></li>
             <li style="margin-left:25%"><p>完成</p>
-                <a href="修改后的订单列表.html"><img src="images/wc.png" border="0"></a></li>
+                <a href="{{url('/weixin/dingdanliebiao?type=yiwan')}}"><img src="<?=asset('/weixin/images/wc.png')?>" border="0"></a></li>
         </ul>
 
         <ul class="cen_menu">
-            <li class="boder_t"><a href="订单日计划修改-日历.html">我的订单计划</a></li>
-            <li><a href="32消息中心.html">消息中心</a></li>
-            <li><span><a href="31投诉建议.html">退订咨询</a></span><a href="31投诉建议.html">投诉建议</a></li>
-            <li><a href="23我的评价.html">我的评价</a></li>
+            <li class="boder_t"><a href="{{url('/weixin/dingdanrijihua')}}">我的订单计划</a></li>
+            <li><a href="{{url('/weixin/xinxizhongxin')}}">消息中心</a></li>
+            <li><span><a href="{{url('/weixin/toushu')}}">退订咨询</a></span><a href="{{url('/weixin/toushu')}}">投诉建议</a></li>
+            <li><a href="{{url('/weixin/toushu')}}">我的评价</a></li>
         </ul>
 
     </div>
-    @include('weixin.layout.footer');
+    @include('weixin.layout.footer')
 @endsection
 @section('script')
+    <script>
+        var current_menu = 3;
+        $(document).ready(function(){
+            set_current_menu();
+        });
+    </script>
 @endsection

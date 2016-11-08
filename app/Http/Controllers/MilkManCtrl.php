@@ -21,7 +21,7 @@ class MilkManCtrl extends Controller
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'peisongyuan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
 
         $street = array();
@@ -148,7 +148,7 @@ class MilkManCtrl extends Controller
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'fanwei-chakan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
 
         $station = Milkman::find($milkman_id)->station;

@@ -17,6 +17,7 @@ $(document).ready(function () {
     time = time.split(':');
     var date = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
 
+    alert(date);
     firstm = new Date(date.getFullYear(), date.getMonth(), 1);
     lastm = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 

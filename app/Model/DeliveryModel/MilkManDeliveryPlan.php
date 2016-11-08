@@ -33,10 +33,11 @@ class MilkManDeliveryPlan extends Model
     ];
 
     protected $appends = [
-        'price',
+        'plan_price',
         'station_id',
         'product_name',
-        'status_name'
+        'status_name',
+        'plan_product_image',
     ];
 
 
@@ -57,6 +58,17 @@ class MilkManDeliveryPlan extends Model
     const MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED = 4;
 
 
+    public function getPlanProductImageAttribute()
+    {
+        $order_product = OrderProduct::find($this->order_product_id);
+        if($order_product)
+        {
+            $product = $order_product->product;
+            return $product->photo_url1;
+        }
+    }
+
+
     public function getStatusNameAttribute(){
         if($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             return "已配送";
@@ -75,13 +87,10 @@ class MilkManDeliveryPlan extends Model
             return "";
     }
 
-    public function getPriceAttribute()
+    public function getPlanPriceAttribute()
     {
-        $op = OrderProduct::find($this->order_product_id);
-        if($op)
-            return $op->product_price;
-        else
-            return 0;
+        $plan_price = ($this->product_price) * ($this->changed_plan_count);
+        return $plan_price;
     }
 
     public function getStationIdAttribute(){

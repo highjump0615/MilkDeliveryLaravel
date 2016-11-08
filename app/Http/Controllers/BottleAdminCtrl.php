@@ -251,7 +251,7 @@ class BottleAdminCtrl extends Controller
             $end_date = $current_date_str;
         }
 
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $milkmans = MilkMan::where('station_id',$current_station_id)->get();
         $milkman_delivered_counts = MilkManDeliveryPlan::where('milkman_id',$milkman_id)->where('delivered_count','<>','')->orderby('deliver_at','spec')->get();
         $delivered_info = array();
@@ -346,7 +346,7 @@ class BottleAdminCtrl extends Controller
         $child = 'pingkuangshouhui';
         $parent = 'pingkuang';
         $current_page = 'pingkuangshouhui';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         $current_date_str = $currentDate->format('Y-m-d');
         $first_day_of_current_month = $currentDate->format('Y-m-01');
@@ -586,7 +586,7 @@ dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id
         $child = 'pingkuangtongji';
         $parent = 'pingkuang';
         $current_page = 'pingkuangtongji';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $bottles = array();
 
         $station_addr = DeliveryStation::find($current_station_id)->address;

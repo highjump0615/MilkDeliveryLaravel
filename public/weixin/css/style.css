@@ -9,14 +9,16 @@ table{max-widht:100%}
 em,i{ font-style:normal}
 .clear{ clear:both; font-size:0; height:0; line-height:0}
 .clearfix:after,.pa2:after{content:".";display:block;height:0;clear:both;visibility:hidden}
-.clearfix{height:1%}
+/*.clearfix{*+height:1%}*/
 input, button { -webkit-appearance: none; border-radius:0; outline:none}
+button:active{position:relative; top:1px;}
 .cred,a.cred{ color:#F00}
-.bimg{ display: block;width: 100%;height: auto}
+.bimg{ display: block;width: 100%;height: auto; max-height:640px;}
 .pa2{ padding:3%}
 .pa2t{ padding:0 3%}
+.plan_result{text-align:center}
 
-
+input[type='checkbox']{margin: 0;}
 /************************首页*/
 header{ position: relative; padding:0 1%; height: 38px; line-height:38px; text-align: center; color:#fff; background-color:#00a040; overflow:hidden}
 header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
@@ -45,7 +47,7 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .promon strong{ color:#f54a07; font-size:1.2rem}
 .he50{ clear:both; width:100%; height:50px}
 .menu{ position:fixed; width:100%; left:0; bottom:0; z-index:2; padding:2px 0; background:#f3f3f3; border-top:1px solid #dbdbdb}
-.menul{ margin:0 3%;display: -moz-box; display: -webkit-box; display: block}
+.menul{ margin:0 3%;display: -moz-box; display: -webkit-box; display: grid;}
 .menul li{-moz-box-flex: 1; -webkit-box-flex: 1; box-flex: 1}
 .menul li a{ position:relative; display:block; text-align:center; font-size:1.2rem; line-height:1.2; color:#bababa}
 .menul li a.curr{ color:#00a040}
@@ -91,7 +93,7 @@ header h1{ font-size:1.6rem}
 .psgzb{ margin:4% auto; width:80%; border-collapse:collapse; text-align:center; font-size:1.2rem}
 .psgzb td,.psgzb th{ border:1px solid #9f9f9f}
 .psgzb th{ background:#18b768}
-.psgzb td{ color:#e17c04; padding:6px 4px}
+.psgzb td{ color:#e17c04; padding:0px 0px 0px 0px; font-size: 1.2rem}
 .dnsall{}
 .dnsall p{ font-size:1.4rem}
 .dnsts{ position:relative; margin-bottom:2%; text-align:center; line-height:2.2; background:#e2e2e2}
@@ -122,9 +124,10 @@ header h1{ font-size:1.6rem}
 .spstart i{ display:inline-block; margin:0 2px; width:8px; height:8px; line-height:8px; background:url(../images/start.png) no-repeat; background-size:20px}
 .spstart i.stno{ background-position:-12px 0}
 .pjxx{ line-height:1.2}
+
 .dnsbt{position:fixed; width:96%; left:2%; bottom:0; z-index:2; padding:4px 0;  text-align:center; background:#fff}
-.dnsbt a.dnsb1,.dnsbt a.dnsb2{ margin:0 1%; padding:0 20px; display:inline-block; line-height:2; color:#fff; font-size:1.6rem;-moz-border-radius:2px;border-radius:2px}
-.dnsbt a.dnsb1 span{ font-size:1.4rem}
+.dnsbt button { margin:0 1%; padding:0 20px; display:inline-block; line-height:2; color:#fff; font-size:1.6rem;-moz-border-radius:2px;border-radius:2px; border-style:hidden;}
+.dnsbt button:active {position: relative; top: 1px;}
 .dnsb1{ background:#00a040}
 .dnsb2{ background:#ed5a02}
 
@@ -146,13 +149,18 @@ header h1{ font-size:1.6rem}
 .ordfx:checked{ background:url(../images/checkmark.png) no-repeat 50% 70%; background-size:80%}
 .dnpro li .ordye{ position:static}
 a.tjord{ margin:auto; display:block; font-size:1.6rem; line-height:1.8; color:#fff; background:#ed5a02}
+button.tjord{ margin:auto; display:block; font-size:1.6rem; line-height:1.8; color:#fff; background:#ed5a02}
 .khpro{ margin-left:3%; font-size:1.2rem; color:#ccc}
 
 /**********************修改订单-多个品种*/
 .ordxg{ padding-top:4%; clear:both; font-size:1.2rem}
 .qssj2{ padding-left:0; vertical-align:middle}
 a.tjord2{ width:65%}
+button.tjord2{ width:65%}
 .psrq{ padding-top:2%}
+#calendar table thead tr td:hover{cursor:pointer;background-color: burlywood}
+#calendar table thead tr td.selected{cursor:pointer;background-color: burlywood}
+
 
 /**********************修改订单-单日加减2*/
 .ordall{ font-size:1.4rem; color:#ed5a02; text-align:center; background:#d3d3d3}
@@ -161,18 +169,21 @@ a.tjord2{ width:65%}
 .dnpro2 li{ position:relative; border-bottom:none; padding:1.5% 3%}
 .dnpro2 .addSubtract{ position:absolute; right:4%; top:28%}
 a.tjord3{ width:55%; background:#00a040}
+button.tjord3{ width:55%; background:#00a040}
 
 /**********************订单日计划修改*/
-.ordjl{ margin-top:4%; border-top:1px solid #b7b7b7}
+.ordjl{ margin-top:4%; border-top:1px solid #b7b7b7; max-height:200px; overflow:auto;}
 .ordjl dt{ font-size:1.4rem; font-weight:bold; line-height:2.2}
 .ordjl dd{ font-size:1.2rem; border-bottom:1px solid #d6d6d6; line-height:2.1}
 .ordjl dd span{ padding-right:6%}
 
 /**********************订单列表-新提交待审核*/
-.ordsl{}
+.ordsl{margin-bottom: 120px;}
 .ordnum{ padding:2% 3% 1% 3%; font-size:1.3rem; border-bottom:1px solid #c4c4c4}
 .ordnum span{ float:right}
 .ordlr{ position:absolute; right:3%; top:0;  font-size:1.2rem}
+.ordlr button.edit_order_product{background-color:#ed5a02;border-radius:2px; color: white;border-style:none;padding: 5px 10px;}
+
 .ordtop .ordlr{ top:2%}
 .ordsl .ordtop{ padding:2.5% 3% 7% 3%;border-bottom:1px solid #c4c4c4}
 .ord-r{ display:inline-block; width:70%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
@@ -206,6 +217,8 @@ a.tjord3{ width:55%; background:#00a040}
 .rqbot span{ display:inline-block; padding:3% 10%; width:28%; border-right:1px solid #fff}
 .rqbot span:last-child{ border-right:none}
 .rqbot a{ display:block; width:100%; color:#00a040; font-size:1.5rem; text-align:center; background:#fff; -moz-border-radius:2px;border-radius:2px;}
+.rqbot button{ display:block; width:100%; color:#00a040; font-size:1.5rem; text-align:center; background:#fff; -moz-border-radius:2px;border-radius:2px; border-style:none;}
+.rqbot button:active{position:relative; top: 1px;}
 
 /**********************订单列表-审核完成-修改时间*/
 .ordrs{ font-size:1.2rem}
@@ -244,13 +257,14 @@ a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../image
 .ordsl .lastcd,.lastcd{ border-bottom:none}
 
 /**********************结算页*/
-.ordxz{ float:right;width:15px; height:15px; border:1px solid #6e6e6e}
-.ordxz:checked{ background:#ed5a02 url(../images/mrdz.png) no-repeat 50% 70%; background-size:80%; border-color:#ed5a02}
-.account{ position:fixed; left:0; bottom:0; width:94%; padding:3% 3% 1% 3%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
+.ordxz{ float:right;width:25px; height:25px; border:1px solid #6e6e6e; border-radius: 2px;}
+.ordxz:checked{ background:#ed5a02 url(../images/mrdz.png) no-repeat 50% 70%; background-size:80%; border-color:#ed5a02; margin:0;}
+.ordxz.remove{background-size:32px 32px; background-position: 40% 30%; margin-left: 5px;}
+.account{ position:fixed; left:0; bottom:42px; width:100%; padding:1% 1% 1% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
 .ac-l{ float:left; width:40%; font-size:1.2rem; line-height:1.2}
 .ac-r{ float:right; width:60%; text-align:right}
 .ac-r span{font-size:1.2rem; line-height:2.4; padding-right:2%}
-.ac-r a{ display:inline-block; width:50%; line-height:1.8; text-align:center; color:#fff; font-size:1.8rem; background:#ed5a02}
+.ac-r a, .ac-r button { display:inline-block; width:50%; line-height:1.8; text-align:center; color:#fff; font-size:1.8rem; background:#ed5a02; border-style:none; border-radius: 2px;}
 .dnh3{ padding-top:1%; font-size:1.4rem; text-indent:1em}
 
 /******************登录注册*/
@@ -277,7 +291,7 @@ a.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; line-he
 .top h1{ color:#fff; text-align:center; font-size:16px; font-weight:normal; line-height:2.2}
 .top a{ display:block; color:#fff; position:absolute; top:0}
 .topa1{ left:2%; font-size:14px; line-height:2.5; background:url(../images/fanh.png) no-repeat center left; background-size:15px; padding-left:12px}
-.topa2{ background:url(../images/usecent.jpg) no-repeat center center; background-size:18px; height:35px; width:35px; right:0}
+/*.topa2{ background:url(../images/usecent.jpg) no-repeat center center; background-size:18px; height:35px; width:35px; right:0}*/
 .cen_t{ background:url(../images/t1.jpg); background-repeat:no-repeat; height:130px; background-size:100%; width:100%; text-align:center; margin:0 auto}
 .cen_t img{ text-align:center; width:80px; height:80px; margin-top:10px;border-radius:40px;-moz-border-radius:40px;}
 .cen_1{ background:#00a040; height:30px; line-height:30px; margin-top:10px; text-align:center; color:#FFFFFF}
@@ -331,7 +345,7 @@ a.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; line-he
 .pr_t li.current a{ color:#e99d43}
 
 .pr_ul{ margin:10px auto; height:28px; border-bottom: solid 1px #Ccc;padding-bottom:10px; }
-.pr_ul li{ width:17%; text-align:center;line-height:28px; float:left; margin-left:1%;background:#e1e1e1;  border-radius:10px;-moz- border-radius:10px; }
+.pr_ul li{ width:17%; text-align:center;line-height:28px; float:left; margin-left:1%;background:#e1e1e1;  border-radius:10px;}
 .pr_ul li.current{ border:solid 1px #e17c04; background:none  }
 .pr_ul li.current a{ color:#e99d43}
 
@@ -344,3 +358,10 @@ a.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; line-he
 
 /*rcu*/
 img.ordxz{ float:right;width:32px; height:32px; border:0px}
+img.ordxz{cursor:pointer;}
+.psgzb th { width:62px; }
+.psgzb td div.psgzb_number { font-size: 2.4rem; }
+.psgzb td div.psgzb_remove { text-align: right; padding-right:5px; font-size: 0.5rem;}
+
+button[disabled], a[disabled], input[disabled] {background-color: #988f89; cursor:not-allowed}
+a[disabled]{pointer-events: none;}

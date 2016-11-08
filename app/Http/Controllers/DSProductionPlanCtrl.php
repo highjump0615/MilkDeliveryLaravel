@@ -47,7 +47,7 @@ class DSProductionPlanCtrl extends Controller
         $child = 'jihuaguanli';
         $parent = 'shengchan';
         $current_page = 'jihuaguanli';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 //        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->orderBy('produce_start_at')->get()->groupBy(function($sort){return $sort->produce_start_at;});
 
         $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$current_date)->get();
@@ -81,7 +81,7 @@ class DSProductionPlanCtrl extends Controller
         $child = 'jihuaguanli';
         $parent = 'shengchan';
         $current_page = 'tijiaojihua';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         $current_station_status = DeliveryStation::find($current_station_id);
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
@@ -130,7 +130,7 @@ class DSProductionPlanCtrl extends Controller
                     }
                     else {
                         $total_count += $plan->plan_count;
-                        $total_money += $plan->plan_count * $plan->price;
+                        $total_money += $plan->plan_count * $plan->product_price;
                     }
                 }
                 $pl["total_count"] = $total_count;
@@ -158,7 +158,7 @@ class DSProductionPlanCtrl extends Controller
                     }
                     else {
                         $total_count += $plan->plan_count;
-                        $total_money += $plan->plan_count * $plan->price;
+                        $total_money += $plan->plan_count * $plan->product_price;
                     }
                 }
                 $current_delivery_plans = DSProductionPlan::where('produce_start_at',$currentDate_str)->where('station_id',$current_station_id)->where('product_id',$pl->id)->get()->first();

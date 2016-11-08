@@ -201,7 +201,7 @@ class OrderCtrl extends Controller
         $restart_at = $order->restart_at;
 
         $exist_stop = false;
-        if ((!$stop_at && !$restart_at) || ($stop_at != "" && $restart_at != "")) {
+        if (($stop_at && $restart_at) || ($stop_at != "" && $restart_at != "")) {
             $exist_stop = true;
         }
 
@@ -868,7 +868,7 @@ class OrderCtrl extends Controller
         $restart_at = $order->restart_at;
 
         $exist_stop = false;
-        if ((!$stop_at && !$restart_at) || ($stop_at != "" && $restart_at != "")) {
+        if (($stop_at && $restart_at) || ($stop_at != "" && $restart_at != "") || ($stop_at != null && $restart_at != null) ) {
             $exist_stop = true;
         }
 
@@ -1231,7 +1231,7 @@ class OrderCtrl extends Controller
         $restart_at = $order->restart_at;
 
         $exist_stop = false;
-        if ((!$stop_at && !$restart_at) || ($stop_at != "" && $restart_at != "")) {
+        if (($stop_at && $restart_at) || ($stop_at != "" && $restart_at != "")) {
             $exist_stop = true;
         }
 
@@ -2097,7 +2097,7 @@ class OrderCtrl extends Controller
         $child = 'quanbuluru';
         $parent = 'dingdan';
         $current_page = 'xiugai';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.xiugai', [
             'pages' => $pages,
@@ -2389,6 +2389,7 @@ class OrderCtrl extends Controller
 
         if ($request->ajax()) {
 
+            
             $from_station = false;
             $fuser = Auth::guard('gongchang')->user();
             if (!$fuser) {
@@ -2657,14 +2658,15 @@ class OrderCtrl extends Controller
                     $op->count_per_day = $request->input('order_product_count_per')[$i];
                 } else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
-                        //Week Delivery
-                        $result = $this->get_week_delivery_info($custom_dates);
-
-                    } else {
-                        //Month Delivery
-                        $result = $this->get_month_delivery_info($custom_dates);
-                    }
+//                    if ($delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
+//                        //Week Delivery
+//                        $result = $this->get_week_delivery_info($custom_dates);
+//
+//                    } else {
+//                        //Month Delivery
+//                        $result = $this->get_month_delivery_info($custom_dates);
+//                    }
+                    $result = trim($custom_dates);
                     $op->custom_order_dates = $result;
                 }
 
@@ -2748,7 +2750,7 @@ class OrderCtrl extends Controller
         $child = 'zantingliebiao';
         $parent = 'dingdan';
         $current_page = 'zanting';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.zanting', [
             'pages' => $pages,
@@ -2923,14 +2925,15 @@ class OrderCtrl extends Controller
                     $op->count_per_day = $request->input('order_product_count_per')[$i];
                 } else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == "3") {
-                        //Week Delivery
-                        $result = $this->get_week_delivery_info($custom_dates);
-
-                    } else {
-                        //Month Delivery
-                        $result = $this->get_month_delivery_info($custom_dates);
-                    }
+//                    if ($delivery_type == "3") {
+//                        //Week Delivery
+//                        $result = $this->get_week_delivery_info($custom_dates);
+//
+//                    } else {
+//                        //Month Delivery
+//                        $result = $this->get_month_delivery_info($custom_dates);
+//                    }
+                    $result = trim($custom_dates);
                     $op->custom_order_dates = $result;
                 }
 
@@ -3131,14 +3134,15 @@ class OrderCtrl extends Controller
                     $op->count_per_day = $request->input('order_product_count_per')[$i];
                 } else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == "3") {
-                        //Week Delivery
-                        $result = $this->get_week_delivery_info($custom_dates);
-
-                    } else {
-                        //Month Delivery
-                        $result = $this->get_month_delivery_info($custom_dates);
-                    }
+//                    if ($delivery_type == "3") {
+//                        //Week Delivery
+//                        $result = $this->get_week_delivery_info($custom_dates);
+//
+//                    } else {
+//                        //Month Delivery
+//                        $result = $this->get_month_delivery_info($custom_dates);
+//                    }
+                    $result = trim($custom_dates);
                     $op->custom_order_dates = $result;
                 }
 
@@ -3437,13 +3441,15 @@ class OrderCtrl extends Controller
                 }
                 else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == "3") {    // 按周送
-                        $result = $this->get_week_delivery_info($custom_dates);
-                    }
-                    else {  // 随心送
-                        $result = $this->get_month_delivery_info($custom_dates);
-                    }
-                    $result = rtrim($result, ',');
+//                    if ($delivery_type == "3") {
+//                        //Week Delivery
+//                        $result = $this->get_week_delivery_info($custom_dates);
+//
+//                    } else {
+//                        //Month Delivery
+//                        $result = $this->get_month_delivery_info($custom_dates);
+//                    }
+                    $result = rtrim($custom_dates, ',');
                     $op->custom_order_dates = $result;
                 }
 
@@ -3552,9 +3558,9 @@ class OrderCtrl extends Controller
             $diff = intval($diff->days);
 
             $gap_day = intval($factory->gap_day);
-            if ($diff < $gap_day) {
-                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
-            }
+//            if ($diff < $gap_day) {
+//                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
+//            }
 
 
             $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
@@ -3698,14 +3704,15 @@ class OrderCtrl extends Controller
                     $op->count_per_day = $request->input('order_product_count_per')[$i];
                 } else {
                     $custom_dates = $request->input('delivery_dates')[$i];
-                    if ($delivery_type == "3") {
-                        //Week Delivery
-                        $result = $this->get_week_delivery_info($custom_dates);
-
-                    } else {
-                        //Month Delivery
-                        $result = $this->get_month_delivery_info($custom_dates);
-                    }
+//                    if ($delivery_type == "3") {
+//                        //Week Delivery
+//                        $result = $this->get_week_delivery_info($custom_dates);
+//
+//                    } else {
+//                        //Month Delivery
+//                        $result = $this->get_month_delivery_info($custom_dates);
+//                    }
+                    $result = trim($custom_dates);
                     $op->custom_order_dates = $result;
                 }
 
@@ -3808,7 +3815,7 @@ class OrderCtrl extends Controller
         $child = 'dingdan';
         $parent = 'dingdan';
         $current_page = 'xiangqing';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.detail', [
             'pages' => $pages,
@@ -3898,7 +3905,7 @@ class OrderCtrl extends Controller
         $child = 'dingdanluru';
         $parent = 'dingdan';
         $current_page = 'dingdanluru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.dingdanluru', [
             'pages' => $pages,
@@ -4310,7 +4317,7 @@ class OrderCtrl extends Controller
         $child = 'weitongguo';
         $parent = 'dingdan';
         $current_page = 'weitongguon';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.weitongguo', [
             'pages' => $pages,
@@ -4378,7 +4385,7 @@ class OrderCtrl extends Controller
         $child = 'zantingliebiao';
         $parent = 'dingdan';
         $current_page = 'zantingliebiao';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.zantingliebiao', [
             'pages' => $pages,
@@ -4444,7 +4451,7 @@ class OrderCtrl extends Controller
         $child = 'zaipeisong';
         $parent = 'dingdan';
         $current_page = 'zaipeisong';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.zaipeisong', [
             'pages' => $pages,
@@ -4568,7 +4575,7 @@ class OrderCtrl extends Controller
         $child = 'xudanliebiao';
         $parent = 'dingdan';
         $current_page = 'luruxudan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.luruxudan', [
             'pages' => $pages,
@@ -4656,7 +4663,7 @@ class OrderCtrl extends Controller
         $child = 'xudanliebiao';
         $parent = 'dingdan';
         $current_page = 'xudanliebiao';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.xudanliebiao', [
             'pages' => $pages,
@@ -4725,7 +4732,7 @@ class OrderCtrl extends Controller
         $child = 'weiqinaidingdan';
         $parent = 'dingdan';
         $current_page = 'weiqinaidingdan';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.weiqinaidingdan', [
             'pages' => $pages,
@@ -4914,7 +4921,7 @@ class OrderCtrl extends Controller
         $child = 'daishenhe';
         $parent = 'dingdan';
         $current_page = 'daishenhe';;
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.daishenhe', [
             'pages' => $pages,
@@ -5011,7 +5018,7 @@ class OrderCtrl extends Controller
         $child = 'quanbuluru';
         $parent = 'dingdan';
         $current_page = 'quanbuluru';
-        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         return view('naizhan.dingdan.quanbuluru', [
             'pages' => $pages,
             'child' => $child,
@@ -5244,7 +5251,7 @@ class OrderCtrl extends Controller
         ]);
     }
 
-    function order_number($fid, $sid, $cid, $order_id)
+    public function order_number($fid, $sid, $cid, $order_id)
     {
         return 'F' . $fid . '_S' . $sid . '_C' . $cid . '_O' . $order_id;
     }
@@ -5622,7 +5629,7 @@ class OrderCtrl extends Controller
     }
 
     //Get Product Price with Customer id and address
-    function get_product_price_by_cid($pid, $otype, $cid)
+    public function get_product_price_by_cid($pid, $otype, $cid)
     {
         $addr = Customer::find($cid)->address;
         $price = $province = $city = $district = null;
@@ -5761,7 +5768,7 @@ class OrderCtrl extends Controller
 
         if (count($delivery_areas) == 0) {
             //客户并不住在可以递送区域
-            return $this::NOT_EXIST_DELIVERY_AREA;
+            return OrderCtrl::NOT_EXIST_DELIVERY_AREA;
         }
 
         $result = [];
@@ -5788,11 +5795,11 @@ class OrderCtrl extends Controller
         }
 
         if ($delivery_station_count == 0) {
-            return $this::NOT_EXIST_STATION;
+            return OrderCtrl::NOT_EXIST_STATION;
         }
 
         if (count($result) == 0) {
-            return $this::NOT_EXIST_MILKMAN;
+            return OrderCtrl::NOT_EXIST_MILKMAN;
         }
 
         return $result;
@@ -5837,11 +5844,6 @@ class OrderCtrl extends Controller
     public function delete_all_order_products_and_delivery_plans_for_update_order($order)
     {
 
-        $order_products = $order->order_products;
-        foreach($order_products as $op)
-        {
-            $op->delete();
-        }
 
         //delete waiting and passed delivery  plan
         MilkManDeliveryPlan::where('order_id', $order->id)->where(function ($query) {
@@ -5853,6 +5855,12 @@ class OrderCtrl extends Controller
         foreach ($plans as $plan) {
             $plan->changed_plan_count = 0;
             $plan->save();
+        }
+
+        $order_products = $order->order_products;
+        foreach($order_products as $op)
+        {
+            $op->delete();
         }
 
         return;

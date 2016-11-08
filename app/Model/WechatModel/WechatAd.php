@@ -16,7 +16,7 @@ class WechatAd extends Model
     ];
 
     protected $appends = [
-
+        
     ];
 
     public $timestamps = false;

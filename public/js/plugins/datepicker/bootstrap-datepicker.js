@@ -136,10 +136,6 @@
     })();
 
 
-
-    //Bottle Array
-
-
     // Picker object
 
     var Datepicker = function (element, options) {
@@ -201,6 +197,11 @@
 
         if (this.isInline) {
             this.show();
+        }
+
+        if(this.o.initValue)
+        {
+            this.setInitValue(this.o.initValue);
         }
     };
 
@@ -474,6 +475,61 @@
             });
         },
 
+        setInitValue:function(dayvalues){
+            dayvalues = dayvalues.split(',');
+            if(this.o.class == "month_calendar")
+            {
+                for(var i =0; i< dayvalues.length; i++)
+                {
+                    var datevalue = dayvalues[i].split(':');
+                    var date = datevalue[0];
+                    if(date.charAt(0) === '0')
+                        date = date.substr(1);
+                    var value = datevalue[1];
+
+                    var new_day = parseInt(date, 10) || 1;
+                    var new_year = this.viewDate.getUTCFullYear();
+                    var new_month = this.viewDate.getUTCMonth();
+
+                    var new_date = UTCDate(new_year, new_month, new_day);
+
+                    this.dates[i] = new_date;
+                    this.bottles[i] = new bottle(new_date, value);
+
+                    var td = this.picker.find('.datepicker-days table tbody tr td.day[data-date='+date+']');
+                    $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                }
+                console.log(this.bottles);
+            } else {
+
+                for(var i =0; i< dayvalues.length; i++)
+                {
+                    var datevalue = dayvalues[i].split(':');
+                    var date = parseInt(datevalue[0], 10);
+                    var value = datevalue[1];
+
+                    var index = (date)%7;
+
+                    var td = this.picker.find('.datepicker-days table tbody tr td.day:not(.disabled)').eq(index);
+
+                    var real_date = parseInt(td.text(),10)||1;
+
+                    var new_day = real_date;
+                    var new_year = this.viewDate.getUTCFullYear();
+                    var new_month = this.viewDate.getUTCMonth();
+
+                    var new_date = UTCDate(new_year, new_month, new_day);
+
+                    $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+
+                    this.dates[i] = new_date;
+                    this.bottles[i] = new bottle(new_date, value);
+                }
+                console.log(this.bottles);
+            }
+
+        },
+
         show: function () {
             if (!this.isInline)
                 this.picker.appendTo('body');
@@ -612,9 +668,14 @@
 
             for( var i = 0; i< length; i++)
             {
-                var d = this.dates[i];
+                var d = (this.dates[i]).getUTCDate();
+                if(this.o.class=="week_calendar")
+                {
+                    d = this.dates[i].getUTCDay();
+                }
                 var b= this.bottles[i].num;
-                var one = DPGlobal.formatDate(d, format, lang)+this.o.multibottleSeparator+b;
+                // var one = DPGlobal.formatDate(d, format, lang)+this.o.multibottleSeparator+b;
+                var one = d+this.o.multibottleSeparator+b;
                 if(i==length-1)
                     result += one;
                 else
@@ -909,7 +970,7 @@
 
                 clsName = $.unique(clsName);
 
-                html.push('<td class="' + clsName.join(' ') + '"' + (tooltip ? ' title="' + tooltip + '"' : '') + '>' + prevMonth.getUTCDate() + '</td>');
+                html.push('<td data-date = "'+ prevMonth.getUTCDate() + '" class="' + clsName.join(' ') + '"' + (tooltip ? ' title="' + tooltip + '"' : '') + '>' + '<label class="date">'+prevMonth.getUTCDate()+'</label>' + '</td>');
 
                 if (prevMonth.getUTCDay() === this.o.weekEnd) {
                     html.push('</tr>');
@@ -929,6 +990,7 @@
                 if (d.getUTCFullYear() === year)
                     months.eq(d.getUTCMonth()).addClass('active');
             });
+            //rkr: here
 
             if (year < startYear || year > endYear) {
                 months.addClass('disabled');
@@ -1008,11 +1070,6 @@
             }
         },
 
-        // 设置默认瓶数
-        setBottleNum: function(num) {
-            this.o.bottleNum = num;
-        },
-
         change: function (e) {
             e.preventDefault();
             var target = $(e.target).closest('span, td, th, input'), year, month, day;
@@ -1022,7 +1079,9 @@
                     tt.focus();
                     var b = $(tt).val();
                     var date = $(tt).data('date');
+
                     var ix= this.bottles.contains(date);
+
                     if(ix != -1)
                     {
                         console.log("find");
@@ -1161,8 +1220,8 @@
                                     }
                                 }
                                 if (this.o.showNum && ( $(tt).children('.tip-input').length == 0 )) {
-                                    $(tt).append('<input class="tip-input" name="date_bottle_number" data-date="'+ UTCDate(year, month, day)+'" value="' + this.o.bottleNum + '"/>');
-                                    this._setBDate(this.o.bottleNum, UTCDate(year, month, day));
+                                    $(tt).append('<input class="tip-input" name="date_bottle_number" data-date="'+ UTCDate(year, month, day)+'" value="3"/>');
+                                    this._setBDate('3', UTCDate(year, month, day));
                                 } else if (this.o.showNum &&  ($(tt).children('.tip-input').length > 0)) {
                                     var tip_input = $(tt).find('.tip-input');
                                     tip_input.remove();
@@ -1245,11 +1304,12 @@
 
         _setBDate: function (bottle, date, which) {
             if(bottle === undefined)
-                bottle = '1';
+                bottle = '3';
 
             if (!which || which === 'date') {
                 this._toggle_bmultidate(date && new Date(date), bottle);
             }
+
             if (!which || which === 'view')
                 this.viewDate = date && new Date(date);
 
@@ -1642,8 +1702,8 @@
         todayHighlight: false,
         weekStart: 0,
         showNum: false,
-        bottleNum: 1,
         class: '',
+        initValue: '',
     };
     var locale_opts = $.fn.datepicker.locale_opts = [
         'format',

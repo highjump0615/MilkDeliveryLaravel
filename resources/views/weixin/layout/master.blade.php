@@ -8,12 +8,26 @@
     <meta http-equiv="Cache-Control" content="no-siteapp" />
     <meta name="format-detection" content="telphone=no, email=no"/>
     <title>@yield('title')</title>
+
+    <link href="<?=asset('css/bootstrap.min.css') ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?=asset('weixin/css/themes/base/jquery-ui.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/style.css')?>">
+    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
+
     @yield('css')
-    <script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
+
 </head>
 <body>
 @yield('content')
+
+<script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
+<script src="<?=asset('weixin/js/ui/jquery-ui.js')?>"></script>
+<script src="<?=asset('js/global.js')?>"></script>
+<script src="<?=asset('js/plugins/notify/notify.min.js') ?>"></script>
+<script src="<?=asset('weixin/js/moment.min.js')?>"></script>
+<script src="<?=asset('weixin/js/swiper.min.js')?>"></script>
+<script src="<?=asset('weixin/js/common.js')?>"></script>
 @yield('script')
+
 </body>
 </html>

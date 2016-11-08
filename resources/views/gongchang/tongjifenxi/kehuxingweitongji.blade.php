@@ -17,42 +17,47 @@
 		<div class="row">	
 <!--Table-->				
 				<div class="ibox-content">
-					<div class="feed-element">
-						<div class="col-md-3">
-							<label>奶站名称:</label>
-							<input class="form-control" type="text" id="station_name" style="width: 70%; display: inline">
+					<div class="ibox-content">
+						<div class="feed-element">
+							<div class="col-md-3">
+								<label>奶站名称:</label>
+								<input class="form-control" type="text" id="station_name" style="width: 70%; display: inline" value="{{$current_station_name}}">
+							</div>
+							<div class="col-md-3">
+								<label>编号:</label>
+								<input class="form-control" type="text" id="station_number" style="width: 70%; display: inline" value="{{$current_station_number}}">
+							</div>
+							<div class="col-md-6 form-group">
+								<label>区域:</label>
+								<select id="province" data-placeholder="" class="form-control chosen-select province_list" style="width: 30%; display: inline" value="">
+									<option value="none">全部</option>
+									@if (isset($province))
+										@foreach($province as $pr)
+											<option value="{{$pr->name}}" @if($pr->name == $current_province) selected @endif>{{$pr->name}}</option>
+										@endforeach
+									@endif
+								</select>
+								<select id="city" data-placeholder="" class="form-control chosen-select city_list" style="width: 30%; display: inline">
+									<option value="none">全部</option>
+								</select>
+								<input type="hidden" id="currrent_city" value="{{$current_city}}">
+							</div>
 						</div>
-						<div class="col-md-3">
-							<label>编号:</label>
-							<input class="form-control" type="text" id="station_number" style="width: 70%; display: inline">
-						</div>
-						<div class="col-md-6">
-							<label>区域:</label>
-							&nbsp;
-							<select id="province" data-placeholder="" class="chosen-select form-control" style="width: 40%; display: inline">
-								<option value="北京">北京</option>
-								<option value="河北">河北</option>
-							</select>
-							<select id="city" data-placeholder="" class="chosen-select form-control" style="width: 40%; display: inline">
-								<option value="东城区">东城区</option>
-								<option value="西城区">西城区</option>
-							</select>
-						</div>
-					</div>
-					<br>
-					<div class="feed-element">					
-						<div class="form-group col-md-5" id="data_range_select">
-							<label class="col-sm-2 control-label" style="padding-top:5px;">日期:</label>
-							<div class="input-daterange input-group col-md-8" id="datepicker">
-                                <input type="text" class="input-md form-control" name="start" />
-                                <span class="input-group-addon">至</span>
-                                <input type="text" class="input-md form-control" name="end"  />
-                            </div>
-						</div>
-						<div class="col-md-offset-4 col-lg-3"  style="padding-top:5px;">
-							<button type="button" class="btn btn-success btn-md">筛选</button>
-							&nbsp;
-							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
+						<br>
+						<div class="feed-element">
+							<div class="form-group col-md-5" id="data_range_select">
+								<label class="col-md-2 control-label" style="padding-top:5px;">日期:</label>
+								<div class="input-daterange input-group col-md-8" id="datepicker">
+									<input id="start_date" type="text" class="input-md form-control" name="start" value="{{$currrent_start_date}}"/>
+									<span class="input-group-addon">至</span>
+									<input id="end_date" type="text" class="input-md form-control" name="end" value="{{$current_end_date}}"/>
+								</div>
+							</div>
+							<div class="col-md-offset-4 col-lg-3"  style="padding-top:5px;">
+								<button id="search" type="button" class="btn btn-success btn-m-d">筛选</button>
+								&nbsp;
+								<button class="btn btn-success btn-outline btn-m-d" data-action = "print">打印</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -281,24 +286,35 @@
 
 @section('script')
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			if ($('.province_list').val() != "none")
+				$('.province_list').trigger('change');
+		});
 
-    <script type="text/javascript">
-		$(document).ready(function(){
-            $('.i-checks').iCheck({
-                checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
-            });
-        });
-		$('.footable').footable();
+		$('#data_range_select .input-daterange').datepicker({
+			keyboardNavigation: false,
+			forceParse: false,
+			autoclose: true
+		});
 
-		$('.input-daterange').datepicker({
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: false,
-            autoClose: true,
-			todayBtn: false,
+		$('#search').click(function () {
+			var station_name = $('#station_name').val();
+			var station_number = $('#station_number').val();
+			var province =$('#province option:selected').val();
+			if(province == 'none'){
+				province = '';
+			}
+			var city=$('#city option:selected').val();
+			if(city == 'none'){
+				city = '';
+			}
+			var start_date = $('#start_date').val();
+			var end_date = $('#end_date').val();
 
-        });
+			window.location.href = SITE_URL+"gongchang/tongjifenxi/kehuxingweitongji?station_name="+station_name+"&station_number="+station_number+
+					"&province="+province+"&city="+city+"&start_date="+start_date+"&end_date="+end_date+"";
+		})
 
 		$('button[data-action = "print"]').click(function () {
 
@@ -315,5 +331,46 @@
 			location.reload();
 		});
 
+		$('.province_list').on('change', function () {
+
+			var current_province = $(this).val();
+			var city_list = $(this).parent().find('.city_list');
+			if (current_province == "none" || current_province == null) {
+				$(city_list).empty();
+				$(city_list).append('<option value="none">全部</option>');
+				return;
+			}
+			var dataString = {'province': current_province};
+			$.ajax({
+				type: "GET",
+				url: API_URL + "province_to_city",
+				data: dataString,
+				success: function (data) {
+					if (data.status == "success") {
+						city_list.empty();
+
+						var cities, city, citydata,inputdata;
+
+						cities = data.city;
+
+						city_list.append('<option value="none">全部</option>');
+
+						for (var i = 0; i < cities.length; i++) {
+							var citydata = cities[i];
+							if($('#currrent_city').val() == citydata.name){
+								inputdata = '<option value="' + citydata.name + '" selected>' + citydata.name + '</option>';
+							}else {
+								inputdata = '<option value="' + citydata.name + '" >' + citydata.name + '</option>';
+							}
+
+						}
+						city_list.append(inputdata);
+					}
+				},
+				error: function (data) {
+					console.log(data);
+				}
+			})
+		});
 	</script>
 @endsection
