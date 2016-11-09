@@ -475,6 +475,12 @@
             });
         },
 
+        // 设置默认瓶数
+        setBottleNum: function(num) {
+            this.o.bottleNum = num;
+        },
+
+        // 设置初始数量
         setInitValue:function(dayvalues){
             dayvalues = dayvalues.split(',');
             if(this.o.class == "month_calendar")
@@ -1220,8 +1226,8 @@
                                     }
                                 }
                                 if (this.o.showNum && ( $(tt).children('.tip-input').length == 0 )) {
-                                    $(tt).append('<input class="tip-input" name="date_bottle_number" data-date="'+ UTCDate(year, month, day)+'" value="3"/>');
-                                    this._setBDate('3', UTCDate(year, month, day));
+                                    $(tt).append('<input class="tip-input" name="date_bottle_number" data-date="'+ UTCDate(year, month, day)+'" value="' + this.o.bottleNum + '"/>');
+                                    this._setBDate(this.o.bottleNum, UTCDate(year, month, day));
                                 } else if (this.o.showNum &&  ($(tt).children('.tip-input').length > 0)) {
                                     var tip_input = $(tt).find('.tip-input');
                                     tip_input.remove();
@@ -1304,7 +1310,7 @@
 
         _setBDate: function (bottle, date, which) {
             if(bottle === undefined)
-                bottle = '3';
+                bottle = '1';
 
             if (!which || which === 'date') {
                 this._toggle_bmultidate(date && new Date(date), bottle);
@@ -1702,6 +1708,7 @@
         todayHighlight: false,
         weekStart: 0,
         showNum: false,
+        bottleNum: 1,
         class: '',
         initValue: '',
     };

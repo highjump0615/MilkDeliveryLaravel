@@ -9,6 +9,14 @@ $(document).ready(function () {
         jpeg_quality: 90
     });
 
+    // 判断订单录入或修改
+    if ($('.current_total_sp').length > 0) {
+        gbIsEdit = true;
+    }
+    else {
+        gbIsEdit = false;
+    }
+
     // 录入订单
     if ($('#my_camera').html().trim().length == 0) {
         show_camera();
@@ -75,14 +83,6 @@ $(document).ready(function () {
     $('#product_table tbody tr').each(function () {
         set_avg_count(this);
     });
-
-    // 判断订单录入或修改
-    if ($('.current_total_sp').length > 0) {
-        gbIsEdit = true;
-    }
-    else {
-        gbIsEdit = false;
-    }
 });
 
 //Show Camera function

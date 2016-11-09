@@ -18,7 +18,7 @@
 		</div>
 			<div class="row">
 				<input type="hidden" id="current_factory_id" value="{{$current_factory_id}}">
-<!--Table-->				
+<!--Table-->
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 						<div id="alert_view" style="display: none">
@@ -89,8 +89,8 @@
 									<th data-sort-ignore="true">团购业务（瓶）</th>
 									<th data-sort-ignore="true">渠道销售(瓶)</th>
 									<th data-sort-ignore="true">合计</th>
-									<th data-sort-ignore="true">信用余额</th>
 									<th data-sort-ignore="true">状态</th>
+									<th data-sort-ignore="true">信用余额</th>
 									<th data-sort-ignore="true">操作</th>
 									<th data-sort-ignore="true">备注</th>
 								</tr>
@@ -111,8 +111,8 @@
 										<td></td>
 										<td></td>
 										<td></td>
-										<td>100</td>
 										<td></td>
+										<td>{{$si->business_credit_balance}}</td>
 										<td></td>
 										<td></td>
 									</tr>
@@ -142,13 +142,16 @@
 										<td>{{$ss->group_sale}}</td>
 										<td>{{$ss->channel_sale}}</td>
 										<td>{{$ss->subtotal_count}}</td>
-										<td clasheng'yss="status{{$si->id}}">
+										<td class="status{{$si->id}}">
 											@if($ss->status == 2) 需审核
 											@elseif($ss->status == 3) 生产取消
 											@else 正常
 											@endif
 										</td>
-										@if($j == 1)
+										@if ($j == 1)
+										<td rowspan="{{count($si->station_plan)}}">
+											{{$si->business_credit_balance}}
+										</td>
 										<td rowspan="{{count($si->station_plan)}}">
 											@if($ss->status == 2)
 											<button class="btn btn-success btn-sm produce_determine" value="{{$ss->station_id}}" style="width: 55px;">同意</button><br>
@@ -166,7 +169,7 @@
                     </div>
                 </div>
 			</div>
-	</div>	
+	</div>
 @endsection
 
 @section('script')

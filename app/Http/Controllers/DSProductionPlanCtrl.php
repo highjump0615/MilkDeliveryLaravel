@@ -464,6 +464,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $currentDate_str = $currentDate->format('Y-m-d');
 
         $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name','production_period']);
+
         foreach($products as $p){
             $plan_info = DSProductionPlan::where('produce_start_at',$currentDate->format('Y-m-d'))->where('status','<>',DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL)
                 ->where('product_id',$p->id)->get();
@@ -513,7 +514,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             }
             $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;
         }
+
         $stations = DeliveryStation::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+
         foreach($stations as $si) {
             $areas = explode(" ",$si->address);
             $si["area"] = $areas[0];
@@ -521,6 +524,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $si["station_plan"] = $station_plan;
             $si["plan_status"] = count($station_plan);
         }
+
         return view('gongchang.shengchan.naizhanjihuashenhe',[
             'pages'=>$pages,
             'child'=>$child,

@@ -31,7 +31,6 @@ class OrderProduct extends Model
     ];
 
     protected $appends = [
-        'product',
         'product_name',
         'order_type_name',
         'delivery_type_name',

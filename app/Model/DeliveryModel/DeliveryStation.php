@@ -120,11 +120,11 @@ class DeliveryStation extends Authenticatable
         'order_amount_increased_this_term',
         'order_count_done_this_term',
         'order_amount_done_this_term',
-        'order_amount_current',
+//        'order_amount_current',
 
         'bottle_count_increased_this_term',
         'bottle_count_done_this_term',
-        'bottle_count_current',
+//        'bottle_count_current',
         'bottle_count_before_this_term',
 
     ];

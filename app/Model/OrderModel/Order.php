@@ -79,7 +79,7 @@ class Order extends Model
         'street_id',
         'xiaoqu_id',
         'all_order_types',
-        'delivery_plans',
+//        'delivery_plans',
         'grouped_delivery_plans',
         'unfinished_delivery_plans',
         'delivery_plans_sent_to_production_plan',
