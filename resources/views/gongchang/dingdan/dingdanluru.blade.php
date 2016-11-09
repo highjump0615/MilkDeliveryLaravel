@@ -58,11 +58,12 @@
 
     <div id="page-wrapper" class="white-bg">
 
-    @if (isset($station))
-        @include('naizhan.theme.header')
-    @else
-        @include('gongchang.theme.header')
-    @endif
+        <!-- 头部 -->
+        @if (isset($station))
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
 
         <!-- 面包屑导航 -->
         <div class="row border-bottom">
@@ -113,7 +114,7 @@
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">电话:</label>
                         <div class="col-md-2">
-                            <input type="text" pattern="\d{11}"  id="phone" name="phone" class="form-control"
+                            <input required type="text" pattern="\d{11}"  id="phone" name="phone" class="form-control"
                                    oninvalid="this.setCustomValidity('手机号码得11位数')" oninput="this.setCustomValidity('')"
                                     value="@if (isset($order)) {{$order->phone}} @endif" >
                         </div>
@@ -179,8 +180,7 @@
             <form method="POST" enctype="multipart/form-data" id="order_form">
 
                 @if ($is_edit)
-                    <input type="hidden" name="order_id"
-                           value="{{$order->id}}">
+                    <input type="hidden" name="order_id" value="{{$order->id}}">
                 @endif
 
                 <!--Station Info-->

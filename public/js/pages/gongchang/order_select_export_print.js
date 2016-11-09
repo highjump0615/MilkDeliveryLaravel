@@ -331,8 +331,6 @@ $('body').on('click', '#order_table tbody tr', function () {
     //weiqinai, zanting
     var url = url1 + order_id;
 
-    alert(status);
-
     if (at_page == 'daishenhe' || at_page == "quanbu" && (status == "1" || status == "8"))
     {
         url = url3+order_id;

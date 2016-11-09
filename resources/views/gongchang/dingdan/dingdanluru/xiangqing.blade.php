@@ -14,9 +14,23 @@
     </style>
 @endsection
 @section('content')
+
+<!-- 奶站需要奶站的菜单 -->
+@if (isset($station))
+    @include('naizhan.theme.sidebar')
+@else
     @include('gongchang.theme.sidebar')
+@endif
+
     <div id="page-wrapper" class="white-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if (isset($station))
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>订单管理</li>
@@ -44,13 +58,19 @@
                 </div>
                 <div class="feed-element col-md-5 col-md-offset-3">
 
-                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                    @if ($order->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NEW_WAITING_STATUS ||
                         $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS ||
-                         $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
-                         $order->status == \App\Model\OrderModel\Order::ORDER_NEW_NOT_PASSED_STATUS)
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                        $order->status == \App\Model\OrderModel\Order::ORDER_NEW_NOT_PASSED_STATUS)
 
-                        <a href="{{URL::to('/gongchang/dingdan/dingdanxiugai/'.$order->id)}}"
-                           class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                        @if (isset($station))
+                            <a href="{{URL::to('/naizhan/dingdan/xiugai/'.$order->id)}}"
+                               class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                        @else
+                            <a href="{{URL::to('/gongchang/dingdan/dingdanxiugai/'.$order->id)}}"
+                               class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                        @endif
                     @endif
 
                     @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)

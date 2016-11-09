@@ -89,6 +89,7 @@
 									<th data-sort-ignore="true">团购业务（瓶）</th>
 									<th data-sort-ignore="true">渠道销售(瓶)</th>
 									<th data-sort-ignore="true">合计</th>
+									<th data-sort-ignore="true">信用余额</th>
 									<th data-sort-ignore="true">状态</th>
 									<th data-sort-ignore="true">操作</th>
 									<th data-sort-ignore="true">备注</th>
@@ -110,6 +111,7 @@
 										<td></td>
 										<td></td>
 										<td></td>
+										<td>100</td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -140,7 +142,7 @@
 										<td>{{$ss->group_sale}}</td>
 										<td>{{$ss->channel_sale}}</td>
 										<td>{{$ss->subtotal_count}}</td>
-										<td class="status{{$si->id}}">
+										<td clasheng'yss="status{{$si->id}}">
 											@if($ss->status == 2) 需审核
 											@elseif($ss->status == 3) 生产取消
 											@else 正常

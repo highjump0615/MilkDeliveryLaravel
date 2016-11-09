@@ -2044,55 +2044,22 @@ class OrderCtrl extends Controller
         return true;
     }
 
-
     //Show order revise page in naizhan
     public function show_order_revise_in_naizhan($order_id)
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initShowStationPage();
+
+        $order_checkers = $this->station->active_order_checkers;
 
         $order = Order::find($order_id);
 
         // 解析收货地址
         $order->resolveAddress();
 
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
-
         $customer = $order->customer;
         $milkman = $order->milkman;
-        if (!$milkman) {
-            $milkman_id = $customer->milkman_id;
-            $milkman = MilkMan::find($milkman_id);
-        }
 
-        $order_checkers = $factory->ordercheckers;
         $order_products = $order->order_products;
-        $products = $factory->active_products;
-
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
-
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
-
-        $delivery_stations = $factory->active_stations;//get only active stations
-
-        $province = Address::where('level', 1)->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
-
-        //get gap day
-        $gap_day = $factory->gap_day;
-
-        $customer = $order->customer;
-
 
         $child = 'quanbuluru';
         $parent = 'dingdan';
@@ -2100,26 +2067,35 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.xiugai', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-            'customer' => $customer,
-            'milkman' => $milkman,
-            'grouped_plans_per_product' => $grouped_plans_per_product,
-            'order_products' => $order_products,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'order_delivery_types' => $order_delivery_types,
-            'order_checkers' => $order_checkers,
-            'delivery_stations' => $delivery_stations,
-            'province' => $province,
-            'gap_day' => $gap_day,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 是否修改订单
+            'is_edit'                   => true,
+
+            // 录入订单基础信息
+            'order_property'            => $this->order_property,
+            'province'                  => $this->province,
+            'order_checkers'            => $order_checkers,
+            'products'                  => $this->products,
+            'factory_order_types'       => $this->factory_order_types,
+            'order_delivery_types'      => $this->order_delivery_types,
+            'products_count_on_fot'     => $this->product_count_on_fot,
+            'delivery_stations'         => $this->delivery_stations,
+            'gap_day'                   => $this->factory->gap_day,
+            'remain_amount'             => 0,
+
+            // 初始化录入页面
+            'order'                     => $order,
+            'order_products'            => $order_products,
+            'customer'                  => $customer,
+            'milkman'                   => $milkman,
+
+            // 奶站信息
+            'station'                   => $this->station
         ]);
     }
 
@@ -3233,16 +3209,31 @@ class OrderCtrl extends Controller
         }
     }
 
-//Insert Order In gongchang
+
+    //Insert Order In gongchang
     function insert_order_in_gongchang(Request $request)
     {
         if ($request->ajax()) {
 
             $order = null;
 
-            //factory id
+            // 初始化
+            $factory_id = 0;
+            $station_id = 0;
+
             $fuser = Auth::guard('gongchang')->user();
-            $factory_id = $fuser->factory_id;
+            if ($fuser) {
+                $factory_id = $fuser->factory_id;
+            }
+            else {
+                $suser = Auth::guard('naizhan')->user();
+                if ($suser) {
+                    $station_id = $suser->id;
+                    $station = DeliveryStation::find($station_id);
+                    $factory_id = $station->factory_id;
+                }
+            }
+
             $factory = Factory::find($factory_id);
 
             // 录入订单还是修改订单
@@ -3264,9 +3255,13 @@ class OrderCtrl extends Controller
             $order_property_id = $request->input('order_property');
 
             //station info
-            $station_id = $request->input('station');
             $milkman_id = $request->input('milkman_id');
             $delivery_station_id = $request->input('station');
+
+            // 如果是奶厂订单，配送奶站就是录入奶站
+            if ($station_id == 0) {
+                $station_id = $delivery_station_id;
+            }
 
             if (!$milkman_id) {
                 return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
@@ -3274,7 +3269,7 @@ class OrderCtrl extends Controller
 
             //save customer
             $customer = Customer::find($customer_id);
-            $customer->station_id = $station_id;
+            $customer->station_id = $delivery_station_id;
             $customer->milkman_id = $milkman_id;
             $customer->save();
 
@@ -3364,7 +3359,6 @@ class OrderCtrl extends Controller
             //other data
             $trans_check = 0;
             $ordered_at = $today;
-            $delivery_station_id = $request->input('station');
 
             //flatenter mode: default 2 -> call
             $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
@@ -3822,7 +3816,6 @@ class OrderCtrl extends Controller
     function show_detail_order_in_naizhan($order_id)
     {
         $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -3832,22 +3825,26 @@ class OrderCtrl extends Controller
 
         $grouped_plans_per_product = $order->grouped_plans_per_product;
 
-        $gap_day = $factory->gap_day;
-
         $child = 'dingdan';
         $parent = 'dingdan';
         $current_page = 'xiangqing';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.detail', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_products' => $order_products,
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 订单内容
+            'order'                     => $order,
+            'order_products'            => $order_products,
             'grouped_plans_per_product' => $grouped_plans_per_product,
-            'gap_day' => $gap_day,
+            'gap_day'                   => $factory->gap_day,
+            
+            // 奶站信息
+            'station'                   => $station
         ]);
     }
 
@@ -4533,70 +4530,61 @@ class OrderCtrl extends Controller
     public
     function show_xudan_dingdan_in_naizhan($order_id)
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initShowStationPage();
 
-        $order_checkers = $factory->ordercheckers;
-        $products = $factory->active_products;
-        $factory_order_types = $factory->factory_order_types;
-        $order_delivery_types = $factory->order_delivery_types;
-        $delivery_stations = $factory->active_stations;//get only active stations
-
-        $order_property = OrderProperty::all();
-
-        $province = Address::where('level', 1)
-            ->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)
-            ->orderBy('id', 'desc')->get();
-
-
-        $product_count_on_fot = [];
-        foreach ($factory_order_types as $fot) {
-            $pcof = ["fot" => ($fot->order_type), "pcfot" => ($fot->order_count)];
-            array_push($product_count_on_fot, $pcof);
-        }
+        $order_checkers = $this->station->active_order_checkers;
 
         $order = Order::find($order_id);
-        if (!$order) {
-            return;
-        }
+
+        // 解析收货地址
+        $order->resolveAddress();
 
         $customer = $order->customer;
-        if($customer->has_not_order)
+        $milkman = $order->milkman;
+
+        // 账户余额，只能把所有订单结束了之后才能用
+        $remain_amount = 0;
+        if ($customer->has_not_order) {
             $remain_amount = $customer->remain_amount;
-        else
-            $remain_amount=0;
+        }
 
         $order_products = $order->order_products;
 
-        //get gap day
-        $gap_day = $factory->gap_day;
-
-        $child = 'xudanliebiao';
+        $child = 'quanbuluru';
         $parent = 'dingdan';
-        $current_page = 'luruxudan';
+        $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.luruxudan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_property' => $order_property,
-            'province' => $province,
-            'order_checkers' => $order_checkers,
-            'products' => $products,
-            'factory_order_types' => $factory_order_types,
-            'order_delivery_types' => $order_delivery_types,
-            'products_count_on_fot' => $product_count_on_fot,
-            'delivery_stations' => $delivery_stations,
-            'customer' => $customer,
-            'order_products' => $order_products,
-            'gap_day' => $gap_day,
-            'remain_amount'=>$remain_amount,
+        return view('naizhan.dingdan.xiugai', [
+            // 菜单关联信息
+            'pages'                     => $pages,
+            'child'                     => $child,
+            'parent'                    => $parent,
+            'current_page'              => $current_page,
+
+            // 是否修改订单
+            'is_edit'                   => false,
+
+            // 录入订单基础信息
+            'order_property'            => $this->order_property,
+            'province'                  => $this->province,
+            'order_checkers'            => $order_checkers,
+            'products'                  => $this->products,
+            'factory_order_types'       => $this->factory_order_types,
+            'order_delivery_types'      => $this->order_delivery_types,
+            'products_count_on_fot'     => $this->product_count_on_fot,
+            'delivery_stations'         => $this->delivery_stations,
+            'gap_day'                   => $this->factory->gap_day,
+            'remain_amount'             => $remain_amount,
+
+            // 初始化录入页面
+            'order'                     => $order,
+            'order_products'            => $order_products,
+            'customer'                  => $customer,
+            'milkman'                   => $milkman,
+
+            // 奶站信息
+            'station'                   => $this->station
         ]);
     }
 
