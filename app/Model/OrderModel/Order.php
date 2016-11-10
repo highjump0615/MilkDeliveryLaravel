@@ -832,6 +832,14 @@ class Order extends Model
         return $this->belongsTo('App\Model\BasicModel\Customer');
     }
 
+    /**
+     * 获取奶卡
+     * @return MilkCard
+     */
+    public function milkcard(){
+        return $this->belongsTo('App\Model\FactoryModel\MilkCard', 'milk_card_id', 'number');
+    }
+
     public function getMilkBoxInstallLabelAttribute()
     {
         if($this->milk_box_install)

@@ -19,6 +19,7 @@ class MilkManDeliveryPlan extends Model
         'order_product_id',
         'time',
         'status',
+        'product_price',
         'produce_at',
         'deliver_at',
         'plan_count',

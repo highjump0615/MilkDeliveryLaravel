@@ -108,7 +108,7 @@
                         <label class="control-label col-md-2">收货人:</label>
                         <div class="col-md-2">
                             <input type="text" required id="customer" name="customer" class="form-control"
-                                   value="@if (isset($customer)) {{$customer->name}} @endif">
+                                   value="@if (isset($customer)){{$customer->name}}@endif">
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
@@ -116,7 +116,7 @@
                         <div class="col-md-2">
                             <input required type="text" pattern="\d{11}"  id="phone" name="phone" class="form-control"
                                    oninvalid="this.setCustomValidity('手机号码得11位数')" oninput="this.setCustomValidity('')"
-                                    value="@if (isset($order)) {{$order->phone}} @endif" >
+                                    value="@if (isset($order)){{$order->phone}}@endif" >
                         </div>
                     </div>
 
@@ -167,7 +167,7 @@
                         <div class="col-md-3 col-md-offset-2">
                             <input type="text" placeholder="填写详细地址" id="sub_addr" name="c_sub_addr"
                                    class="form-control"
-                                   value="@if (isset($order)) {{$order->getAddrHouseNumber()}} @endif">
+                                   value="@if (isset($order)){{$order->getAddrHouseNumber()}}@endif">
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
@@ -195,7 +195,7 @@
                         <div class="col-md-3">
                             <select required class="form-control" id="station_list" name="station">
                                 @if (isset($order))
-                                    <option data-milkman="{{$milkman->name}}" value="{{$order->delivery_station_id}}" selected>
+                                    <option data-milkman="{{$milkman->id}}" value="{{$order->delivery_station_id}}" selected>
                                         {{$order->delivery_station_name}}
                                     </option>
                                 @endif
@@ -250,7 +250,7 @@
                             </div>
 
                             <input required type="hidden" name="receipt_path" id="receipt_path"
-                                   value="@if (isset($order)) {{$order->receipt_path}} @endif"\>
+                                   value="@if (isset($order)){{$order->receipt_path}}@endif"\>
                             <i class="fa fa-check-square-o" id="check_capture"></i>
                         </div>
                     </div>
@@ -287,14 +287,16 @@
                         <div class="col-md-2">
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
                                    type="checkbox" data-toggle="modal" data-target="#card_info"
-                                   @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif/>
+                                   @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif
+                                    @if ($is_edit) readonly @endif
+                            />
                             <input type="hidden" name="card_check_success" id="card_check_success" value="1">
                         </div>
 
                         <div class="col-md-4" id="form-card-panel" style="@if (!(isset($order) && $order->order_by_milk_card)) display:none @endif">
-                            奶卡号:<label id="form-card-id">@if (isset($order) && $order->order_by_milk_card) $order->milk_card_code @endif</label> &nbsp;
-                            金额:<label id="form-card-balance"></label>
-                            商品:<label id="form-card-product"></label>
+                            奶卡号:<label id="form-card-id">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->number}} @endif</label> &nbsp;
+                            金额:<label id="form-card-balance">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->balance}} @endif</label>
+                            商品:<label id="form-card-product">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->product}} @endif</label>
                         </div>
                     </div>
                     <br>
