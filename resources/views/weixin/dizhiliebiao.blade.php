@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="{{url('weixin/querendingdan?group_id='.$group_id)}}"></a>
         <h1>管理收货地址</h1>
     </header>
 
@@ -14,19 +14,18 @@
             <form id="select-form{{$a->id}}" method="post" action="{{url('/weixin/select_address')}}">
                 <input type="hidden" name="user" value="{{$wxuser_id}}">
                 <input type="hidden" name="address" value="{{$a->id}}">
-                <div class="adrtop pa2t" onclick="select_address({{$a->id}})">
+                <input type="hidden" name="group_id" value="{{$group_id}}">
+                <div class="adrtop pa2t">
                     <p>{{$a->name}} {{$a->phone}}<br>{{$a->address}}</p>
-                    <p>{{$a->sub_address}}</p>
+                    <p>{{$a->getSubAddresses()}}</p>
                 </div>
             </form>
             <div class="mrsz clearfix pa2t">
-                    <span class="adrdz">
-                        <input name="dzrad" type="radio" value=""
+                    <span class="adrdz" style="cursor:pointer;"  onclick="select_address({{$a->id}})">
+                        <input name="dzrad" type="radio" value="" style="cursor:pointer;"
                                @if($a->primary == 1)
                                checked
                                 @endif
-
-                               onclick="select_address({{$a->id}})"
                         >默认地址
                     </span>
 

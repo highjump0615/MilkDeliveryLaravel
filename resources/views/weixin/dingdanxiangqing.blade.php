@@ -6,7 +6,7 @@
 @section('content')
 
 	<header>
-		<a class="headl fanh" href="javascript:void(0)"></a>
+		<a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
 		<h1>订单列表</h1>
 
 	</header>

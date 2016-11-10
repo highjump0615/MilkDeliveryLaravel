@@ -101,7 +101,6 @@ class OrderCtrl extends Controller
         }
     }
 
-
     function make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price)
     {
         //check exist of delivery plan that remains because of submitted to production plan before
@@ -167,7 +166,6 @@ class OrderCtrl extends Controller
 
         return $closest;
     }
-
 
     //Establish plan for changed order in xiugai
     function establish_new_plan($op, $factory_id, $station_id, $milkman_id)
@@ -2067,7 +2065,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.xiugai', [
+        return view('naizhan.dingdan.dingdanluru.xiugai', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,
@@ -2392,8 +2390,8 @@ class OrderCtrl extends Controller
             $from_station = false;
             $fuser = Auth::guard('gongchang')->user();
             if (!$fuser) {
-                $station = Auth::guard('naizhan')->user();
-                $station_id = $station->id;
+                $station_id = Auth::guard('naizhan')->user()->station_id;
+                $station = DeliveryStation::find($station_id);
                 $factory_id = $station->factory_id;
                 $from_station = true;
             } else {
@@ -2577,7 +2575,8 @@ class OrderCtrl extends Controller
 
             $fuser = Auth::guard('gongchang')->user();
             if (!$fuser) {
-                $station = Auth::guard('naizhan')->user();
+                $station_id = Auth::guard('naizhan')->user()->station_id;
+                $station = DeliveryStation::find($station_id);
                 $factory_id = $station->factory_id;
             } else {
                 $factory_id = $fuser->factory_id;
@@ -2738,8 +2737,8 @@ class OrderCtrl extends Controller
     public
     function show_stopped_order_in_naizhan($order_id)
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -2757,7 +2756,7 @@ class OrderCtrl extends Controller
         $current_page = 'zanting';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.zanting', [
+        return view('naizhan.dingdan.zantingliebiao.zanting', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
@@ -2878,7 +2877,7 @@ class OrderCtrl extends Controller
             $order->payment_type = $payment_type;
             $order->status = $status;
             $order->ordered_at = $ordered_at;
-            $order->start_at = $started_at;
+            $order->start_at = $start_at;
             $order->delivery_time = $delivery_time;
             $order->flat_enter_mode_id = $flat_enter_mode_id;
             $order->delivery_station_id = $delivery_station_id;
@@ -3011,8 +3010,8 @@ class OrderCtrl extends Controller
         if ($request->ajax()) {
 
             //factory id and station id
-            $station = Auth::guard('naizhan')->user();
-            $station_id = $station->id;
+            $station_id = Auth::guard('naizhan')->user()->station_id;
+            $station = DeliveryStation::find($station_id);
             $factory_id = $station->factory_id;
             $factory = Factory::find($factory_id);
 
@@ -3554,9 +3553,8 @@ class OrderCtrl extends Controller
         if ($request->ajax()) {
 
             //factory id and station id
-            $station = Auth::guard('naizhan')->user();
-
-            $station_id = $station->id;
+            $station_id = Auth::guard('naizhan')->user()->station_id;
+            $station = DeliveryStation::find($station_id);
             $factory_id = $station->factory_id;
             $factory = Factory::find($factory_id);
 
@@ -3831,7 +3829,8 @@ class OrderCtrl extends Controller
     //show detail of order in naizhan
     function show_detail_order_in_naizhan($order_id)
     {
-        $station = Auth::guard('naizhan')->user();
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -3846,7 +3845,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiangqing';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.detail', [
+        return view('naizhan.dingdan.dingdanluru.detail', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,
@@ -3905,9 +3904,8 @@ class OrderCtrl extends Controller
     public
     function show_insert_order_page_in_naizhan()
     {
-        $this->initShowStationPage();
-
-        $order_checkers = $this->station->active_order_checkers;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -4084,8 +4082,8 @@ class OrderCtrl extends Controller
     {
         if ($request->ajax()) {
 
-            $my_station = Auth::guard('naizhan')->user();
-            $my_station_id = $my_station->id;
+            $my_station_id = Auth::guard('naizhan')->user()->station_id;
+            $my_station = DeliveryStation::find($my_station_id);
             $my_station_name = $my_station->name;
             $factory_id = $my_station->factory_id;
             $factory = Factory::find($factory_id);
@@ -4571,7 +4569,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.xiugai', [
+        return view(''naizhan.dingdan.xudanliebiao.luruxudan', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,

@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 class StationCtrl extends Controller
 {
     public function showJibenziliao(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         
         $child = 'jibenziliao';
         $parent = 'naizhan';

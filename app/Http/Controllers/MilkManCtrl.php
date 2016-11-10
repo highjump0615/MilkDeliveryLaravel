@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 class MilkManCtrl extends Controller
 {
     public function showPeisongyuanRegister(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'peisongyuan';
@@ -92,7 +92,7 @@ class MilkManCtrl extends Controller
     }
 
     public function getXiaoqi(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $streets = $request->input('street');
         $street_info = array();
         foreach ($streets as $s){
@@ -107,7 +107,7 @@ class MilkManCtrl extends Controller
     }
 
     public function savePeisongyuan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $name = $request->input('name');
         $number = $request->input('number');
         $phone = $request->input('phone');
@@ -144,7 +144,7 @@ class MilkManCtrl extends Controller
     }
 
     public function showFanwei($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'fanwei-chakan';
@@ -184,7 +184,7 @@ class MilkManCtrl extends Controller
             }
         }
 
-        return view('naizhan.naizhan.fanwei-chakan', [
+        return view('naizhan.naizhan.peisongyuan.fanwei-chakan', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
@@ -207,7 +207,7 @@ class MilkManCtrl extends Controller
             ->where('address', 'LIKE', $street_addr.' %')->get()->first();
 
         if(!$da) {
-            $xiaoqus = $addr->sub_addresses;
+            $xiaoqus = $addr->getSubAddresses();
             foreach ($xiaoqus as $xiaoqu) {
                 $da = new MilkManDeliveryArea();
                 $da->milkman_id = $milkman_id;
@@ -287,7 +287,7 @@ class MilkManCtrl extends Controller
     }
 
     public function sortPeisongyuanArea(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $milkman = $request->input('milkman_id');
         $street = $request->input('street');
         $xiaoqi = $request->input('xiaoqi');

@@ -59,7 +59,7 @@ return [
 
         'naizhan' => [
             'driver' => 'session',
-            'provider' => 'deliverystations'
+            'provider' => 'users'
         ],
     ],
 
@@ -86,10 +86,10 @@ return [
             'model' => App\Model\UserModel\User::class,
         ],
 
-        'deliverystations' => [
-            'driver' => 'eloquent',
-            'model' => App\Model\DeliveryModel\DeliveryStation::class,
-        ],
+//        'deliverystations' => [
+//            'driver' => 'eloquent',
+//            'model' => App\Model\DeliveryModel\DeliveryStation::class,
+//        ],
 
         // 'users' => [
         //     'driver' => 'database',

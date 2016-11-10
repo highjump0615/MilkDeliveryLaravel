@@ -21,7 +21,7 @@ class PasswordController extends Controller
     use ResetsPasswords;
 
     protected $guard = 'naizhan';
-    protected $broker = 'deliverystations';
+    protected $broker = 'users';
 
     /**
      * Create a new password controller instance.

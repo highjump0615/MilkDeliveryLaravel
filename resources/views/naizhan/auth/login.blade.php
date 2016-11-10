@@ -25,7 +25,7 @@
 						{{ csrf_field() }}
 						<br>
 						<div class="form-group"><label class="col-lg-3 control-label">用户名:</label>
-							<div class="col-lg-9"><input type="text" name="username" class="form-control"  value="{{ old('username') }}">
+							<div class="col-lg-9"><input type="text" name="name" class="form-control"  value="{{ old('name') }}">
 							</div>
 						</div>
 						<div class="form-group"><label class="col-lg-3 control-label">密 码:</label>

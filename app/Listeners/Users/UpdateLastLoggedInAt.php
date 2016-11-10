@@ -16,6 +16,7 @@ class UpdateLastLoggedInAt
      *
      * @return void
      */
+    
     public function __construct()
     {
         //

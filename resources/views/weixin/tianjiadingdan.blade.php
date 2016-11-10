@@ -11,7 +11,7 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         <h1>产品详情</h1>
 
     </header>
@@ -194,10 +194,14 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    if(data.status == "success")
+                    if(data.status == "success" && data.group_id)
                     {
-                        var group_id = data.group_id;
-                        window.location.href = SITE_URL+"weixin/querendingdan?group_id="+group_id;
+                        window.location.href = SITE_URL+"weixin/querendingdan?group_id="+data.group_id;
+                    } else {
+                        if (data.redirect_path == "phone_verify" && data.group_id)
+                        {
+                            window.location.href = SITE_URL+"weixin/dengji?group_id="+data.group_id;
+                        }
                     }
                 },
                 error: function (data) {
