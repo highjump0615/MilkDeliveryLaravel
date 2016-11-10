@@ -64,6 +64,9 @@ Route::get('/gongchang', function () {
 
 Route::get('/update-order-status', 'OrderCtrl@update_order_status');
 
+// 奶厂奶站公用的api
+Route::post('api/gongchang/dingdan/dingdanluru/insert_customer', 'OrderCtrl@insert_customer_for_order_in_gongchang');
+
 Route::group(['middleware' => ['gongchang']], function () {
 
     //get all product names
@@ -159,7 +162,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //Gongchang/Dingdan/Dingdanluru
     Route::get('/gongchang/dingdan/dingdanluru', 'OrderCtrl@show_insert_order_page_in_gongchang');
-    Route::post('api/gongchang/dingdan/dingdanluru/insert_customer', 'OrderCtrl@insert_customer_for_order_in_gongchang');
 
     Route::post('api/gongchang/dingdan/dingdanluru/insert_order', 'OrderCtrl@insert_order_in_gongchang');
     Route::post('api/gongchang/dingdan/dingdanluru/verify_card', 'MilkCardCtrl@verify_card');
