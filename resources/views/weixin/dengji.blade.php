@@ -17,14 +17,15 @@
             <div class="pa2">
                 <div class="lgli">
                     <span class="lg-l">手机号码：</span>
-                    <input class="lgin1" name="" type="text" placeholder="请输入订奶人的手机号码">
+                    <input class="lgin1" name="phone_number" type="text" placeholder="请输入订奶人的手机号码">
                 </div>
                 <div class="lgli">
                     <span class="lg-l">验 证 码：</span>
-                    <input class="lgin2" name="" type="text" placeholder="请输入验证码">
-                    <a class="fsyzm"  href="javascript:void(0);">发送验证码</a>
+                    <input class="lgin2" id="code" name="verify_code" type="text" placeholder="请输入验证码">
+                    <button type="button" class="fsyzm" onclick="send_verify_code_to_phone();">发送验证码</button>
                 </div>
-                <a class="lgcx"  href="填写收货地址.html">点击查询</a>
+                <input type="hidden" value="{{$group_id}}" id="group_id" name="group_id"/>
+                <button class="lgcx"  type="button" onclick="check_verify_code();">点击查询</button>
             </div>
         </div>
         <div class="lgcopy">
@@ -35,12 +36,60 @@
 @endsection
 @section('script')
     <script>
+        function send_verify_code_to_phone()
+        {
+            var phone_number = $('#phone_number').val();
+            $.ajax({
+                type:"post",
+                url: SITE_URL + "weixin/api/send_verify_code_to_phone",
+                data: {
+                    "phone_number": phone_number
+                },
+                success:function(data)
+                {
+                    if(data.status == "success")
+                    {
+                        show_info_msg('验证码发送，请输入正确的验证码.');
+                    }
+                    console.log(data);
+                },
+                error: function(data)
+                {
+                    console.log(data);
+                }
+            });
+        }
 
-        $(".addSubtract .add").click(function() { $(this).prev().val(parseInt($(this).prev().val()) + 1);});
-        $(".addSubtract .subtract").click(function() {
-            if(parseInt($(this).next().val())>10){
-                $(this).next().val(parseInt($(this).next().val()) - 1);
-                $(this).removeClass("subtractDisable");}
-            if(parseInt($(this).next().val())<=10){$(this).addClass("subtractDisable");} });
+        function check_verify_code()
+        {
+            var phone_number = $('#phone_number').val();
+            var input_code = $('#code').val();
+            var group_id  = $('#group_id').val();
+
+            $.ajax({
+                type:"post",
+                url: SITE_URL + "weixin/api/check_verify_code",
+                data: {
+                    "phone_number": phone_number,
+                    "code": input_code,
+                },
+                success:function(data)
+                {
+                    console.log(data);
+                    if(data.status == "success")
+                    {
+                        window.location = SITE_URL+"weixin/querendingdan?group_id="+group_id;
+                    } else {
+                        show_warning_msg('验证代码不正确，请重试.');
+                    }
+
+                },
+                error: function(data)
+                {
+                    console.log(data);
+                }
+            });
+
+        }
     </script>
 @endsection

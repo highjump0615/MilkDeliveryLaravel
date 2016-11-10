@@ -6,6 +6,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    const USER_STATUS_ACTIVE = 1;
+    const USER_STATUS_INACTIVE = 0;
     /**
      * The attributes that are mass assignable.
      *
@@ -15,6 +17,7 @@ class User extends Authenticatable
         'name',
         'password',
         'factory_id',
+        'station_id',
         'nick_name',
         'user_role_id',
         'status',

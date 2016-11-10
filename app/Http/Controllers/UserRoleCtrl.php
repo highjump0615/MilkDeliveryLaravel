@@ -54,6 +54,9 @@ class UserRoleCtrl extends Controller
         elseif ($role->backend_type == 2){
             return redirect()->route('gongchang_juese',['role_id'=> $roleId]);
         }
+        elseif ($role->backend_type == 3){
+            return redirect()->route('naizhan_juese',['role_id'=> $roleId]);
+        }
 //            return redirect()->back();
     }
     /*View Gongchabg Juese page*/
@@ -105,6 +108,30 @@ class UserRoleCtrl extends Controller
         ]);
     }
 
+    public function stationJuese(Request $request,$role_id=null){
+        $child = 'juese';
+        $parent = 'xitong';
+        $current_page = 'juese';
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+        if($role_id != ''){
+            $access_pages = UserPageAccess::where('user_role_id',$role_id)->get();
+        }
+        else{
+            $access_pages = UserPageAccess::where('user_role_id','200')->get();
+            $role_id = 200;
+        }
+        $role_name = UserRole::where('backend_type','3')->get();
+        return view('naizhan.xitong.juese', [
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page,
+            'access_pages'=>$access_pages,
+            'role_name'=>$role_name,
+            'role_id'=>$role_id,
+        ]);
+    }
+    
     /*Add role_name using ajax*/
     public function addRole(Request $request) {
         $type = $request->input('backend_type');
@@ -112,8 +139,14 @@ class UserRoleCtrl extends Controller
         $ur = new UserRole;
         $ur->name = $name;
         $ur->backend_type = $type;
-        if($type != UserRole::USERROLE_BACKEND_TYPE_ZONGPINGTAI){
+        if($type == UserRole::USERROLE_BACLEND_TYPE_GONGCHANG){
             $current_factory_id = Auth::guard('gongchang')->User()->factory_id;
+            $ur->factory_id = $current_factory_id;
+        }
+        elseif($type == UserRole::USERROLE_BACKEND_TYPE_NAIZHAN){
+            $current_station_id = Auth::guard('naizhan')->user()->station_id;
+            $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
+            $ur->station_id = $current_station_id;
             $ur->factory_id = $current_factory_id;
         }
         $ur->save();

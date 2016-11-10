@@ -55,8 +55,7 @@
 
     <div class="top">
         <h1>商品列表</h1>
-        <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-        <a class="topa2" href="jvascript:void(0)"></a></div>
+    </div>
 
     <div class="bann">
         <div class="swiper-container">

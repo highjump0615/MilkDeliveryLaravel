@@ -30,7 +30,7 @@
 
             <div class="ordshz">
                 @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
-                <span class="shsp">
+                    <span class="shsp">
                         <a href="{{url('/weixin/api/show_xuedan?order='.$o->id)}}">续单</a>
                     </span>
                 @endif
@@ -48,10 +48,11 @@
                         <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">修改</a>
                     </span>
                 @endif
-
-                <!--<span class="shsp">
-                    <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">{{$o->status_name}}</a>
-                </span>-->
+                @if($o->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
+                    <span class="shsp">
+                            <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">{{$o->status_name}}</a>
+                        </span>
+                @endif
             </div>
         </div>
     @empty

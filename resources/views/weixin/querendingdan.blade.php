@@ -1,8 +1,5 @@
 @extends('weixin.layout.master')
 @section('title','确认订单')
-@section('css')
-    <link href='<?=asset("weixin/css/fullcalendar.min.css")?>' rel='stylesheet'/>
-@endsection
 @section('content')
 
     <header>
@@ -12,11 +9,11 @@
     <div class="ordsl">
         <input type="hidden" id="group_id" value="{{$group_id}}"/>
         <input type ="hidden" id="wxuser_id" value="{{$wxuser_id}}">
-        <div class="addrli addrli2" onclick="onGoPage1();">
-            @if(isset($customer) && ($customer != null))
+        <div class="addrli addrli2" style="cursor:pointer" onclick="go_page_address_list();">
+            @if(isset($primary_addr_obj) && ($primary_addr_obj != null))
                 <div class="adrtop pa2t">
-                    <p>{{$customer->name}} {{$customer->phone}}<br>
-                        {{$customer->address}}
+                    <p>{{$primary_addr_obj->name}} {{$primary_addr_obj->phone}}<br>
+                        {{$primary_addr_obj->address}}
                     </p>
                 </div>
             @else
@@ -33,11 +30,21 @@
                 <div class="ord-r">
                     蒙牛纯甄酸奶低温
                     <br>
-                    单价：{{$wop->product_price}}
+                    单价：
+                    @if ($wop->product_price)
+                        {{$wop->product_price}}
+                    @else
+                        ??
+                    @endif
                     <br>
                     订单数量：{{$wop->total_count}}瓶
                 </div>
-                <div class="ordye">金额：{{$wop->total_amount}}元</div>
+                <div class="ordye">金额：
+                    @if ($wop->total_amount)
+                        {{$wop->total_amount}}
+                    @else
+                        ??
+                    @endif元</div>
             </div>
         @empty
 
@@ -49,7 +56,7 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if(count($wechat_order_products) > 0)
+        @if(count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && !isset($message) )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled >去付款</button>
@@ -59,6 +66,12 @@
 @section('script')
     <script type="text/javascript">
 
+        $(document).ready(function(){
+            @if(isset($message))
+                var message = "{{$message}}";
+                show_info_msg(message);
+            @endif
+        });
         //make order based on cart
         $('#make_order').click(function () {
             var comment = $('#comment').val();
@@ -87,7 +100,7 @@
             })
         });
 
-        function onGoPage1() {
+        function go_page_address_list() {
             var group_id = $('#group_id').val();
             var wechat_user_id = $('#wxuser_id').val();
             window.location = SITE_URL + "weixin/dizhiliebiao?user="+wechat_user_id+"&&group_id="+group_id;

@@ -24,8 +24,8 @@ class Address extends Model
   		'city',
   		'district',
   		'street',
-  		'sub_addresses',
-        'sub_active_addresses',
+  		//'sub_addresses',
+        //'sub_active_addresses',
   		'sub_addresses_str',
         'full_address_name',
   	];
@@ -109,13 +109,13 @@ class Address extends Model
     	return $province;
     }
 
-    public function getSubAddressesAttribute() {
+    public function getSubAddresses() {
     	$id = $this->id;
 
     	return Address::where('parent_id', $id)->get();
     }
 
-    public function getSubActiveAddressesAttribute() {
+    public function getSubActiveAddresses() {
         return Address::where('parent_id', $this->id)
             ->where('is_active', $this::ADDRESS_ACTIVE)
             ->where('is_deleted', 0)->get();
@@ -186,7 +186,7 @@ class Address extends Model
                 {
                     //There is same address and that is not the street.
                     //give same_parent_id to origin's children
-                    foreach($origin_child_addr->sub_addresses as $origin_child_child_addr)
+                    foreach($origin_child_addr->getSubAddresses() as $origin_child_child_addr)
                     {
                         $origin_child_child_addr->parent_id = $same_new_addr->id;
                         $origin_child_child_addr->save();

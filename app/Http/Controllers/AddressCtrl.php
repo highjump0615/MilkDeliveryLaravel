@@ -423,7 +423,8 @@ class AddressCtrl extends Controller
             }
             else
             {
-                $suser = Auth::guard('naizhan')->user();
+                $station_id = Auth::guard('naizhan')->user()->station_id;
+                $suser = DeliveryStation::find($station_id);
 
                 if($suser)
                 {
@@ -442,7 +443,7 @@ class AddressCtrl extends Controller
             if (!$province)
                 return response()->json(['status' => 'fail']);
 
-            $cities = $province->sub_active_addresses;
+            $cities = $province->getSubActiveAddresses();
 
             $city_names = array();
             foreach ($cities as $city) {
@@ -469,7 +470,8 @@ class AddressCtrl extends Controller
             }
             else
             {
-                $suser = Auth::guard('naizhan')->user();
+                $station_id = Auth::guard('naizhan')->user()->station_id;
+                $suser = DeliveryStation::find($station_id);
 
                 if($suser)
                 {
@@ -490,7 +492,7 @@ class AddressCtrl extends Controller
             if (!$city)
                 return response()->json(['status' => 'fail']);
 
-            $districts = $city->sub_active_addresses;
+            $districts = $city->getSubActiveAddresses();
 
             $district_names = array();
             foreach ($districts as $district) {
@@ -516,7 +518,8 @@ class AddressCtrl extends Controller
             }
             else
             {
-                $suser = Auth::guard('naizhan')->user();
+                $station_id = Auth::guard('naizhan')->user()->station_id;
+                $suser = DeliveryStation::find($station_id);
 
                 if($suser)
                 {
@@ -539,7 +542,7 @@ class AddressCtrl extends Controller
             if (!$district)
                 return response()->json(['status' => 'fail']);
 
-            $streets = $district->sub_active_addresses;
+            $streets = $district->getSubActiveAddresses();
 
             $street_array = array();
             foreach ($streets as $street) {
@@ -561,7 +564,7 @@ class AddressCtrl extends Controller
             $street_name = $street->name;
 
             if ($street) {
-                $xiaoqus = $street->sub_active_addresses;
+                $xiaoqus = $street->getSubActiveAddresses();
 
                 if ($xiaoqus->count() == 0)
                     return response()->json(['status' => 'fail']);
@@ -597,7 +600,8 @@ class AddressCtrl extends Controller
         }
         else
         {
-            $suser = Auth::guard('naizhan')->user();
+            $station_id = Auth::guard('naizhan')->user()->station_id;
+            $suser = DeliveryStation::find($station_id);
 
             if($suser)
             {

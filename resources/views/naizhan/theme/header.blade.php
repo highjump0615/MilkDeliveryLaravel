@@ -15,7 +15,7 @@
 			<a type="button" href="{{url('/naizhan/shengchan/jinripeisongdan')}}" class="btn btn-outline btn-success btn-xs col-xs-3">今日发货统计</a>
 			<!--a type="button" href="{{url('/naizhan/dingdan/xudan')}}" class="btn btn-outline btn-success btn-sm col-xs-4">到期订单统计</a-->
 			<a type="button" href="{{url('/naizhan/xiaoxi/zhongxin')}}" class="btn btn-outline btn-success btn-xs col-xs-3">消息中心 &nbsp;
-				<span id="notification" class="label label-success">@if(count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->id)->where('read',0)->get()) > 0){{count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->id)->where('read',0)->get())}} @endif</span>
+				<span id="notification" class="label label-success">@if(count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get()) > 0){{count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get())}} @endif</span>
 			</a>
 			</p>
 		</div>
@@ -23,7 +23,7 @@
 		<div class="col-lg-6 col-md-6 " style="padding-top:5px;">
 		<div class="col-lg-5 col-md-5 col-xs-5">
 				<label style="font-size: 14px;">用户：</label>
-				<label id="user_id"  style="font-size: 16px;">{{Auth::guard('naizhan')->user()->username}}</label>
+				<label id="user_id"  style="font-size: 16px;">{{Auth::guard('naizhan')->user()->name}}</label>
 		</div>
 		<div class="col-lg-5 col-md-5 col-xs-5">
 				<label  style="font-size: 14px;">登录时间：</label>

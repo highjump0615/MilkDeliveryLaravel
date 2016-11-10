@@ -32,7 +32,7 @@ use App\Http\Controllers\Controller;
 class DSDeliveryPlanCtrl extends Controller
 {
     public function showPeisongguanli(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'peisongguanli';
         $parent = 'shengchan';
         $current_page = 'peisongguanli';
@@ -75,7 +75,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function save_distribution(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
         $product_id = $request->input('product_id');
@@ -98,7 +98,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function save_changed_distribution(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 
@@ -131,7 +131,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function showPeisongliebiao(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
         $child = 'peisongguanli';
@@ -185,7 +185,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         }
 
-        return view('naizhan.shengchan.peisongliebiao',[
+        return view('naizhan.shengchan.peisongguanli.peisongliebiao',[
             'pages'=>$pages,
             'child'=>$child,
             'parent'=>$parent,
@@ -195,7 +195,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function showZiyingdingdan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
         $child = 'peisongguanli';
@@ -276,7 +276,7 @@ class DSDeliveryPlanCtrl extends Controller
         $show_district = $current_district[0].$current_district[1].$current_district[2];
         $addr_district = $current_district[0].' '.$current_district[1].' '.$current_district[2];
         $province = ProvinceData::all();
-        return view('naizhan.shengchan.ziyingdingdan',[
+        return view('naizhan.shengchan.peisongguanli.ziyingdingdan',[
             'pages'=>$pages,
             'child'=>$child,
             'parent'=>$parent,
@@ -294,7 +294,7 @@ class DSDeliveryPlanCtrl extends Controller
     public function getXiaoquName(Request $request){
         if ($request->ajax()) {
             $street_name = $request->input('street_name');
-            $current_station_id = Auth::guard('naizhan')->user()->id;
+            $current_station_id = Auth::guard('naizhan')->user()->station_id;
             $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
 
             $xiaoqu = array();
@@ -311,7 +311,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function saveZiyingdingdan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 
@@ -361,7 +361,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function MilkmanProductInfo($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
@@ -552,7 +552,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function jinrichangestatus($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
@@ -576,7 +576,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function showJinripeisongdan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 
@@ -842,7 +842,7 @@ class DSDeliveryPlanCtrl extends Controller
 
     public function showPeisongfanru(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
@@ -991,7 +991,7 @@ class DSDeliveryPlanCtrl extends Controller
     public function confirmdeliveryPeisongfanru(Request $request){
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
@@ -1052,7 +1052,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function confirm(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 

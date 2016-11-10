@@ -1320,7 +1320,8 @@ class FinanceCtrl extends Controller
     //N1: Naizhan First page
     public function show_finance_page_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1339,8 +1340,8 @@ class FinanceCtrl extends Controller
     public function show_station_order_money_in_naizhan()
     {
 
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         //all orders in month
         $orders = $station->orders_in_month;
@@ -1460,7 +1461,8 @@ class FinanceCtrl extends Controller
     //N3: Show Station's Calc Balance Status
     public function show_station_calc_account_balance_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1484,7 +1486,8 @@ class FinanceCtrl extends Controller
     //N4: Show Self Business account balance
     public function show_self_account_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $self_business_history = $station->self_business_history;
 
         $child = 'ziyingzhanghujiru';
@@ -1509,8 +1512,8 @@ class FinanceCtrl extends Controller
     {
         $fuser = Auth::guard('gongchang')->user();
         $factory_id = $fuser->factory_id;
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         $stations = DeliveryStation::where('factory_id', $factory_id)->where('id', '!=', $station_id)->get();
 
@@ -1538,8 +1541,8 @@ class FinanceCtrl extends Controller
     //N7: Show transaction list not checked for other's money order
     public function show_transaction_list_not_checked_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -1661,8 +1664,8 @@ class FinanceCtrl extends Controller
     {
         $fuser = Auth::guard('gongchang')->user();
         $factory_id = $fuser->factory_id;
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
 
         //$card_orders_not_checked = $station->get_card_orders_not_checked();
         $card_orders_not_checked = $station->get_card_orders_not_checked_for_transaction();
@@ -1689,8 +1692,8 @@ class FinanceCtrl extends Controller
     //N11: Show transaction list not checked
     public function show_transaction_list_not_checked_for_card_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -1726,8 +1729,8 @@ class FinanceCtrl extends Controller
     //N12: Show transaction list checked
     public function show_card_transaction_record_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 
@@ -1764,8 +1767,8 @@ class FinanceCtrl extends Controller
     //N13: Show detail of card transaction
     public function show_card_transaction_detail_in_naizhan($trs_id)
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station = DeliveryStation::find($station_id);
         $factory_id = $station->factory_id;
         $factory = Factory::find($factory_id);
 

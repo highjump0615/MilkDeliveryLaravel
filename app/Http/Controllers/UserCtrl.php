@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\DeliveryModel\DeliveryStation;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
 use App\Model\UserModel\UserRole;
@@ -30,7 +31,7 @@ class UserCtrl extends Controller
         $parent = 'xitong';
         $current_page = 'yonghu';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $role_name = UserRole::where('backend_type', '2')->get();
+        $role_name = UserRole::where('backend_type', '2')->where('factory_id',$current_factory_id)->get();
         $userinfo = User::where('backend_type','2')->where('factory_id',$current_factory_id)->get();
         return view('gongchang.xitong.yonghu', [
             'pages' => $pages,
@@ -53,6 +54,17 @@ class UserCtrl extends Controller
     }
 
     public function getPage($user_id=null)
+    {
+        if($user_id == null){
+            return Response::json(['status'=>'failed']);
+        }
+        else{
+            $userinfo = User::find($user_id);
+            return Response::json($userinfo);
+        }
+    }
+
+    public function getNaizhanPage($user_id=null)
     {
         if($user_id == null){
             return Response::json(['status'=>'failed']);
@@ -138,11 +150,11 @@ class UserCtrl extends Controller
             $user = new User;
             $user->name = $request->input('name');
             $user->password = bcrypt($request->input('password'));
-            $user->factory_id = 0;
+            $user->factory_id = DeliveryStation::find($request->input('station_id'))->factory_id;
+            $user->station_id = $request->input('station_id');
             $user->user_role_id = $request->input('user_role_id');
             $user->status = $request->input('status');
             $user->backend_type = $request->input('backend_type');
-            $user->description = $request->input('description');
             $user->last_used_ip = $request->ip();
             $user->save();
             return Response::json($user);
@@ -158,7 +170,6 @@ class UserCtrl extends Controller
         if($request->input('password') != null){
             $user->password = bcrypt($request->input('password'));
         }
-        $user->description = $request->input('description');
         $user->status = $request->input('status');
         $user->user_role_id = $request->input('user_role_id');
 
@@ -174,6 +185,79 @@ class UserCtrl extends Controller
     }
 
     public  function deleteZongpingGuanliyuan($user_id){
+        $deleteZongpingGuanliyuan = User::destroy($user_id);
+        return Response::json($deleteZongpingGuanliyuan);
+    }
+
+    public function stationJuese(Request $request){
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $child = 'yonghu';
+        $parent = 'xitong';
+        $current_page = 'yonghu';
+        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->orderby('order_no')->get();
+        $role_name = UserRole::where('backend_type', '3')->where('station_id',$current_station_id)->get();
+        $userinfo = User::where('backend_type','3')->where('station_id',$current_station_id)->get();
+        return view('naizhan.xitong.yonghu', [
+            'pages' => $pages,
+            'userinfo' => $userinfo,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page,
+            'role_name' => $role_name,
+            'current_station_id'=>$current_station_id,
+        ]);
+    }
+
+    public function  getNaizhanGuanliyuan($user_id){
+        $userinfo = User::find($user_id);
+        return Response::json($userinfo);
+    }
+
+    public function addNaizhanGuanliyuan(Request $request){
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_factory_id = Auth::guard('naizhan')->User()->factory_id;
+        $name = $request->input('name');
+        $is_exist = User::where('name',$name)->get()->first();
+        if(empty($is_exist)){
+            $user = new User;
+            $user->name = $request->input('name');
+            $user->password = bcrypt($request->input('password'));
+            $user->factory_id = $current_factory_id;
+            $user->station_id = $current_station_id;
+            $user->user_role_id = $request->input('user_role_id');
+            $user->status = $request->input('status');
+            $user->backend_type = $request->input('backend_type');
+            $user->description = $request->input('description');
+            $user->last_used_ip = $request->ip();
+            $user->save();
+            return Response::json($user);
+        }
+        else{
+            return Response::json(['is_exist'=>1]);
+        }
+    }
+
+    public function updateNaizhanGuanliyuan(Request $request, $user_id){
+        $user = User::find($user_id);
+        $user->name = $request->input('name');
+        if($request->input('password') != null){
+            $user->password = bcrypt($request->input('password'));
+        }
+        $user->status = $request->input('status');
+        $user->user_role_id = $request->input('user_role_id');
+
+        $user->save();
+        return Response::json($user);
+    }
+
+    public function changeStatusNaizhanGuanliyuan(Request $request){
+        $user = User::find($request->input('id'));
+        $user->status = $request->input('status');
+        $user->save();
+        return Response::json($user);
+    }
+
+    public  function deleteNaizhanGuanliyuan($user_id){
         $deleteZongpingGuanliyuan = User::destroy($user_id);
         return Response::json($deleteZongpingGuanliyuan);
     }

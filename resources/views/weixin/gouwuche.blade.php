@@ -1,12 +1,8 @@
 @extends('weixin.layout.master')
 @section('title','结算')
-@section('css')
-    <link href='<?=asset("weixin/css/fullcalendar.min.css")?>' rel='stylesheet'/>
-@endsection
 @section('content')
 
     <header class="top">
-        <a class="headl fanh" href="javascript:void(0)"></a>
         <h1>我的购物车</h1>
     </header>
     <div class="ordsl">
@@ -53,17 +49,13 @@
 @endsection
 @section('script')
 
-    <script src="<?=asset('/weixin/js/fullcalendar.min.js')?>"></script>
     <script ype="text/javascript">
 
         var current_menu = 2;
-
         $(document).ready(function () {
             set_current_menu();
         });
-
         $('#process_cart').click(function(){
-
             var cart_ids = "";
             // get all checked carts
             $('input.cart_check:checked').each(function(){
@@ -74,14 +66,31 @@
                     cart_ids +=","+$(this).data('cartid');
                 }
             });
-
             if(!cart_ids)
                 return;
 
-            window.location = SITE_URL+"weixin/gouwuche/api/make_wop_group?cart_ids="+cart_ids;
+            $.ajax({
+                type:"POST",
+                url: SITE_URL+"weixin/gouwuche/api/make_wop_group",
+                data: {'cart_ids':cart_ids},
+                success: function(data){
+                    if(data.status == "success" && data.group_id)
+                    {
+                        window.location = SITE_URL+"weixin/querendingdan?group_id="+data.group_id;
+                    } else {
+
+                        if (data.redirect_path == "phone_verify" && data.group_id)
+                        {
+                            window.location  = SITE_URL+"weixin/dengji?group_id="+data.group_id;
+                        }
+                    }
+
+                },
+                error: function(data){
+                    console.log(data);
+                }
+            })
 
         });
-
     </script>
-
 @endsection

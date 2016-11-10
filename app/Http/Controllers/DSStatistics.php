@@ -31,7 +31,7 @@ class DSStatistics extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
         $startDate_str = $currentDate->format('Y-01-01');
@@ -147,7 +147,7 @@ class DSStatistics extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
@@ -298,7 +298,7 @@ class DSStatistics extends Controller
         if($start_date == null){
             $start_date = $currentDate_str;
         }
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $customer_delivers = array();
         $milkmandelivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at','>=',$start_date)->
@@ -405,7 +405,7 @@ class DSStatistics extends Controller
         $parent = 'tongji';
         $current_page = 'peisongyuanwei';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
         $milkman_name = $request->input('milkman_name');
         if($milkman_name == null){
@@ -428,7 +428,7 @@ class DSStatistics extends Controller
             $end_date = $currentDate_str;
         }
 
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         
         $milkman_delivers = array();

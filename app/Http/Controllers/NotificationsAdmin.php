@@ -74,7 +74,7 @@ class NotificationsAdmin extends Controller
     }
 
     public function showNaizhanZhongxin(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'zhongxin';
         $parent = 'xiaoxi';
         $current_page = 'zhongxin';
@@ -102,7 +102,7 @@ class NotificationsAdmin extends Controller
         $dsnotifications = DSNotification::find($id);
         $dsnotifications->read = DSNotification::READ_STATUS;
         $dsnotifications->save();
-        return view('naizhan.xiaoxi.xianqing', [
+        return view('naizhan.xiaoxi.zhongxin.xianqing', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,

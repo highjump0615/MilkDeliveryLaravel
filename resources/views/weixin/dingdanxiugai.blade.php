@@ -11,8 +11,8 @@
 
     <div class="ordtop pa2t clearfix">
         <img class="ordpro" src="<?=asset('img/product/logo/' . $order_product->product->photo_url1)?>">
-        <p>{{$order_product->product_name}} <span>剩余数量：{{$order_product->total_count}}</span></p>
-        <div class="ordye">金额：{{$order_product->total_amount}}元</div>
+        <p>{{$order_product->product_name}} <span>剩余数量：{{$order_product->remain_count}}</span></p>
+        <div class="ordye">金额：{{$order_product->remain_amount}}元</div>
     </div>
 
     <input type="hidden" id="opid" value = "{{$order_product->id}}"/>

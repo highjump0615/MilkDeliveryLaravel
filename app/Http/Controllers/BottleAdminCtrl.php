@@ -229,7 +229,7 @@ class BottleAdminCtrl extends Controller
         $milkman_id = $request->input('milkman_id');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'peisongyuanpingkuang';
         $parent = 'pingkuang';
         $current_page = 'peisongyuanpingkuang';
@@ -337,7 +337,7 @@ class BottleAdminCtrl extends Controller
     }
 
     public function showNaizhanPingkuangshouhui(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
@@ -520,7 +520,7 @@ dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id
     }
 
     public function confirmTodaysBottle(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
         $type = $request->input('type');
@@ -579,7 +579,7 @@ dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id
     }
 
     public function showNaizhanPingkuangtongji(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_year_str = $currentDate->format('Y');
