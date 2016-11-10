@@ -92,7 +92,7 @@ class CustomerCtrl extends Controller
     }
 
     public function showNaizhanUserPage(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'kehudangan';
         $parent = 'kehu';
         $current_page = 'kehudangan';

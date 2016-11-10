@@ -380,7 +380,28 @@ Route::get('/naizhan/logout', 'NaizhanAuth\AuthController@logout');
 
 //order mgmt
 Route::group(['middleware' => ['naizhan']], function () {
+    /*show user admin page*/
+    Route::get('/naizhan/xitong/yonghu','UserCtrl@stationJuese');
+    /*get Pages*/
+    Route::get('/api/naizhan/xitong/yonghu/{user_id?}', 'UserCtrl@getNaizhanPage');
+    /*save and update user information*/
+    Route::post('api/naizhan/xitong/yonghu', 'UserCtrl@addNaizhanGuanliyuan');
+    /*update account*/
+    Route::put('api/naizhan/xitong/yonghu/{user_id}', 'UserCtrl@updateNaizhanGuanliyuan');
+    /*change Status*/
+    Route::post('api/naizhan/xitong/yonghu/changeStatus','UserCtrl@changeStatusNaizhanGuanliyuan');
+    /*Delete user information*/
+    Route::delete('api/naizhan/xitong/yonghu/{user_id}', 'UserCtrl@deleteNaizhanGuanliyuan');
+    /*View Xitong/Juese Page*/
+    Route::get('/naizhan/xitong/juese/{role_id?}', 'UserRoleCtrl@stationJuese')->name('naizhan_juese');
+    /*Add Role_name*/
+    Route::post('api/naizhan/xitong/juese', 'UserRoleCtrl@addRole');
+    /*Delete Role_name*/
+    Route::delete('api/naizhan/xitong/juese/{role_id}', 'UserRoleCtrl@deleteRole');
 
+    Route::get('api/naizhan/xitong/juese/{role_id?}', 'UserRoleCtrl@index');
+    /*Save inupt value*/
+    Route::post('api/naizhan/xitong/juese/store', 'UserRoleCtrl@store');
     /*Show DSProductPlanView Page*/
     Route::get('/naizhan/shengchan/jihuaguanli', 'DSProductionPlanCtrl@showJihuaguanlinPage')->name('naizhan_shengchan_jihuaguanli');
     /*Show ExportPlan Page*/
@@ -566,8 +587,8 @@ Route::get('/naizhan/dingdan/daoqi', function (Request $request) {
     $child = 'quanbuluru';
     $parent = 'dingdan';
     $current_page = 'daoqi';
-    $pages = App\Model\UserModel\Page::where('backend_type', '3')->where('parent_page', '0')->get();
-    return view('naizhan.dingdan.daoqi', [
+    $pages = App\Model\UserModel\Page::where('backend_type', '3')->where('parent_page', '0')->orderby('order_no')->get();
+    return view('naizhan.dingdan.dingdanluru.daoqi', [
         'pages' => $pages,
         'child' => $child,
         'parent' => $parent,
@@ -892,6 +913,8 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 Route::group(['prefix'=>'/weixin'], function(){
     /* home page */
     Route::get('/qianye',  'WeChatCtrl@showIndexPage');
+    Route::post('/api/set_session_address',  'WeChatCtrl@set_session_address');
+
 
     /* product list */
     Route::get('/shangpinliebiao', 'WeChatCtrl@shangpinliebiao');
@@ -907,7 +930,8 @@ Route::group(['prefix'=>'/weixin'], function(){
     /* shopping cart */
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
     Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
-    Route::get('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
+    Route::post('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
+    Route::post('/api/check_verified_before_checkout', 'WeChatCtrl@check_verified_before_checkout');
 
     /* confirm order before purchase */
     Route::get('/querendingdan', 'WeChatCtrl@querendingdan')->name('querendingdan');
@@ -950,8 +974,6 @@ Route::group(['prefix'=>'/weixin'], function(){
     /* order schedule */
     Route::get('/dingdanrijihua',  'WeChatCtrl@dingdanrijihua');
 
-
-
     /* order list */
     Route::get('/dingdanliebiao', 'WeChatCtrl@dingdanliebiao');
 
@@ -970,6 +992,12 @@ Route::group(['prefix'=>'/weixin'], function(){
     /* change order per day */
     Route::get('/danrixiugai', 'WeChatCtrl@danrixiugai');
     Route::post('api/change_delivery_plan_for_one_date', 'WeChatCtrl@change_delivery_plan_for_one_date');
+
+    /*dengji*/
+    Route::get('dengji', 'WeChatCtrl@dengji');
+    //send verify code to phone
+    Route::post('/api/send_verify_code_to_phone', 'WeChatCtrl@send_verify_code_to_phone');
+    Route::post('/api/check_verify_code', 'WeChatCtrl@check_verify_code');
 
 });
 //

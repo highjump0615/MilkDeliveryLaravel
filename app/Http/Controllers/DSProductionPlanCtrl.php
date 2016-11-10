@@ -31,7 +31,7 @@ use App\Http\Controllers\Controller;
 class DSProductionPlanCtrl extends Controller
 {
     public function showJihuaguanlinPage(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_date = $request->input('current_date');
         $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
@@ -75,7 +75,7 @@ class DSProductionPlanCtrl extends Controller
     }
 
     public  function showTijiaojihuaPage(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_station_addr = Auth::guard('naizhan')->user()->address;
 
         $child = 'jihuaguanli';
@@ -170,7 +170,7 @@ class DSProductionPlanCtrl extends Controller
         }
 
 
-        return view('naizhan.shengchan.tijiaojihua',[
+        return view('naizhan.shengchan.jihuaguanli.tijiaojihua',[
             'pages'=>$pages,
             'child'=>$child,
             'parent'=>$parent,
@@ -182,7 +182,7 @@ class DSProductionPlanCtrl extends Controller
     }
 
     public function storeTijiaojihuaPlan(Request $request) {
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
         $produce_start_at = $produce_Date->format('Y-m-d');
@@ -326,7 +326,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     public function modifyTijiaojihuaPlan(Request $request) {
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
         $produce_start_at = $produce_Date->format('Y-m-d');
@@ -970,7 +970,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function showNaizhanQianshoujihua(Request $request){
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'qianshoujihua';
         $parent = 'shengchan';
         $current_page = 'qianshoujihua';
@@ -1036,7 +1036,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     public function refund_BB(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->id;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $types = $request->input('types');
         $object_type = $request->input('object_type');
         $return_to_factory = $request->input('return_to_factory');

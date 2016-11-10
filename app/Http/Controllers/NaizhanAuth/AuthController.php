@@ -34,8 +34,9 @@ class AuthController extends Controller
     protected $redirectTo = '/naizhan/dingdan';
     protected $loginPath  = '/naizhan';
     protected $redirectAfterLogout  = '/naizhan';
+
     protected $guard = 'naizhan';
-    protected $username = 'username';
+    protected $username = 'name';
 
     /**
      * Create a new authentication controller instance.
@@ -97,6 +98,7 @@ class AuthController extends Controller
         }
 
         $credentials = $this->getCredentials($request);
+        $credentials = array_add($credentials, 'backend_type', 3);
         $credentials = array_add($credentials, 'status', 1);
 
         if (Auth::guard($this->getGuard())->attempt($credentials, $request->has('remember'))) {

@@ -1,10 +1,9 @@
 -- phpMyAdmin SQL Dump
--- phpMyAdmin SQL Dump
 -- version 4.1.12
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2016 at 10:47 PM
+-- Generation Time: Nov 10, 2016 at 03:09 AM
 -- Server version: 5.6.16
 -- PHP Version: 5.5.11
 
@@ -18,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `milk_init`
+-- Database: `milk_test`
 --
 
 -- --------------------------------------------------------
@@ -48,11 +47,9 @@ CREATE TABLE IF NOT EXISTS `address` (
   `factory_id` int(11) NOT NULL,
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `fk_address_parent_id_idx` (`parent_id`),
   KEY `fk_address_factory_id` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='地址表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='地址表' AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `apiconnects`
@@ -494,9 +491,7 @@ CREATE TABLE IF NOT EXISTS `customer` (
   KEY `fk_Orderers_DeliveryOffices1_idx` (`station_id`),
   KEY `fk_Orderers_Milkman1_idx` (`milkman_id`),
   KEY `fk_Orderers_Factory_id_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='收货人' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='收货人' AUTO_INCREMENT=1 ;
 
 --
 -- Table structure for table `deliverystations`
@@ -527,9 +522,6 @@ CREATE TABLE IF NOT EXISTS `deliverystations` (
   `init_business_credit_amount` double DEFAULT NULL COMMENT '初期自营信用金额',
   `business_credit_balance` double DEFAULT '0' COMMENT '自营信用账户',
   `userkind` int(3) DEFAULT NULL,
-  `username` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `remember_token` varchar(255) CHARACTER SET big5 DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `is_deleted` tinyint(1) DEFAULT '0',
@@ -539,7 +531,7 @@ CREATE TABLE IF NOT EXISTS `deliverystations` (
   KEY `fk_DeliveryOffices_PaymentType1_idx` (`payment_calc_type`),
   KEY `fk_DeliveryOffices_factory_id` (`factory_id`),
   KEY `fk_DeliveryOffices_UserType1_idx` (`userkind`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='奶店表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='奶店表' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -3749,7 +3741,8 @@ CREATE TABLE IF NOT EXISTS `dsbottlerefunds` (
   PRIMARY KEY (`id`),
   KEY `fk_Bottles_BottleType1_idx` (`bottle_type`),
   KEY `fk_Bottles_DeliveryOffices1_idx` (`station_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='奶店返瓶表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='奶店返瓶表' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -3823,7 +3816,8 @@ CREATE TABLE IF NOT EXISTS `dsdeliveryarea` (
   `station_id` int(11) NOT NULL COMMENT '奶店ID',
   PRIMARY KEY (`id`),
   KEY `fk_DSDeliveryArea_DeliveryStations1_idx` (`station_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='奶店配送范围' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='奶店配送范围' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -3843,7 +3837,7 @@ CREATE TABLE IF NOT EXISTS `dsdeliverycreditbalancehistory` (
   PRIMARY KEY (`id`),
   KEY `fk_DSDeliveryCreditBalanceHistory_DSTransactions_TN_idx` (`receipt_number`),
   KEY `fk_DSDeliveryCreditBalanceHistory_DSTransactions_TN_idx1` (`station_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='配送信用账户历史' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送信用账户历史' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -3920,9 +3914,8 @@ CREATE TABLE IF NOT EXISTS `dsnotifications` (
   PRIMARY KEY (`id`),
   KEY `fk_DSNotifications_DS_idx` (`station_id`),
   KEY `fk_Notifications_Category_idx` (`category`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `dspaymentcalctypes`
@@ -3961,7 +3954,7 @@ CREATE TABLE IF NOT EXISTS `dsproductionplan` (
   `actual_count` int(11) DEFAULT NULL COMMENT '奶厂生产量',
   `confirm_count` int(11) DEFAULT NULL COMMENT '奶店确认量',
   `status` int(11) NOT NULL COMMENT '计划状态：待审核/待生产/生产取消/已生成/已发货',
-  `settle_product_price` double NOT NULL,
+  `retail_product_price` double NOT NULL,
   `subtotal_count` int(11) DEFAULT NULL,
   `subtotal_money` int(11) DEFAULT NULL,
   `comment` varchar(1024) DEFAULT NULL,
@@ -4065,7 +4058,8 @@ CREATE TABLE IF NOT EXISTS `factory` (
   `factory_id` varchar(45) DEFAULT NULL,
   `factory_password` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='奶厂表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='奶厂表' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4120,7 +4114,8 @@ CREATE TABLE IF NOT EXISTS `mfbottletype` (
   `is_deleted` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `mfbottletype_factory_id_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='瓶流型' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='瓶流型' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4159,7 +4154,8 @@ CREATE TABLE IF NOT EXISTS `mfboxtype` (
   `is_deleted` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `mfboxtype_factory_id_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4176,7 +4172,7 @@ CREATE TABLE IF NOT EXISTS `mfdeliverytime` (
   `afternoon_end_at` varchar(20) DEFAULT NULL COMMENT '下午到时间',
   PRIMARY KEY (`id`),
   KEY `fk_DSDeliveryTime_DeliveryStations1_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -4192,7 +4188,8 @@ CREATE TABLE IF NOT EXISTS `mfdeliverytype` (
   PRIMARY KEY (`id`),
   KEY `dsdt_delivery_type_fk_idx` (`delivery_type`),
   KEY `mfdt_factory_id` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4229,7 +4226,8 @@ CREATE TABLE IF NOT EXISTS `mfordertype` (
   PRIMARY KEY (`id`),
   KEY `mfordertype_factory_id_idx` (`factory_id`),
   KEY `mfordertype_order_type_idx` (`order_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4260,6 +4258,7 @@ CREATE TABLE IF NOT EXISTS `milkcards` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `batch_number` varchar(50) NOT NULL,
   `number` varchar(45) NOT NULL COMMENT '编号',
+  `product` varchar(45) DEFAULT NULL,
   `balance` int(11) NOT NULL COMMENT '金额',
   `password` varchar(45) NOT NULL COMMENT '密码',
   `sale_status` int(11) DEFAULT '0' COMMENT '领用状态',
@@ -4287,7 +4286,8 @@ CREATE TABLE IF NOT EXISTS `milkman` (
   `is_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `fk_Milkman_DeliveryOffices1_idx` (`station_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='配送员表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送员表' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4302,7 +4302,8 @@ CREATE TABLE IF NOT EXISTS `milkmandeliveryarea` (
   `order` int(11) DEFAULT NULL COMMENT '排列顺序',
   PRIMARY KEY (`id`),
   KEY `fk_MilkmanDeliveryArea_Milkman1_idx` (`milkman_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='配送员配送范围' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送员配送范围' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4334,7 +4335,8 @@ CREATE TABLE IF NOT EXISTS `milkmandeliveryplan` (
   KEY `fk_DeliveryPlan_Station_idx` (`station_id`),
   KEY `fk_DeliveryPlan_OrderProduct_idx` (`order_product_id`),
   KEY `fk_DeliveryPlan_Order_idx_idx` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='配送员配送计划' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送员配送计划' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4402,7 +4404,8 @@ CREATE TABLE IF NOT EXISTS `ordercheckers` (
   UNIQUE KEY `phone_UNIQUE` (`phone`),
   KEY `fk_OrderCheckers_Factory1_idx` (`station_id`),
   KEY `ordercheckers_factory_id` (`or_factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='征订人' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='征订人' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4422,12 +4425,14 @@ CREATE TABLE IF NOT EXISTS `orderproducts` (
   `total_amount` double DEFAULT NULL COMMENT '订单金额',
   `product_price` double DEFAULT NULL COMMENT '商品价',
   `avg` double DEFAULT NULL,
+  `start_at` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_OrderProducts_Orders1_idx` (`order_id`),
   KEY `fk_OrderProducts_Products1_idx` (`product_id`),
   KEY `fk_OrderProducts_OrderType1_idx` (`order_type`),
   KEY `fk_OrderProducts_DeliveryType1_idx` (`delivery_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单商品' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='订单商品' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4498,7 +4503,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   KEY `fk_Orders_DSTransactions1_idx` (`transaction_id`),
   KEY `fk_Orders_OrderProperty1_idx` (`order_property_id`),
   KEY `fk_Orders_Factory1_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单管理表' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='订单管理表' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -4566,7 +4571,7 @@ CREATE TABLE IF NOT EXISTS `pages` (
   `page_url` varchar(255) DEFAULT NULL,
   `icon_name` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='后台页' AUTO_INCREMENT=120 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='后台页' AUTO_INCREMENT=123 ;
 
 --
 -- Dumping data for table `pages`
@@ -4584,7 +4589,7 @@ INSERT INTO `pages` (`id`, `backend_type`, `parent_page`, `name`, `order_no`, `p
 (9, 2, 0, '客户管理', 9, 'kehu', 'gongchang/kehu/kehu', 'fa fa-user'),
 (10, 2, 0, '评价管理', 11, 'pingjia', 'gongchang/pingjia/pingjialiebiao', 'fa fa-star-half-o'),
 (30, 2, 1, '用户管理', 1, 'yonghu', 'gongchang/xitong/yonghu', NULL),
-(31, 2, 1, '奶站账号管理', 3, 'naizhanzhanghao', 'gongchang/xitong/naizhanzhanghao', NULL),
+(31, 2, 1, '奶站账号管理', 2, 'naizhanzhanghao', 'gongchang/xitong/naizhanzhanghao', NULL),
 (32, 2, 2, '全部订单-列表', 1, 'quanbudingdan-liebiao', 'gongchang/dingdan/quanbudingdan-liebiao', NULL),
 (33, 2, 2, '未起奶订单', 2, 'weiqinaidingdan', 'gongchang/dingdan/weiqinaidingdan', NULL),
 (34, 2, 2, '在配送订单', 3, 'zaipeisongdingdan', 'gongchang/dingdan/zaipeisongdingdan', NULL),
@@ -4595,7 +4600,7 @@ INSERT INTO `pages` (`id`, `backend_type`, `parent_page`, `name`, `order_no`, `p
 (39, 2, 3, '地址库管理', 1, 'dizhiku', 'gongchang/jichuxinxi/dizhiku', NULL),
 (40, 2, 3, '商品管理', 2, 'shangpin', 'gongchang/jichuxinxi/shangpin', NULL),
 (41, 2, 3, '征订员管理', 3, 'zhengdingyuan', 'gongchang/jichuxinxi/zhengdingyuan', NULL),
-(42, 2, 3, '配送范围管理', 4, 'naizhan', 'gongchang/jichuxinxi/naizhan', NULL),
+(42, 2, 3, '奶站管理', 4, 'naizhan', 'gongchang/jichuxinxi/naizhan', NULL),
 (43, 2, 4, '奶站账户台账', 1, 'taizhang', 'gongchang/caiwu/taizhang', NULL),
 (44, 2, 5, '奶站计划审核', 1, 'naizhanjihuashenhe', 'gongchang/shengchan/naizhanjihuashenhe', NULL),
 (45, 2, 5, '奶站配送管理', 2, 'naizhanpeisong', 'gongchang/shengchan/naizhanpeisong', NULL),
@@ -4609,8 +4614,17 @@ INSERT INTO `pages` (`id`, `backend_type`, `parent_page`, `name`, `order_no`, `p
 (53, 2, 8, '瓶框库存管理', 1, 'pingkuang_child', 'gongchang/pingkuang/pingkuang', NULL),
 (54, 2, 9, '客户管理', 1, 'kehu_child', 'gongchang/kehu/kehu', NULL),
 (55, 2, 10, '评价列表', 1, 'pingjialiebiao', 'gongchang/pingjia/pingjialiebiao', NULL),
-(56, 2, 1, '角色管理', 2, 'juese', 'gongchang/xitong/juese', NULL),
+(56, 2, 1, '角色管理', 3, 'juese', 'gongchang/xitong/juese', NULL),
 (58, 2, 2, '未通过订单', 7, 'weitongguodingdan', 'gongchang/dingdan/weitongguodingdan', NULL),
+(59, 1, 0, '系统管理', 1, 'xitong', 'zongpingtai/xitong/gengxinhuankun', 'fa fa-tasks'),
+(60, 1, 59, '更新缓存', 1, 'gengxinhuankun', 'zongpingtai/xitong/gengxinhuankun', NULL),
+(61, 1, 59, '信息接口', 2, 'xinxijiekou', 'zongpingtai/xitong/xinxijiekou', NULL),
+(62, 1, 59, '站点设定', 3, 'zhandiansheding', 'zongpingtai/xitong/zhandiansheding', NULL),
+(63, 1, 59, '附件设置', 4, 'fujianshezhi', 'zongpingtai/xitong/fujianshezhi', NULL),
+(64, 1, 59, '其他设置', 5, 'qitashezhi', 'zongpingtai/xitong/qitashezhi', NULL),
+(65, 1, 59, '数据库', 6, 'shujuku', 'zongpingtai/xitong/shujuku', NULL),
+(66, 1, 59, '检查工具', 7, 'jianchagongju', 'zongpingtai/xitong/jianchagongju', NULL),
+(67, 1, 59, '查看日志', 8, 'chakanrizhi', 'zongpingtai/xitong/chakanrizhi', NULL),
 (68, 1, 0, '用户管理', 1, 'yonghu', 'zongpingtai/yonghu/guanliyuanzhongxin', 'fa fa-group'),
 (69, 1, 68, '管理员中心', 1, 'guanliyuanzhongxin', 'zongpingtai/yonghu/guanliyuanzhongxin', NULL),
 (70, 1, 68, '角色管理', 2, 'juese', 'zongpingtai/yonghu/juese', NULL),
@@ -4625,6 +4639,7 @@ INSERT INTO `pages` (`id`, `backend_type`, `parent_page`, `name`, `order_no`, `p
 (79, 1, 77, '订单类型统计', 2, 'dingdanleixing', 'zongpingtai/tongji/dingdanleixing', NULL),
 (80, 1, 77, '客户行为统计', 3, 'kehuxingwei', 'zongpingtai/tongji/kehuxingwei', NULL),
 (81, 1, 77, '客户订单修改统计', 4, 'kehudingdanxiugai', 'zongpingtai/tongji/kehudingdanxiugai', NULL),
+(82, 1, 77, '流量统计', 5, 'liuliang', 'zongpingtai/tongji/liuliang', NULL),
 (84, 3, 0, '订单管理', 2, 'dingdan', 'naizhan/dingdan/quanbuluru', 'fa fa-check-circle'),
 (85, 3, 84, '全部录入订单-列表', 1, 'quanbuluru', 'naizhan/dingdan/quanbuluru', NULL),
 (86, 3, 84, '续单', 7, 'xudanliebiao', 'naizhan/dingdan/xudanliebiao', NULL),
@@ -4660,19 +4675,11 @@ INSERT INTO `pages` (`id`, `backend_type`, `parent_page`, `name`, `order_no`, `p
 (116, 3, 84, '订单录入', 8, 'dingdanluru', 'naizhan/dingdan/dingdanluru', NULL),
 (117, 3, 95, '签收计划', 2, 'qianshoujihua', 'naizhan/shengchan/qianshoujihua', NULL),
 (118, 2, 0, '消息中心', 10, 'xinxi', 'gongchang/xinxi/zhongxin', 'fa fa-hacker-news'),
-(119, 2, 118, '消息中心', 1, 'zhongxin', 'gongchang/xinxi/zhongxin', NULL);
+(119, 2, 118, '消息中心', 1, 'zhongxin', 'gongchang/xinxi/zhongxin', NULL),
+(120, 3, 0, '系统管理', 1, 'xitong', 'naizhan/xitong/yonghu', 'fa fa-wrench'),
+(121, 3, 120, '用户管理', 1, 'yonghu', 'naizhan/xitong/yonghu', NULL),
+(122, 3, 120, '角色管理', 2, 'juese', 'naizhan/xitong/juese', NULL);
 
--- (59, 1, 0, '系统管理', 1, 'xitong', 'zongpingtai/xitong/gengxinhuankun', 'fa fa-wrench'),
--- (60, 1, 59, '更新缓存', 1, 'gengxinhuankun', 'zongpingtai/xitong/gengxinhuankun', NULL),
--- (61, 1, 59, '信息接口', 2, 'xinxijiekou', 'zongpingtai/xitong/xinxijiekou', NULL),
--- (62, 1, 59, '站点设定', 3, 'zhandiansheding', 'zongpingtai/xitong/zhandiansheding', NULL),
--- (63, 1, 59, '附件设置', 4, 'fujianshezhi', 'zongpingtai/xitong/fujianshezhi', NULL),
--- (64, 1, 59, '其他设置', 5, 'qitashezhi', 'zongpingtai/xitong/qitashezhi', NULL),
--- (65, 1, 59, '数据库', 6, 'shujuku', 'zongpingtai/xitong/shujuku', NULL),
--- (66, 1, 59, '检查工具', 7, 'jianchagongju', 'zongpingtai/xitong/jianchagongju', NULL),
--- (67, 1, 59, '查看日志', 8, 'chakanrizhi', 'zongpingtai/xitong/chakanrizhi', NULL),
-
--- (82, 1, 77, '流量统计', 5, 'liuliang', 'zongpingtai/tongji/liuliang', NULL),
 -- --------------------------------------------------------
 
 --
@@ -4707,7 +4714,8 @@ CREATE TABLE IF NOT EXISTS `productcategory` (
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '删除是否',
   PRIMARY KEY (`id`),
   KEY `fk_ProductCategory_Factory_idx` (`factory_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商品类别' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='商品类别' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4727,7 +4735,8 @@ CREATE TABLE IF NOT EXISTS `productprice` (
   `settle_price` float DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_ProductPrice_Products1_idx` (`product_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商品价格' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='商品价格' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4761,7 +4770,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   PRIMARY KEY (`id`),
   KEY `fk_Products_Factory1_idx` (`factory_id`),
   KEY `fk_Products_MFBottleType_idx` (`bottle_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商品' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='商品' AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -4918,7 +4928,7 @@ CREATE TABLE IF NOT EXISTS `userpageaccess` (
   PRIMARY KEY (`id`,`page_id`),
   KEY `fk_UserPageAccess_Pages1_idx` (`page_id`),
   KEY `fk_UserPageAccess_UserRoles1_idx` (`user_role_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='用户角色' AUTO_INCREMENT=493 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='用户角色' AUTO_INCREMENT=549 ;
 
 --
 -- Dumping data for table `userpageaccess`
@@ -4965,6 +4975,15 @@ INSERT INTO `userpageaccess` (`id`, `page_id`, `user_role_id`) VALUES
 (481, 58, 1),
 (482, 118, 1),
 (483, 119, 1),
+(122, 59, 100),
+(123, 60, 100),
+(124, 61, 100),
+(125, 62, 100),
+(126, 63, 100),
+(127, 64, 100),
+(128, 65, 100),
+(129, 66, 100),
+(130, 67, 100),
 (131, 68, 100),
 (132, 69, 100),
 (133, 70, 100),
@@ -4978,21 +4997,46 @@ INSERT INTO `userpageaccess` (`id`, `page_id`, `user_role_id`) VALUES
 (141, 78, 100),
 (142, 79, 100),
 (143, 80, 100),
-(144, 81, 100);
+(144, 81, 100),
+(146, 82, 100),
+(500, 84, 200),
+(501, 85, 200),
+(502, 86, 200),
+(503, 87, 200),
+(504, 88, 200),
+(505, 89, 200),
+(506, 90, 200),
+(507, 91, 200),
+(508, 92, 200),
+(509, 93, 200),
+(510, 94, 200),
+(511, 95, 200),
+(512, 96, 200),
+(513, 97, 200),
+(514, 98, 200),
+(515, 99, 200),
+(516, 100, 200),
+(517, 101, 200),
+(518, 102, 200),
+(519, 103, 200),
+(520, 104, 200),
+(521, 105, 200),
+(522, 106, 200),
+(523, 107, 200),
+(524, 108, 200),
+(525, 109, 200),
+(526, 110, 200),
+(527, 111, 200),
+(528, 112, 200),
+(529, 113, 200),
+(530, 114, 200),
+(531, 115, 200),
+(532, 116, 200),
+(533, 117, 200),
+(534, 120, 200),
+(535, 121, 200),
+(536, 122, 200);
 
--- (122, 59, 100),
--- (123, 60, 100),
--- (124, 61, 100),
--- (125, 62, 100),
--- (126, 63, 100),
--- (127, 64, 100),
--- (128, 65, 100),
--- (129, 66, 100),
--- (130, 67, 100),
-
--- (146, 82, 100);
-
--- 
 -- --------------------------------------------------------
 
 --
@@ -5004,17 +5048,19 @@ CREATE TABLE IF NOT EXISTS `userroles` (
   `name` varchar(45) DEFAULT NULL,
   `backend_type` int(11) DEFAULT NULL,
   `factory_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  `station_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`station_id`),
   KEY `fk_UserRoles_factoryid1_idx` (`factory_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=152 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=202 ;
 
 --
 -- Dumping data for table `userroles`
 --
 
-INSERT INTO `userroles` (`id`, `name`, `backend_type`, `factory_id`) VALUES
-(1, ' 超级管理员', 2, 1),
-(100, ' 超级管理员', 1, NULL);
+INSERT INTO `userroles` (`id`, `name`, `backend_type`, `factory_id`, `station_id`) VALUES
+(1, ' 超级管理员', 2, 0, 0),
+(100, ' 超级管理员', 1, NULL, 0),
+(200, ' 超级管理员', 3, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -5028,6 +5074,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` varchar(225) DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT '1',
   `factory_id` int(11) NOT NULL,
+  `station_id` int(11) DEFAULT NULL,
   `user_role_id` int(11) NOT NULL,
   `nick_name` varchar(225) DEFAULT NULL,
   `backend_type` int(11) NOT NULL,
@@ -5045,8 +5092,27 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `password`, `status`, `factory_id`, `user_role_id`, `nick_name`, `backend_type`, `description`, `remember_token`, `last_used_ip`, `created_at`, `updated_at`) VALUES
-(1, 'zongpingtai', '$2y$10$oFEcDKMgW1quPLyJIAsUXOHypHPjDtNFKkdxtVde6thVRMsjNLjBu', 1, 0, 100, 'Zongpingtai', 1, '总平台总管理员', 'c8LISf1CoobWQqdl6GcwY2cjzS6O5jXQ8itdILAOW9SNsdxNnigpJHoWyLiA', '127.0.0.1', '2016-09-19 21:15:11', '2016-10-24 00:22:05');
+INSERT INTO `users` (`id`, `name`, `password`, `status`, `factory_id`, `station_id`, `user_role_id`, `nick_name`, `backend_type`, `description`, `remember_token`, `last_used_ip`, `last_session`, `created_at`, `updated_at`) VALUES
+(1, 'zongpingtai', '$2y$10$oFEcDKMgW1quPLyJIAsUXOHypHPjDtNFKkdxtVde6thVRMsjNLjBu', 1, 0, NULL, 100, 'Zongpingtai', 1, '总平台总管理员', 'AWBdFRJzzKedaVgFu7Mr8fdjm5Ar8b6v8AXlmEqllf5H3SB311U7AfAnpnX2', '::1', 'ee54bd6c09819b17edab13dc102a641d02f5ecab', '2016-09-19 21:15:11', '2016-11-04 22:27:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wechatads`
+--
+
+CREATE TABLE IF NOT EXISTS `wechatads` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `factory_id` int(11) NOT NULL,
+  `image_url` varchar(1024) DEFAULT NULL,
+  `product_id` bigint(20) NOT NULL,
+  `type` int(11) NOT NULL,
+  `image_no` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_wechatads_factory_idx` (`factory_id`),
+  KEY `fk_wechatads_product_idx` (`product_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -5065,6 +5131,99 @@ CREATE TABLE IF NOT EXISTS `wechatmenu` (
   PRIMARY KEY (`id`),
   KEY `fk_WechatMenu_Factory1_idx` (`Factory_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='微信菜单' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wxaddress`
+--
+
+CREATE TABLE IF NOT EXISTS `wxaddress` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `wxuser_id` int(11) NOT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `phone` varchar(45) DEFAULT NULL,
+  `address` varchar(512) DEFAULT NULL,
+  `sub_address` varchar(45) DEFAULT NULL,
+  `primary` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_wxaddress_wxuser_id_idx` (`wxuser_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wxcarts`
+--
+
+CREATE TABLE IF NOT EXISTS `wxcarts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `wxuser_id` int(11) NOT NULL,
+  `wxorder_product_id` int(11) NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_wxuser_id_idx` (`wxuser_id`),
+  KEY `fk_wxorder_product_id_idx` (`wxorder_product_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wxorderproducts`
+--
+
+CREATE TABLE IF NOT EXISTS `wxorderproducts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `wxuser_id` int(11) NOT NULL,
+  `factory_id` int(11) NOT NULL,
+  `product_id` bigint(20) NOT NULL,
+  `order_type` int(11) NOT NULL,
+  `delivery_type` int(11) DEFAULT NULL,
+  `total_count` int(11) NOT NULL DEFAULT '0',
+  `product_price` double NOT NULL DEFAULT '0',
+  `count_per_day` int(11) DEFAULT NULL,
+  `custom_date` varchar(255) DEFAULT NULL,
+  `start_at` date DEFAULT NULL,
+  `total_amount` double NOT NULL DEFAULT '0',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `group_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_wxorderproducts_wxuser_idx` (`wxuser_id`),
+  KEY `fk_wxorderproducts_factory_idx` (`factory_id`),
+  KEY `fk_wxorderproducts_product_idx` (`product_id`),
+  KEY `fk_wxorderproducts_order_type_idx` (`order_type`),
+  KEY `fk_wxorderproducts_delivery_type_idx` (`delivery_type`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wxusers`
+--
+
+CREATE TABLE IF NOT EXISTS `wxusers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `device_token` varchar(255) DEFAULT NULL,
+  `customer_id` int(11) DEFAULT NULL,
+  `last_session` varchar(255) DEFAULT NULL,
+  `last_used_ip` varchar(45) DEFAULT NULL,
+  `image_url` varchar(1024) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `phone_verify_code` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_wxusers_customer_idx` (`customer_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+
+--
+-- Dumping data for table `wxusers`
+--
+
+INSERT INTO `wxusers` (`id`, `device_token`, `customer_id`, `last_session`, `last_used_ip`, `image_url`, `name`, `phone_verify_code`) VALUES
+(1, NULL, 21, NULL, NULL, NULL, NULL, '59647');
 
 --
 -- Constraints for dumped tables
@@ -5086,8 +5245,8 @@ ALTER TABLE `apiconnects`
 -- Constraints for table `customer`
 --
 ALTER TABLE `customer`
-  ADD CONSTRAINT `fk_Orderers_FactoryId` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_Orderers_DeliveryOffices1` FOREIGN KEY (`station_id`) REFERENCES `deliverystations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_Orderers_FactoryId` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_Orderers_Milkman1` FOREIGN KEY (`milkman_id`) REFERENCES `milkman` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
@@ -5110,8 +5269,8 @@ ALTER TABLE `dsbottlerefunds`
 -- Constraints for table `dsboxrefunds`
 --
 ALTER TABLE `dsboxrefunds`
-  ADD CONSTRAINT `fk_boxrefunds_station` FOREIGN KEY (`station_id`) REFERENCES `deliverystations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_boxrefunds_boxtype` FOREIGN KEY (`box_type`) REFERENCES `mfboxtype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_boxrefunds_boxtype` FOREIGN KEY (`box_type`) REFERENCES `mfboxtype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_boxrefunds_station` FOREIGN KEY (`station_id`) REFERENCES `deliverystations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `dsbusinesscreditbalancehistory`
@@ -5190,8 +5349,8 @@ ALTER TABLE `mfaccounttransferhistory`
 -- Constraints for table `mfbottles`
 --
 ALTER TABLE `mfbottles`
-  ADD CONSTRAINT `fk_MFBottles_FactoryId1` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_MFBottles_BottleType1` FOREIGN KEY (`bottle_type`) REFERENCES `mfbottletype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_MFBottles_BottleType1` FOREIGN KEY (`bottle_type`) REFERENCES `mfbottletype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_MFBottles_FactoryId1` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `mfbottletype`
@@ -5203,8 +5362,8 @@ ALTER TABLE `mfbottletype`
 -- Constraints for table `mfboxes`
 --
 ALTER TABLE `mfboxes`
-  ADD CONSTRAINT `fk_MfBoxes_FactoryId1` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_MfBoxes_BottleType1` FOREIGN KEY (`bottle_type`) REFERENCES `mfbottletype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_MfBoxes_BottleType1` FOREIGN KEY (`bottle_type`) REFERENCES `mfbottletype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_MfBoxes_FactoryId1` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `mfboxtype`
@@ -5268,8 +5427,10 @@ ALTER TABLE `milkmandeliveryarea`
 -- Constraints for table `milkmandeliveryplan`
 --
 ALTER TABLE `milkmandeliveryplan`
-  ADD CONSTRAINT `fk_DeliveryPlan_Station_idx` FOREIGN KEY (`station_id`) REFERENCES `deliverystations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_DeliveryPlan_Milkman` FOREIGN KEY (`milkman_id`) REFERENCES `milkman` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_DeliveryPlan_Milkman` FOREIGN KEY (`milkman_id`) REFERENCES `milkman` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_DeliveryPlan_OrderProduct_idx` FOREIGN KEY (`order_product_id`) REFERENCES `orderproducts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_DeliveryPlan_Order_idx` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_DeliveryPlan_Station_idx` FOREIGN KEY (`station_id`) REFERENCES `deliverystations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `orderchanges`
@@ -5378,10 +5539,46 @@ ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_user_role` FOREIGN KEY (`user_role_id`) REFERENCES `userroles` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
+-- Constraints for table `wechatads`
+--
+ALTER TABLE `wechatads`
+  ADD CONSTRAINT `fk_wechatads_factory` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wechatads_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
 -- Constraints for table `wechatmenu`
 --
 ALTER TABLE `wechatmenu`
   ADD CONSTRAINT `fk_WechatMenu_Factory1` FOREIGN KEY (`Factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `wxaddress`
+--
+ALTER TABLE `wxaddress`
+  ADD CONSTRAINT `fk_wxaddress_wxuser_id` FOREIGN KEY (`wxuser_id`) REFERENCES `wxusers` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `wxcarts`
+--
+ALTER TABLE `wxcarts`
+  ADD CONSTRAINT `fk_wxorder_product_id` FOREIGN KEY (`wxorder_product_id`) REFERENCES `wxorderproducts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wxuser_id` FOREIGN KEY (`wxuser_id`) REFERENCES `wxusers` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `wxorderproducts`
+--
+ALTER TABLE `wxorderproducts`
+  ADD CONSTRAINT `fk_wxorderproducts_delivery_type` FOREIGN KEY (`delivery_type`) REFERENCES `deliverytype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wxorderproducts_factory` FOREIGN KEY (`factory_id`) REFERENCES `factory` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wxorderproducts_order_type` FOREIGN KEY (`order_type`) REFERENCES `ordertype` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wxorderproducts_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_wxorderproducts_wxuser` FOREIGN KEY (`wxuser_id`) REFERENCES `wxusers` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `wxusers`
+--
+ALTER TABLE `wxusers`
+  ADD CONSTRAINT `fk_wxusers_customer` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

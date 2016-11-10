@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\FactoryModel\Factory;
+use App\Model\UserModel\User;
+use App\Model\UserModel\UserRole;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -145,7 +147,7 @@ class StationManageCtrl extends Controller
     {
         if ($request->ajax()) {
             $st_user = Auth::guard('naizhan')->user();
-            $st_id = $st_user->id;
+            $st_id = $st_user->station_id;
             $ds = DeliveryStation::find($st_id);
             $factory_id = $ds->factory_id;
 
@@ -314,16 +316,22 @@ class StationManageCtrl extends Controller
 
             $ds->init_guarantee_amount = $margin;
 
-            $ds->username = $user_number;
-            $ds->password = bcrypt($user_pwd);
-
-            $ds->created_at = date("Y-m-d H:i:s");
-
             $ds->save();
 
             $dsid = $ds->id;
             $ds->number = $this->get_station_number($factory_id, $dsid);
             $ds->save();
+
+            $account = new User;
+            $account->name = $user_number;
+            $account->password = bcrypt($user_pwd);
+            $account->created_at = date("Y-m-d H:i:s");
+            $account->status = User::USER_STATUS_ACTIVE;
+            $account->backend_type = 3;
+            $account->user_role_id = UserRole::USERROLE_NAIZHAN_TOTAL_ADMIN;
+            $account->factory_id = $factory_id;
+            $account->station_id = $ds->id;
+            $account->save();
 
             //save delivery area ($dsid)
             $area_count = count($request->input('area_xiaoqu'));
@@ -900,7 +908,7 @@ class StationManageCtrl extends Controller
     //Show
     public function showJibenziliao(Request $request)
     {
-        $current_factory_id = Auth::guard('naizhan')->user()->id;
+        $current_factory_id = Auth::guard('naizhan')->user()->station_id;
 
         $dsinfo = DeliveryStation::find($current_factory_id);
         $billing_bank = Bank::find($dsinfo->billing_bank_id);
@@ -928,6 +936,5 @@ class StationManageCtrl extends Controller
             'dsinfo' => $dsinfo,
         ]);
     }
-
 }
 

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Response;
 class DeliveryStationCtrl extends Controller
 {
     public function showJibenziliao(Request $request){
-        $current_factory_id = Auth::guard('naizhan')->user()->id;
+        $current_factory_id = Auth::guard('naizhan')->user()->station_id;
         $child = 'jibenziliao';
         $parent = 'naizhan';
         $current_page = 'jibenziliao';
