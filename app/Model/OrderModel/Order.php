@@ -396,9 +396,9 @@ class Order extends Model
     {
         $result_group=[];
 
-        $sid = $this->delivery_station_id;
         //get order products
         $order_products = $this->order_products;
+
         foreach ($order_products as $op)
         {
             $order_product_id = $op->id;
@@ -406,7 +406,8 @@ class Order extends Model
 
             $op_dps = MilkManDeliveryPlan::where('order_id', $this->id)
                 ->where('order_product_id', $order_product_id)
-                ->orderBy('deliver_at')->get();
+                ->orderBy('deliver_at')
+                ->get();
 
             foreach($op_dps as $opdp)
             {
@@ -418,13 +419,13 @@ class Order extends Model
                 $remain_count -= $count;
 
                 $result_group[] = [
-                    'time'=>$opdp->deliver_at,
-                    'plan_id'=>$opdp->id,
-                    'product_name'=>$opdp->product_name,
-                    'count' => $count,
-                    'remain'=>$remain_count,
-                    'status'=>$opdp->status,
-                    'status_name'=>$opdp->status_name,
+                    'time'          =>$opdp->deliver_at,
+                    'plan_id'       =>$opdp->id,
+                    'product_name'  =>$opdp->product_name,
+                    'count'         => $count,
+                    'remain'        =>$remain_count,
+                    'status'        =>$opdp->status,
+                    'status_name'   =>$opdp->status_name,
                 ];
             }
         }

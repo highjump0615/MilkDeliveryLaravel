@@ -393,9 +393,7 @@ $('#station_update_form').on('submit', function (e) {
             if (data.status == "success") {
 
                 var sid = data.sid;
-                if ($('#st_img_upload')[0].files[0])
-                {
-
+                if ($('#st_img_upload')[0].files[0]) {
                     insert_station_image(sid);
                 } else {
                     show_success_msg('站改变了');

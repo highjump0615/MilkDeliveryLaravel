@@ -220,8 +220,10 @@ function set_avg_count(tr) {
     //     return;
     // }
 
-    avg = (inputed_count / origin_count).toPrecision(2);
-    avg_input.val(avg);
+    if (origin_count) {
+        avg = (inputed_count / origin_count).toPrecision(2);
+        avg_input.val(avg);
+    }
 }
 
 //Add Order Product

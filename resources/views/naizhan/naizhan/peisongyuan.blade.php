@@ -75,8 +75,8 @@
                             <div class="col-md-5">
                                 <label class="col-md-3" style="padding-top: 5px;">电话:</label>
                                 <div class="col-md-9">
-                                    <input type="text" pattern="\d{11}" id="phone" name="phone" class="form-control"
-                                           oninvalid="this.setCustomValidity('手机号码得11位数')"
+                                    <input type="text" pattern="^1[345678][0-9]{9}$" id="phone" name="phone" class="form-control"
+                                           oninvalid="this.setCustomValidity('手机号码格式不正确')"
                                            oninput="this.setCustomValidity('')"
                                            style="width:100%;">
                                 </div>
@@ -87,10 +87,10 @@
                             <div class="col-md-5">
                                 <label class="col-md-3" style="padding-top: 5px;">身份证号:</label>
                                 <div class="col-md-9">
-                                    <input type="text" pattern="[A-Z0-9]{11}" minlength="11" maxlength="11"
+                                    <input type="text" pattern="^(\d){15}|(\d{17}(\d|x|X))$"
                                            class="form-control" id="number" style="width:100%;"
-                                           onkeypress="checknumber();"
-                                           oninvalid="this.setCustomValidity('身份证号应为 11个字母(A~Z, 0~9 )')"/>
+                                           oninput="this.setCustomValidity('')"
+                                           oninvalid="this.setCustomValidity('身份证号不符合')"/>
                                 </div>
                             </div>
                             <label id="number_alert"

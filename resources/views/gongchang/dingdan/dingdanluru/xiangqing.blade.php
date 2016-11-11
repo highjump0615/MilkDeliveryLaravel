@@ -109,7 +109,7 @@
                 </div>
             </div>
             <div class="col-md-12">
-                @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $order->status = \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS)
+                @if($order->isAvailable())
                     <label class="col-md-2">起送日期:</label>
                     <label class="col-md-10">{{$order->start_at}}</label>
                 @endif
@@ -238,7 +238,10 @@
                         <th data-sort-ignore="true">奶品</th>
                         <th data-sort-ignore="true">数量</th>
                         <th data-sort-ignore="true">状态</th>
+                        <!-- 正常状态才允许单日修改 -->
+                        @if ($order->isAvailable())
                         <th data-sort-ignore="true">操作</th>
+                        @endif
                     </tr>
                     </thead>
                     <tbody>
@@ -260,6 +263,9 @@
                                         </td>
                                     @endif
                                     <td>{{$gpp['status_name']}}</td>
+
+                                    <!-- 正常状态才允许单日修改 -->
+                                    @if ($order->isAvailable())
                                     <td>
                                         @if($gpp['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
                                             <button type="button" class="btn btn-success xiugai_plan_bt"
@@ -267,6 +273,7 @@
                                             </button>
                                         @endif
                                     </td>
+                                    @endif
                                 </tr>
                                 <?php $i++; ?>
                             @endif

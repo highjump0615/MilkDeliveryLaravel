@@ -216,10 +216,15 @@ $('#customer_form').on("submit", function (e) {
     e.preventDefault();
 
     var customer_data = $('#customer_form').serializeArray();
+    var strApiUrl = API_URL + "gongchang/dingdan/dingdanluru/insert_customer";
+
+    if (gbIsStation) {
+        strApiUrl = API_URL + "naizhan/dingdan/dingdanluru/insert_customer";
+    }
 
     $.ajax({
         type: "POST",
-        url: API_URL + "gongchang/dingdan/dingdanluru/insert_customer",
+        url: strApiUrl,
         data: customer_data,
         success: function (data) {
             console.log(data);
@@ -357,19 +362,31 @@ $('#order_form').on('submit', function (e) {
     sendData = sendData.concat(customer_data);
     console.log(sendData);
 
+    // API链接
+    var strApiUrl = API_URL + 'gongchang/dingdan/dingdanluru/insert_order';
+    if (gbIsStation) {
+        strApiUrl = API_URL + 'naizhan/dingdan/dingdanluru/insert_order';
+    }
+
     $.ajax({
         type: "POST",
-        url: API_URL + "gongchang/dingdan/dingdanluru/insert_order",
+        url: strApiUrl,
         data: sendData,
         success: function (data) {
             console.log(data);
             if (data.status == 'success') {
                 var order_id = data.order_id;
 
-                // var url = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
-                // window.location.replace(url);
-                show_success_msg('订单录入成功');
-                location.reload();
+                if (gbIsEdit) {
+                    // 如果是订单修改，跳转到待审核订单
+                    var url = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
+                    window.location.replace(url);
+                }
+                else {
+                    // 如果是订单录入，清空页面，易于录入别的
+                    show_success_msg('订单录入成功');
+                    location.reload();
+                }
 
             } else {
                 if (data.message)

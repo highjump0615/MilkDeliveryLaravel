@@ -2099,6 +2099,8 @@ class OrderCtrl extends Controller
     }
 
     private $factory;
+    private $mFactoryId;
+
     private $order_property;
     private $province;
     private $products;
@@ -2108,6 +2110,7 @@ class OrderCtrl extends Controller
     private $delivery_stations;
     
     private $station;
+    private $mStationId;
 
     /**
      * 初始化奶厂订单参数
@@ -2122,6 +2125,9 @@ class OrderCtrl extends Controller
         $this->initBaseFromOrderInput();
     }
 
+    /**
+     * 初始化奶站订单参数
+     */
     private function initShowStationPage() {
 
         $station_id = Auth::guard('naizhan')->user()->station_id;
@@ -3213,90 +3219,80 @@ class OrderCtrl extends Controller
         }
     }
 
+    /**
+     * 录入/修改订单
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    function insert_order(Request $request) {
 
-    //Insert Order In gongchang
-    function insert_order_in_gongchang(Request $request)
-    {
-        if ($request->ajax()) {
+        $order = null;
+        $factory_id = $station_id = 0;
 
-            $order = null;
+        if ($this->factory) {
+            $factory_id = $this->factory->id;
+        }
+        if ($this->station) {
+            $station_id = $this->station->id;
+        }
 
-            // 初始化
-            $factory_id = 0;
-            $station_id = 0;
+        // 获取今日日期
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+        $today = date_create($today);
 
-            // 获取今日日期
-            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $today = $today_date->format('Y-m-d');
-            $today = date_create($today);
+        // 录入订单还是修改订单
+        $order_id = $request->input('order_id');
+        if ($order_id) {
+            $order = Order::find($order_id);
+        }
 
-            $fuser = Auth::guard('gongchang')->user();
-            if ($fuser) {
-                $factory_id = $fuser->factory_id;
-            }
-            else {
-                $suser = Auth::guard('naizhan')->user();
-                if ($suser) {
-                    $station_id = $suser->id;
-                    $station = DeliveryStation::find($station_id);
-                    $factory_id = $station->factory_id;
-                }
-            }
+        //init
+        $milk_card_id = null;
+        $milk_card_code = null;
 
-            $factory = Factory::find($factory_id);
+        //insert customer info
+        $customer_id = $request->input('customer_id');
 
-            // 录入订单还是修改订单
-            $order_id = $request->input('order_id');
-            if ($order_id) {
-                $order = Order::find($order_id);
-            }
+        if (empty($customer_id) && $order) {
+            $customer_id = $order->customer_id;
+        }
 
-            //init
-            $milk_card_id = null;
-            $milk_card_code = null;
+        $phone = $request->input('phone');
+        $address = $request->input('c_province') . ' ' . $request->input('c_city') . ' ' . $request->input('c_district') . ' ' . $request->input('c_street') . ' ' . $request->input('c_xiaoqu') . ' ' . $request->input('c_sub_addr');
 
-            //insert customer info
-            $customer_id = $request->input('customer_id');
+        //whether this is new order or old order
+        $order_property_id = $request->input('order_property');
 
-            if (empty($customer_id) && $order) {
-                $customer_id = $order->customer_id;
-            }
+        //station info
+        $milkman_id = $request->input('milkman_id');
+        $delivery_station_id = $request->input('station');
 
-            $phone = $request->input('phone');
-            $address = $request->input('c_province') . ' ' . $request->input('c_city') . ' ' . $request->input('c_district') . ' ' . $request->input('c_street') . ' ' . $request->input('c_xiaoqu') . ' ' . $request->input('c_sub_addr');
+        // 如果是奶厂订单，配送奶站就是录入奶站
+        if ($station_id == 0) {
+            $station_id = $delivery_station_id;
+        }
 
-            //whether this is new order or old order
-            $order_property_id = $request->input('order_property');
+        if (!$milkman_id) {
+            return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
+        }
 
-            //station info
-            $milkman_id = $request->input('milkman_id');
-            $delivery_station_id = $request->input('station');
+        $order_checker_id = $request->input('order_checker');
+        $receipt_number = $request->input('receipt_number');
+        $receipt_path = $request->input('receipt_path');
 
-            // 如果是奶厂订单，配送奶站就是录入奶站
-            if ($station_id == 0) {
-                $station_id = $delivery_station_id;
-            }
+        //Order amount for remaingng, acceptable
+        $remaining_amount = $request->input('remaining');
+        $acceptable_amount = $request->input('acceptable_amount');
+        $total_amount = $request->input('total_amount');
 
-            if (!$milkman_id) {
-                return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
-            }
+        $delivery_time = $request->input('delivery_noon');
 
-            $order_checker_id = $request->input('order_checker');
-            $receipt_number = $request->input('receipt_number');
-            $receipt_path = $request->input('receipt_path');
+        //order info
+        $order_start_at = $request->input('order_start_at');
+        $order_start_at = date_create($order_start_at);
 
-            //Order amount for remaingng, acceptable
-            $remaining_amount = $request->input('remaining');
-            $acceptable_amount = $request->input('acceptable_amount');
-            $total_amount = $request->input('total_amount');
-
-            $delivery_time = $request->input('delivery_noon');
-
-            //order info
-            $order_start_at = $request->input('order_start_at');
-            $order_start_at = date_create($order_start_at);
-
-            $ordered_at = $today;
+        $ordered_at = $today;
 
 //            $diff = date_diff($order_start_at, $today);
 //            $diff = intval($diff->days);
@@ -3306,166 +3302,167 @@ class OrderCtrl extends Controller
 ////                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
 ////            }
 
-            $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
-            $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
+        $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
+        $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
 
-            // 奶卡订单录入
-            $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
+        // 奶卡订单录入
+        $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
 
-            if ($order_by_milk_card == 1) {
+        if ($order_by_milk_card == 1) {
 
-                $payment_type = PaymentType::PAYMENT_TYPE_CARD;
+            $payment_type = PaymentType::PAYMENT_TYPE_CARD;
 
-                if (!$order) {
-                    $milk_card_id = $request->input('card_id');
-                    $milk_card_code = $request->input('card_code');
+            // 奶卡只在录入订单时处理
+            if (!$order) {
+                $milk_card_id = $request->input('card_id');
+                $milk_card_code = $request->input('card_code');
 
-                    $milk_card = MilkCard::where('number', $milk_card_id)
-                        ->where('password', $milk_card_code)
-                        ->where('sale_status', MilkCard::MILKCARD_SALES_ON)
-                        ->where('pay_status', MilkCard::MILKCARD_PAY_STATUS_INACTIVE)
-                        ->get()
-                        ->first();
+                $milk_card = MilkCard::where('number', $milk_card_id)
+                    ->where('password', $milk_card_code)
+                    ->where('sale_status', MilkCard::MILKCARD_SALES_ON)
+                    ->where('pay_status', MilkCard::MILKCARD_PAY_STATUS_INACTIVE)
+                    ->get()
+                    ->first();
 
-                    if (!$milk_card) {
-                        return response()->json(['status' => 'fail', 'message' => '奶卡卡号和验证码不正确.']);
-                    }
+                if (!$milk_card) {
+                    return response()->json(['status' => 'fail', 'message' => '奶卡卡号和验证码不正确.']);
+                }
 
-                    //balance check
-                    if ($milk_card->balance < $total_amount) {
-                        return response()->json(['status' => 'fail', 'message' => '卡钱比订单钱少.']);
-                    } else {
-                        $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
-                        $milk_card->save();
+                //balance check
+                if ($milk_card->balance < $total_amount) {
+                    return response()->json(['status' => 'fail', 'message' => '卡钱比订单钱少.']);
+                } else {
+                    $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
+                    $milk_card->save();
 
-                        $remain_from_card = $milk_card->balance - $total_amount;
-                    }
+                    $remain_from_card = $milk_card->balance - $total_amount;
                 }
             }
+        }
 
-            //check for 10% of delivery credit balance
-            $station = DeliveryStation::find($station_id);
+        //check for 10% of delivery credit balance
+        $station = DeliveryStation::find($station_id);
 
-            // 以下两个情况下要查询配送信用余额
-            // 1. 新订单
-            // 2. 新订单未通过的情况
-            if (!$order || ($order && $order->status == Order::ORDER_NEW_NOT_PASSED_STATUS)) {
-                if ((!$order_by_milk_card) &&
-                    ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10)) {
+        // 以下两个情况下要查询配送信用余额
+        // 1. 新订单
+        // 2. 新订单未通过的情况
+        if (!$order || ($order && $order->status == Order::ORDER_NEW_NOT_PASSED_STATUS)) {
+            if ((!$order_by_milk_card) &&
+                ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10)) {
 
-                    return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
-                }
+                return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
             }
+        }
 
-            // 状态, 默认是审核订单
-            $status = Order::ORDER_WAITING_STATUS;
-            
-            // 新订单未通过和新订单录入，是审核新订单
-            if ($order) {
-                if ($order->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
-                    $status = Order::ORDER_NEW_WAITING_STATUS;
-                }
-            }
-            else {
+        // 状态, 默认是审核订单
+        $status = Order::ORDER_WAITING_STATUS;
+
+        // 新订单未通过和新订单录入，是审核新订单
+        if ($order) {
+            if ($order->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
                 $status = Order::ORDER_NEW_WAITING_STATUS;
             }
+        }
+        else {
+            $status = Order::ORDER_NEW_WAITING_STATUS;
+        }
 
-            //other data
-            $trans_check = 0;
+        //other data
+        $trans_check = 0;
 
-            //flatenter mode: default 2 -> call
-            $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
+        //flatenter mode: default 2 -> call
+        $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
 
-            if (!$order) {
-                $order = new Order;
+        if (!$order) {
+            $order = new Order;
 
-                //
-                // 这些字段一旦订好了不能改
-                //
-                $order->factory_id = $factory_id;
-                $order->ordered_at = $ordered_at;
-                $order->total_amount = $total_amount;
+            //
+            // 这些字段一旦订好了不能改
+            //
+            $order->factory_id = $factory_id;
+            $order->ordered_at = $ordered_at;
+            $order->total_amount = $total_amount;
 
-                $order->order_by_milk_card = $order_by_milk_card;
-                if ($order_by_milk_card) {
-                    $order->milk_card_id = $milk_card_id;
-                    $order->milk_card_code = $milk_card_code;
-                }
-
-                /* Remain Amount
-                 * when the customer's info is inputed, check the customer's remain amount.
-                 * if the customer is new, then the remain amount is 0 ,else remain amount has been shown on insert order page.
-                 * Order's remaining amount is the other concept with customer's amount.
-                 * at first, remaining amount = total_amount and whenever each order delivery plan was finished,
-                 * remaining_amount = remaining_amount - deliver plan amount.
-                 * when the order was finished completely, the %remt = 0;
-                 * if not, %remt is added to customer's remain amount.
-                 * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
-                 */
-                $order->remaining_amount = $total_amount;
+            $order->order_by_milk_card = $order_by_milk_card;
+            if ($order_by_milk_card) {
+                $order->milk_card_id = $milk_card_id;
+                $order->milk_card_code = $milk_card_code;
             }
 
-            $order->customer_id = $customer_id;
-            $order->phone = $phone;
-            $order->address = $address;
-            $order->order_property_id = $order_property_id;
-            $order->station_id = $station_id;
-            $order->receipt_number = $receipt_number;
-            $order->receipt_path = $receipt_path;
-            $order->order_checker_id = $order_checker_id;
-            $order->milk_box_install = $milk_box_install;
-            $order->trans_check = $trans_check;
-            $order->payment_type = $payment_type;
-            $order->status = $status;
-            $order->start_at = $order_start_at;
-            $order->delivery_time = $delivery_time;
-            $order->flat_enter_mode_id = $flat_enter_mode_id;
-            $order->delivery_station_id = $delivery_station_id;
+            /* Remain Amount
+             * when the customer's info is inputed, check the customer's remain amount.
+             * if the customer is new, then the remain amount is 0 ,else remain amount has been shown on insert order page.
+             * Order's remaining amount is the other concept with customer's amount.
+             * at first, remaining amount = total_amount and whenever each order delivery plan was finished,
+             * remaining_amount = remaining_amount - deliver plan amount.
+             * when the order was finished completely, the %remt = 0;
+             * if not, %remt is added to customer's remain amount.
+             * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
+             */
+            $order->remaining_amount = $total_amount;
+        }
 
+        $order->customer_id = $customer_id;
+        $order->phone = $phone;
+        $order->address = $address;
+        $order->order_property_id = $order_property_id;
+        $order->station_id = $station_id;
+        $order->receipt_number = $receipt_number;
+        $order->receipt_path = $receipt_path;
+        $order->order_checker_id = $order_checker_id;
+        $order->milk_box_install = $milk_box_install;
+        $order->trans_check = $trans_check;
+        $order->payment_type = $payment_type;
+        $order->status = $status;
+        $order->start_at = $order_start_at;
+        $order->delivery_time = $delivery_time;
+        $order->flat_enter_mode_id = $flat_enter_mode_id;
+        $order->delivery_station_id = $delivery_station_id;
+
+        $order->save();
+
+        // 订单修改要删除以前的配送明细和奶品信息
+        if ($order_id) {
+            $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
+        }
+        // 新订单生成订单编号
+        else {
+            $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order->id);
+            //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
             $order->save();
+        }
 
-            // 订单修改要删除以前的配送明细和奶品信息
-            if ($order_id) {
-                $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
-            }
-            // 新订单生成订单编号
-            else {
-                $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order->id);
-                //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
-                $order->save();
-            }
+        //save order products
+        $count = count($request->input('order_product_id'));
 
-            //save order products
-            $count = count($request->input('order_product_id'));
+        for ($i = 0; $i < $count; $i++) {
+            $pid = $request->input('order_product_id')[$i];
+            $otype = $request->input('factory_order_type')[$i];
+            $total_count = $request->input('one_product_total_count')[$i];
+            $one_amount = $request->input('one_p_amount')[$i];
+            $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
+            $delivery_type = $request->input('order_delivery_type')[$i];
+            $avg = $request->input('avg')[$i];
+            $product_start_at = $request->input('start_at')[$i];
 
-            for ($i = 0; $i < $count; $i++) {
-                $pid = $request->input('order_product_id')[$i];
-                $otype = $request->input('factory_order_type')[$i];
-                $total_count = $request->input('one_product_total_count')[$i];
-                $one_amount = $request->input('one_p_amount')[$i];
-                $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
-                $delivery_type = $request->input('order_delivery_type')[$i];
-                $avg = $request->input('avg')[$i];
-                $product_start_at = $request->input('start_at')[$i];
+            $op = new OrderProduct;
+            $op->order_id = $order->id;
+            $op->product_id = $pid;
+            $op->order_type = $request->input('factory_order_type')[$i];
+            $op->delivery_type = $delivery_type;
+            $op->product_price = $product_price;
+            $op->total_count = $total_count;
+            $op->total_amount = $one_amount;
+            $op->avg = $avg;
+            $op->start_at = $product_start_at;
 
-                $op = new OrderProduct;
-                $op->order_id = $order->id;
-                $op->product_id = $pid;
-                $op->order_type = $request->input('factory_order_type')[$i];
-                $op->delivery_type = $delivery_type;
-                $op->product_price = $product_price;
-                $op->total_count = $total_count;
-                $op->total_amount = $one_amount;
-                $op->avg = $avg;
-                $op->start_at = $product_start_at;
+            $op->count_per_day = $request->input('order_product_count_per')[$i];
 
-                $op->count_per_day = $request->input('order_product_count_per')[$i];
-
-                if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
+            if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
 //                    $op->count_per_day = $request->input('order_product_count_per')[$i];
-                }
-                else {
-                    $custom_dates = $request->input('delivery_dates')[$i];
+            }
+            else {
+                $custom_dates = $request->input('delivery_dates')[$i];
 //                    if ($delivery_type == "3") {
 //                        //Week Delivery
 //                        $result = $this->get_week_delivery_info($custom_dates);
@@ -3474,31 +3471,31 @@ class OrderCtrl extends Controller
 //                        //Month Delivery
 //                        $result = $this->get_month_delivery_info($custom_dates);
 //                    }
-                    $result = rtrim($custom_dates, ',');
-                    $op->custom_order_dates = $result;
-                }
-
-                $op->save();
-
-                //establish plan
-                $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
+                $result = rtrim($custom_dates, ',');
+                $op->custom_order_dates = $result;
             }
 
-            //set flag on first order delivery plan
-            $plans = $order->first_delivery_plans;
-            if($plans)
+            $op->save();
+
+            //establish plan
+            $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
+        }
+
+        //set flag on first order delivery plan
+        $plans = $order->first_delivery_plans;
+        if($plans)
+        {
+            foreach($plans as $plan)
             {
-                foreach($plans as $plan)
-                {
-                    $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-                    $plan->save();
-                }
+                $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
+                $plan->save();
             }
+        }
 
-            // save customer
-            $customer = Customer::find($customer_id);
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $milkman_id;
+        // save customer
+        $customer = Customer::find($customer_id);
+        $customer->station_id = $delivery_station_id;
+        $customer->milkman_id = $milkman_id;
 
 //            if ($acceptable_amount < 0) {
 //                $customer->remain_amount = -$acceptable_amount;
@@ -3506,15 +3503,15 @@ class OrderCtrl extends Controller
 //            else {
 //                $customer->remain_amount = 0;
 //            }
-            $customer->save();
+        $customer->save();
 
-            //Caiwu Related
+        //Caiwu Related
 
-            //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
-            if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
+        //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
+        if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
 
-                $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
-                $station->save();
+            $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
+            $station->save();
 
 //                //add calc history if this is the money order
 //                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
@@ -3533,260 +3530,46 @@ class OrderCtrl extends Controller
 //
 //                $dsdelivery_history->time = $today;
 //                $dsdelivery_history->save();
-            }
-            else {
-                //add card amount remained to customer account
+        }
+        else {
+            //add card amount remained to customer account
 //                $customer->remain_amount += $remain_from_card;
 //                $customer->save();
-            }
+        }
 
-            return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+    }
+
+    //Insert Order In gongchang
+    function insert_order_in_gongchang(Request $request)
+    {
+        if ($request->ajax()) {
+
+            $fuser = Auth::guard('gongchang')->user();
+            if ($fuser) {
+                $factory_id = $fuser->factory_id;
+                $this->factory = Factory::find($factory_id);
+
+                return $this->insert_order($request);
+            }
         }
     }
 
-//Insert Order In naizhan
+    //Insert Order In naizhan
     function insert_order_in_naizhan(Request $request)
     {
         if ($request->ajax()) {
 
-            //factory id and station id
-            $station_id = Auth::guard('naizhan')->user()->station_id;
-            $station = DeliveryStation::find($station_id);
-            $factory_id = $station->factory_id;
-            $factory = Factory::find($factory_id);
+            $suser = Auth::guard('naizhan')->user();
+            if ($suser) {
+                $station_id = $suser->station_id;
+                $this->station = DeliveryStation::find($station_id);
 
-            //init
-//            $milk_card_id = null;
-//            $milk_card_code = null;
+                $factory_id = $this->station->factory_id;
+                $this->factory = Factory::find($factory_id);
 
-            //insert customer info
-            $customer_id = $request->input('customer_id');
-            $phone = $request->input('phone');
-            $address = $request->input('c_province') . ' ' . $request->input('c_city') . ' ' . $request->input('c_district') . ' ' . $request->input('c_street') . ' ' . $request->input('c_xiaoqu') . ' ' . $request->input('c_sub_addr');
-
-            //whether this is new order or old order
-            $order_property_id = $request->input('order_property');
-
-            //station info
-            $delivery_station_id = $request->input('station');
-            $order_checker_id = $request->input('order_checker');
-            $receipt_number = $request->input('receipt_number');
-            $receipt_path = $request->input('receipt_path');
-
-            //order info
-            $started_at = $request->input('started_at');
-            $started_at = date_create($started_at);
-
-            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $today = $today_date->format('Y-m-d');
-            $today = date_create($today);
-
-            $diff = date_diff($started_at, $today);
-            $diff = intval($diff->days);
-
-            $gap_day = intval($factory->gap_day);
-//            if ($diff < $gap_day) {
-//                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
-//            }
-
-
-            $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
-
-            $order_by_milk_card = 0;
-//            $order_by_milk_card= $request->input('milk_card_check') == "on" ? 1 : 0;
-//            if ($order_by_milk_card == 1) {
-//                $milk_card_id = $request->input('card_id');
-//                $milk_card_code = $request->input('card_code');
-//            }
-            if ($order_by_milk_card == 0)
-                $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
-            else
-                $payment_type = PaymentType::PAYMENT_TYPE_WECHAT;//wechat
-//            elseif ($order_by_milk_card == 1)
-//                $payment_type = PaymentType::PAYMENT_TYPE_CARD;//card
-
-
-            $delivery_time = $request->input('delivery_noon');
-
-            $total_amount = $request->input('total_amount');
-            //$remaining_amount = $request->input('remaining'); Not need for order insert. this is for between customer and order receiver.
-
-            //Card Check
-//            if ($order_by_milk_card == 1) {
-//                $milk_card = MilkCard::where('number', $milk_card_id)->where('password', $milk_card_code)->where('sale_status', MilkCard::MILKCARD_SALES_ON)->get()->first();
-//                if (!$milk_card) {
-//                    return response()->json(['status' => 'fail', 'message' => '奶卡卡号和验证码不正确.']);
-//                }
-//            }
-
-            //check for 10% of delivery credit balance
-            $station = DeliveryStation::find($station_id);
-            if ((!$order_by_milk_card) && ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10))
-                return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
-
-            //other data
-            $status = Order::ORDER_WAITING_STATUS;
-            $trans_check = 0;
-            $ordered_at = $today;
-
-            //flatenter mode: default 2 -> call
-            $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
-
-            $order = new Order;
-            $order->factory_id = $factory_id;
-            $order->customer_id = $customer_id;
-            $order->phone = $phone;
-            $order->address = $address;
-            $order->order_property_id = $order_property_id;
-            $order->station_id = $station_id;
-            $order->receipt_number = $receipt_number;
-            $order->receipt_path = $receipt_path;
-            $order->order_checker_id = $order_checker_id;
-            $order->milk_box_install = $milk_box_install;
-            $order->total_amount = $total_amount;
-
-            /* Remain Amount
-             * when the customer's info is inputed, check the customer's remain amount.
-             * if the customer is new, then the remain amount is 0 ,else remain amount has been shown on insert order page.
-             * Order's remaining amount is the other concept with customer's amount.
-             * at first, remaining amount = total_amount and whenever each order delivery plan was finished,
-             * remaining_amount = remaining_amount - deliver plan amount.
-             * when the order was finished completely, the %remt = 0;
-             * if not, %remt is added to customer's remain amount.
-             * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
-             */
-            $order->remaining_amount = $total_amount;
-
-            $order->order_by_milk_card = $order_by_milk_card;
-//            if ($order_by_milk_card) {
-//                $order->milk_card_id = $milk_card_id;
-//                $order->milk_card_code = $milk_card_code;
-//            }
-
-            $order->trans_check = $trans_check;
-            $order->payment_type = $payment_type;
-            $order->status = $status;
-            $order->ordered_at = $ordered_at;
-            $order->start_at = $started_at;
-            $order->delivery_time = $delivery_time;
-            $order->flat_enter_mode_id = $flat_enter_mode_id;
-            $order->delivery_station_id = $delivery_station_id;
-
-            $order->save();
-
-
-//            if ($order_by_milk_card == 1) {
-//                $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
-//                $milk_card->save();
-//            }
-
-
-            $order_id = $order->id;
-            $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order_id);
-            //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
-            $order->save();
-
-            //set flag on first order delivery plan
-            $plans = $order->first_delivery_plans;
-            if($plans)
-            {
-                foreach($plans as $plan)
-                {
-                    $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-                    $plan->save();
-                }
-
+                return $this->insert_order($request);
             }
-
-            //save order products
-            $count = count($request->input('order_product_id'));
-
-            $milkman_id = $order->milkman_id;
-
-            if (!$milkman_id) {
-                $order->delete();
-                return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
-            }
-
-            for ($i = 0; $i < $count; $i++) {
-                $pid = $request->input('order_product_id')[$i];
-                $otype = $request->input('factory_order_type')[$i];
-                $total_count = $request->input('one_product_total_count')[$i];
-                $one_amount = $request->input('one_p_amount')[$i];
-                $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
-                $delivery_type = $request->input('order_delivery_type')[$i];
-                $avg = $request->input('avg')[$i];
-
-                $op = new OrderProduct;
-                $op->order_id = $order_id;
-                $op->product_id = $pid;
-                $op->order_type = $request->input('factory_order_type')[$i];
-                $op->delivery_type = $delivery_type;
-                $op->product_price = $product_price;
-                $op->total_count = $total_count;
-                $op->total_amount = $one_amount;
-                $op->avg = $avg;
-
-                if ($delivery_type == "1" || $delivery_type == "2") {
-                    $op->count_per_day = $request->input('order_product_count_per')[$i];
-                } else {
-                    $custom_dates = $request->input('delivery_dates')[$i];
-//                    if ($delivery_type == "3") {
-//                        //Week Delivery
-//                        $result = $this->get_week_delivery_info($custom_dates);
-//
-//                    } else {
-//                        //Month Delivery
-//                        $result = $this->get_month_delivery_info($custom_dates);
-//                    }
-                    $result = trim($custom_dates);
-                    $op->custom_order_dates = $result;
-                }
-
-                $op->save();
-
-                //establish plan
-                $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
-
-            }
-
-            $remaining_amount = $request->input('remaining');
-            $acceptable_amount = $request->input('acceptable_amount');
-
-            $customer = Customer::find($customer_id);
-
-            if ($acceptable_amount < 0) {
-                $customer->remain_amount = -$acceptable_amount;
-
-            } else {
-
-                $customer->remain_amount = 0;
-            }
-            $customer->save();
-
-            if (!$order_by_milk_card) {
-                $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
-                $station->save();
-
-                //add calc history if this is the money order
-                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
-                $dsdelivery_history->station_id = $station_id;
-                if ($station_id == $delivery_station_id)
-                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY;
-                else
-                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION;
-
-                $dsdelivery_history->io_type = DSDeliveryCreditBalanceHistory::DSDCBH_IO_TYPE_IN;
-
-                if ($acceptable_amount > 0)
-                    $dsdelivery_history->amount = $acceptable_amount;
-                else
-                    $dsdelivery_history->amount = $total_amount;
-
-                $dsdelivery_history->time = $today;
-                $dsdelivery_history->save();
-            }
-            return response()->json(['status' => 'success', 'order_id' => $order_id]);
         }
     }
 
@@ -3826,10 +3609,9 @@ class OrderCtrl extends Controller
     //show detail of order in naizhan
     function show_detail_order_in_naizhan($order_id)
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
+
+        $station = DeliveryStation::find($this->mStationId);
 
         //check this order is current factory's order
         $order = Order::find($order_id);
@@ -3853,7 +3635,7 @@ class OrderCtrl extends Controller
             'order'                     => $order,
             'order_products'            => $order_products,
             'grouped_plans_per_product' => $grouped_plans_per_product,
-            'gap_day'                   => $factory->gap_day,
+            'gap_day'                   => $this->factory->gap_day,
             
             // 奶站信息
             'station'                   => $station
@@ -3937,144 +3719,154 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//add customer in gongchang
+    /**
+     * 添加客户信息
+     * @return
+     */
+    private function insert_customer_for_order(Request $request) {
+
+        //get all stations in this factory
+        $stations = $this->factory->active_stations;
+        $station_ids = [];
+        foreach ($stations as $station) {
+            $station_ids[] = $station->id;
+        }
+
+        $name = $request->input('customer');
+        $phone = $request->input('phone');
+
+        $province = $request->input('c_province');
+        $city = $request->input('c_city');
+        $district = $request->input('c_district');
+        $street = $request->input('c_street');
+        $xiaoqu = $request->input('c_xiaoqu');
+        $sub_addr = $request->input('c_sub_addr');
+
+        $addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu . ' ' . $sub_addr;
+        $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
+
+        //select avaiable one station and milkman
+        $station_milkman = $this->get_station_milkman_with_address_from_factory($this->factory->id, $d_addr);
+
+        if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
+            return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
+        }
+        else if ($station_milkman == $this::NOT_EXIST_STATION) {
+            return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
+        }
+        else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
+            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+        }
+
+        $ext_customer = Customer::where('phone', $phone)->where('factory_id', $this->factory->id)->get()->first();
+
+        if ($ext_customer) {
+            //there is already the customer
+            $address = $ext_customer->address;
+            if ($address == $addr && $ext_customer->is_deleted == 0) {
+                $id = $ext_customer->id;
+                if($ext_customer->has_not_order)
+                    $remain_amount = $ext_customer->remain_amount;
+                else
+                    $remain_amount=0;
+
+                $station_id = $ext_customer->station_id;
+                $milkman_id = $ext_customer->milkman_id;
+                $station = DeliveryStation::find($station_id);
+                $station_name = $station->name;
+                $ext_customer->is_deleted = 0;
+                $ext_customer->name = $name;
+                $ext_customer->save();
+
+                return response()->json([
+                    'status'        => 'success',
+                    'customer_id'   => $id,
+                    'station_name'  => $station_name,
+                    'station_id'    => $station_id,
+                    'milkman_id'    => $milkman_id,
+                    'remain_amount' => $remain_amount
+                ]);
+            }
+            else {
+                //this customer has changed the address, so change ths station
+                $ext_customer->milkman_id = null;
+                $ext_customer->address = $addr;
+                $ext_customer->is_deleted = 1;
+                $ext_customer->name = $name;
+                $ext_customer->save();
+            }
+        }
+
+        foreach ($station_milkman as $delivery_station_id => $milkman_id) {
+            $station = DeliveryStation::find($delivery_station_id);
+            $station_name = $station->name;
+
+            if ($ext_customer) {
+                $ext_customer->station_id = $delivery_station_id;
+                $ext_customer->milkman_id = $milkman_id;
+                $ext_customer->is_deleted = 0;
+                $ext_customer->save();
+
+                $id = $ext_customer->id;
+                if($ext_customer->has_not_order)
+                    $remain_amount = $ext_customer->remain_amount;
+                else
+                    $remain_amount=0;
+
+                return response()->json([
+                    'status'        => 'success',
+                    'customer_id'   => $id,
+                    'station_name'  => $station_name,
+                    'station_id'    => $delivery_station_id,
+                    'milkman_id'    => $milkman_id,
+                    'remain_amount' => $remain_amount
+                ]);
+
+            }
+            else {
+                $customer = new Customer;
+
+                $customer->name = $name;
+                $customer->phone = $phone;
+                $customer->address = $addr;
+                $customer->factory_id = $this->factory->id;
+                $customer->remain_amount = 0;
+                $customer->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+                $customer->station_id = $delivery_station_id;
+                $customer->milkman_id = $milkman_id;
+                $customer->is_deleted = 0;
+                $customer->save();
+
+                $id = $customer->id;
+                $remain_amount = 0;
+
+                return response()->json([
+                    'status'        => 'success',
+                    'customer_id'   => $id,
+                    'station_name'  => $station_name,
+                    'station_id'    => $delivery_station_id,
+                    'milkman_id'    => $milkman_id,
+                    'remain_amount' => $remain_amount
+                ]);
+            }
+        }
+    }
+
+    //add customer in gongchang
     public
     function insert_customer_for_order_in_gongchang(Request $request)
     {
         if ($request->ajax()) {
             $fuser = Auth::guard('gongchang')->user();
+
             $factory_id = $fuser->factory_id;
-            $factory = Factory::find($factory_id);
+            $this->factory = Factory::find($factory_id);
 
-            //get all stations in this factory
-            $stations = $factory->active_stations;
-            $station_ids = [];
-            foreach ($stations as $station) {
-                $station_ids[] = $station->id;
-            }
-
-            $order_property_id = $request->input('order_property');
-
-            $name = $request->input('customer');
-            $phone = $request->input('phone');
-
-            $province = $request->input('c_province');
-            $city = $request->input('c_city');
-            $district = $request->input('c_district');
-            $street = $request->input('c_street');
-            $xiaoqu = $request->input('c_xiaoqu');
-            $sub_addr = $request->input('c_sub_addr');
-
-            $addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu . ' ' . $sub_addr;
-            $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
-
-            //select avaiable one station and milkman
-            $station_milkman = $this->get_station_milkman_with_address_from_factory($factory_id, $d_addr);
-
-            if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
-                return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
-            }
-            else if ($station_milkman == $this::NOT_EXIST_STATION) {
-                return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-            }
-            else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
-            }
-
-            $ext_customer = Customer::where('phone', $phone)->where('factory_id', $factory_id)->get()->first();
-
-            if ($ext_customer) {
-                //there is already the customer
-                $address = $ext_customer->address;
-                if ($address == $addr && $ext_customer->is_deleted == 0) {
-                    $id = $ext_customer->id;
-                    if($ext_customer->has_not_order)
-                        $remain_amount = $ext_customer->remain_amount;
-                    else
-                        $remain_amount=0;
-
-                    $station_id = $ext_customer->station_id;
-                    $milkman_id = $ext_customer->milkman_id;
-                    $station = DeliveryStation::find($station_id);
-                    $station_name = $station->name;
-                    $ext_customer->is_deleted = 0;
-                    $ext_customer->name = $name;
-                    $ext_customer->save();
-
-                    return response()->json([
-                        'status'        => 'success',
-                        'customer_id'   => $id,
-                        'station_name'  => $station_name,
-                        'station_id'    => $station_id,
-                        'milkman_id'    => $milkman_id,
-                        'remain_amount' => $remain_amount
-                    ]);
-                }
-                else {
-                    //this customer has changed the address, so change ths station
-                    $ext_customer->milkman_id = null;
-                    $ext_customer->address = $addr;
-                    $ext_customer->is_deleted = 1;
-                    $ext_customer->name = $name;
-                    $ext_customer->save();
-                }
-            }
-
-            foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-                $station = DeliveryStation::find($delivery_station_id);
-                $station_name = $station->name;
-
-                if ($ext_customer) {
-                    $ext_customer->station_id = $delivery_station_id;
-                    $ext_customer->milkman_id = $milkman_id;
-                    $ext_customer->is_deleted = 0;
-                    $ext_customer->save();
-
-                    $id = $ext_customer->id;
-                    if($ext_customer->has_not_order)
-                        $remain_amount = $ext_customer->remain_amount;
-                    else
-                        $remain_amount=0;
-
-                    return response()->json([
-                        'status'        => 'success',
-                        'customer_id'   => $id,
-                        'station_name'  => $station_name,
-                        'station_id'    => $delivery_station_id,
-                        'milkman_id'    => $milkman_id,
-                        'remain_amount' => $remain_amount
-                    ]);
-
-                }
-                else {
-                    $customer = new Customer;
-                    $customer->name = $name;
-                    $customer->phone = $phone;
-                    $customer->address = $addr;
-                    $customer->factory_id = $factory_id;
-                    $customer->remain_amount = 0;
-                    $customer->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-                    $customer->station_id = $delivery_station_id;
-                    $customer->milkman_id = $milkman_id;
-                    $customer->is_deleted = 0;
-                    $customer->save();
-                    $id = $customer->id;
-                    $remain_amount = 0;
-
-                    return response()->json([
-                        'status'        => 'success',
-                        'customer_id'   => $id,
-                        'station_name'  => $station_name,
-                        'station_id'    => $delivery_station_id,
-                        'milkman_id'    => $milkman_id,
-                        'remain_amount' => $remain_amount
-                    ]);
-                }
-            }
+            return $this->insert_customer_for_order($request);
         }
     }
 
-//add customer in naizhan
+    //add customer in naizhan
     public
     function insert_customer_for_order_in_naizhan(Request $request)
     {
@@ -4082,195 +3874,14 @@ class OrderCtrl extends Controller
 
             $my_station_id = Auth::guard('naizhan')->user()->station_id;
             $my_station = DeliveryStation::find($my_station_id);
-            $my_station_name = $my_station->name;
             $factory_id = $my_station->factory_id;
-            $factory = Factory::find($factory_id);
+            $this->factory = Factory::find($factory_id);
 
-            $order_property_id = $request->input('order_property');
-            $name = $request->input('customer');
-            $phone = $request->input('phone');
-
-            $province = $request->input('c_province');
-            $city = $request->input('c_city');
-            $district = $request->input('c_district');
-            $street = $request->input('c_street');
-            $xiaoqu = $request->input('c_xiaoqu');
-            $sub_addr = $request->input('c_sub_addr');
-
-            //$xiaoqu_id = $request->input('c_xiaoqu_id');
-
-            $addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu . ' ' . $sub_addr;
-            $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
-
-
-            //1. First check whether this customer exists
-
-            //Check Customer Existence
-            $ext_customer = Customer::where('phone', $phone)
-                ->where('factory_id', $factory_id)
-                ->get()->first();
-
-            if ($ext_customer) {
-                //there is already the customer
-                $address = $ext_customer->address;
-                if ($address == $addr) {
-                    $id = $ext_customer->id;
-                    if($ext_customer->has_not_order)
-                        $remain_amount = $ext_customer->remain_amount;
-                    else
-                        $remain_amount=0;
-                    $station_id = $ext_customer->station_id;
-                    $milkman_id = $ext_customer->milkman_id;
-                    $station = DeliveryStation::find($station_id);
-                    $station_name = $station->name;
-                    $ext_customer->is_deleted = 0;
-                    $ext_customer->name = $name;
-                    $ext_customer->save();
-                    return response()->json(['status' => 'success', 'customer_id' => $id, 'station_name' => $station_name,
-                        'station_id' => $station_id, 'milkman_id' => $milkman_id, 'remain_amount' => $remain_amount]);
-
-                } else {
-                    $ext_customer->milkman_id = null;
-                    $ext_customer->address = $addr;
-                    $ext_customer->is_deleted = 1;
-                    $ext_customer->name = $name;
-                    $ext_customer->save();
-                }
-            }
-
-            //If this is new user, find the appropriate station
-            //2. First check this customer can be got supported by this station
-
-            $stations = $factory->active_stations;
-            $station_ids = [];
-            foreach ($stations as $fstation) {
-                $station_ids[] = $fstation->id;
-            }
-
-            //Get Delivery areas
-            $deliverys = DSDeliveryArea::where('address', 'like', $d_addr . '%')->get();
-
-            if (count($deliverys) == 0) {
-                return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
-            }
-
-            $my_customer = false;
-
-            //Get stations available
-            $deliverable_station_ids = [];
-            $find_milkman = $find_station = null;
-
-            foreach ($deliverys as $delivery) {
-                $dstation_id = $delivery->station_id;
-                if ($dstation_id == $my_station_id) {
-                    $my_customer = true;
-                    break;
-                }
-
-                $dstation = DeliveryStation::find($dstation_id);
-                $dstation_name = $dstation->name;
-                if (in_array($dstation_id, $station_ids)) {
-                    $deliverable_station_ids[$dstation_id]['station_name'] = $dstation_name;
-
-                    //get this station's milkman that supports this address
-                    $dmilkman = $dstation->get_milkman_of_address($d_addr);
-                    if ($dmilkman) {
-                        $deliverable_station_ids[$dstation_id]['milkman_id'] = $dmilkman->id;
-                        $find_milkman = $dmilkman;
-                    }
-
-                    // 找不到配送员也要显示奶站信息
-                    $find_station = $dstation;
-                }
-            }
-
-            if (!$my_customer && count($deliverable_station_ids) == 0) {
-                return response()->json(['status' => 'fail', 'message' => '找不到奶站或配送员']);
-            }
-
-            if ($my_customer) {
-                //get milkman id for this customer
-                $sid = $my_station_id;
-
-                $milkman = $my_station->get_milkman_of_address($d_addr);
-                if (!$milkman) {
-                    return response()->json(['status' => 'fail', 'message' => '没有配送员']);
-                }
-                $milkman_id = $milkman->id;
-
-                //this is my customer
-                $customer = new Customer;
-                $customer->name = $name;
-                $customer->phone = $phone;
-                $customer->address = $addr;
-                $customer->factory_id = $factory_id;
-                $customer->station_id = $my_station_id;
-                $customer->milkman_id = $milkman_id;
-                $customer->remain_amount = 0;
-                $customer->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-                $customer->is_deleted = 0;
-                $customer->save();
-                $id = $customer->id;
-
-                return response()->json(['status' => 'success', 'customer_id' => $id, 'station_id' => $my_station_id, 'station_name' => $my_station_name, 'remain_amount' => 0, 'milkman_id' => $milkman_id]);
-            } else {
-
-                if ($find_station && $find_milkman) {
-                    if ($ext_customer) {
-                        $ext_customer->station_id = $find_station->id;
-                        $ext_customer->milkman_id = $find_milkman->id;
-                        $ext_customer->is_deleted = 0;
-                        $ext_customer->save();
-
-                        $milkman_id = $find_milkman->id;
-                        $station_id = $find_station->id;
-                        $station_name = $find_station->name;
-                        $id = $ext_customer->id;
-                        if($ext_customer->has_not_order)
-                            $remain_amount = $ext_customer->remain_amount;
-                        else
-                            $remain_amount=0;
-
-                        return response()->json(['status' => 'success', 'customer_id' => $id, 'station_id' => $station_id, 'station_name' => $station_name, 'remain_amount' => $remain_amount, 'milkman_id' => $milkman_id]);
-
-                    } else {
-
-                        $customer = new Customer;
-                        $customer->name = $name;
-                        $customer->phone = $phone;
-                        $customer->address = $addr;
-                        $customer->factory_id = $factory_id;
-                        $customer->remain_amount = 0;
-                        $customer->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-                        $customer->station_id = $find_station->id;
-                        $customer->milkman_id = $find_milkman->id;
-                        $customer->save();
-                        $milkman_id = $find_milkman->id;
-                        $station_id = $find_station->id;
-                        $station_name = $find_station->name;
-                        $id = $customer->id;
-                        return response()->json(['status' => 'success', 'customer_id' => $id, 'station_id' => $station_id, 'station_name' => $station_name, 'remain_amount' => 0, 'milkman_id' => $milkman_id]);
-                    }
-
-
-                } else {
-                    if (!$find_station) {
-                        return response()->json(['status' => 'fail', 'message' => '没有奶站']);
-                    } else {
-                        $station_id = $find_station->id;
-                        $station_name = $find_station->name;
-                        return response()->json(['status' => 'fail', 'station_id' => $station_id, 'station_name' => $station_name, 'message' => '没有配送员.']);
-//                        return response()->json(['status' => 'fail', 'message' => '没有配送员']);
-                    }
-
-                }
-            }
-
+            return $this->insert_customer_for_order($request);
         }
     }
 
-
-//show not passed dingdan in gongchang
+    //show not passed dingdan in gongchang
     public
     function show_not_passed_dingdan_in_gongchang()
     {
@@ -4306,24 +3917,23 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//show not passed dingdan in naizhan
+    //show not passed dingdan in naizhan
     public
     function show_not_passed_dingdan_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         $orders = Order::where('is_deleted', "0")
-            ->where('delivery_station_id', $station_id)
-            ->where('status', Order::ORDER_NOT_PASSED_STATUS)
+            ->where('delivery_station_id', $this->mStationId)
+            ->where(function ($query) {
+                $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
+                $query->where('status', Order::ORDER_PASSED_STATUS);
+            })
             ->orderBy('id', 'desc')
 			->get();
-
 
         $child = 'weitongguo';
         $parent = 'dingdan';
@@ -4336,7 +3946,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $factory,
+            'factory' => $this->factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4380,18 +3990,16 @@ class OrderCtrl extends Controller
     public
     function show_stopped_dingdan_list_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         $orders = Order::where('is_deleted', "0")
-            ->where('delivery_station_id', $station_id)
+            ->where('delivery_station_id', $this->mStationId)
             ->where('status', Order::ORDER_STOPPED_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('id', 'desc')
+            ->get();
 
         $child = 'zantingliebiao';
         $parent = 'dingdan';
@@ -4404,7 +4012,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $factory,
+            'factory' => $this->factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4443,21 +4051,19 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//Show on Delivery Orders in Naizhan
+    //Show on Delivery Orders in Naizhan
     public
     function show_on_delivery_dingdan_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")->where('delivery_station_id', $station_id)
+        $orders = Order::where('is_deleted', "0")->where('delivery_station_id', $this->mStationId)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('id', 'desc')
+            ->get();
 
         $child = 'zaipeisong';
         $parent = 'dingdan';
@@ -4465,18 +4071,18 @@ class OrderCtrl extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         return view('naizhan.dingdan.zaipeisong', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+            'orders'            => $orders,
+            'factory'           => $this->factory,
+            'order_properties'  => $order_properties,
+            'payment_types'     => $payment_types,
         ]);
     }
 
-//show xudan dingdan in gongchang/xudan
+    //show xudan dingdan in gongchang/xudan
     public
     function show_xudan_dingdan_in_gongchang($order_id)
     {
@@ -4640,22 +4246,18 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//show xudan liebiao  in Naizhan
+    //show xudan liebiao  in Naizhan
     public
     function show_xudan_dingdan_liebiao_in_naizhan()
     {
-
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
         $orders = Order::where('is_deleted', "0")
             ->where(function($query) {
                 $query->where('status', Order::ORDER_FINISHED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-            })->where('delivery_station_id', $station_id)
+            })
+            ->where('delivery_station_id', $this->mStationId)
             ->orderBy('id', 'desc')
             ->get();
 
@@ -4673,7 +4275,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $factory,
+            'factory' => $this->factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4901,21 +4503,18 @@ class OrderCtrl extends Controller
     }
 
 
-//show waiting check dingdan in gongchang/daishenhe
+    //show waiting check dingdan in gongchang/daishenhe
     public
     function show_check_waiting_dingdan_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         // 只显示本站录入的订单
         $orders = Order::where('is_deleted', "0")
-            ->where('station_id', $station_id)
+            ->where('station_id', $this->mStationId)
             ->where(function($query) {
                 $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
@@ -4934,7 +4533,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $factory,
+            'factory' => $this->factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4998,19 +4597,28 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//Show All dingdan in Naizhan : Only it's orders
+    /**
+     * 初始化基础信息
+     */
+    private function initStationIdFromUser() {
+        $suser = Auth::guard('naizhan')->user();
+
+        $this->mStationId = $suser->station_id;
+        $this->mFactoryId = $suser->factory_id;
+
+        $this->factory = Factory::find($this->mFactoryId);
+    }
+
+    //Show All dingdan in Naizhan : Only it's orders
     public
     function show_all_dingdan_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $this->initStationIdFromUser();
 
-        $orders = Order::where('is_deleted', "0")->where('factory_id', $factory_id)
-            ->where(function ($query) use ($station_id) {
-                $query->where('station_id', $station_id);
-                $query->orWhere('delivery_station_id', $station_id);
+        $orders = Order::where('is_deleted', "0")->where('factory_id', $this->mFactoryId)
+            ->where(function ($query) {
+                $query->where('station_id', $this->mStationId);
+                $query->orWhere('delivery_station_id', $this->mStationId);
             })->orderBy('id', 'desc')->get();
 
         //find total amount according to payment type
@@ -5019,27 +4627,25 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-
         $child = 'quanbuluru';
         $parent = 'dingdan';
         $current_page = 'quanbuluru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        return view('naizhan.dingdan.quanbuluru', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
 
+        return view('naizhan.dingdan.quanbuluru', [
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+            'orders'            => $orders,
+            'factory'           => $this->factory,
+            'order_properties'  => $order_properties,
+            'payment_types'     => $payment_types,
+        ]);
     }
 
 
     //Miscellous Functions
-
     function convert_to_chinese($data)
     {
         //data == array(array)
@@ -5329,7 +4935,6 @@ class OrderCtrl extends Controller
             //every day send
             $plan_count = $op->count_per_day;
             //changed plan count = plan acount
-            $changed_plan_count = $plan_count;
 
             $interval = 1;
 
@@ -5339,8 +4944,10 @@ class OrderCtrl extends Controller
                     $plan_count = $total_count;
 
                 $delivery_count = $plan_count;
+                $changed_plan_count = $plan_count;
 
                 $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
+
                 $total_count -= $plan_count;
                 $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
 
@@ -5350,7 +4957,6 @@ class OrderCtrl extends Controller
             //each 2 days send
             $plan_count = $op->count_per_day;
             //changed plan count = plan acount
-            $changed_plan_count = $plan_count;
             $interval = 2;
 
             do {
@@ -5359,6 +4965,7 @@ class OrderCtrl extends Controller
                     $plan_count = $total_count;
 
                 $delivery_count = $plan_count;
+                $changed_plan_count = $plan_count;
 
                 $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
                 $total_count -= $plan_count;
@@ -5388,7 +4995,6 @@ class OrderCtrl extends Controller
                 if (array_key_exists($key, $custom)) {
                     $plan_count = $custom[$key];
                     //changed plan count = plan acount
-                    $changed_plan_count = $plan_count;
 
                     $next_key = $this->get_next_key($custom, $key);
 
@@ -5403,6 +5009,7 @@ class OrderCtrl extends Controller
                         $plan_count = $total_count;
 
                     $delivery_count = $plan_count;
+                    $changed_plan_count = $plan_count;
 
                     $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
                     $total_count -= $plan_count;
@@ -5423,7 +5030,6 @@ class OrderCtrl extends Controller
 
                     $plan_count = $custom[$key];
                     //changed plan count = plan acount
-                    $changed_plan_count = $plan_count;
 
                     $next_key = $this->get_next_key($custom, $key);
                     if ($next_key < $key) {
@@ -5437,6 +5043,7 @@ class OrderCtrl extends Controller
                         $plan_count = $total_count;
 
                     $delivery_count = $plan_count;
+                    $changed_plan_count = $plan_count;
 
                     $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
                     $total_count -= $plan_count;
@@ -5465,7 +5072,6 @@ class OrderCtrl extends Controller
                 if (array_key_exists($key, $custom)) {
                     $plan_count = $custom[$key];
                     //changed plan count = plan acount
-                    $changed_plan_count = $plan_count;
 
                     $next_key = $this->get_next_key($custom, $key);
 
@@ -5482,12 +5088,14 @@ class OrderCtrl extends Controller
                         $plan_count = $total_count;
 
                     $delivery_count = $plan_count;
+                    $changed_plan_count = $plan_count;
 
                     $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
                     $total_count -= $plan_count;
                     $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
                     $daynums = $this->days_in_month($deliver_at);
-                } else {
+                }
+                else {
                     //get avaiable key value > current_key
                     $old_key = $key;
 
@@ -5502,7 +5110,6 @@ class OrderCtrl extends Controller
 
                     $plan_count = $custom[$key];
                     //changed plan count = plan acount
-                    $changed_plan_count = $plan_count;
 
                     $next_key = $this->get_next_key($custom, $key);
                     if ($next_key < $key) {
@@ -5516,6 +5123,7 @@ class OrderCtrl extends Controller
                         $plan_count = $total_count;
 
                     $delivery_count = $plan_count;
+                    $changed_plan_count = $plan_count;
 
                     $this->make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count,  $product_price);
                     $total_count -= $plan_count;
@@ -5677,31 +5285,6 @@ class OrderCtrl extends Controller
     {
         if ($request->ajax()) {
 
-            $fuser = Auth::guard('gongchang')->user();
-
-            $fid = null;
-            $sid = null;
-
-            if ($fuser)
-                $fid = $fuser->factory_id;
-            else {
-                $suser = Auth::guard('naizhan')->user();
-
-                if ($suser) {
-                    $sid = $suser->id;
-                    $station = DeliveryStation::find($sid);
-                    $fid = $station->factory_id;
-                } else {
-                    return response()->json(['status' => 'fail']);
-                }
-            }
-
-            if (!$fid) {
-                $station = Auth::guard('naizhan')->user();
-                $station_id = $station->id;
-                $factory_id = $station->factory_id;
-            }
-
             $product_id = $request->input('product_id');
             $order_type = $request->input('order_type');
             $customer_id = $request->input('customer_id');
@@ -5711,7 +5294,10 @@ class OrderCtrl extends Controller
             if (!$customer_id) {
                 $province = $request->input('province');
                 $city = $request->input('city');
-                $district = $request->input('district');
+
+                // 去掉空格
+                $district = trim($request->input('district'));
+                $district = str_replace('　', '', $district);
 
                 $product_price = $this->get_product_price_by_pcd($product_id, $order_type, $province, $city, $district);
 

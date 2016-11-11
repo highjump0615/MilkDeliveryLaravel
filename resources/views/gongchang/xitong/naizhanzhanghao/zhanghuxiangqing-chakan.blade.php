@@ -121,7 +121,7 @@
                     <div class="vertical-align">
                         <label class="col-sm-2 control-label">账号:</label>
                         <div class="col-sm-4"><input type="text" placeholder="" class="form-control"
-                                                     value="{{$delivery_station->username}}" readonly></div>
+                                                     value="{{$delivery_station->getUser()->name}}" readonly></div>
                         <div class="col-sm-6"></div>
                     </div>
                 </div>

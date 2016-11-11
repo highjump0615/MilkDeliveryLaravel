@@ -266,7 +266,10 @@ class StationManageCtrl extends Controller
 
             $name = $request->input('st_name');
 
-            $addr = ($request->input('select_province')) . ' ' . ($request->input('select_city')) . ' ' . ($request->input('select_district')) . ' ' . ($request->input('select_street_xiaoqu'));
+            $addr = ($request->input('select_province')) . ' ' .
+                    ($request->input('select_city')) . ' ' .
+                    ($request->input('select_district')) . ' ' .
+                    ($request->input('select_street_xiaoqu'));
 
             $boss = $request->input('st_boss');
 
@@ -281,7 +284,6 @@ class StationManageCtrl extends Controller
             $free_pay_name = $request->input('free_pay_name');
             $free_pay_card = $request->input('free_pay_card');
 
-
             $deliver_business_credit = $request->input('deliver_business_credit');
             $self_business_credit = $request->input('self_business_credit');
             $margin = $request->input('margin');
@@ -290,6 +292,7 @@ class StationManageCtrl extends Controller
             $user_pwd = $request->input('user_pwd');
             $user_repwd = $request->input('user_repwd');
 
+            // 奶站信息
             $ds = new DeliveryStation;
 
             $ds->name = $name;
@@ -322,6 +325,7 @@ class StationManageCtrl extends Controller
             $ds->number = $this->get_station_number($factory_id, $dsid);
             $ds->save();
 
+            // 用户信息
             $account = new User;
             $account->name = $user_number;
             $account->password = bcrypt($user_pwd);
@@ -428,6 +432,7 @@ class StationManageCtrl extends Controller
 
             $station_id = $request->input('station_id');
 
+            // 奶站信息
             $ds = DeliveryStation::find($station_id);
 
             $ds->name = $name;
@@ -448,12 +453,16 @@ class StationManageCtrl extends Controller
             $ds->init_business_credit_amount = $self_business_credit;
             $ds->init_guarantee_amount = $margin;
 
-            $ds->username = $user_number;
+            $ds->save();
+
+            // 用户信息
+            $account = $ds->getUser();
+            $account->name = $user_number;
 
             if ($user_pwd)
-                $ds->password = bcrypt($user_pwd);
+                $account->password = bcrypt($user_pwd);
 
-            $ds->save();
+            $account->save();
 
             $dsid = $ds->id;
 
@@ -558,6 +567,7 @@ class StationManageCtrl extends Controller
         $parent = 'xitong';
         $current_page = 'zhanghuxiangqing-chakan';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         $delivery_station = DeliveryStation::find($station_id);
         $delivery_station['type'] = DSType::find($delivery_station->station_type)->name;
         $delivery_station['pay_type'] = DSPaymentCalcType::find($delivery_station->payment_calc_type)->name;
@@ -598,6 +608,7 @@ class StationManageCtrl extends Controller
         }
 
         $delivery_station['delivery_area'] = $delivery_area;
+
         return view('gongchang.xitong.naizhanzhanghao.zhanghuxiangqing-chakan', [
             'pages' => $pages,
             'child' => $child,
@@ -651,10 +662,13 @@ class StationManageCtrl extends Controller
             $city_name = $request->input('city_name');
             $city_label = pinyin::utf8_to($city_name, 1);
 
+            //
+            // 获取最后的位数
+            //
             $prefix = $factory_label . "_" . $city_label . "_";
 
-            //get same station count
-            $stations = DeliveryStation::where('factory_id', $factory_id)->where('username', 'like', $prefix . '%')->get();
+            // get same station count
+            $stations = User::where('name', 'like', $prefix . '%')->get();
             $count = count($stations);
 
             $index = $count + 1;

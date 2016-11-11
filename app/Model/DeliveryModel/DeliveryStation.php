@@ -8,6 +8,7 @@ use App\Model\FinanceModel\DSDeliveryCreditBalanceHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Model\UserModel\User;
 use App\Model\OrderModel\Order;
 use App\Model\FinanceModel\DSCalcBalanceHistory;
 use App\Model\OrderModel\OrderCheckers;
@@ -41,9 +42,6 @@ class DeliveryStation extends Authenticatable
         'last_used_ip',
         'last_session',
         'userkind',
-        'username',
-        'password',
-        'remember_token',
         'status',
         'is_deleted',
     ];
@@ -126,7 +124,6 @@ class DeliveryStation extends Authenticatable
         'bottle_count_done_this_term',
 //        'bottle_count_current',
         'bottle_count_before_this_term',
-
     ];
 
     const DELIVERY_STATION_TYPE_STATION_NORMAL = 1;
@@ -705,6 +702,18 @@ class DeliveryStation extends Authenticatable
         return $this->belongsTo('App\Model\FactoryModel\Factory');
     }
 
+    /**
+     * 获取超级管理员
+     */
+    public function getUser() {
+        $userinfo = User::where('backend_type','3')
+            ->where('user_role_id', '200')
+            ->where('station_id', $this->id)
+            ->get()->first();
+
+        return $userinfo;
+    }
+
     //get all order checkers in station
     public function getAllOrderCheckersAttribute()
     {
@@ -1000,6 +1009,5 @@ class DeliveryStation extends Authenticatable
         }
         return $total;
     }
-
 
 }

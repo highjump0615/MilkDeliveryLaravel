@@ -705,6 +705,12 @@ if (isset($station)) {
         var customer_id, station_id, station_name;
         var city_name, district_name, street_name, village_name;
 
+        var gbIsStation = false;
+
+        @if (isset($station))
+            gbIsStation = true;
+        @endif
+
         @if (isset($order))
             city_name = "{{$order->getAddrCity()}}";
             district_name = "{{$order->getAddrDistrict()}}";
@@ -722,6 +728,7 @@ if (isset($station)) {
         @endif
 
         var copy_tr_data = copy_tr_data = $("#first_data").html();
+
     </script>
 
     <script src="<?=asset('js/pages/gongchang/order_insert.js') ?>"></script>

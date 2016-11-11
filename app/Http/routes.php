@@ -64,9 +64,6 @@ Route::get('/gongchang', function () {
 
 Route::get('/update-order-status', 'OrderCtrl@update_order_status');
 
-// 奶厂奶站公用的api
-Route::post('api/gongchang/dingdan/dingdanluru/insert_customer', 'OrderCtrl@insert_customer_for_order_in_gongchang');
-
 Route::group(['middleware' => ['gongchang']], function () {
 
     //get all product names
@@ -87,6 +84,8 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::delete('api/gongchang/jichuxinxi/shangpin/shangpincanshushezhi/box_type/{id}', 'ProductSettingsCtrl@delete_box_type');
 
     Route::post('api/gongchang/jichuxinxi/shangpin/shangpincanshushezhi/set_gap_day', 'ProductSettingsCtrl@set_gap_day');
+
+    Route::post('api/gongchang/dingdan/dingdanluru/insert_customer', 'OrderCtrl@insert_customer_for_order_in_gongchang');
 
     /*
      * DELVIERY STATION MANAGEMENT
@@ -422,6 +421,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::post('api/naizhan/shengchan/peisongguanli/save_distribution', 'DSDeliveryPlanCtrl@save_distribution');
     /*update distribution_plan*/
     Route::put('api/naizhan/shengchan/peisongguanli/save_changed_distribution', 'DSDeliveryPlanCtrl@save_changed_distribution');
+
     /*show Naizhan peisongliebiao Page*/
     Route::get('/naizhan/shengchan/peisongliebiao', 'DSDeliveryPlanCtrl@showPeisongliebiao')->name('naizhan_peisongliebiao');
     /*show Ziyingdingdan Page*/

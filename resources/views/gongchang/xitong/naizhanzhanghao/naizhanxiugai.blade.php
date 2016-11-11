@@ -358,7 +358,7 @@
                             <div class="vertical-align">
                                 <label class="col-md-2 control-label">账号: </label>
                                 <div class="col-md-4"><input required name="user_number" id="user_number" type="text"
-                                                             value="{{$station->username}}" readonly class="form-control">
+                                                             value="{{$station->getUser()->name}}" readonly class="form-control">
                                 </div>
                                 <div class="col-md-6"></div>
                             </div>
