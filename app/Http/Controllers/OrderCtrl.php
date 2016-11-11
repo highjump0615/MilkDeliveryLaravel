@@ -3482,8 +3482,6 @@ class OrderCtrl extends Controller
 
                 //establish plan
                 $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
-
-                return response()->json(['status' => 'fail', 'message' => $op]);
             }
 
             //set flag on first order delivery plan

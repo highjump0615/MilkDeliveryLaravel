@@ -108,7 +108,7 @@
                         <label class="control-label col-md-2">收货人:</label>
                         <div class="col-md-2">
                             <input type="text" required id="customer" name="customer" class="form-control"
-                                   value="@if (isset($customer)){{$customer->name}}@endif">
+                                   @if (isset($customer)) value="{{$customer->name}}" @endif>
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
@@ -116,7 +116,7 @@
                         <div class="col-md-2">
                             <input required type="text" pattern="\d{11}"  id="phone" name="phone" class="form-control"
                                    oninvalid="this.setCustomValidity('手机号码得11位数')" oninput="this.setCustomValidity('')"
-                                    value="@if (isset($order)){{$order->phone}}@endif" >
+                                   @if (isset($order)) value="{{$order->phone}}" @endif >
                         </div>
                     </div>
 
@@ -167,7 +167,7 @@
                         <div class="col-md-3 col-md-offset-2">
                             <input type="text" placeholder="填写详细地址" id="sub_addr" name="c_sub_addr"
                                    class="form-control"
-                                   value="@if (isset($order)){{$order->getAddrHouseNumber()}}@endif">
+                                   @if (isset($order)) value="{{$order->getAddrHouseNumber()}}" @endif>
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
@@ -227,7 +227,7 @@
                         <div class="col-md-3">
                             <input required type="text" name="receipt_number" class="form-control"
                                    id="receipt_number"
-                                   value="@if (isset($order)) {{$order->receipt_number}} @endif"/>
+                                   @if (isset($order)) value="{{$order->receipt_number}}" @endif/>
                         </div>
                         <div class="col-md-4">
                             <button type="button" class="btn btn-outline btn-success" style="display:none;"
@@ -250,7 +250,7 @@
                             </div>
 
                             <input required type="hidden" name="receipt_path" id="receipt_path"
-                                   value="@if (isset($order)){{$order->receipt_path}}@endif"\>
+                                   @if (isset($order)) value="{{$order->receipt_path}}" @endif \>
                             <i class="fa fa-check-square-o" id="check_capture"></i>
                         </div>
                     </div>
@@ -412,7 +412,7 @@
                                                 <div>
                                                     <input required name="one_product_total_count[]"
                                                            class="one_product_total_count form-control"
-                                                           type="number" min="1" value="{{$op->total_count}}"
+                                                           type="number" min="1" value="{{$op->remain_count}}"
                                                            style="padding-left: 2px;"/>
                                                     <select class="one_product_total_count_select control hidden form-control">
                                                         @if(isset($products_count_on_fot))
@@ -454,9 +454,11 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="calendar_show" style="display: none;">
+                                                <!-- 天天送、隔日送就不显示选择日期的 -->
+                                                <div class="calendar_show" style="@if ($op->delivery_type < 3 ) display: none; @endif">
                                                     <div class="input-group date picker">
-                                                        <input type="text" class="form-control delivery_dates" name="delivery_dates[]">
+                                                        <input type="text" class="form-control delivery_dates" name="delivery_dates[]"
+                                                               value="{{$op->custom_order_dates}}">
                                                         <span class="input-group-addon">
                                                             <i class="fa fa-calendar"></i>
                                                         </span>

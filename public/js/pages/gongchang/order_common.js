@@ -57,7 +57,10 @@ $(document).ready(function () {
     // 初始化奶品起送日期
     initStartDateCalendar();
 
-    $('select.order_delivery_type').trigger('change');
+    // 初始化配送规则有关的日历
+    $('#product_table').find('tbody > tr').each(function() {
+        initBottleNumCalendar($(this));
+    })
 
     //Create Switchery
     if (Array.prototype.forEach) {
@@ -305,11 +308,6 @@ $('body').on('change', 'select.order_delivery_type', function () {
 
     var tr = $(this).parent().parent();
     var calendar = tr.find('.calendar_show')[0];
-    var bottle_number = tr.find('div.bottle_number')[0];
-
-    // 获取输入的每次瓶数
-    var inputBottleNum = tr.find('.order_product_count_per')[0];
-    var nBottleNum = parseInt($(inputBottleNum).val());
 
     //remove all previous data and set new data
     $(calendar).html('');
@@ -318,58 +316,10 @@ $('body').on('change', 'select.order_delivery_type', function () {
         + '</div>';
     $(calendar).html(dd);
 
-    var pick = tr.find('.picker')[0];
-
-    var id = $(this).find('option:selected').val();
-
-    if (id == 3 || id == 4) {
-        if (id == 3) {
-            console.log(id);
-            //show weekday
-            $(pick).datepicker({
-                multidate: true,
-                todayBtn: false,
-                clearBtn: true,
-                keyboardNavigation: false,
-                forceParse: false,
-                calendarWeeks: false,
-                showNum: true,
-                bottleNum: nBottleNum,
-                startDate: firstday,
-                endDate: lastday,
-                class:'week_calendar'
-            });
-        }
-        else {
-            console.log(id);
-            //show monthday
-            $(pick).datepicker({
-                multidate: true,
-                todayBtn: false,
-                clearBtn: true,
-                keyboardNavigation: false,
-                forceParse: false,
-                calendarWeeks: false,
-                showNum: true,
-                bottleNum: nBottleNum,
-                startDate: firstm,
-                endDate: lastm,
-                class:'month_calendar',
-            });
-        }
-
-        $(calendar).show();
-        $(calendar).find('input').attr('required', true);
-        // $(bottle_number).hide();
-        // $(bottle_number).find('input').removeAttr('required');
-    } else {
-
-        $(calendar).hide();
-        $(bottle_number).show();
-        // $(bottle_number).find('input').attr('required', true);
-        $(calendar).find('input').removeAttr('required');
-    }
+    initBottleNumCalendar(tr);
 });
+
+
 
 $('body').on('change', '#product_table tbody tr.one_product select.order_product_id', function () {
     var tr = $(this).closest('.one_product');
@@ -521,15 +471,17 @@ function initStartDateCalendar() {
     });
 
     $('.single_date').each(function () {
-        var input = $(this).find('.start_at');
 
-        // 修改要改成以保存的
-        if (gbIsEdit && $(input).val().length > 0) {
-            $(this).datepicker('setDate', new Date($(input).val()));
+        var input = $(this).find('.start_at');
+        var dateVal = new Date($(input).val());
+
+        // 修改要改成以保存的, 过了保存的时期，只能选择今天
+        if (gbIsEdit && $(input).val().length > 0 && dateVal > dateStart) {
+            $(this).datepicker('setDate', dateVal);
         }
         else {
             // 默认选择第一天
-            $('.single_date').datepicker('setDate', dateStart);
+            $(this).datepicker('setDate', dateStart);
         }
     });
 }
@@ -542,12 +494,15 @@ function getStartDate() {
     var able_date = new Date();
     $.extend(able_date, dateToday);
 
-    if (gap_day)
-        able_date.setDate(dateToday.getDate() + gap_day);
-    else {
-        gap_day = 3; //default
-        able_date.setDate(dateToday.getDate() + 3);
-    }
+    // 如果是修改订单
+    // if (!gbIsEdit) {
+        if (gap_day)
+            able_date.setDate(dateToday.getDate() + gap_day);
+        else {
+            gap_day = 3; //default
+            able_date.setDate(dateToday.getDate() + 3);
+        }
+    // }
 
     return able_date;
 }
@@ -564,4 +519,74 @@ function dateToString(date) {
     var strDate = year + '-' + month + '-' + day;
 
     return strDate;
+}
+
+/**
+ * 初始化按周送、随心送日历
+ */
+function initBottleNumCalendar(tr) {
+    var calendar = tr.find('.calendar_show')[0];
+    var selectDeliveryType = tr.find('select.order_delivery_type')[0];
+    var bottle_number = tr.find('div.bottle_number')[0];
+
+    var pick = tr.find('.picker')[0];
+
+    // 获取输入的每次瓶数
+    var inputBottleNum = tr.find('.order_product_count_per')[0];
+    var nBottleNum = parseInt($(inputBottleNum).val());
+
+    var id = $(selectDeliveryType).find('option:selected').val();
+
+    if (id == 3 || id == 4) {
+
+        var initNum = $(calendar).find('input').val();
+
+        if (id == 3) {
+            console.log(id);
+            //show weekday
+            $(pick).datepicker({
+                multidate: true,
+                todayBtn: false,
+                clearBtn: true,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                showNum: true,
+                bottleNum: nBottleNum,
+                initValue: initNum,
+                startDate: firstday,
+                endDate: lastday,
+                class:'week_calendar'
+            });
+        }
+        else {
+            console.log(id);
+            //show monthday
+            $(pick).datepicker({
+                multidate: true,
+                todayBtn: false,
+                clearBtn: true,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                showNum: true,
+                bottleNum: nBottleNum,
+                initValue: initNum,
+                startDate: firstm,
+                endDate: lastm,
+                class:'month_calendar',
+            });
+        }
+
+        $(calendar).show();
+        $(calendar).find('input').attr('required', true);
+        // $(bottle_number).hide();
+        // $(bottle_number).find('input').removeAttr('required');
+    } else {
+
+        $(calendar).hide();
+        // $(bottle_number).show();
+        // $(bottle_number).find('input').attr('required', true);
+        $(calendar).find('input').removeAttr('required');
+    }
 }
