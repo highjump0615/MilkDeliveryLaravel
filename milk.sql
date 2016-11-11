@@ -5222,9 +5222,6 @@ CREATE TABLE IF NOT EXISTS `wxusers` (
 -- Dumping data for table `wxusers`
 --
 
-INSERT INTO `wxusers` (`id`, `device_token`, `customer_id`, `last_session`, `last_used_ip`, `image_url`, `name`, `phone_verify_code`) VALUES
-(1, NULL, 21, NULL, NULL, NULL, NULL, '59647');
-
 --
 -- Constraints for dumped tables
 --
