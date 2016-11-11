@@ -56,8 +56,8 @@
             <div class="feed-element col-md-12">
                 <label class="col-md-2">收货地址:</label>
                 <label>{{$order->main_address}}</label>
-                <input id="sub_addr" data-origin="{{$order->sub_address}}" type="text" disabled name="change_sub_addr"
-                       value="{{$order->sub_address}}"/>
+                <input id="sub_addr" data-origin="{{$order->getAddrHouseNumber()}}" type="text" disabled name="change_sub_addr"
+                       value="{{$order->getAddrHouseNumber()}}"/>
                 <button id="change_sub_addr" type="button" class="btn btn-success btn-outline"><i
                             class="fa fa-pencil"></i>修改
                 </button>

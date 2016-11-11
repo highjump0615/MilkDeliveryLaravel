@@ -2123,9 +2123,8 @@ class OrderCtrl extends Controller
     }
 
     private function initShowStationPage() {
-        $suser = Auth::guard('naizhan')->user();
 
-        $station_id = $suser->id;
+        $station_id = Auth::guard('naizhan')->user()->station_id;
         $this->station = DeliveryStation::find($station_id);
 
         $this->factory = Factory::find($this->station->factory_id);
@@ -3904,8 +3903,9 @@ class OrderCtrl extends Controller
     public
     function show_insert_order_page_in_naizhan()
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
+        $this->initShowStationPage();
+
+        $order_checkers = $this->station->active_order_checkers;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -4569,7 +4569,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view(''naizhan.dingdan.xudanliebiao.luruxudan', [
+        return view('naizhan.dingdan.xudanliebiao.luruxudan', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,
@@ -5236,6 +5236,9 @@ class OrderCtrl extends Controller
     {
         $order = Order::find($order_id);
         $order_products = $order->order_products;
+
+        // 解析收货地址
+        $order->resolveAddress();
 
         $grouped_plans_per_product = $order->grouped_plans_per_product;
 
