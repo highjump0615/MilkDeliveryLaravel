@@ -280,7 +280,7 @@
 
 @section('script')
 
-    <script type="text/javascript" src="<?=asset('js/plugins/tagsinput/my-tagsinput.js') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/plugins/tagsinput/bootstrap-tagsinput.js') ?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/address_manage.js')?>"></script>
 
 @endsection
