@@ -52,7 +52,8 @@
                         <table id="table1" class="table footable table-bordered"  data-page-size="10" id="plan-list">
                             <thead style="background-color:#33cccc;">
 								<tr>
-									<th data-sort-ignore="true">时间</th>
+									<th data-sort-ignore="true">提交时间</th>
+									<th data-sort-ignore="true">签收时间</th>
 									<th data-sort-ignore="true">奶品</th>
 									<th data-sort-ignore="true">配送计划</th>
 									<th data-sort-ignore="true">站内零售（瓶）</th>
@@ -69,7 +70,7 @@
 								<?php $i =0; ?>
 								@if(count($dsplan)==0)
 									<tr>
-										<td colspan="11">你没有发送今天的计划</td>
+										<td colspan="12">你没有发送今天的计划</td>
 									</tr>
 								@endif
 								@foreach($dsplan as $dp)
