@@ -31,23 +31,27 @@ use App\Http\Controllers\Controller;
 class DSProductionPlanCtrl extends Controller
 {
     public function showJihuaguanlinPage(Request $request){
+
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_date = $request->input('current_date');
-        $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-        $producre_start_date = $produce_Date->format('Y-m-d');
 
-        if($current_date == ''){
-            $current_date = $producre_start_date;
+        $produce_Date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
+        $produce_start_date = $produce_Date->format('Y-m-d');
+
+        if ($current_date == ''){
+            $current_date = $produce_start_date;
         }
-        else{
+        else {
             $date = str_replace('-','/',$current_date);
             $current_date = date('Y-m-d',strtotime($date."+1 days"));
         }
+
         $child = 'jihuaguanli';
         $parent = 'shengchan';
         $current_page = 'jihuaguanli';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
 //        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->orderBy('produce_start_at')->get()->groupBy(function($sort){return $sort->produce_start_at;});
 
         $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$current_date)->get();
@@ -61,16 +65,21 @@ class DSProductionPlanCtrl extends Controller
         if($is_passed > 0){
             $alert_message = '计划已经被牛奶厂接受。';
         }
+
         $date = str_replace('-','/',$current_date);
-        $current_date = date('Y-m-d',strtotime($date."-1 days"));
+        $current_date = date('Y-m-d', strtotime($date."-1 days"));
+
         return view('naizhan.shengchan.jihuaguanli',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'dsplan'=>$dsplan,
-            'alert_message'=>$alert_message,
-            'current_date' => $current_date,
+            // 菜单关联信息
+            'pages'         =>$pages,
+            'child'         =>$child,
+            'parent'        =>$parent,
+            'current_page'  =>$current_page,
+
+            // 计划信息
+            'dsplan'        =>$dsplan,
+            'alert_message' =>$alert_message,
+            'current_date'  => $current_date,
         ]);
     }
 
