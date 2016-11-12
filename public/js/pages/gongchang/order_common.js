@@ -271,7 +271,7 @@ function get_order_statics() {
     var gos = 0;
     for (var i = 0; i < pamounts.length; i++) {
         var pa = pamounts[i];
-        gos += parseInt($(pa).val());
+        gos += parseFloat($(pa).val());
     }
 
     $('#total_amount').val(gos);

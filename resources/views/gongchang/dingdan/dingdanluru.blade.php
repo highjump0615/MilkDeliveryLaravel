@@ -280,6 +280,8 @@
                                    @if (!(isset($order) && !$order->milk_box_install)) checked="checked" @endif/>
                         </div>
                     </div>
+                    <!-- 只能在奶厂录入奶卡订单 -->
+                    @if (!isset($station))
                     <div class="feed-element col-md-12">
                         <div class="col-md-1" id="check_2">
                             <label>奶卡支付</label>
@@ -299,6 +301,7 @@
                             商品:<label id="form-card-product">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->product}} @endif</label>
                         </div>
                     </div>
+                    @endif
                     <br>
 
                     <div class="feed-element col-md-12">
