@@ -31,29 +31,40 @@ use App\Http\Controllers\Controller;
 class DSProductionPlanCtrl extends Controller
 {
     public function showJihuaguanlinPage(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_date = $request->input('current_date');
-        $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-        $producre_start_date = $produce_Date->format('Y-m-d');
 
-        if($current_date == ''){
-            $current_date = $producre_start_date;
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $start_date = $end_date = $request->input('current_date');
+
+        // 默认是今天倒数5天
+        if ($start_date == '') {
+            // 获取系统时间，第二天开始生产
+            $produce_Date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+            $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
+            $produce_start_date = $produce_Date->format('Y-m-d');
+
+            $start_date = $produce_start_date;
+
+            $date = str_replace('-','/',$start_date);
+            $end_date = date('Y-m-d',strtotime($date."+5 days"));
         }
-        else{
-            $date = str_replace('-','/',$current_date);
-            $current_date = date('Y-m-d',strtotime($date."+1 days"));
+        else {
+            $date = str_replace('-','/',$start_date);
+            $start_date = date('Y-m-d',strtotime($date."+1 days"));
+            $end_date = $start_date;
         }
+
         $child = 'jihuaguanli';
         $parent = 'shengchan';
         $current_page = 'jihuaguanli';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
 //        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->orderBy('produce_start_at')->get()->groupBy(function($sort){return $sort->produce_start_at;});
 
-        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$current_date)->get();
+//        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$start_date)->get();
+        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->wherebetween('produce_start_at', [$start_date, $end_date])->get();
 
         $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
-            ->where('produce_start_at',$current_date)
+            ->where('produce_start_at',$start_date)
             ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])
             ->get());
 
@@ -61,29 +72,36 @@ class DSProductionPlanCtrl extends Controller
         if($is_passed > 0){
             $alert_message = '计划已经被牛奶厂接受。';
         }
-        $date = str_replace('-','/',$current_date);
-        $current_date = date('Y-m-d',strtotime($date."-1 days"));
+
+        $date = str_replace('-','/',$start_date);
+        $start_date = date('Y-m-d', strtotime($date."-1 days"));
+
         return view('naizhan.shengchan.jihuaguanli',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'dsplan'=>$dsplan,
-            'alert_message'=>$alert_message,
-            'current_date' => $current_date,
+            // 菜单关联信息
+            'pages'         =>$pages,
+            'child'         =>$child,
+            'parent'        =>$parent,
+            'current_page'  =>$current_page,
+
+            // 计划信息
+            'dsplan'        =>$dsplan,
+            'alert_message' =>$alert_message,
+            'current_date'  => $start_date,
         ]);
     }
 
     public  function showTijiaojihuaPage(Request $request){
+
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_station_addr = Auth::guard('naizhan')->user()->address;
+
+        $current_station = DeliveryStation::find($current_station_id);
+        $current_station_addr = $current_station->address;
 
         $child = 'jihuaguanli';
         $parent = 'shengchan';
         $current_page = 'tijiaojihua';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        $current_station_status = DeliveryStation::find($current_station_id);
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
 
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
@@ -110,6 +128,7 @@ class DSProductionPlanCtrl extends Controller
         }
 
         $product_list = Product::where('is_deleted','0')->get();
+
         if($is_sent == 0)
         {
             foreach($product_list as $pl){
@@ -171,13 +190,13 @@ class DSProductionPlanCtrl extends Controller
 
 
         return view('naizhan.shengchan.jihuaguanli.tijiaojihua',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'product_list'=>$product_list,
-            'current_station_status'=>$current_station_status,
-            'is_sent'=>$is_sent,
+            'pages'                     =>$pages,
+            'child'                     =>$child,
+            'parent'                    =>$parent,
+            'current_page'              =>$current_page,
+            'product_list'              =>$product_list,
+            'current_station_status'    =>$current_station,
+            'is_sent'                   =>$is_sent,
         ]);
     }
 

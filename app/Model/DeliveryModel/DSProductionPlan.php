@@ -43,6 +43,7 @@ class DSProductionPlan extends Model
 
     protected $appends = [
         'product_name',
+        'submit_at'
     ];
 
     public function getProductNameAttribute(){
@@ -53,4 +54,16 @@ class DSProductionPlan extends Model
         else
             return $product_name->name;
     }
+
+    /**
+     * 提交计划时间
+     * @return string
+     */
+    public function getSubmitAtAttribute() {
+        $date = str_replace('-','/', $this->produce_start_at);
+        $submit_date = date('Y-m-d', strtotime($date . "-1 days"));
+
+        return $submit_date;
+    }
+
 }
