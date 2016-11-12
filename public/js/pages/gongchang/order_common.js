@@ -274,12 +274,12 @@ function get_order_statics() {
         gos += parseFloat($(pa).val());
     }
 
-    $('#total_amount').val(gos);
+    $('#total_amount').val(gos.toFixed(1));
 
     // 修改订单
     if (gbIsEdit) {
         fRemainCost = fCurrentCost - gos;
-        $('#remaining_after').val(fRemainCost);
+        $('#remaining_after').val(fRemainCost.toFixed(1));
     }
     // 录入订单
     else {

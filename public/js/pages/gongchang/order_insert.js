@@ -363,6 +363,8 @@ $('#order_form').on('submit', function (e) {
     console.log(sendData);
 
     // API链接
+    var strApiUrl, strUrlAfter;
+
     var strApiUrl = API_URL + 'gongchang/dingdan/dingdanluru/insert_order';
     if (gbIsStation) {
         strApiUrl = API_URL + 'naizhan/dingdan/dingdanluru/insert_order';
@@ -379,8 +381,12 @@ $('#order_form').on('submit', function (e) {
 
                 if (gbIsEdit) {
                     // 如果是订单修改，跳转到待审核订单
-                    var url = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
-                    window.location.replace(url);
+                    strUrlAfter = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
+                    if (gbIsStation) {
+                        strUrlAfter = SITE_URL + 'naizhan/dingdan/xiangqing/' + order_id;
+                    }
+
+                    window.location.replace(strUrlAfter);
                 }
                 else {
                     // 如果是订单录入，清空页面，易于录入别的

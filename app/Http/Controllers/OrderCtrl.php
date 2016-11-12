@@ -2065,7 +2065,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.dingdanluru.xiugai', [
+        return view('naizhan.dingdan.xiugai', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,
@@ -3343,14 +3343,16 @@ class OrderCtrl extends Controller
         //check for 10% of delivery credit balance
         $station = DeliveryStation::find($station_id);
 
-        // 以下两个情况下要查询配送信用余额
-        // 1. 新订单
-        // 2. 新订单未通过的情况
-        if (!$order || ($order && $order->status == Order::ORDER_NEW_NOT_PASSED_STATUS)) {
-            if ((!$order_by_milk_card) &&
-                ($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10)) {
+        if (!$order_by_milk_card) {
+            // 以下两个情况下要查询配送信用余额
+            // 1. 新订单
+            // 2. 新订单未通过的情况
+            // 3. 新订单待审核的情况
+            if (!$order || ($order && $order->status == Order::ORDER_NEW_NOT_PASSED_STATUS)) {
+                if (($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10)) {
 
-                return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
+                    return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
+                }
             }
         }
 

@@ -26,13 +26,14 @@ class BottleAdminCtrl extends Controller
 {
     public function gongchangPingkuangShow(Request $request){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $child = 'pingkuang_child';
         $parent = 'pingkuang';
         $current_page = 'pingkuang';
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
         $current_month_day = $currentDate->format('Y-m-01');
-
 
         $bottle_name = $request->input('bottle_name');
         if($bottle_name == null){
@@ -79,7 +80,8 @@ class BottleAdminCtrl extends Controller
         $today_box_info = array();
         foreach ($box_types as $bx){
             $today_box_info[$bx->id]['name'] = $bx->name;
-            if(MFBox::where('factory_id',$current_factory_id)->where('box_type',$bx->id)->orderBy('time','desc')->first() != null)
+
+            if (MFBox::where('factory_id',$current_factory_id)->where('box_type',$bx->id)->orderBy('time','desc')->first() != null)
                 $today_box_info[$bx->id]['init_store_count'] = MFBox::where('factory_id',$current_factory_id)->where('box_type',$bx->id)->orderBy('time','desc')->first()->final_count;
             else
                 $today_box_info[$bx->id]['init_store_count'] = 0;
@@ -158,18 +160,18 @@ class BottleAdminCtrl extends Controller
         }
 //        return $refunds_info;
         return view('gongchang.pingkuang.pingkuang', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
-            'bottle_name'=>$bottle_name,
-            'box_name'=>$box_name,
-            'today_bottle_info'=>$today_bottle_info,
-            'today_box_info'=>$today_box_info,
-            'refund_info'=>$total_info,
-            'today_status'=>$today_status,
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+            'start_date'        =>$start_date,
+            'end_date'          =>$end_date,
+            'bottle_name'       =>$bottle_name,
+            'box_name'          =>$box_name,
+            'today_bottle_info' =>$today_bottle_info,
+            'today_box_info'    =>$today_box_info,
+            'refund_info'       =>$total_info,
+            'today_status'      =>$today_status,
         ]);
     }
 
