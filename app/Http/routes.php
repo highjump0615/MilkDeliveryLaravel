@@ -43,6 +43,9 @@ Route::post('api/factory_to_station', 'FinanceCtrl@factory_to_station');
 //get Product Price
 Route::get('api/order/get_order_product_price', 'OrderCtrl@get_order_product_price');
 
+// 单日修改
+Route::post('api/gongchang/dingdan/change_delivery_plan_for_one_day_in_xiangqing_and_xiugai', 'OrderCtrl@change_delivery_plan_for_one_day_in_xiangqing_and_xiugai');
+
 //Test
 Route::get('/tests', function () {
     $a = "1.2345";
@@ -188,7 +191,7 @@ Route::group(['middleware' => ['gongchang']], function () {
     //Show Order Xiugai Page
     Route::get('/gongchang/dingdan/dingdanxiugai/{order_id}', 'OrderCtrl@show_order_revise_in_gongchang');
     Route::post('api/gongchang/dingdan/dingdanxiugai/stop_order_for_some_period', 'OrderCtrl@stop_order_for_some_period');
-    Route::post('api/gongchang/dingdan/change_delivery_plan_for_one_day_in_xiangqing_and_xiugai', 'OrderCtrl@change_delivery_plan_for_one_day_in_xiangqing_and_xiugai');
+
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_customer', 'OrderCtrl@change_customer');
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
@@ -530,8 +533,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::post('api/naizhan/dingdan/cancel_order', 'OrderCtrl@cancel_order');
     //Stop Order
     Route::post('api/naizhan/dingdan/stop_order', 'OrderCtrl@stop_order_for_some_period');
-    //Change Delivery Plan
-    Route::post('api/naizhan/dingdan/change_delivery_plan_for_one_day_in_xiangqing_and_xiugai', 'OrderCtrl@change_delivery_plan_for_one_day_in_xiangqing_and_xiugai');
+
     //postpone order
     Route::post('api/naizhan/dingdan/postpone_order', 'OrderCtrl@postpone_order');
 

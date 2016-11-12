@@ -121,7 +121,8 @@ class DSProductionPlanCtrl extends Controller
                 $query->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN);
                 $query->where('produce_start_at',$currentDate_str);
                 $query->where('station_id',$current_station_id);
-            })->get());
+            })->get()
+        );
 
         if($is_passed > 0){
             return redirect()->route('naizhan_shengchan_jihuaguanli')->with('alert_message','计划已经被牛奶厂接受。');
@@ -129,9 +130,10 @@ class DSProductionPlanCtrl extends Controller
 
         $product_list = Product::where('is_deleted','0')->get();
 
-        if($is_sent == 0)
+        if ($is_sent == 0)
         {
             foreach($product_list as $pl){
+
                 $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
                 if($product_price == null)
                     $pl["current_price"] = null;
@@ -141,11 +143,16 @@ class DSProductionPlanCtrl extends Controller
                 $order_products = OrderProduct::where('product_id',$pl->id)->get();
                 $total_count = 0;
                 $total_money = 0;
-                foreach($order_products as $op){
-                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)->
-                    where('produce_at',$currentDate_str)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->where('order_product_id',$op->id)->get()->first();
-                    if($plan == null){
 
+                foreach($order_products as $op){
+                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
+                        ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                        ->where('produce_at',$currentDate_str)
+                        ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                        ->where('order_product_id',$op->id)
+                        ->get()->first();
+
+                    if($plan == null){
                     }
                     else {
                         $total_count += $plan->plan_count;
@@ -154,11 +161,11 @@ class DSProductionPlanCtrl extends Controller
                 }
                 $pl["total_count"] = $total_count;
                 $pl["total_money"] = $total_money;
-
             }
         }
         else{
             foreach($product_list as $pl){
+
                 $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
 
                 if($product_price == null)
@@ -169,11 +176,17 @@ class DSProductionPlanCtrl extends Controller
                 $order_products = OrderProduct::where('product_id',$pl->id)->get();
                 $total_count = 0;
                 $total_money = 0;
-                foreach($order_products as $op){
-                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)->
-                    where('produce_at',$currentDate_str)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->where('order_product_id',$op->id)->get()->first();
-                    if($plan == null){
 
+                foreach($order_products as $op){
+
+                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
+                        ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                        ->where('produce_at',$currentDate_str)
+                        ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                        ->where('order_product_id',$op->id)
+                        ->get()->first();
+
+                    if($plan == null){
                     }
                     else {
                         $total_count += $plan->plan_count;
@@ -184,7 +197,6 @@ class DSProductionPlanCtrl extends Controller
                 $pl["ds_info"] = $current_delivery_plans;
                 $pl["total_count"] = $total_count;
                 $pl["total_money"] = $total_money;
-
             }
         }
 
