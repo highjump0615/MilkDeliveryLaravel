@@ -467,9 +467,18 @@ class WeChatCtrl extends Controller
                 ->orderBy('ordered_at', 'desc')
                 ->get();
         }
-        return view('weixin.dingdanliebiao', [
-            'orders' => $orders,
-        ]);
+        if($type)
+        {
+            return view('weixin.dingdanliebiao', [
+                'set_type'=>true,
+                'orders' => $orders,
+            ]);
+        } else {
+            return view('weixin.dingdanliebiao', [
+                'orders' => $orders,
+            ]);
+        }
+
     }
 
     public function dingdanxiangqing(Request $request)

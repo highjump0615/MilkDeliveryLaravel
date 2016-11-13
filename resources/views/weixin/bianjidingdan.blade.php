@@ -254,6 +254,8 @@
                 startDate: able_date,
             });
 
+            $('select#order_type').trigger('change');
+
             init_wechat_order_product();
 
         });
@@ -263,7 +265,57 @@
             window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
         });
 
+        $('select#order_type').change(function(){
+
+            var count_input = $('#total_count');
+
+            var cur_val = $(this).val();
+            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
+            {
+                count_input.attr('min', 30);
+                count_input.val(30);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+                count_input.attr('min', 90);
+                count_input.val(90);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+                count_input.attr('min', 180);
+                count_input.val(180);
+            }
+        });
+
+
+        $('select#order_type').change(function(){
+
+            var count_input = $('#total_count');
+
+            var cur_val = $(this).val();
+            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
+            {
+                count_input.attr('min', 30);
+                count_input.val(30);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+                count_input.attr('min', 90);
+                count_input.val(90);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+                count_input.attr('min', 180);
+                count_input.val(180);
+            }
+        });
+
+
+        function check_bottle_count(){
+            var count_input = $('#total_count');
+            var min_b = parseInt( $(count_input).attr('min'));
+            var current_b = $(count_input).val();
+            if(current_b < min_b)
+            {
+                return true;
+            }
+            return false;
+        }
+
         $('button#submit_order').click(function (e) {
+
             e.preventDefault();
             var send_data = new FormData();
 
@@ -366,6 +418,8 @@
         function init_wechat_order_product()
         {
             var delivery_type = parseInt("{{$wop->delivery_type}}");
+
+            $('#total_count').val("{{$wop->total_count}}");
 
             $('#delivery_type').find('option[data-value="'+delivery_type+'"]').prop('selected', true);
 
