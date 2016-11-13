@@ -196,12 +196,17 @@ class WeChatCtrl extends Controller
 
     public function gerenzhongxin(Request $request)
     {
+        $wechat_user_id = session('wechat_user_id');
+
+        $carts = WechatCart::where('wxuser_id', $wechat_user_id)->get();
+        $cartn = $carts->count();
 
         //TODO:
         $me = WechatUser::all()->first();
 
         return view('weixin.gerenzhongxin', [
             'user' => $me,
+            'cartn'=> $cartn,
         ]);
     }
 
@@ -835,9 +840,9 @@ class WeChatCtrl extends Controller
             $half_year_price = $pp->half_year_price;
         } else {
             $pp = ProductPrice::where('product_id', $product_id)->get()->first();
-            $month_price = $pp->settle_price;
-            $season_price = $pp->settle_price;
-            $half_year_price = $pp->settle_price;
+            $month_price = $pp->month_price;
+            $season_price = $pp->season_price;
+            $half_year_price = $pp->half_year_price;
         }
 
         //gap day
