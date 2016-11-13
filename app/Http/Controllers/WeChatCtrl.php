@@ -87,13 +87,13 @@ class WeChatCtrl extends Controller
             $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
             if($primary_addr)
             {
-                session(['address'=>$primary_addr]);
+                session(['address'=>$primary_addr->address]);
             } else {
 
                 $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
                 if($primary_addr)
                 {
-                    session(['address'=>$primary_addr]);
+                    session(['address'=>$primary_addr->address]);
                 } else {
                     //if customer exist for this user, save customer's address on session address
                     $customer_id = $wechat_user->customer_id;
@@ -152,6 +152,9 @@ class WeChatCtrl extends Controller
         $addr = explode(' ', $address);
         $province_name = $addr[0];
         $city_name = $addr[1];
+
+        echo session('address');
+        echo session('wechat_user_id');
 
         return view('weixin.index', [
             'banners' => $banners,
