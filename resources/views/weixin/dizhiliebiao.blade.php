@@ -17,7 +17,7 @@
                 <input type="hidden" name="group_id" value="{{$group_id}}">
                 <div class="adrtop pa2t">
                     <p>{{$a->name}} {{$a->phone}}<br>{{$a->address}}</p>
-                    <p>{{$a->getSubAddresses()}}</p>
+                    <p>{{$a->getSubAddress}}</p>
                 </div>
             </form>
             <div class="mrsz clearfix pa2t">

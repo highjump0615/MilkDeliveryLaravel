@@ -48,7 +48,7 @@ class WeChatCtrl extends Controller
         $request->session()->put('factory_id', $factory_id);
 
         //todo
-        $wechat_user_id =  1;
+        $wechat_user_id =  WechatUser::all()->first()->id;
 
         //add verified flag
         if(!session('verified'))
@@ -1648,6 +1648,7 @@ class WeChatCtrl extends Controller
 
     public function generate_verify_code(){
         $code = rand(10000, 99999); // random 4 digit code
+        $code = 1111;
         return $code;
     }
 
