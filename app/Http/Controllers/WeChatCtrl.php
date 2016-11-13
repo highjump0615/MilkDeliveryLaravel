@@ -913,6 +913,9 @@ class WeChatCtrl extends Controller
         $wcop->group_id = $group_id;
         $wcop->save();
 
+        //save group id for this direct order
+        session(['group_id'=>$group_id]);
+
         $verified= session('verified');
         if($verified == "no")
         {
@@ -1053,14 +1056,17 @@ class WeChatCtrl extends Controller
             }
         }
 
+        //store this group id for cart to session
+        session(['group_id'=>$group_id]);
+
         //here check verified
         $verified = session('verified');
         if($verified == "no")
         {
-            return response()->json(['status'=>'fail', 'redirect_path'=>'phone_verify', 'group_id'=>$group_id]);
+            return response()->json(['status'=>'fail', 'redirect_path'=>'phone_verify']);
         }
 
-        return response()->json(['status'=>'success', 'group_id'=>$group_id]);
+        return response()->json(['status'=>'success']);
 
     }
 
@@ -1548,7 +1554,7 @@ class WeChatCtrl extends Controller
 
         $primary_addr_obj = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary',1)->get()->first();
 
-        $group_id = $request->input('group_id');
+        $group_id = session('group_id');
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
 
@@ -1624,10 +1630,7 @@ class WeChatCtrl extends Controller
     //show check telephone number page
     public function dengji(Request $request)
     {
-        $group_id = $request->input('group_id');
-
         return  view('weixin.dengji', [
-            'group_id'=>$group_id,
         ]);
     }
     //send verify code to phone

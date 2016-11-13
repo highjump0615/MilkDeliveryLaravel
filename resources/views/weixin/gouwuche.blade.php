@@ -74,14 +74,14 @@
                 url: SITE_URL+"weixin/gouwuche/api/make_wop_group",
                 data: {'cart_ids':cart_ids},
                 success: function(data){
-                    if(data.status == "success" && data.group_id)
+                    if(data.status == "success")
                     {
-                        window.location = SITE_URL+"weixin/querendingdan?group_id="+data.group_id;
+                        window.location = SITE_URL+"weixin/querendingdan";
                     } else {
 
-                        if (data.redirect_path == "phone_verify" && data.group_id)
+                        if (data.redirect_path == "phone_verify")
                         {
-                            window.location  = SITE_URL+"weixin/dengji?group_id="+data.group_id;
+                            window.location  = SITE_URL+"weixin/dengji";
                         }
                     }
 
