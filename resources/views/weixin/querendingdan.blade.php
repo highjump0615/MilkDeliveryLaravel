@@ -3,7 +3,7 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         <h1>确认订单</h1>
     </header>
     <div class="ordsl">
@@ -101,16 +101,14 @@
         });
 
         function go_page_address_list() {
-            var group_id = $('#group_id').val();
-            var wechat_user_id = $('#wxuser_id').val();
-            window.location = SITE_URL + "weixin/dizhiliebiao?user="+wechat_user_id+"&&group_id="+group_id;
+            window.location = SITE_URL + "weixin/dizhiliebiao";
         }
 
         //edit order product
         $('button.edit_order_product').click(function () {
             var wechat_order_product_id = $(this).data('pid');
             var group_id = $('#group_id').val();
-            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+"&&group_id="+group_id;
+            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id;
         })
 
     </script>

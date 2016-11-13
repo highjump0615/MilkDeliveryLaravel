@@ -1,5 +1,5 @@
 @extends('weixin.layout.master')
-@section('title','天天送')
+@section('title','产品详情')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
@@ -18,10 +18,18 @@
     <div class="bann">
         <div class="swiper-container">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><img class="bimg" src="{{$file1}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file2}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file3}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file4}}"></div>
+                @if($file1)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file1}}"></div>
+                @endif
+                @if($file2)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file2}}"></div>
+                @endif
+                @if($file3)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file3}}"></div>
+                @endif
+                @if($file4)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file4}}"></div>
+                @endif
             </div>
             <!-- Add Pagination -->
             <div class="swiper-pagination"></div>
@@ -70,10 +78,10 @@
         </div>
 
         <div class="dnsall">
-            <div class="dnsts">
+            <!--div class="dnsts">
                 订购天数：<span>16天</span>
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
-            </div>
+            </div-->
             <p>规格：{{$product->bottle_type_name}}</p>
             <p>保质期：{{$product->guarantee_period}}天</p>
             <p>储藏条件：{{$product->guarantee_req}}</p>
@@ -133,7 +141,7 @@
 
         obj.html(content);
 
-        $(obj).each(function (){
+        $(obj).each(function () {
             var $this = $(this);
             var t = $this.text();
             $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
@@ -148,7 +156,7 @@
             });
         });
 
-        $('button#make_order').click(function(){
+        $('button#make_order').click(function () {
             var send_data = new FormData();
 
             //product_id
@@ -171,13 +179,11 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    if(data.status == "success" && data.group_id)
-                    {
-                        window.location.href = SITE_URL+"weixin/querendingdan?group_id="+data.group_id;
+                    if (data.status == "success") {
+                        window.location.href = SITE_URL + "weixin/querendingdan";
                     } else {
-                        if (data.redirect_path == "phone_verify" && data.group_id)
-                        {
-                            window.location.href = SITE_URL+"weixin/dengji?group_id="+data.group_id;
+                        if (data.redirect_path == "phone_verify") {
+                            window.location.href = SITE_URL + "weixin/dengji";
                         }
                     }
                 },
@@ -213,11 +219,10 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    if(data.status == "success")
-                    {
+                    if (data.status == "success") {
                         show_success_msg("附加产品成功");
                         //go to shanpin liebiao
-                        window.location.href = SITE_URL+"weixin/shangpinliebiao";
+                        window.location.href = SITE_URL + "weixin/shangpinliebiao";
                     }
                 },
                 error: function (data) {

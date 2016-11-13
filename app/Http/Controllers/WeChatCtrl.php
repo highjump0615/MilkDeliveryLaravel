@@ -49,6 +49,7 @@ class WeChatCtrl extends Controller
 
         //todo
         $wechat_user_id =  WechatUser::all()->first()->id;
+        session(['wechat_user_id'=>$wechat_user_id]);
 
         //add verified flag
         if(!session('verified'))
@@ -69,51 +70,51 @@ class WeChatCtrl extends Controller
          * save the customer addresss as session address
          *
          * */
-        //get addresss from weixin api and save them
-        $address = session('address', '北京 北京市');
-        $request->session()->put('address', $address);
 
-        //if wechat not exist, create new wechat user
-        $wechat_user = WechatUser::find($wechat_user_id);
-        if(!$wechat_user)
-        {
-            $wechat_user = new WechatUser;
-            $wechat_user->save();
-            $wechat_user_id = $wechat_user->id;
+        //get address from weixin api and save them
+        $address = session('address');
 
-        } else {
+        if(!$address) {
 
-            //get this user's address and save in session
-            $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
-            if($primary_addr)
-            {
-                session(['address'=>$primary_addr->address]);
+            //if wechat not exist, create new wechat user
+            $wechat_user = WechatUser::find($wechat_user_id);
+            if (!$wechat_user) {
+                $wechat_user = new WechatUser;
+                $wechat_user->save();
+                $wechat_user_id = $wechat_user->id;
+
+                session(['wechat_user_id'=>$wechat_user_id]);
+                session(['address' => '北京 北京市']);
+
+                $address = session('address');
+
             } else {
 
-                $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
-                if($primary_addr)
-                {
-                    session(['address'=>$primary_addr->address]);
+                //get this user's address and save in session
+                $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
+                if ($primary_addr) {
+                    session(['address' => $primary_addr->address]);
                 } else {
-                    //if customer exist for this user, save customer's address on session address
-                    $customer_id = $wechat_user->customer_id;
-                    if($customer_id)
-                    {
-                        $customer= Customer::find($customer_id);
-                        if($customer)
-                        {
-                            $address = $customer->main_addr;
-                            session(['address'=>$address]);
+
+                    $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
+                    if ($primary_addr) {
+                        session(['address' => $primary_addr->address]);
+                    } else {
+                        //if customer exist for this user, save customer's address on session address
+                        $customer_id = $wechat_user->customer_id;
+                        if ($customer_id) {
+                            $customer = Customer::find($customer_id);
+                            if ($customer) {
+                                session(['address' => $customer->main_addr]);
+                            }
                         }
+
                     }
-
                 }
+
+                $address = session('address');
             }
-
         }
-
-        //save wechat user id in session
-        $request->session()->put('wechat_user_id', $wechat_user_id);
 
         $banners = WechatAd::where('factory_id', $factory_id)
             ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
@@ -152,9 +153,6 @@ class WeChatCtrl extends Controller
         $addr = explode(' ', $address);
         $province_name = $addr[0];
         $city_name = $addr[1];
-
-        echo session('address');
-        echo session('wechat_user_id');
 
         return view('weixin.index', [
             'banners' => $banners,
@@ -495,6 +493,7 @@ class WeChatCtrl extends Controller
         }
 
         $products = $factory->active_products;
+
         $categories = ProductCategory::where('factory_id', $factory_id)
             ->where('is_deleted', 0)
             ->get();
@@ -512,12 +511,36 @@ class WeChatCtrl extends Controller
 
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
-        return view('weixin.shangpinliebiao', [
-            'categories' => $categories,
-            'products' => $products,
-            'category' => $category_id,
-            'cartn' => $cartn,
-        ]);
+        if($request->has('search_product'))
+        {
+            $search_products = [];
+            $search_pname = $request->input('search_product');
+
+            foreach($products as $product)
+            {
+                if(contains($product->name, $search_pname))
+                {
+                    $search_products[] = $product;
+                }
+            }
+
+            return view('weixin.shangpinliebiao', [
+                'categories' => $categories,
+                'products' => $search_products,
+                'category' => $category_id,
+                'cartn' => $cartn,
+            ]);
+
+        } else {
+
+            return view('weixin.shangpinliebiao', [
+                'categories' => $categories,
+                'products' => $products,
+                'category' => $category_id,
+                'cartn' => $cartn,
+            ]);
+
+        }
     }
 
     public function wodepingjia($order_id = null)
@@ -607,60 +630,22 @@ class WeChatCtrl extends Controller
 
     public function dizhiliebiao(Request $request)
     {
-        $wxuser_id = $request->input('user');
-        $group_id = $request->input('group_id');
-
-        //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
-        $wxuser = WechatUser::find($wxuser_id);
-        if($wxuser)
-        {
-            $customer_id = $wxuser->customer_id;
-            if($customer_id)
-            {
-                $customer = Customer::find($customer_id);
-                if($customer)
-                {
-                    //check wechat address
-                    $wx_address_list =WechatAddress::where('wxuser_id', $wxuser_id)->get();
-                    if(count($wx_address_list) == 0)
-                    {
-                        $new_wx_addr = new WechatAddress;
-                        $new_wx_addr->wxuser_id = $wxuser_id;
-                        $new_wx_addr->name = $customer->name;
-                        $new_wx_addr->phone = $customer->phone;
-                        $new_wx_addr->address = $customer->main_addr;
-                        $new_wx_addr->sub_address = $customer->sub_addr;
-                        $new_wx_addr->save();
-                    }
-                }
-            }
-        }
-
-        if ($wxuser_id == null)
-            $wxuser_id = session('wechat_user_id');
-
+        $wxuser_id = session('wechat_user_id');
         $addrs = WechatAddress::where('wxuser_id', $wxuser_id)->get();
 
         return view('weixin.dizhiliebiao', [
-            'group_id'=>$group_id,
             'address_list' => $addrs,
-            'wxuser_id' => $wxuser_id,
         ]);
     }
 
     public function dizhitianxie(Request $request)
     {
         $factory_id = session('factory_id');
+        $wxuser_id = session('wechat_user_id');
 
         $address = null;
-
-        if ($request->has('user')) {
-            $wxuser_id = $request->input('user');
-        } else {
-            abort(403);
-        }
-
         $address_id = null;
+
         if ($request->has('address')) {
             $address_id = $request->input('address');
             $address = WechatAddress::find($address_id);
@@ -741,12 +726,12 @@ class WeChatCtrl extends Controller
 
         $addr->save();
 
-        return redirect()->route('dizhiliebiao', ['user' => $wxuser_id]);
+        return redirect()->route('dizhiliebiao');
     }
 
     public function deleteAddress(Request $request)
     {
-        $wxuser_id = $request->input('user');
+        $wxuser_id = session('wechat_user_id');
         $address_id = $request->input('address');
 
         $address = WechatAddress::find($address_id);
@@ -765,15 +750,14 @@ class WeChatCtrl extends Controller
             }
         }
 
-        return redirect()->route('dizhiliebiao', ['user' => $wxuser_id]);
+        return redirect()->route('dizhiliebiao');
     }
 
     public function selectAddress(Request $request)
     {
-        $wxuser_id = $request->input('user');
+        $wxuser_id = session('wechat_user_id');
         $address_id = $request->input('address');
-        $group_id = $request->input('group_id');
-
+        $group_id = session('group_id');
 
         WechatAddress::where('wxuser_id', $wxuser_id)->update(['primary' => 0]);
 
@@ -783,7 +767,7 @@ class WeChatCtrl extends Controller
             $address->save();
         }
 
-        return redirect()->route('querendingdan', ['user' => $wxuser_id, 'group_id'=>$group_id]);
+        return redirect()->route('querendingdan');
     }
 
 
@@ -834,9 +818,10 @@ class WeChatCtrl extends Controller
             $season_price = $pp->season_price;
             $half_year_price = $pp->half_year_price;
         } else {
-            $month_price = 0;
-            $season_price = 0;
-            $half_year_price = 0;
+            $pp = ProductPrice::where('product_id', $product_id)->get()->first();
+            $month_price = $pp->settle_price;
+            $season_price = $pp->settle_price;
+            $half_year_price = $pp->settle_price;
         }
 
         //gap day
@@ -879,8 +864,12 @@ class WeChatCtrl extends Controller
 
         $product_price_template = ProductPrice::priceTemplateFromAddress($product_id, $address);
 
-//        //give temp product price
-//        $pp = ProductPrice::where('product_id', $product_id)->get()->first();
+        if(!$product_price_template)
+        {
+            //give temp product price
+            $product_price_template = ProductPrice::where('product_id', $product_id)->get()->first();
+        }
+
 
         if ($order_type == OrderType::ORDER_TYPE_MONTH) {
             $product_price = $product_price_template->month_price;
@@ -920,13 +909,14 @@ class WeChatCtrl extends Controller
         session(['group_id'=>$group_id]);
 
         $verified= session('verified');
+
         if($verified == "no")
         {
             //this user needs to be phone number verified
-            return response()->json(['status'=>'fail', 'redirect_path'=>'phone_verify', 'group_id'=>$group_id]);
+            return response()->json(['status'=>'fail', 'redirect_path'=>'phone_verify']);
         }
 
-        return response()->json(['status'=>'success', 'group_id'=>$group_id]);
+        return response()->json(['status'=>'success']);
     }
 
     /*
@@ -950,12 +940,15 @@ class WeChatCtrl extends Controller
 
             $product_price_template = ProductPrice::priceTemplateFromAddress($product_id, $address);
 
+            if(!$product_price_template){
+                $product_price_template = ProductPrice::where('product_id', $product_id)->get()->first();
+            }
+
             if ($order_type == OrderType::ORDER_TYPE_MONTH) {
                 $product_price = $product_price_template->month_price;
             } else if ($order_type == OrderType::ORDER_TYPE_SEASON) {
                 $product_price = $product_price_template->season_price;
             } else {
-                //half year price
                 $product_price = $product_price_template->half_year_price;
             }
 
@@ -1111,7 +1104,7 @@ class WeChatCtrl extends Controller
             $address = session('address');
         }
 
-        $group_id = $request->input('group_id');
+        $group_id = session('group_id');
 
         $product = $wop->product;
         $product_id = $product->id;
@@ -1145,15 +1138,13 @@ class WeChatCtrl extends Controller
 
         $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
 
-        if ($pp) {
-            $month_price = $pp->month_price;
-            $season_price = $pp->season_price;
-            $half_year_price = $pp->half_year_price;
-        } else {
-            $month_price = 0;
-            $season_price = 0;
-            $half_year_price = 0;
+        if (!$pp) {
+            $pp = ProductPrice::where('product_id', $product_id)->get()->first();
         }
+
+        $month_price = $pp->month_price;
+        $season_price = $pp->season_price;
+        $half_year_price = $pp->half_year_price;
 
         //gap day
         $gap_day = $factory->gap_day;
@@ -1561,7 +1552,6 @@ class WeChatCtrl extends Controller
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
 
-
         //set new product price on primary address for the wechat order product
         if($primary_addr_obj)
         {
@@ -1610,8 +1600,38 @@ class WeChatCtrl extends Controller
                 }
             }
 
+
             //set primary address as session address
             session(['address'=>$primary_address]);
+        }else {
+            //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
+            $wxuser = WechatUser::find($wechat_user_id);
+            if($wxuser)
+            {
+                $customer_id = $wxuser->customer_id;
+                if($customer_id)
+                {
+                    $customer = Customer::find($customer_id);
+                    if($customer)
+                    {
+                        //check wechat address
+                        $wx_address_list =WechatAddress::where('wxuser_id', $wechat_user_id)->get();
+                        if(count($wx_address_list) == 0)
+                        {
+                            $new_wx_addr = new WechatAddress;
+                            $new_wx_addr->wxuser_id = $wechat_user_id;
+                            $new_wx_addr->name = $customer->name;
+                            $new_wx_addr->phone = $customer->phone;
+                            $new_wx_addr->address = $customer->main_addr;
+                            $new_wx_addr->sub_address = $customer->sub_addr;
+                            $new_wx_addr->primary = 1;
+                            $new_wx_addr->save();
+                            $primary_addr_obj = $new_wx_addr;
+                        }
+                    }
+                }
+            }
+
         }
 
         return view('weixin.querendingdan', [

@@ -26,7 +26,7 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .headr{right:2%}
 .mesa{ background: url(../images/ico1.png) no-repeat center center; background-size: 24px}
 .seartop{ float: right; padding-top:6px; width: 65%}
-.seartop input{ padding:3px 20px 3px 5px; width: 98%; line-height: 20px; vertical-align:top; border: none; background: #fff url(../images/ico2.png) no-repeat 98% 50%; background-size: 18px}
+.seartop input{color: #1f5d2b; padding:3px 20px 3px 5px; width: 98%; line-height: 20px; vertical-align:top; border: none; background: #fff url(../images/ico2.png) no-repeat 98% 50%; background-size: 18px}
 .addr1{ float:right; padding:0 8px;line-height: 38px; font-size: 1.5rem; color: #FFFFFF; background: url(../images/ico3.png) no-repeat center right; background-size: 6px}
 .bann{}
 .navi{text-align: center}
@@ -76,7 +76,7 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 
 
 /**********************商品详情-按周规则*/
-header h1{ font-size:1.6rem}
+header h1{ font-size:1.6rem; display: inline-block;}
 .fanh{ background:url(../images/ico4.png) no-repeat center center; background-size:10px}
 .protop{ padding:2.5%}
 .protop h2{ font-size:1.4rem; font-weight:normal; line-height:1.1}
@@ -186,7 +186,7 @@ button.tjord3{ width:55%; background:#00a040}
 .ordjl dd span{ padding-right:6%}
 
 /**********************订单列表-新提交待审核*/
-.ordsl{margin-bottom: 120px;}
+.ordsl{margin-bottom: 60px;}
 .ordnum{ padding:2% 3% 1% 3%; font-size:1.3rem; border-bottom:1px solid #c4c4c4}
 .ordnum span{ float:right}
 .ordlr{ position:absolute; right:3%; top:0;  font-size:1.2rem}
@@ -197,7 +197,8 @@ button.tjord3{ width:55%; background:#00a040}
 .ord-r{ display:inline-block; width:70%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
 .ordsl .ordpro{ vertical-align:bottom; float:none}
 .ordshz{ padding:2% 3%; text-align:right}
-.shsp{ display:inline-block; padding:0 8px; font-size:1.2rem; border:1px solid #c4c4c4; -moz-border-radius:6px; border-radius:6px;}
+.shsp{ display:inline-block; padding:5px 8px; font-size:1.2rem; border:1px solid #c4c4c4; -moz-border-radius:6px; border-radius:6px; background-color: chocolate;}
+.shsp a{color:white}
 
 
 /**********************订单列表-审核完成*/
@@ -214,7 +215,7 @@ button.tjord3{ width:55%; background:#00a040}
 .tgl-ios+.tgl-btn:after{border-radius:2em;background:#fbfbfb;-webkit-transition:left .3s cubic-bezier(.175,.885,.32,1.275),padding .3s ease,margin .3s ease;transition:left .3s cubic-bezier(.175,.885,.32,1.275),padding .3s ease,margin .3s ease;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1),0 4px 0 rgba(0,0,0,.08);box-shadow:0 0 0 1px rgba(0,0,0,.1),0 4px 0 rgba(0,0,0,.08)}
 .tgl-ios+.tgl-btn:active{-webkit-box-shadow:inset 0 0 0 2em #e8eae9;box-shadow:inset 0 0 0 2em #e8eae9}
 .tgl-ios+.tgl-btn:active:after{padding-right:.8em}
-.tgl-ios:checked+.tgl-btn{background:#86d993}
+.tgl-ios:checked+.tgl-btn{background:#86d993; width:50px;}
 .tgl-ios:checked+.tgl-btn:active{-webkit-box-shadow:none;box-shadow:none}
 .tgl-ios:checked+.tgl-btn:active:after{margin-left:-.8em}
 .rqtc{ position:fixed; width:80%; left:10%; top:34%; z-index:2; color:#fff; background:#ed5a02; display:none}
@@ -267,7 +268,7 @@ a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../image
 /**********************结算页*/
 .ordxz{ float:right;width:25px; height:25px; border:1px solid #6e6e6e; border-radius: 2px;}
 .ordxz:checked{ background:#ed5a02 url(../images/mrdz.png) no-repeat 50% 70%; background-size:80%; border-color:#ed5a02; margin:0;}
-.ordxz.remove{background-size:32px 32px; background-position: 40% 30%; margin-left: 5px;}
+.ordxz.remove{margin-left: 5px;background-color:#ed5a02;color:white;}
 .account{ position:fixed; left:0; bottom:42px; width:100%; padding:1% 1% 1% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
 .ac-l{ float:left; width:40%; font-size:1.2rem; line-height:1.2}
 .ac-r{ float:right; width:60%; text-align:right}

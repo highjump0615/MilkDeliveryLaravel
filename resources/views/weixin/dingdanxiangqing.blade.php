@@ -7,8 +7,7 @@
 
 	<header>
 		<a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
-		<h1>订单列表</h1>
-
+		<h1>订单详情</h1>
 	</header>
 	@if(isset($order))
 	<div class="ordsl">
@@ -54,6 +53,8 @@
 	@else
 		<p>没有数据</p>
 	@endif
+
+	@include('weixin.layout.footer')
 @endsection
 @section('script')
 	<script src='js/fullcalendar.min.js'></script>

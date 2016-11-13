@@ -2,7 +2,7 @@
 @section('title','新提交待审核')
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:history.back();"></a>
+        <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
         <h1>订单列表</h1>
     </header>
     @forelse($orders as $o)
@@ -57,6 +57,7 @@
         </div>
     @empty
     @endforelse
+    @include('weixin.layout.footer')
 @endsection
 @section('script')
 @endsection

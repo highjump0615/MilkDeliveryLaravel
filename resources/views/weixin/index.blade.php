@@ -8,7 +8,9 @@
         <a class="headl mesa" href="javascript:void(0)"></a>
         <div class="addr1" id="prov_title" style="cursor:pointer">北京</div>
         <div class="seartop">
-            <input type="search" name=""/>
+            <form method="GET" action="{{url('weixin/shangpinliebiao')}}">
+                <input type="search" name="search_product" placeholder="产品搜索"/>
+            </form>
         </div>
 
     </header>
@@ -16,7 +18,7 @@
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 @foreach($banners as $b)
-                    <div class="swiper-slide"><img class="bimg" src="<?=asset($b->image_url)?>"></div>
+                    <div class="swiper-slide"><img class="bimg img-responsive" src="<?=asset($b->image_url)?>"></div>
                 @endforeach
 
             </div>
@@ -38,7 +40,9 @@
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
                 <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
-                        <img class="bimg" src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                        <div class="milk_img_div">
+                            <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                        </div>
                         <h3 class="proh3">{{$p->name}}</h3>
                         <div class="proml">{{$p->bottle_type_name}}</div>
                         <div class="promon"><strong>￥4.8</strong>(人民币)</div>
@@ -107,9 +111,8 @@
 
     <!-- Initialize Swiper -->
     <script>
-
         var address = "{{$address}}";
-        var province_name = "{{$province_name}}";
+        var province_name = "{{$prov}}";
         $('#prov_title').text(province_name);
 
         var current_menu = 0;
@@ -123,10 +126,25 @@
 
 
         $(document).ready(function(){
-            $('.bimg').each(function(){
+           $('.milk_img_div').each(function(){
                 var width = $(this).css('width');
-                $(this).css('height', width);
+
+                var height = parseInt(width);
+
+                $(this).css('height', height);
+
+                var img = $(this).find('img');
+                var img_height = parseInt($(img).css('height'));
+
+                if(img_height < height)
+                {
+                    var padding_height = parseInt((height - img_height)/2);
+                    $(img).css('padding-top', padding_height);
+                    $(img).css('padding-bottom', padding_height);
+                }
             });
+
+
         });
 
 
@@ -158,6 +176,8 @@
                         $(city_obj).addClass('active');
                         $(prov_obj).addClass('active');
                         $('#prov_title').text(prov);
+
+                        $('.adrtc').delay(2000).fadeOut(200);
                     }
                 },
                 error: function (data) {

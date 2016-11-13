@@ -13,7 +13,7 @@
                     <img class="ordpro" src="<?=asset('img/product/logo/' . $c->order_item->product->photo_url1)?>">
 
                     <div class="ord-r">
-                        <button class="ordxz remove" type="submit" style="background-image:url(<?=asset('/weixin/images/button_delete_icon.png')?>)"></button>
+                        <button class="ordxz remove" type="submit"><i class="fa fa-remove"></i></button>
                         <input class="ordxz cart_check" name="" type="checkbox" data-cartid="{{$c->id}}" checked>
                         {{$c->order_item->product->name}}
                         <br>

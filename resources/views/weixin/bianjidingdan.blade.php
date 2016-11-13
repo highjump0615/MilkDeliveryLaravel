@@ -1,5 +1,5 @@
 @extends('weixin.layout.master')
-@section('title','天天送')
+@section('title','产品更改')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
@@ -11,8 +11,8 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
-        <h1>产品详情</h1>
+        <a class="headl fanh" href="{{url('weixin/querendingdan')}}"></a>
+        <h1>产品更改</h1>
 
     </header>
     <div class="bann">
