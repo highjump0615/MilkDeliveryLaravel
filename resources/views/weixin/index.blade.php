@@ -53,19 +53,12 @@
                 </dd>
             @endforelse
         </dl>
-        <dl class="prob clearfix">
+        <dl class="prob under_banner clearfix">
             <dt class="proti"><a href="javascript:void(0)">促销活动</a></dt>
             <dd>
-                <div class="swiper-container">
-                    <div class="swiper-wrapper">
-                        @foreach($promos as $p)
-                            <div class="swiper-slide"><img class="bimg" src="<?=asset($p->image_url)?>"></div>
-                        @endforeach
-                    </div>
-                    <!-- Add Pagination -->
-                    <div class="swiper-pagination"></div>
-                </div>
-
+                @foreach($promos as $p)
+                    <img class="bimg img-responsive" src="<?=asset($p->image_url)?>"/>
+                @endforeach
             </dd>
         </dl>
     </div>
@@ -75,21 +68,16 @@
         <div class="adrtc">
             <div class="adrtcul">
                 <ul>
-                    <?php
-                    $addr = explode(' ', $address);
-                    $prov = $addr[0];
-                    $city = $addr[1];
-                    ?>
                     @foreach($addr_list as $province_name => $city_list)
                         <li class="dropdown province">
-                            @if($province_name == $prov)
+                            @if(isset($prov) && $prov!="" && $province_name == $prov)
                                 <p class="dropbtn active">{{$province_name}}</p>
                             @else
                                 <p class="dropbtn">{{$province_name}}</p>
                             @endif
                             <div class="dropdown-content">
                                 @foreach($city_list as $city_name)
-                                    @if($province_name == $prov && $city_name == $city)
+                                    @if(isset($prov) && $prov!="" && isset($city) && $city!="" && $province_name == $prov && $city_name == $city)
                                         <p class="city active" data-province="{{$province_name}}">{{$city_name}}</p>
                                     @else
                                         <p class="city" data-province="{{$province_name}}">{{$city_name}}</p>
@@ -111,9 +99,6 @@
 
     <!-- Initialize Swiper -->
     <script>
-        var address = "{{$address}}";
-        var province_name = "{{$prov}}";
-        $('#prov_title').text(province_name);
 
         var current_menu = 0;
         set_current_menu();
@@ -125,8 +110,18 @@
         });
 
 
-        $(document).ready(function(){
-           $('.milk_img_div').each(function(){
+        $(document).ready(function () {
+            var address = "{{$address}}";
+
+            if(!address)
+                show_warning_msg('选择您的地址');
+            else {
+                var province_name = address.split(' ')[0];
+                $('#prov_title').text(province_name);
+            }
+
+
+            $('.milk_img_div').each(function () {
                 var width = $(this).css('width');
 
                 var height = parseInt(width);
@@ -136,9 +131,8 @@
                 var img = $(this).find('img');
                 var img_height = parseInt($(img).css('height'));
 
-                if(img_height < height)
-                {
-                    var padding_height = parseInt((height - img_height)/2);
+                if (img_height < height) {
+                    var padding_height = parseInt((height - img_height) / 2);
                     $(img).css('padding-top', padding_height);
                     $(img).css('padding-bottom', padding_height);
                 }

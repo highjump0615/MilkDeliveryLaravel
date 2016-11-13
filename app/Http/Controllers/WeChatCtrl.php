@@ -74,47 +74,47 @@ class WeChatCtrl extends Controller
         //get address from weixin api and save them
         $address = session('address');
 
-        if(!$address) {
-
-            //if wechat not exist, create new wechat user
-            $wechat_user = WechatUser::find($wechat_user_id);
-            if (!$wechat_user) {
-                $wechat_user = new WechatUser;
-                $wechat_user->save();
-                $wechat_user_id = $wechat_user->id;
-
-                session(['wechat_user_id'=>$wechat_user_id]);
-                session(['address' => '北京 北京市']);
-
-                $address = session('address');
-
-            } else {
-
-                //get this user's address and save in session
-                $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
-                if ($primary_addr) {
-                    session(['address' => $primary_addr->address]);
-                } else {
-
-                    $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
-                    if ($primary_addr) {
-                        session(['address' => $primary_addr->address]);
-                    } else {
-                        //if customer exist for this user, save customer's address on session address
-                        $customer_id = $wechat_user->customer_id;
-                        if ($customer_id) {
-                            $customer = Customer::find($customer_id);
-                            if ($customer) {
-                                session(['address' => $customer->main_addr]);
-                            }
-                        }
-
-                    }
-                }
-
-                $address = session('address');
-            }
-        }
+//        if(!$address) {
+//
+//            //if wechat not exist, create new wechat user
+//            $wechat_user = WechatUser::find($wechat_user_id);
+//            if (!$wechat_user) {
+//                $wechat_user = new WechatUser;
+//                $wechat_user->save();
+//                $wechat_user_id = $wechat_user->id;
+//
+//                session(['wechat_user_id'=>$wechat_user_id]);
+//                session(['address' => '北京 北京市']);
+//
+//                $address = session('address');
+//
+//            } else {
+//
+//                //get this user's address and save in session
+//                $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
+//                if ($primary_addr) {
+//                    session(['address' => $primary_addr->address]);
+//                } else {
+//
+//                    $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
+//                    if ($primary_addr) {
+//                        session(['address' => $primary_addr->address]);
+//                    } else {
+//                        //if customer exist for this user, save customer's address on session address
+//                        $customer_id = $wechat_user->customer_id;
+//                        if ($customer_id) {
+//                            $customer = Customer::find($customer_id);
+//                            if ($customer) {
+//                                session(['address' => $customer->main_addr]);
+//                            }
+//                        }
+//
+//                    }
+//                }
+//
+//                $address = session('address');
+//            }
+//        }
 
         $banners = WechatAd::where('factory_id', $factory_id)
             ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
@@ -150,20 +150,36 @@ class WeChatCtrl extends Controller
             }
         }
 
-        $addr = explode(' ', $address);
-        $province_name = $addr[0];
-        $city_name = $addr[1];
+        if($address)
+        {
+            $addr = explode(' ', $address);
+            $province_name = $addr[0];
+            $city_name = $addr[1];
 
-        return view('weixin.index', [
-            'banners' => $banners,
-            'promos' => $promos,
-            'products' => $products,
-            'address' => $address,
-            'prov'=>$province_name,
-            'city'=>$city_name,
-            'cartn' => $cartn,
-            'addr_list' => $result,
-        ]);
+            return view('weixin.index', [
+                'banners' => $banners,
+                'promos' => $promos,
+                'products' => $products,
+                'address' => $address,
+                'prov'=>$province_name,
+                'city'=>$city_name,
+                'cartn' => $cartn,
+                'addr_list' => $result,
+            ]);
+
+        } else {
+            return view('weixin.index', [
+                'banners' => $banners,
+                'promos' => $promos,
+                'products' => $products,
+                'address' => $address,
+                'cartn' => $cartn,
+                'addr_list' => $result,
+            ]);
+        }
+
+
+
     }
 
     public  function set_session_address(Request $request)

@@ -14,6 +14,7 @@ input, button { -webkit-appearance: none; border-radius:0; outline:none}
 button:active{position:relative; top:1px;}
 .cred,a.cred{ color:#F00}
 .bimg{ display: block;width: 100%;height: auto; max-height:640px;}
+.under_banner .bimg{padding: 10px 0}
 .pa2{ padding:3%}
 .pa2t{ padding:0 3%}
 .plan_result{text-align:center}

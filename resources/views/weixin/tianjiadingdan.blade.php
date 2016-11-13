@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="protop">
-        <h3>{{$product->name}} {{$product->bottle_type_name}}</h3>
+        <h3>{{$product->name}}</h3>
         <p>{{$product->introduction}}</p>
         <table class="prodz" width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
