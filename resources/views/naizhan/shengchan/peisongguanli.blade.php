@@ -36,6 +36,15 @@
 												@endforeach
 											@endif
 										</tr>
+										<tr class="old_remain_tr">
+											<td colspan="2" style="width: 20%">上日库存与余量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td id="old_remain{{$dsp->id}}" class="old_remain"></td>
+											@endforeach
+										</tr>
 										<tr class="produced_tr">
 											<td colspan="2" style="width: 20%">签收数量</td>
 											@if($p == 0)
@@ -61,7 +70,7 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td  class="order"  class="order">{{$dsp->changed_amount}}</td>
+												<td  class="order">{{$dsp->changed_amount}}</td>
 											@endforeach
 										</tr>
 										<tr class="sum_tr">

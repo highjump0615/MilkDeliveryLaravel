@@ -472,6 +472,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function showPlanTableinFactory(){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $child = 'naizhanjihuashenhe';
         $parent = 'shengchan';
         $current_page = 'naizhanjihuashenhe';
@@ -479,23 +480,33 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-
         $currentDate_str = $currentDate->format('Y-m-d');
 
-        $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name','production_period']);
+        // 获取所有产品信息
+        $products = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get(['id','name','production_period']);
 
         foreach($products as $p){
-            $plan_info = DSProductionPlan::where('produce_start_at',$currentDate->format('Y-m-d'))->where('status','<>',DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL)
-                ->where('product_id',$p->id)->get();
+            $plan_info = DSProductionPlan::where('produce_start_at', $currentDate_str)
+                ->where('status','<>',DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL)
+                ->where('product_id',$p->id)
+                ->get();
+
             $plan_count = 0;
             foreach($plan_info as $pi){
                 $plan_count+=$pi->subtotal_count;
             }
             $p["plan_count"] = $plan_count;
 
-            $mfproductionplan = FactoryProductionPlan::where('factory_id',$current_factory_id)->where('product_id',$p->id)->where('start_at',$currentDate_str)->get()->first();
+            $mfproductionplan = FactoryProductionPlan::where('factory_id',$current_factory_id)
+                ->where('product_id',$p->id)
+                ->where('start_at', $currentDate_str)
+                ->get()
+                ->first();
 //            $mfproductionplan = FactoryProductionPlan::where('factory_id',1)->where('product_id',$p->id)->where('time',$currentDate_str)->get()->first();
-            if($mfproductionplan != null){
+
+            if ($mfproductionplan != null){
                 if($mfproductionplan->status == FactoryProductionPlan::FACTORY_PRODUCE_CANCELED){
                     $p["isfactory_ordered"] = FactoryProductionPlan::FACTORY_PRODUCE_CANCELED;
                 }
@@ -744,23 +755,31 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function showNaizhanpeisongPage(Request $request){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $child = 'naizhanpeisong';
         $parent = 'shengchan';
         $current_page = 'naizhanpeisong';
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $current_date_str = $currentDate->format('Y-m-d');
+
         $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name']);
 
-        foreach($products as $p){
-            $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)->where('product_id',$p->id)->get();
+        foreach ($products as $p) {
+            $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)
+                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
+                ->where('product_id',$p->id)
+                ->get();
+
             $plan_count = 0;
             foreach($plan_info as $pi){
-                $plan_count+=$pi->subtotal_count;
+                $plan_count += $pi->subtotal_count;
             }
             $p["plan_count"] = $plan_count;
+
             $factory_plan = FactoryProductionPlan::where('factory_id',$current_factory_id)->where('product_id',$p->id)->where('end_at',$current_date_str)->get(['count'])->first();
 //            $factory_plan = FactoryProductionPlan::where('factory_id',1)->where('product_id',$p->id)->where('time',$current_date_str)->get(['count'])->first();
             if($factory_plan != null){
@@ -994,6 +1013,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $child = 'qianshoujihua';
         $parent = 'shengchan';
         $current_page = 'qianshoujihua';
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $current_date_str = $currentDate->format('Y-m-d');

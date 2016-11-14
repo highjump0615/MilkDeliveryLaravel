@@ -58,7 +58,8 @@
 									<td>{{$dp->group_sale}}</td>
 									<td>{{$dp->channel_sale}}</td>
 									<td>{{$dp->subtotal_count}}</td>
-									<td class="input_td" @if($sent_status == 0) style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif><input id="product{{$dp->product_id}}" type="text" class="inputable" value="{{$dp->confirm_count}}"
+									<td class="input_td @if($sent_status == 0) editfill @endif">
+										<input id="product{{$dp->product_id}}" type="text" class="inputable" value="{{$dp->confirm_count}}"
 										@if($dp->status >6) readonly @endif/></td>
 									<td></td>								
 								</tr>
@@ -83,7 +84,7 @@
 									<td style="background:gainsboro;">返厂数量</td>
 									@foreach($fbottle as $fb)
 										<?php $is_exist_bottle = 0; ?>
-										<td class="input_td" types="1" object_type="{{$fb->bottle_type}}" @if($sent_status == 0) style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif>
+										<td class="input_td @if($sent_status == 0) editfill @endif" types="1" object_type="{{$fb->bottle_type}}">
 											@foreach($bottle_refund as $bf)
 												@if($fb->bottle_type == $bf->bottle_type)
 													<input id="1{{$fb->bottle_type}}" type="text" class="inputable" value="{{$bf->return_to_factory}}" @if($sent_status != 0) readonly @endif/>
@@ -96,7 +97,7 @@
 										</td>
 									@endforeach
 									@foreach($fbox as $fx)
-										<td class="input_td" types="2" object_type="{{$fx->basket_spec}}" @if($sent_status == 0) style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif>
+										<td class="input_td @if($sent_status == 0) editfill @endif" types="2" object_type="{{$fx->basket_spec}}">
 											<?php $is_exist_box = 0; ?>
 											@foreach($box_refund as $xf)
 												@if($fx->basket_spec == $xf->box_type)
@@ -117,8 +118,10 @@
 				<div class="ibox-content">
 					<div class="col-lg-8"></div>
 					<div class="col-lg-2">
-						@if($sent_status == 0)
-						<button class="btn btn-success confirm_values" style="width: 100%;">确定</button>
+						@if ($sent_status)
+							<button class="btn btn-success" style="width: 100%;" disabled>已签收</button>
+						@else
+							<button class="btn btn-success confirm_values" style="width: 100%;">确定</button>
 						@endif
 					</div>
 					<div class="col-lg-2">

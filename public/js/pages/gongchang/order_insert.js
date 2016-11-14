@@ -345,7 +345,7 @@ $('#order_form').on('submit', function (e) {
         var card_id = $('#card_id').val();
         var card_code = $('#card_code').val();
 
-        sendData.push({'name': 'card_id', 'value': card_id});
+        sendData.push({'name': 'card_id', 'value': card_id});z
         sendData.push({'name': 'card_code', 'value': card_code});
     } else {
         sendData.push({'name': 'milk_card_check', 'value': 'off'});

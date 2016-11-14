@@ -192,14 +192,19 @@ class DSDeliveryPlanCtrl extends Controller
             });
 
         $res = array();
-        foreach($delivery_plans as $o=>$dps_by_type) {
-            if($o == 1){
-                $regular_delivers = $dps_by_type->groupBy(function($sort){return $sort->order_id;});
-                foreach ($regular_delivers as $r=>$by_order_id){
+        foreach ($delivery_plans as $o=>$dps_by_type) {
+            if ($o == 1){
+                $regular_delivers = $dps_by_type->groupBy(function($sort){
+                    return $sort->order_id;
+                });
+
+                foreach ($regular_delivers as $r=>$by_order_id) {
+
                     $res[$r] = Order::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
+
                     foreach($by_order_id as $dp) {
                         $name = $dp->order_product->product->name;
                         $count = $dp->delivery_count;
@@ -208,44 +213,51 @@ class DSDeliveryPlanCtrl extends Controller
                             $is_changed = 1;
                         $delivery_type = $dp->type;
                     }
+
                     $res[$r]['product'] = implode(',', $products);
                     $res[$r]['changed'] = $is_changed;
                     $res[$r]['delivery_type'] = $delivery_type;
                 }
             }
             else{
-                $regular_delivers = $dps_by_type->groupBy(function($sort){return $sort->order_id;});
-                foreach ($regular_delivers as $r=>$by_order_id){
+                $regular_delivers = $dps_by_type->groupBy(function($sort){
+                    return $sort->order_id;
+                });
+
+                foreach ($regular_delivers as $r=>$by_order_id) {
+
                     $res[$r] = SelfOrder::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
+
                     foreach($by_order_id as $dp) {
                         $name = $dp->order_product->product->name;
                         $count = $dp->delivery_count;
                         $products[] = $name.'*'.$count;
                         $delivery_type = $dp->type;
                     }
+
                     $res[$r]['product'] = implode(',', $products);
                     $res[$r]['changed'] = $is_changed;
                     $res[$r]['delivery_type'] = $delivery_type;
                 }
             }
-
         }
 
         return view('naizhan.shengchan.peisongguanli.peisongliebiao',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'delivery_plans'=>$res,
+            'pages'             =>$pages,
+            'child'             =>$child,
+            'parent'            =>$parent,
+            'current_page'      =>$current_page,
+            'delivery_plans'    =>$res,
         ]);
     }
 
     public function showZiyingdingdan(Request $request){
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 
@@ -637,6 +649,7 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     public function showJinripeisongdan(Request $request){
+
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
@@ -645,18 +658,29 @@ class DSDeliveryPlanCtrl extends Controller
         $parent = 'shengchan';
         $current_page = 'jinripeisongdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
-        wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])->get()->groupBy(function($sort){return $sort->milkman_id;});
 
+        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at',$deliver_date_str)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->get()
+            ->groupBy(function($sort){
+                return $sort->milkman_id;
+            });
 
         $milkman_info = array();
         foreach($milkman_delivery_plans as $m=>$dps_by_milkman) {
             $delivery_info = array();
 
-            $order_by_types = $dps_by_milkman->groupBy(function ($sort){return $sort->type;});
+            $order_by_types = $dps_by_milkman->groupBy(function ($sort){
+                return $sort->type;
+            });
+
             foreach ($order_by_types as $o=>$dbm){
                 if($o == 1){
-                    $regular_delivers = $dbm->groupBy(function($sort){return $sort->order_id;});
+                    $regular_delivers = $dbm->groupBy(function($sort){
+                        return $sort->order_id;
+                    });
+
                     foreach ($regular_delivers as $r=>$by_order_id){
                         $delivery_info[$r] = Order::find($r);
                         $products = array();
@@ -671,30 +695,37 @@ class DSDeliveryPlanCtrl extends Controller
                                 $is_changed = 1;
                             $delivery_type = $dp->type;
                         }
+
                         $delivery_info[$r]['product'] = implode(',', $products);
                         $delivery_info[$r]['changed'] = $is_changed;
                         $delivery_info[$r]['delivery_type'] = $delivery_type;
                     }
                 }
                 else{
-                    $extra_delivers = $dbm->groupBy(function($sort){return $sort->order_id;});
+                    $extra_delivers = $dbm->groupBy(function($sort){
+                        return $sort->order_id;
+                    });
+
                     foreach ($extra_delivers as $r=>$by_order_id){
                         $delivery_info[$r] = SelfOrder::find($r);
                         $products = array();
                         $is_changed = 0;
                         $delivery_type = 1;
+
                         foreach($by_order_id as $dp) {
                             $name = $dp->order_product->product->name;
                             $count = $dp->delivery_count;
                             $products[] = $name.'*'.$count;
                             $delivery_type = $dp->type;
                         }
+
                         $delivery_info[$r]['product'] = implode(',', $products);
                         $delivery_info[$r]['changed'] = $is_changed;
                         $delivery_info[$r]['delivery_type'] = $delivery_type;
                     }
                 }
             }
+
             $milkman_info[$m]['delivery_info'] = $delivery_info;
             $milkman_info[$m]['milkman_name'] = MilkMan::find($m)->name;
             $milkman_info[$m]['milkman_number'] = MilkMan::find($m)->number;
@@ -703,11 +734,11 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         return view('naizhan.shengchan.jinripeisongdan',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'milkman_info'=>$milkman_info,
+            'pages'         =>$pages,
+            'child'         =>$child,
+            'parent'        =>$parent,
+            'current_page'  =>$current_page,
+            'milkman_info'  =>$milkman_info,
         ]);
     }
 
@@ -905,21 +936,26 @@ class DSDeliveryPlanCtrl extends Controller
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
+
         $deliver_date_str = $request->input('current_date');
         if($deliver_date_str == ''){
             $deliver_date_str = $currentDate->format('Y-m-d');
         }
+
         $MilkboxSetupDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $MilkboxSetupDate->add(\DateInterval::createFromDateString('tomorrow'));
+
         $child = 'peisongfanru';
         $parent = 'shengchan';
         $current_page = 'peisongfanru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
         $milkman = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get();
         $current_milkman = $request->input('milkman_id');
-        if($current_milkman == ''){
+
+        if ($current_milkman == ''){
             $current_milkmans = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get()->first();
             if($current_milkmans != null){
                 $current_milkman = $current_milkmans->id;
@@ -928,10 +964,17 @@ class DSDeliveryPlanCtrl extends Controller
                 $current_milkman = '';
             }
         }
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
-        wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])->where('milkman_id',$current_milkman)->get();
+
+        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at',$deliver_date_str)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->where('milkman_id',$current_milkman)
+            ->get();
+
         $delivery_info = array();
-        $order_by_types = $milkman_delivery_plans->groupBy(function ($sort){return $sort->type;});
+        $order_by_types = $milkman_delivery_plans->groupBy(function ($sort){
+            return $sort->type;
+        });
 
         $station_addr = DeliveryStation::find($current_station_id)->address;
         $station_addr = explode(' ',$station_addr);
@@ -940,8 +983,14 @@ class DSDeliveryPlanCtrl extends Controller
         $bottle_types = DB::select(DB::raw("select DISTINCT p.bottle_type from products p, productprice pp
                     where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
 
-        $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)->where('time',$deliver_date_str)->get(['count','bottle_type']);
-        $todays_milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)->where('time',$current_date_str)->get(['count','bottle_type']);
+        $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
+            ->where('time',$deliver_date_str)
+            ->get(['count','bottle_type']);
+
+        $todays_milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
+            ->where('time',$current_date_str)
+            ->get(['count','bottle_type']);
+
         $is_todayrefund = 0;
         foreach ($milkman_delivery_plans as $mdp){
             $is_todayrefund += $mdp->delivered_count;
@@ -950,14 +999,21 @@ class DSDeliveryPlanCtrl extends Controller
         foreach ($todays_milkman_bottle_refunds as $tbr){
             $is_todayrefund += $tbr->count;
         }
+
         foreach ($order_by_types as $o=>$dbm){
+
             if($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-                $regular_delivers = $dbm->groupBy(function($sort){return $sort->order_id;});
+                $regular_delivers = $dbm->groupBy(function($sort){
+                    return $sort->order_id;
+                });
+
                 foreach ($regular_delivers as $r=>$by_order_id){
+
                     $delivery_info[$r] = Order::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
+
                     foreach($by_order_id as $pro=>$dp) {
                         $name = $dp->order_product->product->name;
                         $count = $dp->delivery_count;
@@ -981,14 +1037,20 @@ class DSDeliveryPlanCtrl extends Controller
                 }
             }
             else{
-                $extra_delivers = $dbm->groupBy(function($sort){return $sort->order_id;});
+                $extra_delivers = $dbm->groupBy(function($sort) {
+                    return $sort->order_id;
+                });
+
                 foreach ($extra_delivers as $r=>$by_order_id){
+
                     $delivery_info[$r] = SelfOrder::find($r);
+
                     if($delivery_info[$r] != null){
                         $products = array();
                         $is_changed = 0;
                         $delivery_type = 2;
                         $milkboxinstall = 0;
+
                         foreach($by_order_id as $pro=>$dp) {
                             $name = $dp->order_product->product->name;
                             $count = $dp->delivery_count;
@@ -1004,6 +1066,7 @@ class DSDeliveryPlanCtrl extends Controller
                             if($dp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL)
                                 $milkboxinstall = 1;
                         }
+
                         $delivery_info[$r]['is_milkbox'] = 0;
 //                        $delivery_info[$r]['product'] = implode(',', $products);
                         $delivery_info[$r]['product'] = $products;
@@ -1017,18 +1080,18 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         return view('naizhan.shengchan.peisongfanru',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'delivery_info'=>$delivery_info,
-            'milkman'=>$milkman,
-            'deliver_date'=>$deliver_date_str,
-            'current_date'=>$current_date_str,
-            'current_milkman'=>$current_milkman,
-            'bottle_types'=>$bottle_types,
-            'milkman_bottle_refunds'=>$milkman_bottle_refunds,
-            'is_todayrefund'=>$is_todayrefund,
+            'pages'                     =>$pages,
+            'child'                     =>$child,
+            'parent'                    =>$parent,
+            'current_page'              =>$current_page,
+            'delivery_info'             =>$delivery_info,
+            'milkman'                   =>$milkman,
+            'deliver_date'              =>$deliver_date_str,
+            'current_date'              =>$current_date_str,
+            'current_milkman'           =>$current_milkman,
+            'bottle_types'              =>$bottle_types,
+            'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
+            'is_todayrefund'            =>$is_todayrefund,
         ]);
     }
 

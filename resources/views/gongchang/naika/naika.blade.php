@@ -48,136 +48,129 @@
             <!--Table-->
             <div class="ibox-content">
                 <div class="feed-element">
-                    <div class="col-md-4">
-                        <label>卡号:</label>
-                        <input type="text" id="card_number" class="search" value="">
-                    </div>
-                    <div class="col-md-4">
-                        <label>面值:</label>
-                        <input type="text" id="balance" class="search" value="">
-                    </div>
-                    <div class="col-md-4">
-                        <label>领用方:</label>
-                        <input type="text" id="recipient" class="search" value="">
-                    </div>
-                </div>
-
-                <div class="feed-element">
-                    <div class="col-md-9">
-                        <button data-toggle="modal" href="#modal-form" type="button" class="btn btn-success btn-md">领用</button>
-                    </div>
-
                     <div class="col-md-3">
-                        <form id="upload-form" method="post" action="{{url('gongchang/naika/naika/import')}}" enctype="multipart/form-data">
-
-                            <button type="button" class="btn btn-success btn-outline" id="csv_file_upload_btn">
-                                数据导入
-                            </button>
-                            <input type="file" name="csv_file" class="csv-upload"
-                                   id="csv_file_upload_input" accept=".csv"/>
-                            &nbsp;
-                            <button class="btn btn-success btn-md" data-action = "print">导出</button>
-                        </form>
+                        <label>卡号:</label>
+                        <input type="text" id="card_number" value="">
+                    </div>
+                    <div class="col-md-3">
+                        <label>面值:</label>
+                        <input type="text" id="balance" value="">
+                    </div>
+                    <div class="col-md-3">
+                        <label>领用方:</label>
+                        <input type="text" id="recipient" value="">
+                    </div>
+                    <div class="col-md-1 col-md-offset-1">
+                        <button type="button" id="search" class="btn btn-success btn-md text-right">筛选</button>
                     </div>
                 </div>
-                @if(Session::has('card_order_status'))
-                <div id="card_number_alert" style="padding-top: 10px; padding-left: 20px;">
-                    <label style="color: red;">所选卡号不存在！</label>
-                </div>
-                @endif
+            </div>
 
-                @if(Session::has('status'))
-                    <div class="row">
-                        <div class="form-group">
-                            <div class="col-sm-10 col-sm-offset-1">
-                                <div class="alert alert-success">
-                                    {{ Session::get('status') }}
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+
+                    <div class="feed-element">
+                        <div class="col-md-9">
+                            <button data-toggle="modal" href="#modal-form" type="button" class="btn btn-success btn-md" id="but_sell">领用</button>
+                        </div>
+
+                        <div class="col-md-3">
+                            <form id="upload-form" method="post" action="{{url('gongchang/naika/naika/import')}}" enctype="multipart/form-data">
+
+                                <button type="button" class="btn btn-success btn-outline" id="csv_file_upload_btn">
+                                    数据导入
+                                </button>
+                                <input type="file" name="csv_file" class="csv-upload"
+                                       id="csv_file_upload_input" accept=".csv"/>
+                                &nbsp;
+                                <button class="btn btn-success btn-md" data-action = "print">导出</button>
+                            </form>
+                        </div>
+                    </div>
+                    @if(Session::has('card_order_status'))
+                        <div id="card_number_alert" style="padding-top: 10px; padding-left: 20px;">
+                            <label style="color: red;">所选卡号不存在！</label>
+                        </div>
+                    @endif
+
+                    @if(Session::has('status'))
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-1">
+                                    <div class="alert alert-success">
+                                        {{ Session::get('status') }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endif
-                <div></div>
-                <div id="modal-form" class="modal fade" aria-hidden="true">
-                    <form id="confirm_card" action="{{ url('api/gongchang/naika/naika/register') }}" role="form" class="form-horizontal"
-                          method="post">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-sm-12"><h3 class="m-t-none m-b"></h3>
-                                            <div class="form-group"><label class="col-sm-3 label-padding">领卡人</label>
-                                                <div class="col-sm-9"><input type="text" id="name" name="user" placeholder=""
-                                                                             class="form-control" value="" onkeypress="hide_alert();"></div>
-                                            </div>
-                                            <label id="name_alert" class="col-md-offset-3 col-md-9" style="color: red; display: none">(输入名称!)</label>
-                                            <div class="form-group"><label class="col-sm-3 label-padding">面值</label>
-                                                <div class="col-sm-9">
-                                                    <div class="input-group">
-                                                        <select id="balance_value" name="balance"
-                                                                data-placeholder="Choose..." class="chosen-select"
-                                                                style="width:195px; height:35px;">
-                                                            @foreach($balance as $b)
-                                                                <option value="{{$b['balance']}}">{{$b['balance']}}</option>
-                                                            @endforeach
-                                                        </select>
+                    @endif
+                    <div></div>
+                    <div id="modal-form" class="modal fade" aria-hidden="true">
+                        <form id="confirm_card" action="{{ url('api/gongchang/naika/naika/register') }}" role="form" class="form-horizontal"
+                              method="post">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <h3 class="m-t-none m-b"></h3>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 label-padding">领卡人</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="text" id="name" name="user" placeholder=""
+                                                                                 class="form-control" value="" onkeypress="hide_alert();">
                                                     </div>
                                                 </div>
-                                            </div>
+                                                <label id="name_alert" class="col-md-offset-3 col-md-9" style="color: red; display: none">(输入名称!)</label>
+                                                <div class="form-group"><label class="col-sm-3 label-padding">卡 号</label>
+                                                    <div class="col-sm-4">
+                                                        <input id="start_number" name="start_num" class="form-control"
+                                                               style="width: 100%;">
+                                                    </div>
+                                                    <div class="col-sm-1">
+                                                        <label class="control-label">到</label>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <input id="end_number" name="end_num" class="form-control"
+                                                               style="width: 100%;">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group"><label class="col-sm-3 label-padding">数 量</label>
+                                                    <div class="col-sm-3">
+                                                        <input id="quantity" name="quantity" onkeypress="return isNumber(event)"
+                                                               class="form-control" readonly>
+                                                        <input type="hidden" id="max_quantity">
+                                                    </div>
+                                                    &nbsp;
+                                                    <label class="col-sm-3 label-padding">金额:</label>
+                                                    <label id="total_amount" class="col-sm-2 label-padding"></label>
+                                                </div>
+                                                <label id="quantity_alert" class="col-md-offset-3 col-md-9" style="color: red; display: none">(多数量!)</label>
 
-                                            <div class="form-group"><label class="col-sm-3 label-padding">数 量</label>
-                                                <div class="col-sm-3">
-                                                    <input id="quantity" name="quantity" onkeypress="return isNumber(event)"
-                                                           class="form-control">
-                                                    <input type="hidden" id="max_quantity">
-                                                </div>
-                                                &nbsp;
-                                                <label class="col-sm-3 label-padding">金额:</label>
-                                                <label id="total_amount" class="col-sm-2 label-padding"></label>
-                                            </div>
-                                            <label id="quantity_alert" class="col-md-offset-3 col-md-9" style="color: red; display: none">(多数量!)</label>
 
-                                            <div class="form-group"><label class="col-sm-3 label-padding">卡 号</label>
-                                                <div class="col-sm-3">
-                                                    <input id="start_number" name="start_num" class="form-control"
-                                                           style="width: 120px;">
-                                                </div>
-                                                <div class="col-sm-1">
-                                                    <label class="control-label" style="padding-left: 8px;">到</label>
-                                                </div>
-                                                <div class="col-sm-3">
-                                                    <input id="end_number" name="end_num" class="form-control"
-                                                           style="width: 120px;">
-                                                </div>
-                                            </div>
-                                            <div class="form-group"><label class="col-sm-3 label-padding">收款方式</label>
-                                                <div class="col-sm-9">
-                                                    <div class="input-group">
-                                                        <select name="payment_method" data-placeholder="Choose..."
-                                                                class="chosen-select"
-                                                                style="min-width:195px; height:35px;" tabindex="2">
-                                                            <option value="1">现金</option>
-                                                            <option value="2">借款</option>
-                                                        </select>
+                                                <div class="form-group"><label class="col-sm-3 label-padding">收款方式</label>
+                                                    <div class="col-sm-9">
+                                                        <div class="input-group">
+                                                            <select name="payment_method" data-placeholder="Choose..."
+                                                                    class="chosen-select"
+                                                                    style="min-width:195px; height:35px;" tabindex="2">
+                                                                <option value="1">现金</option>
+                                                                <option value="2">借款</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button id="submit" type="submit" class="btn btn-white">确定</button>
-                                    <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                                    <div class="modal-footer">
+                                        <button id="submit" type="submit" class="btn btn-white">确定</button>
+                                        <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-
-            <div class="ibox float-e-margins">
-                <div class="ibox-content">
+                        </form>
+                    </div>
 
                     <table id="cardTable" class="footable table table-bordered" data-page-size="15">
                         <thead>
@@ -252,6 +245,7 @@
                             <th data-sort-ignore="true">序号</th>
                             <th data-sort-ignore="true">卡号</th>
                             <th data-sort-ignore="true">面值</th>
+                            <th data-sort-ignore="true">商品</th>
                             <th data-sort-ignore="true">验证码</th>
                             <th data-sort-ignore="true">激活状态</th>
                             <th data-sort-ignore="true">领用状态</th>

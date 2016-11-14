@@ -40,26 +40,35 @@ class MilkCardCtrl extends Controller
     }
 
     public function getNaikaInfo(Request $request){
+
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $balance = $request->input('balance');
-        $milkcard_info = MilkCard::where('factory_id',$current_factory_id)->where('balance',$balance)->where('sale_status',0)->orderby('number')->get();
-        $start_number = 0;
-        $end_number = 0;
-        $number = array();
-        $i = 0;
-        foreach ($milkcard_info as $mi){
-            $i++;
-            $number[$i] = $mi->number;
-        }
-        if($milkcard_info->first()!=null){
-            $count = count($milkcard_info);
-            $start_number = $number[1];
-            $end_number = $number[$count];
-        }
-        else{
-            $count = 0;
-        }
-        return response()->json(['count'=>$count,'start_number'=>$start_number,'end_number'=>$end_number]);
+        $milkcard_info = MilkCard::where('factory_id',$current_factory_id)
+//            ->where('balance',$balance)
+            ->where('sale_status',0)
+            ->orderby('number')
+            ->get();
+
+//        $start_number = 0;
+//        $end_number = 0;
+//        $number = array();
+//        $i = 0;
+//        foreach ($milkcard_info as $mi){
+//            $i++;
+//            $number[$i] = $mi->number;
+//        }
+//        if($milkcard_info->first()!=null){
+//            $count = count($milkcard_info);
+//            $start_number = $number[1];
+//            $end_number = $number[$count];
+//        }
+//        else{
+//            $count = 0;
+//        }
+
+        return $milkcard_info;
+//        return response()->json(['count'=>$count,'start_number'=>$start_number,'end_number'=>$end_number]);
     }
 
     public function registerNaikaInfo(Request $request){

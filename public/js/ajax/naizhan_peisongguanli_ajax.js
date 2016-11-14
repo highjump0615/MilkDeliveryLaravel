@@ -144,7 +144,7 @@ function calc_total(){
             }
             sum_totals[i]+=current_val;
         });
-    })
+    });
 
     var $produced_rows = $('#distribute tr.produced_tr');
     $produced_rows.each(function(){
@@ -155,7 +155,7 @@ function calc_total(){
             }
             produced_totals[i]+=current_val;
         });
-    })
+    });
 
     var $not_ordered_rows = $('#distribute tr.sum_tr:not(:first)');
     $not_ordered_rows.each(function(){
@@ -166,7 +166,7 @@ function calc_total(){
             }
             not_ordered_totals[i]+=current_val;
         });
-    })
+    });
 
     $('#distribute td.total_sum').each(function(i) {
 //				if(produced_totals[i] < sum_totals[i]){
@@ -174,14 +174,15 @@ function calc_total(){
 //					$(this).css("color","#ffffff");
 //				}
         $(this).html(sum_totals[i]);
-    })
+    });
+
     $('#distribute td.plan_sum').each(function(i) {
         $(this).html(produced_totals[i]-sum_totals[i]);
     })
     $('#distribute td.remain_as_order').each(function(i) {
         $(this).html(produced_totals[i]-not_ordered_totals[i]);
-        changed_amount[i] = produced_totals[i]-not_ordered_totals[i]-ordered_amount[i]
-    })
+        changed_amount[i] = produced_totals[i]-not_ordered_totals[i]-ordered_amount[i];
+    });
 }
 
 $('.editable_amount').on('keyup',function(){

@@ -20,15 +20,21 @@ function setPlanData() {
         })
 
         var ordered_count = parseInt($(this).find('.ordered_count').text());
+
+        // 自营项目数量
         var selfuse_count = sum - ordered_count;
         $('.total_count',this).html(selfuse_count);
 
-        // 金额合计
-        var total_price = selfuse_count * price + parseFloat(ordered_price,2);
+        // 自营项目金额合计
+        var total_price = selfuse_count * price;
         $('.total_price',this).html(total_price.toFixed(2));
 
         // 订单数量合计
         $('.total_count_all',this).html(sum);
+
+        // 全部金额
+        total_price += parseFloat(ordered_price,2);
+        $('.total_price_all',this).html(total_price.toFixed(2));
     });
 
     $('tr:last td:not(:first)').text(function(i){

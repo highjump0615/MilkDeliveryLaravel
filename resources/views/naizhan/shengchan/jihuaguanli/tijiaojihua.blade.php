@@ -80,9 +80,11 @@
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="test_drint sales_val" id="test_drink{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['test_drink']}}@endif</td>
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="group_sale sales_val" id="group{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['group_sale']}}@endif</td>
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="channel_sale  sales_val" id="channel{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['channel_sale']}}@endif</td>
-									<td class="total_count" id="subtotal_count{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['subtotal_count']}}@endif</td>
-									<td class="total_price" id="subtotal_price{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['subtotal_money']}}@endif</td>
-									<td class="total_count_all"></td>
+									<td class="total_count">@if($is_sent > 0){{$pl['ds_info']['subtotal_count']}}@endif</td>
+									<td class="total_price">@if($is_sent > 0){{$pl['ds_info']['subtotal_money']}}@endif</td>
+									<td class="total_count_all" id="subtotal_count{{$pl->id}}"></td>
+									<!-- 隐藏字段；总金额 -->
+									<td class="total_price_all" id="subtotal_price{{$pl->id}}" style="display:none;"></td>
 									{{--<td><button class="btn btn-success btn-sm confirm" id="confirm{{$pl->id}}" value="{{$pl->id}}">确认提交</button></td>--}}
 									@if($i==1)
 									<td rowspan="{{$j+1}}">

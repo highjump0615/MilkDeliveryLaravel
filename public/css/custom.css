@@ -180,6 +180,12 @@ ol.breadcrumb {
     padding: 0;
 }
 
+/* 表格里手工填写字段的样式 */
+.table > tbody > tr > td.editfill {
+    border-bottom-width: 2px;
+    border-bottom-color: #0a6aa1;
+}
+
 input.tip-input {
     max-width: 20px;
     display: block;
