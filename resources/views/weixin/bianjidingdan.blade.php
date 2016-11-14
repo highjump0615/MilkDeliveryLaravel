@@ -144,7 +144,7 @@
 
         <div class="dnsall">
             <div class="dnsts">
-                订购天数：<span>16天</span>
+                订购天数：<span id="order_day_num">16</span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
             <p>规格：{{$product->bottle_type_name}}</p>
@@ -419,12 +419,12 @@
         {
             var delivery_type = parseInt("{{$wop->delivery_type}}");
 
-            $('#total_count').val("{{$wop->total_count}}");
+            var total_count = parseInt('{{$wop->total_count}}');
+            $('#total_count').val(total_count);
 
             $('#delivery_type').find('option[data-value="'+delivery_type+'"]').prop('selected', true);
 
             $('#delivery_type').trigger('change');
-
 
             if(delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}"))
             {
@@ -450,6 +450,11 @@
             } else {
                 return;
             }
+
+            var order_day_num="{{$order_day_num}}";
+
+            //get total order day numbers
+            $('#order_day_num').text(order_day_num);
 
         }
 

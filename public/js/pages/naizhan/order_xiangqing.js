@@ -279,3 +279,71 @@ $('body').on('click', 'button.xiugai_plan_bt', function () {
 
     }
 });
+
+
+$('button.show_delivery_date').click(function(){
+
+    var ob1 = $(this).parent().find('.input-group-addon');
+    $(ob1).trigger('click');
+});
+//Show delivery date on calendar
+function initBottleNumCalendar(tr) {
+    var calendar = tr.find('.calendar_show')[0];
+
+    var selectDeliveryType = tr.find('.order_delivery_type')[0];
+    var pick = tr.find('.picker')[0];
+
+    // 获取输入的每次瓶数
+    var inputBottleNum = tr.find('.order_product_count_per')[0];
+    var nBottleNum = parseInt($(inputBottleNum).text());
+
+    var id = $(selectDeliveryType).data('type');
+
+    if (id == 3 || id == 4) {
+
+        var initNum = $(calendar).find('input').val();
+
+        if (id == 3) {
+            console.log(id);
+            //show weekday
+            $(pick).datepicker({
+                multidate: true,
+                todayBtn: false,
+                clearBtn: false,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                showNum: true,
+                bottleNum: nBottleNum,
+                initValue: initNum,
+                startDate: firstday,
+                endDate: lastday,
+                class:'week_calendar only_show',
+            });
+        }
+        else {
+            console.log(id);
+            //show monthday
+            $(pick).datepicker({
+                multidate: true,
+                todayBtn: false,
+                clearBtn: false,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                showNum: true,
+                bottleNum: nBottleNum,
+                initValue: initNum,
+                startDate: firstm,
+                endDate: lastm,
+                class:'month_calendar only_show',
+            });
+
+        }
+
+        $(calendar).find('input').prop('disabled', true);
+
+    } else {
+        $(calendar).hide();
+    }
+}

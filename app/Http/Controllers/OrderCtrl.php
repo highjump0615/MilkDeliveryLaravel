@@ -8,6 +8,7 @@ use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\MilkCard;
 use App\Model\FinanceModel\DSCalcBalanceHistory;
 use App\Model\FinanceModel\DSDeliveryCreditBalanceHistory;
+use App\Model\WechatModel\WechatOrderProduct;
 use Faker\Provider\at_AT\Payment;
 use Illuminate\Http\Request;
 
@@ -56,6 +57,178 @@ class OrderCtrl extends Controller
     const NOT_EXIST_STATION = 2;
     const NOT_EXIST_MILKMAN = 3;
     const NOT_EXIST_PRICE = 4;
+
+    //get only when wechat  product's delivery type ==3 or 4.
+    function get_number_of_days_for_wechat_product($wop_id)
+    {
+        $wop = WechatOrderProduct::find($wop_id);
+
+        $total_count = $wop->total_count;
+
+        $deliver_at = $wop->start_at;
+
+        $total_order_day_count = 0;
+
+        if($wop->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK){
+            //get order day counts of week
+
+            //week day
+            $cod = $wop->custom_date;
+
+            $cod = explode(',', $cod);
+            $custom = [];
+            foreach ($cod as $code) {
+                $code = explode(':', $code);
+                $key = $code[0];
+                $value = $code[1];
+                $custom[$key] = $value;
+            }
+
+            $daynums = $this->days_in_month($deliver_at);
+
+            //custom week days
+            do {
+                //get key from day
+                $key = date('N', strtotime($deliver_at));
+
+                if (array_key_exists($key, $custom)) {
+                    $plan_count = $custom[$key];
+                    //changed plan count = plan acount
+
+                    $next_key = $this->get_next_key($custom, $key);
+
+                    if ($next_key < $key) {
+                        $interval = $next_key + 7 - $key;
+                    } else {
+                        $interval = $next_key - $key;
+                    }
+
+                    if ($total_count < $plan_count)
+                        $plan_count = $total_count;
+
+                    $total_count -= $plan_count;
+
+                    $total_order_day_count++;
+
+                    $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+                    $daynums = $this->days_in_month($deliver_at);
+                } else {
+                    //get avaiable key value > current_key
+                    $old_key = $key;
+
+                    $key = $this->getClosestKey($key, $custom);
+                    if ($key < $old_key)
+                        $first_interval = $key + 7 - $old_key;
+                    else
+                        $first_interval = $key - $old_key;
+
+                    $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
+                    $daynums = $this->days_in_month($deliver_at);
+
+                    $plan_count = $custom[$key];
+                    //changed plan count = plan acount
+
+                    $next_key = $this->get_next_key($custom, $key);
+                    if ($next_key < $key) {
+                        $interval = $next_key + 7 - $key;
+                    } else {
+                        $interval = $next_key - $key;
+                    }
+
+                    if ($total_count < $plan_count)
+                        $plan_count = $total_count;
+
+                    $total_count -= $plan_count;
+                    $total_order_day_count++;
+
+                    $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+                    $daynums = $this->days_in_month($deliver_at);
+                }
+            }while($total_count > 0);
+
+        }
+        else {
+            //get order day counts of month
+                //month day
+                $cod = $wop->custom_date;
+                $daynums = $this->days_in_month($deliver_at);
+
+                $cod = explode(',', $cod);
+                $custom = [];
+                foreach ($cod as $code) {
+                    $code = explode(':', $code);
+                    $key = $code[0];
+                    $value = $code[1];
+                    $custom[$key] = $value;
+                }
+                //custom week days
+                do {
+                    //get key from day
+                    $key = (new DateTime($deliver_at))->format('d');
+
+                    if (array_key_exists($key, $custom)) {
+                        $plan_count = $custom[$key];
+                        //changed plan count = plan acount
+
+                        $next_key = $this->get_next_key($custom, $key);
+
+                        $month_days = cal_days_in_month(CAL_GREGORIAN, 10, 2016);
+
+                        if ($next_key < $key) {
+                            $interval = $next_key + $daynums - $key;
+                        } else {
+                            $interval = $next_key - $key;
+                        }
+
+                        if ($total_count < $plan_count)
+                            $plan_count = $total_count;
+
+                        $total_count -= $plan_count;
+
+                        $total_order_day_count++;
+
+                        $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+                        $daynums = $this->days_in_month($deliver_at);
+                    }
+                    else {
+                        //get avaiable key value > current_key
+                        $old_key = $key;
+
+                        $key = $this->getClosestKey($key, $custom);
+                        if ($key < $old_key)
+                            $first_interval = $key + $daynums - $old_key;
+                        else
+                            $first_interval = $key - $old_key;
+
+                        $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
+                        $daynums = $this->days_in_month($deliver_at);
+
+                        $plan_count = $custom[$key];
+                        //changed plan count = plan acount
+
+                        $next_key = $this->get_next_key($custom, $key);
+                        if ($next_key < $key) {
+                            $interval = $next_key + $daynums - $key;
+                        } else {
+                            $interval = $next_key - $key;
+                        }
+
+                        if ($total_count < $plan_count)
+                            $plan_count = $total_count;
+
+                        $total_count -= $plan_count;
+                        $total_order_day_count++;
+
+                        $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+                        $daynums = $this->days_in_month($deliver_at);
+                    }
+                } while ($total_count > 0);
+
+        }
+
+        return $total_order_day_count;
+
+    }
 
 
     function make_each_delivery_plan($milkman_id, $station_id, $order_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price)
@@ -3944,10 +4117,7 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $this->mStationId)
-            ->where(function ($query) {
-                $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
-                $query->where('status', Order::ORDER_PASSED_STATUS);
-            })
+            ->where('status', Order::ORDER_NOT_PASSED_STATUS)
             ->orderBy('id', 'desc')
 			->get();
 
@@ -4988,7 +5158,8 @@ class OrderCtrl extends Controller
                 $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
 
             } while ($total_count > 0);
-        } else if ($delivery_type == 3) {
+        }
+        else if ($delivery_type == 3) {
             //week day
             $cod = $op->custom_order_dates;
 
@@ -5031,7 +5202,8 @@ class OrderCtrl extends Controller
                     $total_count -= $plan_count;
                     $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
                     $daynums = $this->days_in_month($deliver_at);
-                } else {
+                }
+                else {
                     //get avaiable key value > current_key
                     $old_key = $key;
 
@@ -5067,7 +5239,8 @@ class OrderCtrl extends Controller
                     $daynums = $this->days_in_month($deliver_at);
                 }
             } while ($total_count > 0);
-        } else {
+        }
+        else {
             //month day
             $cod = $op->custom_order_dates;
             $daynums = $this->days_in_month($deliver_at);
