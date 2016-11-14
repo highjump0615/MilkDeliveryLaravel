@@ -1,7 +1,6 @@
 /*
  * Stop Order
  */
-
 $('#stop_order_modal_form').submit(function (e) {
 
     e.preventDefault();
@@ -10,6 +9,11 @@ $('#stop_order_modal_form').submit(function (e) {
     $(submit).prop('disabled', true);
 
     var sendData = $(this).serializeArray();
+
+    var strUrl = SITE_URL + "gongchang/dingdan/zantingdingdan";
+    if (gbIsStation) {
+        strUrl = SITE_URL + "naizhan/dingdan/zantingliebiao";
+    }
 
     $.ajax({
         type: "POST",
@@ -26,8 +30,7 @@ $('#stop_order_modal_form').submit(function (e) {
                 var stopped_end = new Date(stop_end_date);
                 //compare today with stop start-end: go to zanting
                 if (stopped_start < today && stopped_end > today) {
-                    var url = SITE_URL + "gongchang/dingdan/zantingdingdan";
-                    window.location.replace(url);
+                    window.location = strUrl;
                 }
 
                 location.reload();
@@ -77,6 +80,11 @@ $('#restart_order_modal_form').submit(function (e) {
     var sendData = $(this).serializeArray();
     console.log(sendData);
 
+    var strUrl = SITE_URL + "gongchang/dingdan/quanbudingdan-liebiao";
+    if (gbIsStation) {
+        strUrl = SITE_URL + "naizhan/dingdan/quanbuluru";
+    }
+
     $.ajax({
         type: "POST",
         url: API_URL + "gongchang/dingdan/restart_order",
@@ -90,9 +98,10 @@ $('#restart_order_modal_form').submit(function (e) {
                 show_success_msg("开启订单成功");
 
                 if (data.restart_at && data.restart_at == today) {
-                    var url = SITE_URL + "gongchang/dingdan/daishenhedingdan";
-                    window.location.replace(url);
-                } else {
+                    var url = strUrl;
+                    window.location = url;
+                }
+                else {
                     location.reload();
                 }
 
@@ -113,7 +122,6 @@ $('#restart_order_modal_form').submit(function (e) {
 /*
  *  Cancel Order
  */
-
 $('#cancel_order_bt').click(function () {
     $.confirm({
         icon: 'fa fa-warning',
@@ -134,6 +142,12 @@ $('#cancel_order_bt').click(function () {
 function cancel_order() {
     var order_id = $('#cancel_order_bt').data("orderid");
     var sendData = {'order_id': order_id};
+
+    var strUrl = SITE_URL + "gongchang/dingdan/quanbudingdan-liebiao";
+    if (gbIsStation) {
+        strUrl = SITE_URL + "naizhan/dingdan/quanbuluru";
+    }
+
     $.ajax({
         type: "POST",
         url: API_URL + "gongchang/dingdan/cancel_order",
@@ -142,10 +156,11 @@ function cancel_order() {
             console.log(data);
             if (data.status = 'success') {
                 show_success_msg('取消订单成功');
+
                 //go to the quanbuluru
-                var url = SITE_URL + "gongchang/dingdan/quanbudingdan-liebiao";
-                window.location.replace(url);
-            } else {
+                window.location = strUrl;
+            }
+            else {
                 if (data.message)
                     show_warning_msg(data.message);
             }

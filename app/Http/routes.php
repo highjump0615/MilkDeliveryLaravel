@@ -46,6 +46,19 @@ Route::get('api/order/get_order_product_price', 'OrderCtrl@get_order_product_pri
 // 单日修改
 Route::post('api/gongchang/dingdan/change_delivery_plan_for_one_day_in_xiangqing_and_xiugai', 'OrderCtrl@change_delivery_plan_for_one_day_in_xiangqing_and_xiugai');
 
+// 暂停订单
+Route::post('api/gongchang/dingdan/stop_order_in_gongchang', 'OrderCtrl@stop_order_for_some_period');
+
+// 顺延订单
+Route::post('api/gongchang/dingdan/postpone_order', 'OrderCtrl@postpone_order');
+
+// 退订
+Route::post('api/gongchang/dingdan/cancel_order', 'OrderCtrl@cancel_order');
+
+// 开启订单
+Route::post('api/gongchang/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
+
+
 //Test
 Route::get('/tests', function () {
     $a = "1.2345";
@@ -171,10 +184,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //Gongchang/Dingdan/show detail dingdan
     Route::get('/gongchang/dingdan/dingdanluru/xiangqing/{order_id}', 'OrderCtrl@show_detail_order_in_gongchang');
-    Route::post('api/gongchang/dingdan/stop_order_in_gongchang', 'OrderCtrl@stop_order_for_some_period');
-    Route::post('api/gongchang/dingdan/cancel_order', 'OrderCtrl@cancel_order');
-    Route::post('api/gongchang/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
-    Route::post('api/gongchang/dingdan/postpone_order', 'OrderCtrl@postpone_order');
 
     //Gongchang/Dingdan/quanbudingdan-liebiao
     Route::get('/gongchang/dingdan/quanbudingdan-liebiao', 'OrderCtrl@show_all_dingdan_in_gongchang');

@@ -67,11 +67,55 @@ class DSProductionPlan extends Model
         return $submit_date;
     }
 
+    /**
+     * 收货时间
+     * @return string
+     */
     public function getReceiveAtAttribute() {
         $date = str_replace('-','/', $this->produce_end_at);
-        $submit_date = date('Y-m-d', strtotime($date . "+1 days"));
+        $receive_date = date('Y-m-d', strtotime($date . "+1 days"));
 
-        return $submit_date;
+        return $receive_date;
+    }
+
+    /**
+     * 状态转换成文字
+     * @return string
+     */
+    public function getStatusString() {
+        $strStatus = '';
+
+        switch ($this->status) {
+            case DSProductionPlan::DSPRODUCTION_SENT_PLAN:
+                $strStatus = '待生产';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PENDING_PLAN:
+                $strStatus = '待审核';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL:
+                $strStatus = '生产取消';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PASSED_PLAN:
+                $strStatus = '待生产';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED:
+                $strStatus = '已生产';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PRODUCE_SENT:
+                $strStatus = '已发货';
+                break;
+
+            case DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED:
+                $strStatus = '已签收';
+                break;
+        }
+
+        return $strStatus;
     }
 
 }

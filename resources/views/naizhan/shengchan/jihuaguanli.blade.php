@@ -17,7 +17,7 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-				@if($alert_message != '')
+				@if ($alert_message != '')
 					<div id="alert" class="ibox-content">
 						<label style="color:red; font-size: 18px;">{{$alert_message}}</label>
 					</div>
@@ -89,15 +89,7 @@
 										<td class="plan_val">{{$dp->channel_sale}}</td>
 										<td class="total_sum"></td>
 										<td>{{$dp->confirm_count}}</td>
-										<td>
-											@if($dp->status == 1)待生产
-											@elseif($dp->status == 2)待审核
-											@elseif($dp->status == 3)生产取消
-											@elseif($dp->status == 4)待生产
-											@elseif($dp->status == 5)已生产
-											@else 已发货
-											@endif
-										</td>
+										<td>{{$dp->getStatusString()}}</td>
 										<td></td>
 										<input type="hidden" id="set_date" value="{{$dp->produce_start_at}}">
 									</tr>

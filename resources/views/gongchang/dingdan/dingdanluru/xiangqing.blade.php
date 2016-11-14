@@ -344,6 +344,13 @@
 @section('script')
     <script type="text/javascript">
 
+        var gbIsStation = false;
+        // 是否奶站录入
+        @if (isset($station))
+            gbIsStation = true;
+        @endif
+
+
         //set calendar start date limit for various status
         var today = new Date();
         var gap_day = parseInt("{{$gap_day}}");

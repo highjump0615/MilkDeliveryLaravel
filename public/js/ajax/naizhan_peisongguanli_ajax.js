@@ -135,6 +135,7 @@ function calc_channel(){
 }
 
 function calc_total(){
+    // 订单配送量、自营配送量总合计
     var $datarows = $('#distribute tr.sum_tr');
     $datarows.each(function(){
         $(this).find('.sum').each(function(i){
@@ -146,6 +147,7 @@ function calc_total(){
         });
     });
 
+    // 签收数量合计
     var $produced_rows = $('#distribute tr.produced_tr');
     $produced_rows.each(function(){
         $(this).find('.produced').each(function(i){
@@ -157,6 +159,7 @@ function calc_total(){
         });
     });
 
+    // 自营配送量合计
     var $not_ordered_rows = $('#distribute tr.sum_tr:not(:first)');
     $not_ordered_rows.each(function(){
         $(this).find('.sum').each(function(i){
@@ -176,9 +179,12 @@ function calc_total(){
         $(this).html(sum_totals[i]);
     });
 
+    // 计划差异 = 签收数量合计 - 总合计
     $('#distribute td.plan_sum').each(function(i) {
         $(this).html(produced_totals[i]-sum_totals[i]);
-    })
+    });
+
+    // 可配送数量 = 签收数量合计 - 自营数量合计
     $('#distribute td.remain_as_order').each(function(i) {
         $(this).html(produced_totals[i]-not_ordered_totals[i]);
         changed_amount[i] = produced_totals[i]-not_ordered_totals[i]-ordered_amount[i];
@@ -243,9 +249,12 @@ $(document).on('click','#save_distribution',function(e){
     $(this).hide();
 })
 
+/**
+ * 自动调配
+ */
 $(document).on('click','.auto_distribute',function(e){
     for(i = 0; i<count; i++){
-        changed_amount[i] = produced_totals[i]-not_ordered_totals[i]-ordered_amount[i]
+        changed_amount[i] = produced_totals[i] - not_ordered_totals[i] - ordered_amount[i];
     }
 
     $('#changed_distribute tr:not(:first,:last)').each(function(){
@@ -256,8 +265,13 @@ $(document).on('click','.auto_distribute',function(e){
                 j = i;
             }
         }
+
+        // 变化后计划量比原计划量小
         if(parseInt($(this).find('td:eq(6)').text())>parseInt($(this).find('td:eq(7)').text())){
+            // 变化后计划量直接填写修改后量
             $(this).find('td:eq(8)').html($(this).find('td:eq(7)').text());
+
+            // 把差额添加到总变化量
             changed_amount[j]+=parseInt($(this).find('td:eq(6)').text())-parseInt($(this).find('td:eq(7)').text());
         }
     })
@@ -269,23 +283,32 @@ $(document).on('click','.auto_distribute',function(e){
                 j = i;
             }
         }
+
+        // 变化后计划量比原计划量大
         if(parseInt($(this).find('td:eq(6)').text())<parseInt($(this).find('td:eq(7)').text())){
+            // 总变化量足够大，变化后计划量直接填写修改后量
             if(changed_amount[j]>parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text())){
                 $(this).find('td:eq(8)').html($(this).find('td:eq(7)').text());
                 changed_amount[j]-=parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text());
             }
             else{
+                // 总变化量不够，变化后计划量填写剩余数量
                 if(changed_amount[j]>0){
                     $(this).find('td:eq(8)').html(parseInt($(this).find('td:eq(6)').text())+changed_amount[j]);
                 }
             }
         }
+
+        // 满足了变化后计划量，转换状态
         if(parseInt($(this).find('td:eq(7)').text()) == parseInt($(this).find('td:eq(8)').text())){
             $(this).find('td:eq(11)').html('己调配');
         }
     })
 })
 
+/**
+ * 生成配送列表
+ */
 $(document).on('click','.shengchan-peisong',function(e){
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_changed_distribution';
     $.ajaxSetup({

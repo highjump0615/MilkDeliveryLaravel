@@ -52,15 +52,15 @@ class DSDeliveryPlanCtrl extends Controller
 
         $is_distributed = 0;
 
+        $changed_counts = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at',$deliver_date_str)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->get();
+
         foreach($DSProduction_plans as $dp){
 
             $changed_plan_count_per_product = 0;
-
-            $changed_counts = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                ->where('deliver_at',$deliver_date_str)
-                ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
-                ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                ->get();
 
             foreach($changed_counts as $cc){
                 if($cc->order_product->product->id == $dp->product_id){
@@ -68,6 +68,7 @@ class DSDeliveryPlanCtrl extends Controller
                 }
             }
 
+            // 配送计划调整数量
             $dp["changed_amount"] = $changed_plan_count_per_product - $dp->order_count;
 
             $delivery_plans = DSDeliveryPlan::where('product_id',$dp->product_id)
@@ -76,6 +77,7 @@ class DSDeliveryPlanCtrl extends Controller
                 ->get()
                 ->first();
 
+            // 已调配
             if ($delivery_plans != null){
                 $is_distributed = 1;
                 $dp["dp_retail"]=$delivery_plans->retail - $dp->retail;
@@ -95,6 +97,7 @@ class DSDeliveryPlanCtrl extends Controller
             'child'                 =>$child,
             'parent'                =>$parent,
             'current_page'          =>$current_page,
+
             'dsproduction_plans'    =>$DSProduction_plans,
             'is_distributed'        =>$is_distributed,
             'changed_plans'         =>$changed_plans,
@@ -130,6 +133,7 @@ class DSDeliveryPlanCtrl extends Controller
     public function save_changed_distribution(Request $request){
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
 
