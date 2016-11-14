@@ -1571,6 +1571,40 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+    public function get_count_by_order_type($order_type){
+        if($order_type == OrderType::ORDER_TYPE_MONTH)
+            return 30;
+        else if($order_type == OrderType::ORDER_TYPE_SEASON)
+            return 90;
+        else if($order_type == OrderType::ORDER_TYPE_HALF_YEAR)
+            return 180;
+    }
+
+    //check current group total count condition
+    public function check_total_count($group_id)
+    {
+        //get total bottle count of this group
+        $total = $max = 0;
+        $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
+        foreach ($wechat_order_products as $wop)
+        {
+            $total += $wop->total_count;
+            $count_by_order_type = $this->get_count_by_order_type($wop->order_type);
+            if($max<$count_by_order_type)
+            {
+                $max = $count_by_order_type;
+            }
+        }
+
+        if($total < $max)
+        {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
     //Confirm Wechat order products to be included in Order
     public function querendingdan(Request $request)
     {
@@ -1664,11 +1698,22 @@ class WeChatCtrl extends Controller
 
         }
 
+        if($this->check_total_count($group_id))
+        {
+            $passed = true;
+            $message ="";
+        } else {
+            $passed = false;
+            $message="订单数量总合得符合订单类型条件";
+        }
+
         return view('weixin.querendingdan', [
             'primary_addr_obj'=>$primary_addr_obj,
             'wechat_order_products' => $wechat_order_products,
             'group_id' => $group_id,
             'wxuser_id' => $wechat_user_id,
+            'passed'=>$passed,
+            'message'=>$message,
         ]);
 
     }

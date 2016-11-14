@@ -56,7 +56,7 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if(count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && !isset($message) )
+        @if( $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled >去付款</button>
@@ -67,7 +67,7 @@
     <script type="text/javascript">
 
         $(document).ready(function(){
-            @if(isset($message))
+            @if(isset($message) && $message!="")
                 var message = "{{$message}}";
                 show_info_msg(message);
             @endif
@@ -77,6 +77,9 @@
             var comment = $('#comment').val();
             var group_id =$('#group_id').val();
 
+            var order_bt = $(this);
+            $(order_bt).prop('disabled', true);
+
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
@@ -85,12 +88,15 @@
                     console.log(data);
                     if(data.status == 'success')
                     {
+                        $(order_bt).prop('disabled', true);
+
                         var order_id = data.order_id;
                         window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
                     } else {
                         if(data.message)
                         {
                             show_err_msg(data.message);
+                            $(order_bt).prop('disabled', false);
                         }
                     }
                 },
