@@ -5,12 +5,10 @@
 @endsection
 @section('content')
 
-
       <div class="top">
             <h1>消息中心</h1>
-            <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-            <a class="topa2" href="jvascript:void(0)"></a></div>
-
+            <a class="topa1" href="{{url('/weixin/gerenzhongxin')}}">&nbsp;</a>
+      </div>
 
       <ul class="tsjy_ul">
             <li><span>2016-02-10</span><a href="#">您的订单修改成功</a></li>

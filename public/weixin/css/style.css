@@ -14,9 +14,9 @@ input, button { -webkit-appearance: none; border-radius:0; outline:none}
 button:active{position:relative; top:1px;}
 .cred,a.cred{ color:#F00}
 .bimg{ display: block;width: 100%;height: auto; max-height:640px;}
-.under_banner .bimg{padding: 10px 0}
+.under_banner .bimg{padding: 0}
 .pa2{ padding:3%}
-.pa2t{ padding:0 3%}
+.pa2t{ padding:0}
 .plan_result{text-align:center}
 
 input[type='checkbox']{margin: 0;}
@@ -36,7 +36,7 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .navi li a img{ margin:auto; display: block; width: 70%;height: auto}
 .boxer{}
 .prob{}
-.proti{ height:32px; color:#fff; font-size:1.2rem; border-top:1px solid #a3e2c3}
+.proti{ height:21px; color:#fff; font-size:1.2rem; border-top:1px solid #a3e2c3}
 .proti a{ padding:1px 2px; display:inline-block; color:#fff; background:#00a040}
 .prol{ padding-bottom:3%; float:left; width:48.5%}
 .prol:nth-child(2n){ margin-right:3%}
@@ -87,7 +87,7 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .dzmon{ color:#de5a02}
 .dnsl{ border-top:1px solid #c4c4c4}
 .dnsli{ margin:2% 0}
-.dnsti{ float:left; width:25%; text-align:right; font-size:1.4rem; line-height:26px}
+.dnsti{ float:left; width:30%; text-align:right; font-size:1.4rem; line-height:26px}
 .addSubtract{height:24px; line-height:24px; overflow:hidden;display:inline-block; margin-right:5px; width:78px; vertical-align:middle; background:#e7e7e7}
 .addSubtract a{width:23px;display:inline-block; text-align:center}
 .addSubtract a.subtract,.addSubtract a.subtractDisable{ float:left}
@@ -195,9 +195,11 @@ button.tjord3{ width:55%; background:#00a040}
 
 .ordtop .ordlr{ top:2%}
 .ordsl .ordtop{ padding:2.5% 3% 7% 3%;border-bottom:1px solid #c4c4c4}
-.ord-r{ display:inline-block; width:70%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
+.ordxz.cart_check{float:none;}
+.ord-l {display:inline-block; width:6%; vertical-align:top; font-size:1.3rem; line-height:1.3}
+.ord-r{ display:inline-block; width:64%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
 .ordsl .ordpro{ vertical-align:bottom; float:none}
-.ordshz{ padding:2% 3%; text-align:right}
+.ordshz{ padding:2% 3%; text-align:center; margin: 0 auto;}
 .shsp{ display:inline-block; padding:5px 8px; font-size:1.2rem; border:1px solid #c4c4c4; -moz-border-radius:6px; border-radius:6px; background-color: chocolate;}
 .shsp a{color:white}
 

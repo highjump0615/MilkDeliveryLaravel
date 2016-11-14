@@ -6,9 +6,9 @@
 @section('content')
 
       <div class="top">
-            <h1>订单列表</h1>
-            <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-            <a class="topa2" href="jvascript:void(0)"></a></div>
+            <h1>我的评价</h1>
+            <a class="topa1" href="{{url('/weixin/gerenzhongxin')}}">&nbsp;</a>
+      </div>
 
       <div class="pj_t">订单号：602178888</div>
 

@@ -7,7 +7,12 @@
 
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:history.back()"></a>
+        @if(isset($from))
+            <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
+        @else
+            <a class="headl fanh" href="javascript:history.back()"></a>
+        @endif
+
         <h1>我的订单计划</h1>
 
     </header>

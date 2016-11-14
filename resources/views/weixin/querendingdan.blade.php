@@ -28,7 +28,7 @@
                 <img class="ordpro" src="<?=asset('img/product/logo/' . $wop->product->photo_url1)?>">
                 <span class="ordlr"><button data-pid="{{$wop->id}}" class="edit_order_product">编辑</button></span>
                 <div class="ord-r">
-                    蒙牛纯甄酸奶低温
+                    {{$wop->product->name}}
                     <br>
                     单价：
                     @if ($wop->product_price)
