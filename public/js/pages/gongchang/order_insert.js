@@ -317,14 +317,16 @@ $('#order_form').on('submit', function (e) {
     });
 
     // 数量总和
-    var nTotalBottleNum = 0;
-    $('.one_product_total_count').each(function(){
-        nTotalBottleNum += parseInt($(this).val());
-    });
+    if (!gbIsEdit) {
+        var nTotalBottleNum = 0;
+        $('.one_product_total_count').each(function () {
+            nTotalBottleNum += parseInt($(this).val());
+        });
 
-    if (nTotalBottleNum < nMinBottleNum) {
-        show_err_msg("订单数量总合得符合订单类型条件")
-        return;
+        if (nTotalBottleNum < nMinBottleNum) {
+            show_err_msg("订单数量总合得符合订单类型条件")
+            return;
+        }
     }
 
     // 订单修改，更改后金额不能超过订单余额

@@ -1,3 +1,20 @@
+<?php
+    use App\Model\BasicModel\PaymentType;
+
+    // 订单是否需要新订单录入界面
+    $isPassed = false;
+
+    if (isset($order)) {
+        // 奶卡订单不管通过不通过，都用修改界面
+        if ($order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
+            $isPassed = true;
+        }
+        else {
+            $isPassed = $order->isNewPassed();
+        }
+    }
+?>
+
 @extends('gongchang.layout.master')
 @section('css')
     <style>
@@ -280,8 +297,8 @@
                                    @if (!(isset($order) && !$order->milk_box_install)) checked="checked" @endif/>
                         </div>
                     </div>
+
                     <!-- 只能在奶厂录入奶卡订单 -->
-                    @if (!isset($station))
                     <div class="feed-element col-md-12">
                         <div class="col-md-1" id="check_2">
                             <label>奶卡支付</label>
@@ -290,7 +307,7 @@
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
                                    type="checkbox" data-toggle="modal" data-target="#card_info"
                                    @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif
-                                    @if ($is_edit) readonly @endif
+                                    @if ($is_edit || isset($station)) readonly @endif
                             />
                             <input type="hidden" name="card_check_success" id="card_check_success" value="1">
                         </div>
@@ -301,7 +318,7 @@
                             商品:<label id="form-card-product">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->product}} @endif</label>
                         </div>
                     </div>
-                    @endif
+
                     <br>
 
                     <div class="feed-element col-md-12">
@@ -323,12 +340,10 @@
                                 </button>
                             </div>
 
-                            @if ($is_edit)
+                            @if ($is_edit && $isPassed)
                                 <!-- 订单修改 -->
                                 <div class="col-md-2 col-md-offset-8"> 
-                                    {{--<label class="col-md-3 col-md-offset-2">订单金额: <span class="init_total_sp">{{$order->total_amount}}</span></label> --}}
                                     <label>订单余额: <span class="current_total_sp">{{$order->remain_order_money}}</span></label> 
-                                    {{--<label class="col-md-3">更改订单金额: <span class="updated_total_sp">{{$order->remain_order_money}}</span></label> --}}
                                 </div>
                             @endif
                         </div>
@@ -596,7 +611,7 @@
                         <div class="col-lg-3 col-md-4 statics">
                             <div>
                                 <label for="total_amount" class="control-label col-md-7">
-                                    @if ($is_edit)
+                                    @if ($is_edit && $isPassed)
                                         更改后金额：
                                     @else
                                         订单金额：
@@ -606,7 +621,7 @@
                                     <input required readonly id="total_amount" name="total_amount" value="0"/>
                                 </div>
                             </div>
-                            @if ($is_edit)
+                            @if ($is_edit && $isPassed)
                                 <div>
                                     <label for="edit_remaining" class="control-label col-md-7">差额：</label>
                                     <div class="col-md-5">
@@ -710,6 +725,7 @@ if (isset($station)) {
 
         var gbIsStation = false;
 
+        // 是否奶站录入
         @if (isset($station))
             gbIsStation = true;
         @endif

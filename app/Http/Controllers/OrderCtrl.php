@@ -2685,7 +2685,6 @@ class OrderCtrl extends Controller
                 $this->establish_new_plan($op, $factory_id, $station_id, $milkman_id);
             }
 
-
             //set flag on first order delivery plan
             $plans = $order->first_delivery_plans;
             if($plans)
@@ -3331,7 +3330,8 @@ class OrderCtrl extends Controller
                 //balance check
                 if ($milk_card->balance < $total_amount) {
                     return response()->json(['status' => 'fail', 'message' => '卡钱比订单钱少.']);
-                } else {
+                }
+                else {
                     $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
                     $milk_card->save();
 
@@ -3344,29 +3344,30 @@ class OrderCtrl extends Controller
         $station = DeliveryStation::find($station_id);
 
         if (!$order_by_milk_card) {
-            // 以下两个情况下要查询配送信用余额
+            // 以下情况下要查询配送信用余额
             // 1. 新订单
             // 2. 新订单未通过的情况
             // 3. 新订单待审核的情况
-            if (!$order || ($order && $order->status == Order::ORDER_NEW_NOT_PASSED_STATUS)) {
-                if (($station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount) < ($station->init_delivery_credit_amount / 10)) {
+
+            $remain_cost = $station->init_delivery_credit_amount + $station->delivery_credit_balance - $total_amount;
+            if ($order && $order->status == Order::ORDER_NEW_WAITING_STATUS) {
+                $remain_cost += $order->total_amount;
+            }
+
+            if (!$order || ($order && !$order->isNewPassed())) {
+                if ($remain_cost < ($station->init_delivery_credit_amount / 10)) {
 
                     return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
                 }
             }
         }
 
-        // 状态, 默认是审核订单
-        $status = Order::ORDER_WAITING_STATUS;
+        // 状态, 默认是是待审核新订单
+        $status = Order::ORDER_NEW_WAITING_STATUS;
 
-        // 新订单未通过和新订单录入，是审核新订单
-        if ($order) {
-            if ($order->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
-                $status = Order::ORDER_NEW_WAITING_STATUS;
-            }
-        }
-        else {
-            $status = Order::ORDER_NEW_WAITING_STATUS;
+        // 新订单未通过和新订单录入，就待审核
+        if ($order && $order->isNewPassed()) {
+            $status = Order::ORDER_WAITING_STATUS;
         }
 
         //other data
@@ -3383,13 +3384,14 @@ class OrderCtrl extends Controller
             //
             $order->factory_id = $factory_id;
             $order->ordered_at = $ordered_at;
-            $order->total_amount = $total_amount;
 
             $order->order_by_milk_card = $order_by_milk_card;
             if ($order_by_milk_card) {
                 $order->milk_card_id = $milk_card_id;
                 $order->milk_card_code = $milk_card_code;
             }
+
+            $order->total_amount = $total_amount;
 
             /* Remain Amount
              * when the customer's info is inputed, check the customer's remain amount.
@@ -3401,6 +3403,18 @@ class OrderCtrl extends Controller
              * if not, %remt is added to customer's remain amount.
              * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
              */
+            $order->remaining_amount = $total_amount;
+        }
+        else if (!$order->isNewPassed() && $order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
+            //
+            // 对于没通过的现金订单，重新设置金额
+            //
+            if ($order->status == Order::ORDER_NEW_WAITING_STATUS) {
+                // 退回信用余额，因为下面会再扣的
+                $station->delivery_credit_balance += $order->total_amount;
+            }
+
+            $order->total_amount = $total_amount;
             $order->remaining_amount = $total_amount;
         }
 

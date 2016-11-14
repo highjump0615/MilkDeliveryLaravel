@@ -12,5 +12,6 @@ Homestead.json
 /storage/framework/cache/
 /storage/framework/sessions/
 /storage/framework/views/
+/storage/logs/
 /public/ueditor/php/upload/
 /public/csv/

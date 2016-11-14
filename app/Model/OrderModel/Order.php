@@ -703,7 +703,6 @@ class Order extends Model
         }
         $addr_to_xiaoqu = trim($addr_to_xiaoqu);
 
-
         if($addr_to_xiaoqu)
         {
             $mda = MilkManDeliveryArea::where('address', $addr_to_xiaoqu)->get()->first();
@@ -916,6 +915,21 @@ class Order extends Model
         if ($this->status == Order::ORDER_ON_DELIVERY_STATUS ||
             $this->status == Order::ORDER_PASSED_STATUS ||
             $this->status == Order::ORDER_STOPPED_STATUS) {
+
+            $result = true;
+        }
+
+        return $result;
+    }
+
+    /**
+     * 新订单还没审核通过，包括待审核
+     */
+    public function isNewPassed() {
+        $result = false;
+
+        if ($this->status != Order::ORDER_NEW_NOT_PASSED_STATUS &&
+            $this->status != Order::ORDER_NEW_WAITING_STATUS) {
 
             $result = true;
         }
