@@ -1,8 +1,12 @@
 @extends('weixin.layout.master')
-@section('title','新提交待审核')
+@section('title','订单列表')
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:history.back();"></a>
+        @if(isset($set_type))
+            <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
+        @else
+            <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
+        @endif
         <h1>订单列表</h1>
     </header>
     @forelse($orders as $o)
@@ -12,6 +16,7 @@
                 <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
             </div>
             @forelse($o->order_products as $op)
+                <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">
                 <div class="ordtop clearfix">
                     <img class="ordpro" src="<?=asset('img/product/logo/' . $op->product->photo_url1)?>">
                     <div class="ord-r">
@@ -24,6 +29,7 @@
                     </div>
                     <div class="ordye">金额：{{$op->total_amount}}元</div>
                 </div>
+                </a>
             @empty
                 <div>没有订单项目</div>
             @endforelse
@@ -57,6 +63,7 @@
         </div>
     @empty
     @endforelse
+    @include('weixin.layout.footer')
 @endsection
 @section('script')
 @endsection

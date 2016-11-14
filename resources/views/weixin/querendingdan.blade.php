@@ -3,7 +3,7 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         <h1>确认订单</h1>
     </header>
     <div class="ordsl">
@@ -56,7 +56,7 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if(count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && !isset($message) )
+        @if( $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled >去付款</button>
@@ -67,7 +67,7 @@
     <script type="text/javascript">
 
         $(document).ready(function(){
-            @if(isset($message))
+            @if(isset($message) && $message!="")
                 var message = "{{$message}}";
                 show_info_msg(message);
             @endif
@@ -77,6 +77,9 @@
             var comment = $('#comment').val();
             var group_id =$('#group_id').val();
 
+            var order_bt = $(this);
+            $(order_bt).prop('disabled', true);
+
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
@@ -85,12 +88,15 @@
                     console.log(data);
                     if(data.status == 'success')
                     {
+                        $(order_bt).prop('disabled', true);
+
                         var order_id = data.order_id;
                         window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
                     } else {
                         if(data.message)
                         {
                             show_err_msg(data.message);
+                            $(order_bt).prop('disabled', false);
                         }
                     }
                 },
@@ -101,16 +107,14 @@
         });
 
         function go_page_address_list() {
-            var group_id = $('#group_id').val();
-            var wechat_user_id = $('#wxuser_id').val();
-            window.location = SITE_URL + "weixin/dizhiliebiao?user="+wechat_user_id+"&&group_id="+group_id;
+            window.location = SITE_URL + "weixin/dizhiliebiao";
         }
 
         //edit order product
         $('button.edit_order_product').click(function () {
             var wechat_order_product_id = $(this).data('pid');
             var group_id = $('#group_id').val();
-            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+"&&group_id="+group_id;
+            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id;
         })
 
     </script>

@@ -24,7 +24,6 @@
                     <input class="lgin2" id="code" name="verify_code" type="text" placeholder="请输入验证码">
                     <button type="button" class="fsyzm" onclick="send_verify_code_to_phone();">发送验证码</button>
                 </div>
-                <input type="hidden" value="{{$group_id}}" id="group_id" name="group_id"/>
                 <button class="lgcx"  type="button" onclick="check_verify_code();">点击查询</button>
             </div>
         </div>
@@ -78,7 +77,7 @@
                     console.log(data);
                     if(data.status == "success")
                     {
-                        window.location = SITE_URL+"weixin/querendingdan?group_id="+group_id;
+                        window.location = SITE_URL+"weixin/querendingdan";
                     } else {
                         show_warning_msg('验证代码不正确，请重试.');
                     }

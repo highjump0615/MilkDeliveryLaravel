@@ -6,13 +6,11 @@
 
     <div class="top">
         <h1>个人中心</h1>
-        <a class="topa1" href="javascript:history.back();">&nbsp;</a>
         <a class="topa2" href="javascript:void(0)"></a></div>
 
     <div class="cen_t">
         <img src="{{$user->image_url}}">
         <p>{{$user->name}}</p>
-
     </div>
 
     <div class="cen_1">

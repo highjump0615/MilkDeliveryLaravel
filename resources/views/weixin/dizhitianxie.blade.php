@@ -18,16 +18,16 @@
             @endif
             <ul class="adrul">
                 <li>
-                    <label>收货人：</label><input name="name" type="text" value="{{$name}}">
+                    <label>收货人：</label><input required name="name" type="text" value="{{$name}}">
                 </li>
                 <li>
-                    <label>电话：</label><input name="phone" type="text" value="{{$phone}}">
+                    <label>电话：</label><input required pattern="\d{11}" name="phone" type="text" value="{{$phone}}">
                 </li>
                 <li>
                     <div style="position: relative;">
                         <span>所在地区：</span>
                         <div style="display: inline-block; ">
-                            <input id="city-picker3" name="address" class="form-control" readonly type="text"
+                            <input required id="city-picker3" name="address" class="form-control" type="text"
                                    value="{{$address}}" data-toggle="city-picker">
                         </div>
                     </div>
@@ -35,7 +35,7 @@
 
                 </li>
                 <li>
-                    <label>门牌号：</label><input name="sub_address" type="text" placeholder="如：7-3-503"
+                    <label>门牌号：</label><input required name="sub_address" type="text" placeholder="如：7-3-503"
                                               value="{{$sub_address}}">
                 </li>
 

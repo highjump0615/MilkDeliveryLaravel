@@ -1,5 +1,5 @@
 @extends('weixin.layout.master')
-@section('title','天天送')
+@section('title','产品详情')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
@@ -18,17 +18,25 @@
     <div class="bann">
         <div class="swiper-container">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><img class="bimg" src="{{$file1}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file2}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file3}}"></div>
-                <div class="swiper-slide"><img class="bimg" src="{{$file4}}"></div>
+                @if($file1)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file1}}"></div>
+                @endif
+                @if($file2)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file2}}"></div>
+                @endif
+                @if($file3)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file3}}"></div>
+                @endif
+                @if($file4)
+                    <div class="swiper-slide"><img class="bimg" src="{{$file4}}"></div>
+                @endif
             </div>
             <!-- Add Pagination -->
             <div class="swiper-pagination"></div>
         </div>
     </div>
     <div class="protop">
-        <h3>{{$product->name}} {{$product->bottle_type_name}}</h3>
+        <h3>{{$product->name}}</h3>
         <p>{{$product->introduction}}</p>
         <table class="prodz" width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
@@ -70,10 +78,10 @@
         </div>
 
         <div class="dnsall">
-            <div class="dnsts">
+            <!--div class="dnsts">
                 订购天数：<span>16天</span>
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
-            </div>
+            </div-->
             <p>规格：{{$product->bottle_type_name}}</p>
             <p>保质期：{{$product->guarantee_period}}天</p>
             <p>储藏条件：{{$product->guarantee_req}}</p>
@@ -86,44 +94,9 @@
         <div class="dnxti"><strong>详细介绍</strong>
             <span>DETAILED INTRODUCTION</span>
         </div>
-        <div class="nnadv">
-            精选内蒙古草原有机牧场自然好牛奶发酵
-        </div>
-        <dl class="dnsdl clearfix">
-            <dt>营养丰富</dt>
-            <dd>在原味酸奶的基础上添加"维C之王"的好几山东撒
-                发生的都擦碘伏。
-            </dd>
-        </dl>
-        <dl class="dnsdl clearfix dnsdl2">
-            <dt>有机牛奶</dt>
-            <dd>在原味酸奶的基础上添加"维C之王"的好几山东撒
-                发生的都擦碘伏。
-            </dd>
-        </dl>
-        <div class="nnadv2">
-            精选内蒙古草原有机牧场自然好牛奶发酵
-        </div>
+        <div id="uecontent">
 
-        <div class="nntj pa2t">
-            <p><span>条件一：</span>源于有机农业生产体系</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
         </div>
-
-        <div class="nntip"><p>种植、养殖<span>全部过程遵循</span>自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <img class="bimg" src="images/bann.jpg">
-        </div>
-
     </div>
     <div class="sppj pa2t">
         <div class="sppti">商品评价</div>
@@ -163,15 +136,64 @@
 
     <script type="text/javascript">
 
+        var obj = $('#uecontent');
+        var content = '{{$product->uecontent}}';
+
+        obj.html(content);
+
+        $(obj).each(function () {
+            var $this = $(this);
+            var t = $this.text();
+            $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
+        })
+
+        $('select#order_type').change(function(){
+
+            var count_input = $('#total_count');
+
+            var cur_val = $(this).val();
+            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
+            {
+                count_input.attr('min', 30);
+                count_input.val(30);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+                count_input.attr('min', 90);
+                count_input.val(90);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+                count_input.attr('min', 180);
+                count_input.val(180);
+            }
+        });
+
+
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
                 pagination: '.swiper-pagination',
                 paginationClickable: true,
                 spaceBetween: 30,
             });
+            $('select#order_type').trigger('change');
         });
 
-        $('button#make_order').click(function(){
+        function check_bottle_count(){
+            var count_input = $('#total_count');
+            var min_b = parseInt( $(count_input).attr('min'));
+            var current_b = $(count_input).val();
+            if(current_b < min_b)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        $('button#make_order').click(function () {
+
+            if(check_bottle_count())
+            {
+                show_info_msg('请正确设置订奶数量');
+                return;
+            }
+
             var send_data = new FormData();
 
             //product_id
@@ -194,13 +216,11 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    if(data.status == "success" && data.group_id)
-                    {
-                        window.location.href = SITE_URL+"weixin/querendingdan?group_id="+data.group_id;
+                    if (data.status == "success") {
+                        window.location.href = SITE_URL + "weixin/querendingdan";
                     } else {
-                        if (data.redirect_path == "phone_verify" && data.group_id)
-                        {
-                            window.location.href = SITE_URL+"weixin/dengji?group_id="+data.group_id;
+                        if (data.redirect_path == "phone_verify") {
+                            window.location.href = SITE_URL + "weixin/dengji";
                         }
                     }
                 },
@@ -213,6 +233,7 @@
         });
 
         $('button#submit_order').click(function (e) {
+
             e.preventDefault();
             var send_data = new FormData();
 
@@ -236,11 +257,10 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    if(data.status == "success")
-                    {
+                    if (data.status == "success") {
                         show_success_msg("附加产品成功");
                         //go to shanpin liebiao
-                        window.location.href = SITE_URL+"weixin/shangpinliebiao";
+                        window.location.href = SITE_URL + "weixin/shangpinliebiao";
                     }
                 },
                 error: function (data) {

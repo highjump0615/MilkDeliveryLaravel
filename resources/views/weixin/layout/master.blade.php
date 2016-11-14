@@ -10,6 +10,8 @@
     <title>@yield('title')</title>
 
     <link href="<?=asset('css/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?=asset('font-awesome/css/font-awesome.css') ?>" rel="stylesheet">
+
     <link rel="stylesheet" href="<?=asset('weixin/css/themes/base/jquery-ui.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/style.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">

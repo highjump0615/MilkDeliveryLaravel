@@ -32,6 +32,12 @@ function show_dismissable_warning_msg(msg){
     $.notify(msg, 'warn', {'autoHide': false});
 }
 
+function show_dismissable_info_msg(msg){
+
+    $.notify(msg, 'info', {'autoHide': false});
+}
+
+
 function show_warning_msg(msg){
 
     $.notify(msg, 'warn');

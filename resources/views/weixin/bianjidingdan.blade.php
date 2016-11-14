@@ -1,5 +1,5 @@
 @extends('weixin.layout.master')
-@section('title','天天送')
+@section('title','产品更改')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
@@ -11,8 +11,8 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
-        <h1>产品详情</h1>
+        <a class="headl fanh" href="{{url('weixin/querendingdan')}}"></a>
+        <h1>产品更改</h1>
 
     </header>
     <div class="bann">
@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="protop">
-        <h3>{{$product->name}} {{$product->bottle_type_name}}</h3>
+        <h3>{{$product->name}}</h3>
         <p>{{$product->introduction}}</p>
         <table class="prodz" width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
@@ -159,42 +159,8 @@
         <div class="dnxti"><strong>详细介绍</strong>
             <span>DETAILED INTRODUCTION</span>
         </div>
-        <div class="nnadv">
-            精选内蒙古草原有机牧场自然好牛奶发酵
-        </div>
-        <dl class="dnsdl clearfix">
-            <dt>营养丰富</dt>
-            <dd>在原味酸奶的基础上添加"维C之王"的好几山东撒
-                发生的都擦碘伏。
-            </dd>
-        </dl>
-        <dl class="dnsdl clearfix dnsdl2">
-            <dt>有机牛奶</dt>
-            <dd>在原味酸奶的基础上添加"维C之王"的好几山东撒
-                发生的都擦碘伏。
-            </dd>
-        </dl>
-        <div class="nnadv2">
-            精选内蒙古草原有机牧场自然好牛奶发酵
-        </div>
+        <div id="uecontent">
 
-        <div class="nntj pa2t">
-            <p><span>条件一：</span>源于有机农业生产体系</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <p><span>条件二：</span>种植、养殖全部过程遵循自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-        </div>
-
-        <div class="nntip"><p>种植、养殖<span>全部过程遵循</span>自然规律、生态规律严禁使用
-                化肥。农药。无刺激生长调节剂、催奶剂、食品添加剂
-                等人工合成的化学物质</p>
-            <img class="bimg" src="images/bann.jpg">
         </div>
 
     </div>
@@ -236,6 +202,18 @@
 
     <script type="text/javascript">
         var calen, week;
+
+        var obj = $('#uecontent');
+        var content = '{{$product->uecontent}}';
+
+        obj.html(content);
+
+        $(obj).each(function (){
+            var $this = $(this);
+            var t = $this.text();
+            $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
+        })
+        
         $(function () {
             calen = new showfullcalendar("calendar");
             week = new showmyweek("week");
@@ -276,6 +254,8 @@
                 startDate: able_date,
             });
 
+            $('select#order_type').trigger('change');
+
             init_wechat_order_product();
 
         });
@@ -285,7 +265,57 @@
             window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
         });
 
+        $('select#order_type').change(function(){
+
+            var count_input = $('#total_count');
+
+            var cur_val = $(this).val();
+            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
+            {
+                count_input.attr('min', 30);
+                count_input.val(30);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+                count_input.attr('min', 90);
+                count_input.val(90);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+                count_input.attr('min', 180);
+                count_input.val(180);
+            }
+        });
+
+
+        $('select#order_type').change(function(){
+
+            var count_input = $('#total_count');
+
+            var cur_val = $(this).val();
+            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
+            {
+                count_input.attr('min', 30);
+                count_input.val(30);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+                count_input.attr('min', 90);
+                count_input.val(90);
+            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+                count_input.attr('min', 180);
+                count_input.val(180);
+            }
+        });
+
+
+        function check_bottle_count(){
+            var count_input = $('#total_count');
+            var min_b = parseInt( $(count_input).attr('min'));
+            var current_b = $(count_input).val();
+            if(current_b < min_b)
+            {
+                return true;
+            }
+            return false;
+        }
+
         $('button#submit_order').click(function (e) {
+
             e.preventDefault();
             var send_data = new FormData();
 
@@ -388,6 +418,8 @@
         function init_wechat_order_product()
         {
             var delivery_type = parseInt("{{$wop->delivery_type}}");
+
+            $('#total_count').val("{{$wop->total_count}}");
 
             $('#delivery_type').find('option[data-value="'+delivery_type+'"]').prop('selected', true);
 

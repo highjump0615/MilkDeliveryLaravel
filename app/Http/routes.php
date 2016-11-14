@@ -915,8 +915,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 Route::group(['prefix'=>'/weixin'], function(){
     /* home page */
     Route::get('/qianye',  'WeChatCtrl@showIndexPage');
-    Route::post('/api/set_session_address',  'WeChatCtrl@set_session_address');
-
+    Route::post('api/set_session_address',  'WeChatCtrl@set_session_address');
 
     /* product list */
     Route::get('/shangpinliebiao', 'WeChatCtrl@shangpinliebiao');
