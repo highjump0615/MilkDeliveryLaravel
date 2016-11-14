@@ -9,6 +9,8 @@ Homestead.json
 /public/img/product/
 /public/img/station/
 /public/uploads/images/logo/
-/storage
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
 /public/ueditor/php/upload/
 /public/csv/
