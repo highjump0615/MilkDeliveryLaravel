@@ -151,11 +151,15 @@ class DSProductionPlanCtrl extends Controller
 
             foreach($order_products as $op){
                 $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                    ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                    ->where(function($query) {
+                        $query->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
+                        $query->orwhere('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+                    })
                     ->where('produce_at',$currentDate_str)
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('order_product_id',$op->id)
-                    ->get()->first();
+                    ->get()
+                    ->first();
 
                 if($plan == null){
                 }

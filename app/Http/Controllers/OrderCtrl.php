@@ -4458,7 +4458,7 @@ class OrderCtrl extends Controller
 
             // 发送通知
             $notification = new DSNotification();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过 -- ", $customer_name . "用户订单审核已经通过！！");
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过", $customer_name . "用户订单审核已经通过！！");
 
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
