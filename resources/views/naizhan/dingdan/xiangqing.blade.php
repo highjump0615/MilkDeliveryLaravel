@@ -10,6 +10,16 @@
     .btn {
         margin: 0 8px;
     }
+
+    .calendar_show {
+        width: 0px;
+        margin: 0;
+        top: -30px;
+        left: 70px;
+        position: relative;
+        visibility: hidden;
+        height: 0;
+    }
 </style>
 @endsection
 @section('content')
@@ -192,7 +202,16 @@
                                     <td>{{$order_products[$i]->delivery_type_name}}</td>
                                     <td>
                                         @if($order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY && $order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY  )
-                                            <button class="btn btn-outline">查看日历</button>
+                                            <button class="btn btn-outline show_delivery_date">查看日历</button>
+                                            <div class="calendar_show show_only">
+                                                <div class="input-group date picker">
+                                                    <input type="text" class="form-control delivery_dates" name="delivery_dates[]"
+                                                           value="{{$order_products[$i]->custom_order_dates}}">
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                </div>
+                                            </div>
                                         @endif
                                     </td>
                                     <td>{{$order_products[$i]->total_amount}}</td>
@@ -324,6 +343,18 @@
 @endsection
 @section('script')
     <script type="text/javascript">
+
+        var firstday = startofweek();
+        var lastday = endofweek();
+
+        // 解析当前服务器的时间 (2014-08-12 09:25:24)
+        var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
+        time = time.split(':');
+        dateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
+
+        var firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
+        var lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
+
 
         //set calendar start date limit for various status
         var today = new Date();

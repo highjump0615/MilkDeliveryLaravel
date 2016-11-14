@@ -214,6 +214,7 @@ class WeChatCtrl extends Controller
     public function dingdanrijihua(Request $request)
     {
 
+
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
@@ -246,10 +247,21 @@ class WeChatCtrl extends Controller
                 }
             }
         }
-        return view('weixin.dingdanrijihua', [
-            'plans' => $plans,
-            'today' => $today,
-        ]);
+
+        if($request->has('from'))
+        {
+            return view('weixin.dingdanrijihua', [
+                'plans' => $plans,
+                'today' => $today,
+                'from' => 'geren',
+            ]);
+        } else {
+            return view('weixin.dingdanrijihua', [
+                'plans' => $plans,
+                'today' => $today,
+            ]);
+        }
+
     }
 
 
@@ -1180,6 +1192,17 @@ class WeChatCtrl extends Controller
         $gap_day = $factory->gap_day;
         $factory_order_types = $factory->factory_order_types;
 
+        //get num of order days
+        $total_count = $wop->total_count;
+        if($wop->delivery_type  == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $wop->delivery_type  == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY )
+        {
+            $count_per_day = $wop->count_per_day;
+            $order_day_num = round($total_count/$count_per_day);
+        } else {
+            $ord_ctrl = new OrderCtrl;
+            $order_day_num = $ord_ctrl->get_number_of_days_for_wechat_product($wop->id);
+        }
+
         return view('weixin.bianjidingdan', [
             "product" => $product,
             'file1' => $file1_path,
@@ -1193,6 +1216,7 @@ class WeChatCtrl extends Controller
             'factory_order_types' => $factory_order_types,
             'wop' => $wop,
             'group_id' => $group_id,
+            'order_day_num'=>$order_day_num,
         ]);
     }
 

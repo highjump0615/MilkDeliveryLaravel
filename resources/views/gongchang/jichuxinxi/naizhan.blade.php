@@ -125,8 +125,6 @@
                                 <th data-sort-ignore="true">图片</th>
                                 <th data-sort-ignore="true">编号</th>
                                 <th data-sort-ignore="true">名称</th>
-                                <th data-sort-ignore="true">负责人</th>
-                                <th data-sort-ignore="true">电话</th>
                                 <th data-sort-ignore="true">配送范围</th>
                             </tr>
                             </thead>

@@ -10,11 +10,12 @@
             <form method="post" action="{{url('/weixin/gouwuche/delete_cart')}}">
                 <input type="hidden" class="cart_id" name="cart_id" value="{{$c->id}}">
                 <div class="ordtop clearfix">
+                    <div class="ord-l">
+                        <input class="ordxz cart_check" name="" type="checkbox" data-cartid="{{$c->id}}" checked>
+                    </div>
                     <img class="ordpro" src="<?=asset('img/product/logo/' . $c->order_item->product->photo_url1)?>">
-
                     <div class="ord-r">
                         <button class="ordxz remove" type="submit"><i class="fa fa-remove"></i></button>
-                        <input class="ordxz cart_check" name="" type="checkbox" data-cartid="{{$c->id}}" checked>
                         {{$c->order_item->product->name}}
                         <br>
                         单价：{{$c->order_item->product_price}}
@@ -33,7 +34,7 @@
     <div class="account clearfix">
         <div class="ac-l">
             共{{$total_count}}瓶<br>
-            享受：季单优惠<br>
+            {{--享受：季单优惠<br>--}}
             总计：￥{{$total_amount}}
         </div>
 

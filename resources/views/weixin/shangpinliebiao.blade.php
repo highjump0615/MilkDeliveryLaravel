@@ -1,8 +1,9 @@
 @extends('weixin.layout.master')
-@section('title', '投诉建议')
+@section('title', '商品列表')
 
 @section('css')
     <style>
+
         .swiper-container {
             width: 100%;
             height: 30px;
@@ -10,9 +11,10 @@
         }
 
         .swiper-slide {
+            min-width:90px;
+            margin-left:7px;
             text-align: center;
             background: #fff;
-
             /* Center slide text vertically */
             display: -webkit-box;
             display: -ms-flexbox;
@@ -30,6 +32,7 @@
 
         /*RCU*/
         .swiper-slide div {
+            min-width:100px;
             width: 100%;
             text-align: center;
             line-height: 28px;
@@ -104,7 +107,7 @@
         });
 
         var current_menu = 1;
-        $(document).ready(function(){
+        $(document).ready(function () {
             set_current_menu();
         });
     </script>

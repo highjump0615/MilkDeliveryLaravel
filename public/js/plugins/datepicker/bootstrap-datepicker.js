@@ -483,7 +483,7 @@
         // 设置初始数量
         setInitValue:function(dayvalues){
             dayvalues = dayvalues.split(',');
-            if(this.o.class == "month_calendar")
+            if( this.o.class.toString().includes("month_calendar") )
             {
                 for(var i =0; i< dayvalues.length; i++)
                 {
@@ -503,7 +503,12 @@
                     this.bottles[i] = new bottle(new_date, value);
 
                     var td = this.picker.find('.datepicker-days table tbody tr td.day[data-date='+date+']');
-                    $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                    if(this.o.class.toString().includes('only_show'))
+                    {
+                        $(td).append('<input disabled class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                    } else {
+                        $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                    }
                 }
                 console.log(this.bottles);
             } else {
@@ -526,7 +531,10 @@
 
                     var new_date = UTCDate(new_year, new_month, new_day);
 
-                    $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                    if(this.o.class.toString().includes('only_show'))
+                        $(td).append('<input disabled class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
+                    else
+                        $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
 
                     this.dates[i] = new_date;
                     this.bottles[i] = new bottle(new_date, value);
@@ -1203,7 +1211,7 @@
                             }
                             break;
                         case 'td':
-                            if (target.is('.day') && !target.is('.disabled')) {
+                            if (target.is('.day') && !target.is('.disabled') && !this.o.class.toString().includes('only_show')) {
                                 day = parseInt(target.text(), 10) || 1;
                                 year = this.viewDate.getUTCFullYear();
                                 month = this.viewDate.getUTCMonth();
