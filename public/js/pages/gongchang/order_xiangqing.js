@@ -305,7 +305,7 @@ $('button.show_delivery_date').click(function(){
 function initBottleNumCalendar(tr) {
     var calendar = tr.find('.calendar_show')[0];
 
-    var selectDeliveryType = tr.find('.order_delivery_type')[0];
+    var selectDeliveryType = tr.find('.show_delivery_date')[0];
     var pick = tr.find('.picker')[0];
 
     // 获取输入的每次瓶数

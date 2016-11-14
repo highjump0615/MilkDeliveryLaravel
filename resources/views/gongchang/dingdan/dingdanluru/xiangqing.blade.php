@@ -206,7 +206,7 @@
                             <th data-sort-ignore="true">单数</th>
                             <th data-sort-ignore="true">瓶/次</th>
                             <th data-sort-ignore="true">配送规则</th>
-                            <th data-sort-ignore="true">配送日期</th>
+                            <th data-sort-ignore="true">起送日期</th>
                             <th data-sort-ignore="true">订单余额</th>
                         </tr>
                         </thead>
@@ -221,22 +221,26 @@
                                     <td>{{$order_products[$i]->remain_count}}</td>
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td class="order_product_count_per">{{$order_products[$i]->count_per_day}}</td>
-                                    <td class="order_delivery_type" data-type="{{$order_products[$i]->delivery_type}}">{{$order_products[$i]->delivery_type_name}}</td>
-                                    {{--<td>{{$order_products[$i]->start_at}}</td>--}}
                                     <td>
-                                        @if($order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY && $order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY  )
-                                        <button class="btn btn-outline show_delivery_date">查看日历</button>
+                                        <button class="btn btn-outline show_delivery_date" data-type="{{$order_products[$i]->delivery_type}}">
+                                            {{$order_products[$i]->delivery_type_name}}
+                                        </button>
+
+                                        <!-- 日期 -->
+                                        @if ($order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY &&
+                                            $order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY)
                                         <div class="calendar_show show_only">
                                             <div class="input-group date picker">
                                                 <input type="text" class="form-control delivery_dates" name="delivery_dates[]"
-                                                       value="{{$order_products[$i]->custom_order_dates}}">
-                                                        <span class="input-group-addon">
-                                                            <i class="fa fa-calendar"></i>
-                                                        </span>
+                                                       value="{{$order_products[$i]->custom_order_dates}}" />
+                                                <span class="input-group-addon">
+                                                    <i class="fa fa-calendar"></i>
+                                                </span>
                                             </div>
                                         </div>
                                         @endif
                                     </td>
+                                    <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->total_amount}}</td>
                                 </tr>
                             @endfor
