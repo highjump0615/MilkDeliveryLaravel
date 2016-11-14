@@ -501,8 +501,8 @@ class WeChatCtrl extends Controller
 
     public function toushu(Request $request)
     {
-        $phone1 = "123-3456";
-        $phone2 = "321-6543";
+        $phone1 = "12235236243";
+        $phone2 = "32123412312";
         return view('weixin.toushu', [
             "phone1" => $phone1,
             "phone2" => $phone2,
