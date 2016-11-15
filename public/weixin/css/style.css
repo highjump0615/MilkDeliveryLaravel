@@ -14,7 +14,8 @@ input, button { -webkit-appearance: none; border-radius:0; outline:none}
 button:active{position:relative; top:1px;}
 .cred,a.cred{ color:#F00}
 .bimg{ display: block;width: 100%;height: auto; max-height:640px;}
-.under_banner .bimg{padding: 0}
+.under_banner .bimg{padding: 0;}
+.bann .swiper-slide img.bimg{height:100%}
 .pa2{ padding:3%}
 .pa2t{ padding:0}
 .plan_result{text-align:center}
@@ -272,6 +273,8 @@ a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../image
 .ordxz{ float:right;width:25px; height:25px; border:1px solid #6e6e6e; border-radius: 2px;}
 .ordxz:checked{ background:#ed5a02 url(../images/mrdz.png) no-repeat 50% 70%; background-size:80%; border-color:#ed5a02; margin:0;}
 .ordxz.remove{margin-left: 5px;background-color:#ed5a02;color:white;}
+
+.del_selected{ float:right; height:25px; border:1px solid #6e6e6e; border-radius: 2px; margin-top: 5px;background-color:#ed5a02;color:white;}
 .account{ position:fixed; left:0; bottom:42px; width:100%; padding:1% 1% 1% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
 .ac-l{ float:left; width:40%; font-size:1.2rem; line-height:1.2}
 .ac-r{ float:right; width:60%; text-align:right}

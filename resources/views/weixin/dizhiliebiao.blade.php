@@ -15,7 +15,7 @@
                 <input type="hidden" name="address" value="{{$a->id}}">
                 <div class="adrtop pa2t">
                     <p>{{$a->name}} {{$a->phone}}<br>{{$a->address}}</p>
-                    <p>{{$a->getSubAddress}}</p>
+                    <p>{{$a->sub_address}}</p>
                 </div>
             </form>
             <div class="mrsz clearfix pa2t">

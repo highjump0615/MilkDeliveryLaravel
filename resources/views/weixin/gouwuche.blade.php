@@ -27,9 +27,11 @@
             </form>
         @empty
             <div class="ordtop clearfix">
-                没有项目
+                <p>没有项目</p>
             </div>
         @endforelse
+        <button id="del_selected" @if(count($carts) == 0) disabled @endif class="del_selected"><i class="fa fa-remove"></i> 删除所选</button>
+
     </div>
     <div class="account clearfix">
         <div class="ac-l">
@@ -56,6 +58,37 @@
         $(document).ready(function () {
             set_current_menu();
         });
+
+        $('#del_selected').click(function(){
+
+            var cart_ids = "";
+            // get all checked carts
+            $('input.cart_check:checked').each(function(){
+                if(cart_ids == "")
+                {
+                    cart_ids = $(this).data('cartid');
+                } else {
+                    cart_ids +=","+$(this).data('cartid');
+                }
+            });
+            if(!cart_ids)
+                return;
+
+            $.ajax({
+                type:"POST",
+                url: SITE_URL+"weixin/gouwuche/api/delete_selected_wop",
+                data: {'cart_ids':cart_ids},
+                success: function(data){
+                    location.reload();
+                },
+                error: function(data){
+                    console.log(data);
+                }
+            })
+
+
+        });
+
         $('#process_cart').click(function(){
             var cart_ids = "";
             // get all checked carts
