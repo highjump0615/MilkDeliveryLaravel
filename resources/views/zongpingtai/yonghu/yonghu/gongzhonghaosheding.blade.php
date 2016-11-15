@@ -32,156 +32,43 @@
 		<div class="row wrapper">
 			<form action="{{url('/zongpingtai/yonghu/gongzhonghaosheding', $factory_id)}}" method="post" enctype="multipart/form-data">
 			<div class="wrapper-content">
-				
-				<div class="col-lg-12 gray-bg">
-					<label class="col-lg-12" style="padding:5px;">公众号信息</label>
-				</div>
-				<div class="col-lg-12">
-					<div class="col-lg-1"></div>
-					<div class="col-lg-10"  style="padding-top:10px;">
-						<div class="col-lg-12">
-							<table class="table footable table-bordered">
-									<tbody>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-										<tr>
-											<td class="col-md-6"></td>
-											<td class="col-md-6"></td>
-										</tr>
-									</tbody>
-								</table>
-						</div>
-					</div>
-					<div class="col-lg-1"></div>
-				</div>
-				
-				<div class="col-lg-12 gray-bg">
-					<label class="col-lg-12" style="padding:5px;">API接口</label>
-				</div>
-				&nbsp;
-				<div class="col-lg-12">
-					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppID(公众号):</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+				<div class="wrapper-content">
+                                        <div class="feed-element col-md-12">
+                                            <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信公众号</label>
 					</div>
 					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppSecret:</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+                                            <label class="control-label col-lg-4 col-md-5"> AppID(公众号):</label>
+                                            <div class="col-lg-5 col-md-7">{{$factory->app_id}}</div>
 					</div>
 					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">二维码:</label>
-						<div class="col-lg-4 col-md-7">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
-						<div class="col-lg-1">
-						<button style="width:100%;" class="btn btn-success">上传</button>
-						</div>
+                                            <label class="control-label col-lg-4 col-md-5"> AppSecret:</label>
+                                            <div class="col-lg-5 col-md-7">{{$factory->app_secret}}</div>
 					</div>
-					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppID(公众号):</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+                                        <div class="feed-element col-md-12">
+                                            <label class="control-label col-lg-4 col-md-5"> 服务器接口 (URL):</label>
+                                            <div class="col-lg-5 col-md-7">{{$factory->app_url}}</div>
 					</div>
-					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppSecret:</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+                                        <div class="feed-element col-md-12">
+                                            <label class="control-label col-lg-4 col-md-5"> 令牌 (Token)：</label>
+                                            <div class="col-lg-5 col-md-7">{{$factory->app_token}}</div>
 					</div>
-					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppID(公众号):</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+                                        <div class="feed-element col-md-12">
+                                            <label class="control-label col-lg-4 col-md-3"> 消息加解密密钥 (EncodingAESKey)：</label>
+                                            <div class="col-lg-5 col-md-3">{{$factory->app_encoding_key}}</div>
 					</div>
-					<div class="feed-element col-md-12">
-						<label class="control-label col-lg-2 col-md-3">AppSecret:</label>
-						<div class="col-lg-5 col-md-8">
-							<input type="" placeholder="" style="width:100%;" value="">
-						</div>
+                                        <div class="feed-element col-md-12">
+                                            <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信商户号</label>
 					</div>
-
-				</div>
-				
-				<div class="col-lg-12 gray-bg">
-					<label class="col-lg-12" style="padding:5px;">自定义菜单</label>
-				</div>
-
-				<?php
-				$cn_nums = ['','一','二','三'];
-				$submenus = ['一级菜单','二级菜单1','二级菜单2','二级菜单3','二级菜单4','二级菜单5'];
-				$menu_types = ['未设定', 'Click', 'App', ''];
-				?>
-				@for($menu_no=1; $menu_no<=3; $menu_no++)
-				<div class="col-lg-12">
-					<div class="col-lg-1"></div>
-					<div class="col-lg-10"  style="padding-top:10px;">
-						<label class="col-lg-12 gray-bg">第{{$cn_nums[$menu_no]}}菜单</label>
-						<div class="col-lg-12">
-							<table class="table footable table-bordered">
-									<thead>
-										<tr>
-											<th class="col-md-3">级别</th>
-											<th class="col-md-3">类型</th>
-											<th class="col-md-3">名称</th>
-											<th class="col-md-3">关键字级域名</th>
-										</tr>
-									</thead>
-									<tbody>
-
-									@for($submenu_no=0; $submenu_no<=5; $submenu_no++)
-										<tr>
-											<td>{{$submenus[$submenu_no]}}</td>
-											<td>
-												<select data-placeholder="" class="chosen-select" style="width:100%;" tabindex="2">
-													@if($submenu_no == 0)
-														<option value="1">{{$menu_types[1]}}</option>
-														<option value="0">{{$menu_types[0]}}</option>
-													@else
-														<option value="2">{{$menu_types[2]}}</option>
-														<option value="0">{{$menu_types[0]}}</option>
-													@endif
-												</select>
-											</td>
-											<td><input type="text" style="width:100%;"></td>
-											<td><input type="text" style="width:100%;"></td>
-										</tr>
-									@endfor
-									</tbody>
-								</table>
-						</div>
+                                        <div class="feed-element col-md-12">
+                                            <label class="control-label col-lg-4 col-md-3"> 微信支付商户号(Mch Id): </label>
+                                            <div class="col-lg-5 col-md-3">{{$factory->app_mchid}}</div>
 					</div>
-					<div class="col-lg-1"></div>
-				</div>
-				@endfor
-				
+                                    
+                                     <div class="feed-element col-md-12">
+                                            <label class="control-label col-lg-4 col-md-3"> 通信密钥/商户支付密钥 (api密钥): </label>
+                                            <div class="col-lg-5 col-md-3">{{$factory->app_paysignkey}}</div>
+					</div>				 
+				 <br />
 				<div class="col-lg-12 gray-bg">
 					<label class="col-lg-12" style="padding:5px;">广告管理</label>
 				</div>
