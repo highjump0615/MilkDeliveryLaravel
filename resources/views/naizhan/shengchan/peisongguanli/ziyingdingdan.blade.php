@@ -10,7 +10,7 @@
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
 				<li class="active">
-					<a href="{{ url('naizhan/shengchan')}}">生产与配送</a>
+					<a href="{{ url('naizhan/shengchan/jihuaguanli')}}">生产与配送</a>
 				</li>
 				<li class="active">
 					<strong>自营订单任务分配</strong>

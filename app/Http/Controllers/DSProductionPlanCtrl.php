@@ -21,6 +21,7 @@ use App\Model\UserModel\Page;
 use DateTime;
 use DateTimeZone;
 use Auth;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Model\ProductModel\ProductPrice;
@@ -42,10 +43,10 @@ class DSProductionPlanCtrl extends Controller
             $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
             $produce_start_date = $produce_Date->format('Y-m-d');
 
-            $start_date = $produce_start_date;
+            $end_date = $produce_start_date;
 
-            $date = str_replace('-','/',$start_date);
-            $end_date = date('Y-m-d',strtotime($date."+5 days"));
+            $date = str_replace('-','/',$end_date);
+            $start_date = date('Y-m-d',strtotime($date."-5 days"));
         }
         else {
             $date = str_replace('-','/',$start_date);
@@ -58,10 +59,20 @@ class DSProductionPlanCtrl extends Controller
         $current_page = 'jihuaguanli';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-//        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->orderBy('produce_start_at')->get()->groupBy(function($sort){return $sort->produce_start_at;});
+        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->wherebetween('produce_start_at', [$start_date, $end_date])->orderby('produce_start_at', 'desc')->get();
 
-//        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_start_at',$start_date)->get();
-        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->wherebetween('produce_start_at', [$start_date, $end_date])->get();
+        $dsplanResult = array();
+
+        foreach ($dsplan as $dp) {
+            $dateIndex = $dp->submit_at;
+
+            if (isset($dsplanResult[$dateIndex])) {
+                $dsplanResult[$dateIndex][] = $dp;
+            }
+            else {
+                $dsplanResult[$dateIndex] = array($dp);
+            }
+        }
 
         $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
             ->where('produce_start_at',$start_date)
@@ -73,9 +84,6 @@ class DSProductionPlanCtrl extends Controller
             $alert_message = '计划已经被牛奶厂接受。';
         }
 
-        $date = str_replace('-','/',$start_date);
-        $start_date = date('Y-m-d', strtotime($date."-1 days"));
-
         return view('naizhan.shengchan.jihuaguanli',[
             // 菜单关联信息
             'pages'         =>$pages,
@@ -84,9 +92,9 @@ class DSProductionPlanCtrl extends Controller
             'current_page'  =>$current_page,
 
             // 计划信息
-            'dsplan'        =>$dsplan,
+            'dsplan'        =>$dsplanResult,
             'alert_message' =>$alert_message,
-            'current_date'  => $start_date,
+            'current_date'  => $request->input('current_date'),
         ]);
     }
 
@@ -130,76 +138,56 @@ class DSProductionPlanCtrl extends Controller
 
         $product_list = Product::where('is_deleted','0')->get();
 
-        if ($is_sent == 0)
-        {
-            foreach($product_list as $pl){
+        foreach($product_list as $pl){
+            $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
+            if($product_price == null)
+                $pl["current_price"] = null;
+            else
+                $pl["current_price"] = $product_price->settle_price;
 
-                $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
-                if($product_price == null)
-                    $pl["current_price"] = null;
-                else
-                    $pl["current_price"] = $product_price->settle_price;
+            $order_products = OrderProduct::where('product_id',$pl->id)->get();
+            $total_count = 0;
+            $total_money = 0;
 
-                $order_products = OrderProduct::where('product_id',$pl->id)->get();
-                $total_count = 0;
-                $total_money = 0;
+            foreach($order_products as $op){
+                $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
+                    ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                    ->where('produce_at',$currentDate_str)
+                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                    ->where('order_product_id',$op->id)
+                    ->get()->first();
 
-                foreach($order_products as $op){
-                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                        ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
-                        ->where('produce_at',$currentDate_str)
-                        ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                        ->where('order_product_id',$op->id)
-                        ->get()->first();
-
-                    if($plan == null){
-                    }
-                    else {
-                        $total_count += $plan->plan_count;
-                        $total_money += $plan->plan_count * $plan->product_price;
-                    }
+                if($plan == null){
                 }
-                $pl["total_count"] = $total_count;
-                $pl["total_money"] = $total_money;
+                else {
+                    $total_count += $plan->plan_count;
+                    $total_money += $plan->plan_count * $plan->product_price;
+                }
             }
-        }
-        else{
-            foreach($product_list as $pl){
+            $pl["total_count"] = $total_count;
+            $pl["total_money"] = $total_money;
 
-                $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
+            if ($is_sent) {
+                $current_delivery_plans = DSProductionPlan::where('produce_start_at', $currentDate_str)
+                    ->where('station_id', $current_station_id)
+                    ->where('product_id', $pl->id)
+                    ->get()
+                    ->first();
 
-                if($product_price == null)
-                    $pl["current_price"] = null;
-                else
-                    $pl["current_price"] = $product_price->settle_price;
-
-                $order_products = OrderProduct::where('product_id',$pl->id)->get();
-                $total_count = 0;
-                $total_money = 0;
-
-                foreach($order_products as $op){
-
-                    $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                        ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
-                        ->where('produce_at',$currentDate_str)
-                        ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                        ->where('order_product_id',$op->id)
-                        ->get()->first();
-
-                    if($plan == null){
-                    }
-                    else {
-                        $total_count += $plan->plan_count;
-                        $total_money += $plan->plan_count * $plan->product_price;
-                    }
-                }
-                $current_delivery_plans = DSProductionPlan::where('produce_start_at',$currentDate_str)->where('station_id',$current_station_id)->where('product_id',$pl->id)->get()->first();
                 $pl["ds_info"] = $current_delivery_plans;
-                $pl["total_count"] = $total_count;
-                $pl["total_money"] = $total_money;
             }
-        }
 
+            // 计算出库日期
+            $current_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+            $strOutDate = $current_date->format('Y-m-d');
+
+            $nDuration = $pl->production_period/24 + 1;
+
+            $strOutDate = str_replace('-','/', $strOutDate);
+            $dateOut = date('Y-m-d',strtotime($strOutDate."+".$nDuration."days"));
+
+            $pl["out_date"] = $dateOut;
+        }
 
         return view('naizhan.shengchan.jihuaguanli.tijiaojihua',[
             'pages'                     =>$pages,
@@ -1002,6 +990,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     public function showNaizhanQianshoujihua(Request $request){
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $child = 'qianshoujihua';
         $parent = 'shengchan';
         $current_page = 'qianshoujihua';
@@ -1050,31 +1039,51 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     public function confirm_Plan_count(Request $request){
+
         $station_id = $request->input('station_id');
         $product_id = $request->input('product_id');
+
         $confirm_count = $request->input('confirm_count');
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $current_date_str = $currentDate->format('Y-m-d');
-        $dsplan = DSProductionPlan::where('station_id',$station_id)->where('produce_end_at',$current_date_str)->where('product_id',$product_id)->
-        where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_SENT)->get()->first();
-        if($dsplan != null){
+
+        $dsplan = DSProductionPlan::where('station_id',$station_id)
+            ->where('produce_end_at',$current_date_str)
+            ->where('product_id',$product_id)
+            ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_SENT)
+            ->get()
+            ->first();
+
+        if ($dsplan != null){
             $dsplan->confirm_count = $confirm_count;
             $dsplan->status = DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED;
             $dsplan->save();
         }
+
         return count($dsplan);
     }
 
     public function refund_BB(Request $request){
+
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $types = $request->input('types');
         $object_type = $request->input('object_type');
         $return_to_factory = $request->input('return_to_factory');
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
+
+        // 奶瓶
         if($types == 1){
-            $bottle_refund = DSBottleRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('bottle_type',$object_type)->get()->first();
+            $bottle_refund = DSBottleRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('bottle_type',$object_type)
+                ->get()
+                ->first();
+
             if($bottle_refund != null){
                 $bottle_refund->return_to_factory = $return_to_factory;
                 $bottle_refund->end_store = $bottle_refund->end_store - $return_to_factory;
@@ -1089,13 +1098,20 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $dsbottle_refunds->save();
             }
         }
+        // 奶框
         elseif($types == 2){
-            $box_refund = DSBoxRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('box_type',$object_type)->get()->first();
+            $box_refund = DSBoxRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('box_type',$object_type)
+                ->get()
+                ->first();
+
             if($box_refund != null){
                 $box_refund->return_to_factory = $return_to_factory;
                 $box_refund->end_store = $box_refund->end_store - $return_to_factory;
                 $box_refund->save();
-            }else{
+            }
+            else{
                 $dsbox_refunds = new DSBoxRefund;
                 $dsbox_refunds->station_id = $current_station_id;
                 $dsbox_refunds->box_type = $object_type;

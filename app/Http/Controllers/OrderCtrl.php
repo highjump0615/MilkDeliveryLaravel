@@ -4492,7 +4492,7 @@ class OrderCtrl extends Controller
 
             // 发送通知
             $notification = new DSNotification();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过 --- ", $customer_name . "用户订单审核未通过！！");
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过", $customer_name . "用户订单审核未通过！！");
 
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;

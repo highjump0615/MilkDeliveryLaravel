@@ -2,9 +2,12 @@ var user_id;
 var limit_money = parseFloat($('#init_business_credit_amount').val()*0.9,2) + parseFloat($('#business_credit_balance').val(),2);
 var used_money;
 
-$(document).ready(function() {
-    $('.footable').footable();
+/**
+ * 计算提交计划相关的数量和金额
+ */
+function setPlanData() {
     $('tr:not(:first)').each(function(){
+        // 自营数量合计
         var sum = 0;
         var price = $(this).find('.current_price').val();
         var ordered_price = $(this).find('.ordered_price').val();
@@ -17,46 +20,58 @@ $(document).ready(function() {
         })
 
         var ordered_count = parseInt($(this).find('.ordered_count').text());
-        $('.total_count',this).html(sum);
-        var total_price = (sum-ordered_count)*price+parseFloat(ordered_price,2);
+        var selfuse_count = sum - ordered_count;
+        $('.total_count',this).html(selfuse_count);
 
+        // 金额合计
+        var total_price = selfuse_count * price + parseFloat(ordered_price,2);
         $('.total_price',this).html(total_price.toFixed(2));
 
-    })
-    $('tr:last td:not(:first,:last)').text(function(i){
+        // 订单数量合计
+        $('.total_count_all',this).html(sum);
+    });
+
+    $('tr:last td:not(:first)').text(function(i){
         var t = 0;
-        $(this).parent().prevAll().find('td:nth-child('+(i+3)+')').each(function(){
-            t+=parseFloat($(this).text(),2)||0;
+        $(this).parent().prevAll().find('td:nth-child('+(i+5)+')').each(function(){
+            t += parseFloat($(this).text(),2)||0;
         });
         return Number(t.toFixed(2));
     })
+}
+
+$(document).ready(function() {
+    $('.footable').footable();
+
+    setPlanData();
 });
 
 $(document).on('keyup','.sales_val',function(){
-    $('tr:not(:first)').each(function(){
-        var sum = 0;
-        var price = $(this).find('.current_price').val();
-        var ordered_price = $(this).find('.ordered_price').val();
-        $(this).find('.sales_val').each(function(){
-            var plan_val = $(this).text();
-
-            if(!isNaN(plan_val)&& plan_val.length!==0){
-                sum+=parseFloat(plan_val,2);
-            }
-        })
-
-        var ordered_count = parseInt($(this).find('.ordered_count').text());
-        $('.total_count',this).html(sum);
-        var total_price = (sum-ordered_count)*price+parseFloat(ordered_price,2);
-        $('.total_price',this).html(total_price.toFixed(2));
-    })
-    $('tr:last td:not(:first,:last)').text(function(i){
-        var t = 0;
-        $(this).parent().prevAll().find('td:nth-child('+(i+3)+')').each(function(){
-            t+=parseFloat($(this).text(),2)||0;
-        });
-        return Number(t.toFixed(2));
-    })
+    setPlanData();
+    // $('tr:not(:first)').each(function(){
+    //     var sum = 0;
+    //     var price = $(this).find('.current_price').val();
+    //     var ordered_price = $(this).find('.ordered_price').val();
+    //     $(this).find('.sales_val').each(function(){
+    //         var plan_val = $(this).text();
+    //
+    //         if(!isNaN(plan_val)&& plan_val.length!==0){
+    //             sum+=parseFloat(plan_val,2);
+    //         }
+    //     })
+    //
+    //     var ordered_count = parseInt($(this).find('.ordered_count').text());
+    //     $('.total_count',this).html(sum);
+    //     var total_price = (sum-ordered_count)*price+parseFloat(ordered_price,2);
+    //     $('.total_price',this).html(total_price.toFixed(2));
+    // })
+    // $('tr:last td:not(:first,:last)').text(function(i){
+    //     var t = 0;
+    //     $(this).parent().prevAll().find('td:nth-child('+(i+3)+')').each(function(){
+    //         t+=parseFloat($(this).text(),2)||0;
+    //     });
+    //     return Number(t.toFixed(2));
+    // })
 })
 
 $(document).on('click','.confirm_submit',function(e){
@@ -125,7 +140,6 @@ function send_plan() {
     var my_url = url;
 
     $.ajax({
-
         type: type,
         url: my_url,
         contentType: 'json',

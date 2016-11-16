@@ -43,7 +43,8 @@ class DSProductionPlan extends Model
 
     protected $appends = [
         'product_name',
-        'submit_at'
+        'submit_at',
+        'receive_at'
     ];
 
     public function getProductNameAttribute(){
@@ -62,6 +63,13 @@ class DSProductionPlan extends Model
     public function getSubmitAtAttribute() {
         $date = str_replace('-','/', $this->produce_start_at);
         $submit_date = date('Y-m-d', strtotime($date . "-1 days"));
+
+        return $submit_date;
+    }
+
+    public function getReceiveAtAttribute() {
+        $date = str_replace('-','/', $this->produce_end_at);
+        $submit_date = date('Y-m-d', strtotime($date . "+1 days"));
 
         return $submit_date;
     }

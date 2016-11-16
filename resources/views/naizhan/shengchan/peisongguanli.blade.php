@@ -305,7 +305,7 @@
 					<div class="col-lg-10"></div>
 					<div class="col-lg-2">
 						@if($is_distributed!=1)
-						<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;">生产配送列表</button>
+						<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;">生成配送列表</button>
 						@else
 						<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-outline btn-success" style="width: 100%;">查看配送列表</button>
 						@endif

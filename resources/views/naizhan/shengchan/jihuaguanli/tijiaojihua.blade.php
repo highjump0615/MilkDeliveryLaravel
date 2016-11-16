@@ -21,7 +21,7 @@
 
 				<div class="ibox-content">
 					<div class="feed-element">
-						<div class="col-md-2">
+						<div class="col-md-2"
 							 <label style="font-size:20px;">填报计划：</label>
 						</div>
 						<div class="col-lg-7"></div>
@@ -34,33 +34,46 @@
                     <div class="ibox-content"><table class="table table-bordered" id="plan-list">
                         	<thead style="background-color:#33cccc;">
 								<tr>
-									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">奶品</th>
-									<th data-sort-ignore="true">配送计划</th>
-									<th data-sort-ignore="true">站内零售（瓶）</th>
-									<th data-sort-ignore="true">试饮赠品（瓶）</th>
-									<th data-sort-ignore="true">团购业务（瓶）</th>
-									<th data-sort-ignore="true">渠道销售(瓶)</th>
-									<th data-sort-ignore="true">合计</th>
-									<th data-sort-ignore="true">合计金额</th>
-									<th data-sort-ignore="true">操作</th>
+									<th rowspan="2" data-sort-ignore="true">序号</th>
+									<th rowspan="2" data-sort-ignore="true">出库时间</th>
+									<th rowspan="2" data-sort-ignore="true">奶品</th>
+									<th rowspan="2" data-sort-ignore="true">单位</th>
+                                    <th rowspan="2" data-sort-ignore="true">配送计划</th>
+									<th colspan="6" data-sort-ignore="true">奶站自营业务</th>
+									<th rowspan="2" data-sort-ignore="true">订单数量合计</th>
+                                    <th rowspan="2" data-sort-ignore="true">操作</th>
 								</tr>
+                                <tr>
+                                    <th data-sort-ignore="true">站内零售</th>
+                                    <th data-sort-ignore="true">试饮赠品</th>
+                                    <th data-sort-ignore="true">团购业务</th>
+                                    <th data-sort-ignore="true">渠道销售</th>
+                                    <th data-sort-ignore="true">数量合计</th>
+                                    <th data-sort-ignore="true">金额合计</th>
+                                </tr>
                             </thead>
                             <tbody>
-							<?php $j=0; ?>
-							@foreach($product_list as $pl)
-								@if($pl->current_price != null)
+							<?php $j = 0; ?>
+							@foreach ($product_list as $pl)
+								@if ($pl->current_price != null)
 								<?php $j++; ?>
 								@endif
 							@endforeach
 
-								<?php $i=0;$ordered_money=0;?>
-								@foreach($product_list as $pl)
-									@if($pl->current_price != null)
-									<?php $i++; $ordered_money+=$pl->total_money; ?>
+								<?php
+								$i = 0;
+								$ordered_money = 0;
+								?>
+
+								@foreach ($product_list as $pl)
+									@if ($pl->current_price != null)
+									<?php $i++; $ordered_money += $pl->total_money; ?>
+
 								<tr id="id{{$pl->id}}">
 									<td>{{$i}}</td>
+									<td>{{$pl['out_date']}}</td>
 									<td id="name{{$pl->id}}">{{$pl->name}}</td>
+									<td>瓶</td>
 									<td class="ordered_count sales_val" id="ordered_count{{$pl->id}}">{{$pl->total_count}}</td>
 									{{--<td class="input_td"><input type="text" class="inputable" value="36"/></td>--}}
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="retail sales_val" id="retail{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['retail']}}@endif</td>
@@ -69,9 +82,10 @@
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="channel_sale  sales_val" id="channel{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['channel_sale']}}@endif</td>
 									<td class="total_count" id="subtotal_count{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['subtotal_count']}}@endif</td>
 									<td class="total_price" id="subtotal_price{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['subtotal_money']}}@endif</td>
+									<td class="total_count_all"></td>
 									{{--<td><button class="btn btn-success btn-sm confirm" id="confirm{{$pl->id}}" value="{{$pl->id}}">确认提交</button></td>--}}
 									@if($i==1)
-									<td rowspan="{{$j}}">
+									<td rowspan="{{$j+1}}">
 										<button class="btn btn-success btn-sm confirm_submit" id="confirm{{$pl->id}}" value="{{$pl->id}}" @if($is_sent>0)style="display: none" @endif>确认提交</button>
 										<button class="btn btn-success btn-sm modify" id="modify{{$pl->id}}" value="{{$pl->id}}" @if($is_sent==0)style="display: none" @endif>修改</button>
 									</td>
@@ -82,11 +96,13 @@
 									<input type="hidden" id="product_id" value="{{$pl->id}}">
 									<input type="hidden" id="production_period{{$pl->id}}" value="{{$pl->production_period}}">
 								</tr>
+
 									@endif
 								@endforeach
+
 								<input type="hidden" id="total_ordered_money" value="{{$ordered_money}}">
 								<tr>
-									<td colspan="2">合计</td>
+									<td colspan="4">合计</td>
 									<td></td>
 									<td></td>
 									<td></td>
@@ -107,7 +123,7 @@
 					</div>
 					<div class="col-lg-5"></div>
 				</div>
-				
+
 			</div>
 		</div>
 	</div>

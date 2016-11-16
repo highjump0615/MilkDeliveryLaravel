@@ -49,7 +49,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table id="table1" class="table footable table-bordered"  data-page-size="10" id="plan-list">
+                        <table id="table1" class="table table-bordered" id="plan-list">
                             <thead style="background-color:#33cccc;">
 								<tr>
 									<th data-sort-ignore="true">提交时间</th>
@@ -67,18 +67,20 @@
 								</tr>
                             </thead>
                             <tbody>
-								<?php $i =0; ?>
 								@if(count($dsplan)==0)
 									<tr>
 										<td colspan="12">你没有发送今天的计划</td>
 									</tr>
 								@endif
-								@foreach($dsplan as $dp)
+								@foreach($dsplan as $dpDay)
+									<?php $i =0; ?>
+									@foreach($dpDay as $dp)
 									<?php $i++; ?>
 									<tr id="plan_row">
 										@if($i == 1)
-										<td rowspan="{{count($dsplan)}}" id="produce_date">{{$current_date}}</td>
+										<td rowspan="{{count($dpDay)}}">{{$dp->submit_at}}</td>
 										@endif
+										<td id="produce_date">{{$dp->receive_at}}</td>
 										<td>{{$dp->product_name}}</td>
 										<td class="plan_val">{{$dp->order_count}}</td>
 										<td class="plan_val">{{$dp->retail}}</td>
@@ -99,6 +101,7 @@
 										<td></td>
 										<input type="hidden" id="set_date" value="{{$dp->produce_start_at}}">
 									</tr>
+									@endforeach
 								@endforeach
                             </tbody>
                             <tfoot align="right">
