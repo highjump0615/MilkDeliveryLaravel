@@ -23,7 +23,7 @@
 						<div class="col-md-2"></div>
 						<div class="col-lg-8">
 							<div class="col-lg-3">
-								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">添加自营配送任务</a>
+								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">添加出库</a>
 							</div>
 							<img id="shop" src="<?=asset('img/piao/arrow.png')?>" class="col-lg-1 img-responsive" width="20px;"/>
 							<div class="col-lg-3">

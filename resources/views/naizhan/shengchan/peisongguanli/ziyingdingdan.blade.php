@@ -13,7 +13,7 @@
 					<a href="{{ url('naizhan/shengchan/jihuaguanli')}}">生产与配送</a>
 				</li>
 				<li class="active">
-					<strong>自营订单任务分配</strong>
+					<strong>自营出库任务分配</strong>
 				</li>
 			</ol>
 		</div>
@@ -30,9 +30,9 @@
                             <thead style="background-color:#33cccc;">
 								<tr>
 									<th data-sort-ignore="true" rowspan="2">奶品</th>
-									<th data-sort-ignore="true" rowspan="2">库存</th>
+									<th data-sort-ignore="true" rowspan="2">可出库数量</th>
 									<th data-sort-ignore="true" colspan="4">出库数量</th>
-									<th data-sort-ignore="true" rowspan="2">剩余库存</th>
+									<th data-sort-ignore="true" rowspan="2">当日库存剩余</th>
 								</tr>
 								<tr>
 									<th>店内零售</th>
@@ -60,7 +60,7 @@
 				</div>
 
 				<div class="col-lg-12">
-					<label class="col-lg-12 gray-bg" style="padding:10px;">添加任务</label>
+					<label class="col-lg-12 gray-bg" style="padding:10px;">添加自营出库任务</label>
 				</div>
 				<div class="ibox-content">
 					<div class="feed-element">

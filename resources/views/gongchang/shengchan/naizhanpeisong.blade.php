@@ -41,7 +41,7 @@
 									<td>{{$i}}</td>
 									<td>{{$p->name}}</td>
 									<td>{{$p->plan_count}}</td>
-									<td id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
+									<td class="editfill" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
 									<td></td>
 									<td id="total_confirm{{$p->id}}"></td>
 									<td id="rest{{$p->id}}"></td>
@@ -133,7 +133,9 @@
                 </div>
 				<div class="ibox float-e-margins bg-white">
 					<div class="col-lg-offset-5 col-lg-2">
-						<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren')}}'" style="width: 100%;">看法</button>
+						<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren')}}'" style="width: 100%;">
+							查看历史
+						</button>
 					</div>
 				</div>
 			</div>

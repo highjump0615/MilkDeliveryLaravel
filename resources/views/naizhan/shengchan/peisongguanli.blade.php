@@ -186,7 +186,7 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td class="sum group_sum" id="group_sum{{$dsp->id}}">{{$dsp->dp_channel_sale}}</td>
+												<td class="sum group_sum" id="group_sum{{$dsp->id}}">{{$dsp->dp_group_sale}}</td>
 											@endforeach
 										</tr>
 

@@ -216,7 +216,7 @@
             e.stopPropagation();
             var product_id =$(this).data('target');
             var url = SITE_URL+'gongchang/jichuxinxi/shangpin/shangpinxiangqing/'+product_id;
-            window.location.replace(url);
+            window.location = url;
         });
 
         function same_check_category_name(name) {

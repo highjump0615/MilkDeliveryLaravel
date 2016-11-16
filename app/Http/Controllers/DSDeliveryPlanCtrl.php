@@ -91,7 +91,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $dp["dp_test_drink"] = $delivery_plans->test_drink;
                 $dp["dp_group_sale"] = $delivery_plans->group_sale;
                 $dp["dp_channel_sale"] = $delivery_plans->channel_sale;
-                $dp["dp_remain"] = $delivery_plans->remain;
+                $dp["dp_remain"] = $delivery_plans->remain_final;
             }
 
             // 获取昨日库存量
