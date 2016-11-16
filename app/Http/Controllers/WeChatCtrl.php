@@ -410,13 +410,14 @@ class WeChatCtrl extends Controller
 
 
         $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-            ->where('customer_id', $customer_id)->get();
+            ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
         if ($type == 'daishenhe') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_WAITING_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
+                ->orderBy('ordered_at', 'desc')
                 ->get();
 
         } else if ($type == 'yiwan') {
@@ -424,12 +425,14 @@ class WeChatCtrl extends Controller
                 ->where('status', Order::ORDER_FINISHED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
+                ->orderBy('ordered_at', 'desc')
                 ->get();
         } else if ($type == 'zanting') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_STOPPED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
+                ->orderBy('ordered_at', 'desc')
                 ->get();
         } else if ($type == 'zaipeisong') {
             $orders = Order::where('is_deleted', 0)
@@ -439,6 +442,7 @@ class WeChatCtrl extends Controller
                 })
                 ->where('customer_id', $customer_id)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+                ->orderBy('ordered_at', 'desc')
                 ->get();
         }
         return view('weixin.dingdanliebiao', [

@@ -120,6 +120,16 @@
             paginationClickable: true,
             spaceBetween: 30,
         });
+
+
+        $(document).ready(function(){
+            $('.bimg').each(function(){
+                var width = $(this).css('width');
+                $(this).css('height', width);
+            });
+        });
+
+
         $('.addr1').click(function () {
             $('.adrtc').stop().slideToggle();
         });
