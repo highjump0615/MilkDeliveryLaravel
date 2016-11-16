@@ -699,6 +699,7 @@ class WeChatCtrl extends Controller
             $c_address = $address->address;
             $c_sub_address = $address->sub_address;
             $c_primary = $address->primary;
+            
         } else {
             $c_name = $c_phone = $c_address = $c_sub_address = '';
             $c_primary = 1;
@@ -893,6 +894,16 @@ class WeChatCtrl extends Controller
         $order_type = $request->input('order_type');
         $total_count = $request->input('total_count');
 
+        $delivery_type = $request->input('delivery_type');
+
+        $count_per = $custom_date = null;
+        if ($delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+            $count_per = $request->input('count_per');
+        } else {
+            $custom_date = $request->input('custom_date');
+            $custom_date = rtrim($custom_date, ',');
+        }
+
         $factory_id = session('factory_id');
         $factory = Factory::find($factory_id);
 
@@ -937,11 +948,15 @@ class WeChatCtrl extends Controller
         $wcop->factory_id = $factory_id;
         $wcop->product_id = $product_id;
         $wcop->order_type = $order_type;
-        $wcop->delivery_type = DeliveryType::DELIVERY_TYPE_EVERY_DAY;
+        $wcop->delivery_type = $delivery_type;
         $wcop->total_count = $total_count;
         $wcop->product_price = $product_price;
-        $wcop->count_per_day = 1;//default
-        $wcop->custom_date = null;
+
+        if ($count_per)
+            $wcop->count_per_day = $count_per;
+        else
+            $wcop->custom_date = $custom_date;
+
         $wcop->total_amount = $total_amount;
         $wcop->start_at = $start_at;
         $wcop->group_id = $group_id;
@@ -972,6 +987,16 @@ class WeChatCtrl extends Controller
             $product_id = $request->input('product_id');
             $order_type = $request->input('order_type');
             $total_count = $request->input('total_count');
+
+            $delivery_type = $request->input('delivery_type');
+
+            $count_per = $custom_date = null;
+            if ($delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+                $count_per = $request->input('count_per');
+            } else {
+                $custom_date = $request->input('custom_date');
+                $custom_date = rtrim($custom_date, ',');
+            }
 
             $wxuser_id = session('wechat_user_id');
             $factory_id = session('factory_id');
@@ -1007,11 +1032,15 @@ class WeChatCtrl extends Controller
             $wcop->factory_id = $factory_id;
             $wcop->product_id = $product_id;
             $wcop->order_type = $order_type;
-            $wcop->delivery_type = DeliveryType::DELIVERY_TYPE_EVERY_DAY;
+            $wcop->delivery_type = $delivery_type;
             $wcop->total_count = $total_count;
             $wcop->product_price = $product_price;
-            $wcop->count_per_day = 1;//default
-            $wcop->custom_date = null;
+
+            if ($count_per)
+                $wcop->count_per_day = $count_per;
+            else
+                $wcop->custom_date = $custom_date;
+
             $wcop->total_amount = $total_amount;
             $wcop->start_at = $start_at;
             $wcop->save();
@@ -1075,6 +1104,25 @@ class WeChatCtrl extends Controller
         }
 
         return redirect()->route('gouwuche');
+    }
+
+    //delete selected products from cart
+    public function delete_selected_wop(Request $request)
+    {
+        $cart_ids = $request->input('cart_ids');
+
+        $cart_ids = explode(',', $cart_ids);
+
+        foreach ($cart_ids as $cid) {
+            $cart = WechatCart::find($cid);
+            if ($cart) {
+                $wop = $cart->order_item;
+                $cart->delete();
+                $wop->delete();
+            }
+        }
+
+        return response()->json(['status'=>'success']);
     }
 
     //make wop group with cart_ids

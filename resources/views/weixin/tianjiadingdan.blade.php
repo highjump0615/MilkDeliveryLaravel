@@ -48,7 +48,7 @@
                 <td class="dzmon">￥{{$season_price}}</td>
             </tr>
             <tr>
-                <td height="16">半年单</td>
+                <td>半年单</td>
                 <td class="dzmon">￥{{$half_year_price}}</td>
             </tr>
         </table>
@@ -75,6 +75,66 @@
                   <input type="text" min="1" id="total_count" value="30" style="ime-mode: disabled;">
                   <a class="add" href="javascript:;">+</a>
                  </span>（瓶）
+        </div>
+
+        <div class="dnsli clearfix">
+            <div class="dnsti">配送规则：</div>
+            <select class="dnsel" id="delivery_type" onChange="javascript:dnsel_changed(this.value)">
+                <option value="dnsel_item0"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送
+                </option>
+                <option value="dnsel_item1"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送
+                </option>
+                <option value="dnsel_item2"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送
+                </option>
+                <option value="dnsel_item3"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送
+                </option>
+            </select>
+            <div class="clear"></div>
+        </div>
+
+        <!-- combo box change -->
+        <!-- 天天送 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
+            <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
+        </div>
+
+        <!--隔日送 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
+            <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
+        </div>
+
+        <!-- 按周规则 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item2">
+            <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
+            </table>
+        </div>
+
+        <!-- 随心送 -->
+        <div class="dnsel_item" id="dnsel_item3">
+            <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
+            </table>
+        </div>
+
+        <div class="dnsli clearfix">
+            <div class="dnsti">起送时间：</div>
+            <div classs="input-group">
+                <input class="qssj single_date" name="start_at" id="start_at" >
+                <span><i class="fa fa-calendar"></i></span>
+            </div>
         </div>
 
         <div class="dnsall">
@@ -135,6 +195,7 @@
     <script src="<?=asset('weixin/js/myweek.js')?>"></script>
 
     <script type="text/javascript">
+        var calen, week;
 
         var obj = $('#uecontent');
         var content = '{{$product->uecontent}}';
@@ -146,6 +207,12 @@
             var t = $this.text();
             $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
         })
+
+        $(function () {
+            calen = new showfullcalendar("calendar");
+            week = new myweek("week");
+            dnsel_changed("dnsel_item0");
+        });
 
         $('select#order_type').change(function(){
 
@@ -165,6 +232,11 @@
             }
         });
 
+        function dnsel_changed(id) {
+            $(".dnsel_item").css("display", "none");
+            $("#" + id).css("display", "block");
+        }
+
 
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
@@ -172,6 +244,29 @@
                 paginationClickable: true,
                 spaceBetween: 30,
             });
+
+                    @if(isset($gap_day))
+            var gap_day = parseInt("{{$gap_day}}");
+                    @endif
+
+            var today = new Date();
+            var able_date = new Date();
+            if (gap_day)
+                able_date.setDate(today.getDate() + gap_day);
+            else {
+                able_date.setDate(today.getDate() + 3);
+            }
+
+            //Single and Multiple Datepicker
+            $('.single_date').datepicker({
+                todayBtn: false,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                autoclose: true,
+                startDate: able_date,
+            });
+
             $('select#order_type').trigger('change');
         });
 
@@ -206,6 +301,56 @@
             //total_count
             var total_count = $('#total_count').val();
             send_data.append('total_count', total_count);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            var start_at = $('#start_at').val();
+            if(!start_at)
+            {
+                show_warning_msg("请选择起送时间");
+                return;
+            }
 
             console.log(send_data);
 
@@ -247,6 +392,57 @@
             //total_count
             var total_count = $('#total_count').val();
             send_data.append('total_count', total_count);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            var start_at = $('#start_at').val();
+            if(!start_at)
+            {
+                show_warning_msg("请选择起送时间");
+                return;
+            }
+            send_data.append('start_at', start_at);
 
             console.log(send_data);
 

@@ -265,24 +265,6 @@
             window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
         });
 
-        $('select#order_type').change(function(){
-
-            var count_input = $('#total_count');
-
-            var cur_val = $(this).val();
-            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
-            {
-                count_input.attr('min', 30);
-                count_input.val(30);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
-                count_input.attr('min', 90);
-                count_input.val(90);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
-                count_input.attr('min', 180);
-                count_input.val(180);
-            }
-        });
-
 
         $('select#order_type').change(function(){
 
@@ -381,7 +363,7 @@
             //start at
             var start_at = $('#start_at').val();
             if (!start_at) {
-                show_warning_msg('请填写产品的所有字段');
+                show_warning_msg('请选择起送时间');
                 return;
             }
             send_data.append('start_at', start_at);

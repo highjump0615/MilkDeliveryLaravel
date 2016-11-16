@@ -131,8 +131,9 @@
                 var img = $(this).find('img');
                 var img_height = parseInt($(img).css('height'));
 
+                var padding_height = 0;
                 if (img_height < height) {
-                    var padding_height = parseInt((height - img_height) / 2);
+                     padding_height = parseInt((height - img_height) / 2);
                     $(img).css('padding-top', padding_height);
                     $(img).css('padding-bottom', padding_height);
                 }

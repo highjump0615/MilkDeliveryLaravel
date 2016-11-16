@@ -13,7 +13,7 @@
             @if(isset($primary_addr_obj) && ($primary_addr_obj != null))
                 <div class="adrtop pa2t">
                     <p>{{$primary_addr_obj->name}} {{$primary_addr_obj->phone}}<br>
-                        {{$primary_addr_obj->address}}
+                        {{$primary_addr_obj->address}} {{$primary_addr_obj->sub_address}}
                     </p>
                 </div>
             @else

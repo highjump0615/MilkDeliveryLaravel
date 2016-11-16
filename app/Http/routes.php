@@ -941,6 +941,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
     Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
     Route::post('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
+    Route::post('/gouwuche/api/delete_selected_wop', 'WeChatCtrl@delete_selected_wop');
     Route::post('/api/check_verified_before_checkout', 'WeChatCtrl@check_verified_before_checkout');
 
     /* confirm order before purchase */
