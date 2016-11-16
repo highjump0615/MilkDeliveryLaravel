@@ -24,7 +24,9 @@
 				@else
 					<div class="ibox-content">
 						<div class="col-md-2">
-							<button id="import_plan" class="btn btn-success" onclick="window.location='{{ url('/naizhan/shengchan/tijiaojihua') }}'" type="button" style="width: 100%;">提交计划</button>
+							<button id="import_plan" class="btn btn-success" onclick="window.location='{{ url('/naizhan/shengchan/tijiaojihua') }}'" type="button" style="width: 100%;">
+								提交计划
+							</button>
 						</div>
 					</div>
 				@endif

@@ -527,15 +527,19 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $p["isfactory_ordered"] = 0;
             }
 
+            // 计算当天订单数量
             $total_ordered_count = 0;
+
             $order_product = OrderProduct::where('product_id',$p->id)->get(['id']);
             foreach($order_product as $op){
+                // 只考虑提交过的订单
                 $changed_counts = MilkManDeliveryPlan::where('produce_at',$currentDate->format('Y-m-d'))
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('order_product_id',$op->id)
-                    ->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+                    ->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
                     ->get(['changed_plan_count']);
-                if($changed_counts != null){
+
+                if ($changed_counts != null){
                     foreach($changed_counts as $cc){
                         $total_ordered_count += $cc->changed_plan_count;
                     }
@@ -547,9 +551,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 ->where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
                 ->where('produce_start_at',$currentDate->format('Y-m-d'))
                 ->get();
+
             foreach($plan_ordered as $po){
                 $plan_ordered_count += $po->order_count;
             }
+
             $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;
         }
 
@@ -564,13 +570,13 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         return view('gongchang.shengchan.naizhanjihuashenhe',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'getStations_info'=>$stations,
-            'products'=>$products,
-            'current_factory_id'=>$current_factory_id,
+            'pages'                 =>$pages,
+            'child'                 =>$child,
+            'parent'                =>$parent,
+            'current_page'          =>$current_page,
+            'getStations_info'      =>$stations,
+            'products'              =>$products,
+            'current_factory_id'    =>$current_factory_id,
         ]);
     }
 
