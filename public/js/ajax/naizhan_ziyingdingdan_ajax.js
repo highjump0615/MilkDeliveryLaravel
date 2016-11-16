@@ -35,12 +35,11 @@ $(document).on('click','#save',function(e){
             deliver_time: $('#delivery_milk #user td:eq(7)').attr('value'),
             product_id: product_id_array,
             product_count: product_name_array,
-        }
+        };
 
         var type = "POST"; //for creating new resource
 
         $.ajax({
-
             type: type,
             url: url,
             data: formData,
@@ -64,19 +63,17 @@ $(document).on('click','#add',function(){
     var type = $('#type option:selected').text();
     var type_val = $('#type option:selected').val();
     
-    var address = $('#current_district').html()+
-        $('#address4 option:selected').text()+$('#address5 option:selected').text()+$('#address6').val();
-    var address_val = $('#addr_district').val()+' '+
-        $('#address4 option:selected').text()+' '+$('#address5 option:selected').text()+' '+$('#address6').val();
-    $('#address6').val('');
+    var address = $('#current_district').html()+ $('#address4 option:selected').text()+$('#address5 option:selected').text()+$('#address6').val();
+    var address_val = $('#addr_district').val()+' '+$('#address4 option:selected').text()+' '+$('#address5 option:selected').text()+' '+$('#address6').val();
+
     var customer_name = $('#customer_name').val();
-    $('#customer_name').val('');
+
     if(customer_name == ''){
         $('#name_alert').show();
         return;
     }
+
     var phone_number = $('#phone_number').val();
-    $('#phone_number').val('');
     if(phone_number == ''){
         $('#phone_alert').show();
         return;
@@ -104,38 +101,67 @@ $(document).on('click','#add',function(){
             var rest_val = parseInt($('#rest_amount'+id+'').text());
             var current_val = 0;
             if(!isNaN(parseInt($('#amount'+id+'').val()))){
-                current_val = parseInt($('#amount'+id+'').val());
+                current_val = Math.min(parseInt($('#amount'+id+'').val()), rest_val);
                 total_order_count += current_val;
             }
-            if(rest_val >= current_val)
-                $('#rest_amount'+id+'').html(rest_val-current_val);
-            else{
-                if(rest_val == 0){
-                    error_code = 1;
-                    return;
-                }
-                $('#amount'+id+'').val(rest_val);
-                $('#rest_amount'+id+'').html(0);
+
+            // 更新上面表的剩余库存
+            if(current_val > 0) {
+                $('#rest_amount' + id + '').html(rest_val - current_val);
             }
-            product +=$('#amount'+id+'').attr('name')+'*'+$('#amount'+id+'').val()+','
+            else{
+                error_code = 1;
+                return;
+            }
+
+            // 更新上面表的出库
+            var prevVal = 0;
+            if (type_val == 2) {        // 团购
+                prevVal = parseInt($('#group'+id+'').html());
+                $('#group'+id+'').html(prevVal + current_val);
+            }
+            else if (type_val == 3) {   // 渠道
+                prevVal = parseInt($('#channel'+id+'').html());
+                $('#channel'+id+'').html(prevVal + current_val);
+            }
+            else if (type_val == 4) {   // 试饮
+                prevVal = parseInt($('#test'+id+'').html());
+                $('#test'+id+'').html(prevVal + current_val);
+            }
+            else {                      // 零售
+                prevVal = parseInt($('#retail'+id+'').html());
+                $('#retail'+id+'').html(prevVal + current_val);
+            }
+
+            product +=$('#amount'+id+'').attr('name')+'*'+current_val+','
             product_id +=id+',';
         }
-        $('#amount'+id+'').val('');
-    })
-    if(total_order_count == 0){
-        message.innerHTML="(输入配送内容!)";
-        return;
-    }
+    });
+
     if(error_code == 1){
         message.innerHTML="(剩余量不足以交付!)";
         return;
     }
+    if(total_order_count == 0){
+        message.innerHTML="(输入配送内容!)";
+        return;
+    }
+
     var role = '<tr id="user"><td>'+last_row_number+'</td><td value="'+type_val+'">'+type+'</td><td value="'+address_val+'">'+address+'</td>';
     role+='<td>'+customer_name+'</td><td value="'+product_id+'">'+product+'</td>';
     role+='<td>'+phone_number+'</td><td value="'+milkman_id+'">'+milkman_name+'</td><td value="'+time_val+'">'+time+'</td><td></td></tr>';
     $('#delivery_milk').append(role);
 
-})
+    // 清空输入框
+    $('#address6').val('');
+    $('#customer_name').val('');
+    $('#phone_number').val('');
+
+    $('#product_deliver tr').each(function(){
+        var id = $(this).attr('id');
+        $('#amount'+id+'').val('');
+    });
+});
 
 
 $('#phone_number').on('input', function() {

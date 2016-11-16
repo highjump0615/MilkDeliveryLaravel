@@ -20,11 +20,13 @@ class DSDeliveryPlan extends Model
         'test_drink',
         'group_sale',
         'channel_sale',
+        'remain',
         'created_at',
     ];
 
     protected $appends =[
-      'product_name',
+        'product_name',
+        'remain_final'
     ];
 
     public function getProductNameAttribute(){
@@ -35,5 +37,31 @@ class DSDeliveryPlan extends Model
         else
             return $product_name->name;
     }
-    //
+
+    public function getRemainFinalAttribute(){
+        return $this->remain - $this->retail - $this->test_drink - $this->group_sale - $this->channel_sale;
+    }
+
+    /**
+     * 增加自营业务配送数量
+     * @param $type
+     * @param $count
+     */
+    public function increaseSelfDelivery($type, $count) {
+        if ($type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP) {
+            $this->group_sale += $count;
+        }
+        else if ($type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL) {
+            $this->channel_sale += $count;
+        }
+        else if ($type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK) {
+            $this->test_drink += $count;
+        }
+        else {
+            $this->retail += $count;
+        }
+
+        $this->save();
+    }
+
 }

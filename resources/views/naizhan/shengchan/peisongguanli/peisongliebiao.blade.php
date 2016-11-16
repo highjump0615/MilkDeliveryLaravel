@@ -83,6 +83,8 @@
 											渠道订单
 										@elseif($dp->delivery_type==4)
 											赠品订单
+										@elseif($dp->delivery_type==6)
+											店内零售
 										@endif
 									</td>
 									<td>{{$dp->address}}</td>

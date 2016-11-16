@@ -10,8 +10,10 @@ var sum_totals = [];
 var produced_totals = [];
 var not_ordered_totals = [];
 var product_id = [];
-var changed_amount = [];
+var remain_amount = [];
 var ordered_amount = [];
+var delivered_total = [];
+
 for(i = 0; i<count; i++){
     order_totals[i]=0;
     retail_totals[i] = 0;
@@ -22,8 +24,9 @@ for(i = 0; i<count; i++){
     produced_totals[i] = 0;
     not_ordered_totals[i] = 0;
     product_id[i] = 0;
-    changed_amount[i] = 0;
+    remain_amount[i] = 0;
     ordered_amount[i] = 0;
+    delivered_total[i] = 0;
 }
 
 $(document).ready(function(){
@@ -33,6 +36,16 @@ $(document).ready(function(){
     calc_drink();
     calc_group();
     calc_channel();
+
+    // 获取实际配送数量
+    $('#distribute td.delivered_sum').each(function(i) {
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+        }
+        delivered_total[i]=current_val;
+    });
+
     calc_total();
 })
 
@@ -46,9 +59,13 @@ function get_product_id(){
     })
 }
 
+/**
+ * 配送业务订单数量和可配送数量的合计
+ */
 function calc_order(){
     var $datarows = $('#distribute tr.order_tr');
     $datarows.each(function(){
+        // 总数量
         $(this).find('.order').each(function(i){
             var current_val = parseInt($(this).html());
             if(isNaN(current_val)){
@@ -57,6 +74,7 @@ function calc_order(){
             order_totals[i]+=current_val;
         });
 
+        // 订单数量
         $(this).find('.ordered_amount').each(function(i){
             var current_val = parseInt($(this).html());
             if(isNaN(current_val)){
@@ -64,76 +82,150 @@ function calc_order(){
             }
             ordered_amount[i]=current_val;
         });
-    })
+    });
+
+    // 显示总合计
     $('#distribute td.order_sum').each(function(i) {
         $(this).html(order_totals[i]);
     })
 }
 
+/**
+ * 店内零售数量合计
+ */
 function calc_retail(){
-    var $datarows = $('#distribute tr.retail_tr');
-    $datarows.each(function(){
-        $(this).find('.retail').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            retail_totals[i]+=current_val;
-        });
-    })
-    $('#distribute td.retail_sum').each(function(i) {
-        $(this).html(retail_totals[i]);
-    })
+    var current_val;
+    var retail_count = [];
+
+    // 总数量
+    $('#distribute td.retail_sum').each(function(){
+        current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        retail_totals[i] = current_val;
+    });
+
+    // 当前数量
+    $('#distribute td.retail_origin').each(function(i) {
+        current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        retail_count[i] = current_val;
+    });
+
+    // 差量
+    $('#distribute td.retail_diff').each(function(i) {
+        $(this).html(retail_totals[i] - retail_count[i]);
+    });
 }
 
+/**
+ * 试饮赠品数量合计
+ */
 function calc_drink(){
-    var $datarows = $('#distribute tr.drink_tr');
-    $datarows.each(function(){
-        $(this).find('.drink').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            drink_totals[i]+=current_val;
-        });
-    })
-    $('#distribute td.drink_sum').each(function(i) {
-        $(this).html(drink_totals[i]);
-    })
+    var current_val;
+    var drink_count = [];
+
+    // 总数量
+    $('#distribute td.drink_sum').each(function(i){
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        drink_totals[i] += current_val;
+    });
+
+    // 当前数量
+    $('#distribute td.drink_origin').each(function(i) {
+        current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        drink_count[i] = current_val;
+    });
+
+    // 差量
+    $('#distribute td.drink_diff').each(function(i) {
+        $(this).html(drink_totals[i] - drink_count[i]);
+    });
 }
 
+/**
+ * 团购业务数量合计
+ */
 function calc_group(){
-    var $datarows = $('#distribute tr.group_tr');
-    $datarows.each(function(){
-        $(this).find('.group').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            group_totals[i]+=current_val;
-        });
-    })
-    $('#distribute td.group_sum').each(function(i) {
-        $(this).html(group_totals[i]);
-    })
+    var current_val;
+    var group_count = [];
+
+    // 总数量
+    $('#distribute td.group_sum').each(function(i){
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        group_totals[i]+=current_val;
+    });
+
+    // 当前数量
+    $('#distribute td.group_origin').each(function(i) {
+        current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        group_count[i] = current_val;
+    });
+
+    // 差量
+    $('#distribute td.group_diff').each(function(i) {
+        $(this).html(group_totals[i] - group_count[i]);
+    });
 }
 
+/**
+ * 渠道业务数量合计
+ */
 function calc_channel(){
-    var $datarows = $('#distribute tr.channel_tr');
-    $datarows.each(function(){
-        $(this).find('.channel').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            channel_totals[i]+=current_val;
-        });
-    })
-    $('#distribute td.channel_sum').each(function(i) {
-        $(this).html(channel_totals[i]);
-    })
+
+    var current_val;
+    var channel_count = [];
+
+    // 总数量
+    $('#distribute td.channel_sum').each(function(i){
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        channel_totals[i]+=current_val;
+    });
+
+    // 当前数量
+    $('#distribute td.channel_origin').each(function(i) {
+        current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+        channel_count[i] = current_val;
+    });
+
+    // 差量
+    $('#distribute td.channel_diff').each(function(i) {
+        $(this).html(channel_totals[i] - channel_count[i]);
+    });
 }
 
+/**
+ * 总数量合计
+ */
 function calc_total(){
     // 订单配送量、自营配送量总合计
     var $datarows = $('#distribute tr.sum_tr');
@@ -184,10 +276,10 @@ function calc_total(){
         $(this).html(produced_totals[i]-sum_totals[i]);
     });
 
-    // 可配送数量 = 签收数量合计 - 自营数量合计
-    $('#distribute td.remain_as_order').each(function(i) {
-        $(this).html(produced_totals[i]-not_ordered_totals[i]);
-        changed_amount[i] = produced_totals[i]-not_ordered_totals[i]-ordered_amount[i];
+    // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - 可配送数量合计 + 配送业务实际配送数量
+    $('#distribute td.remain_sum').each(function(i) {
+        remain_amount[i] = produced_totals[i] - sum_totals[i] -/* order_totals[i]*/ + delivered_total[i];
+        $(this).html(remain_amount[i]);
     });
 }
 
@@ -208,32 +300,32 @@ $('.editable_amount').on('keyup',function(){
     calc_group();
     calc_channel();
     calc_total();
-})
+});
 
-$(document).on('click','#save_distribution',function(e){
+function save_distribute() {
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_distribution';
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     for(i = 0; i < count; i++){
         var id = $(this).attr('id');
         var station_id = $(this).attr('value');
         var formData = {
-            product_id:product_id[i],
-            retail:retail_totals[i],
-            test_drink:drink_totals[i],
-            group_sale:group_totals[i],
-            channel_sale:channel_totals[i]
-        }
+            product_id: product_id[i],
+            retail: retail_totals[i],
+            test_drink: drink_totals[i],
+            group_sale: group_totals[i],
+            channel_sale: channel_totals[i],
+            remain: remain_amount[i]
+        };
         console.log(formData);
 
         var type = "POST";
 
         $.ajax({
-
             type: type,
             url: update_url,
             data: formData,
@@ -247,15 +339,22 @@ $(document).on('click','#save_distribution',function(e){
         });
     }
     $(this).hide();
-})
+}
 
 /**
  * 自动调配
  */
 $(document).on('click','.auto_distribute',function(e){
-    for(i = 0; i<count; i++){
-        changed_amount[i] = produced_totals[i] - not_ordered_totals[i] - ordered_amount[i];
-    }
+
+    var changed_order_amount = [];
+
+    $('#distribute .order_tr .editable_amount').each(function(i) {
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+        }
+        changed_order_amount[i] = current_val;
+    });
 
     $('#changed_distribute tr:not(:first,:last)').each(function(){
         var j = 0;
@@ -272,9 +371,10 @@ $(document).on('click','.auto_distribute',function(e){
             $(this).find('td:eq(8)').html($(this).find('td:eq(7)').text());
 
             // 把差额添加到总变化量
-            changed_amount[j]+=parseInt($(this).find('td:eq(6)').text())-parseInt($(this).find('td:eq(7)').text());
+            changed_order_amount[j]+=parseInt($(this).find('td:eq(6)').text())-parseInt($(this).find('td:eq(7)').text());
         }
-    })
+    });
+
     $('#changed_distribute tr:not(:first,:last)').each(function(){
         var j = 0;
         var id = $(this).attr('value');
@@ -287,14 +387,14 @@ $(document).on('click','.auto_distribute',function(e){
         // 变化后计划量比原计划量大
         if(parseInt($(this).find('td:eq(6)').text())<parseInt($(this).find('td:eq(7)').text())){
             // 总变化量足够大，变化后计划量直接填写修改后量
-            if(changed_amount[j]>parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text())){
+            if(changed_order_amount[j] > parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text())){
                 $(this).find('td:eq(8)').html($(this).find('td:eq(7)').text());
-                changed_amount[j]-=parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text());
+                changed_order_amount[j] -= parseInt($(this).find('td:eq(7)').text())-parseInt($(this).find('td:eq(6)').text());
             }
             else{
                 // 总变化量不够，变化后计划量填写剩余数量
-                if(changed_amount[j]>0){
-                    $(this).find('td:eq(8)').html(parseInt($(this).find('td:eq(6)').text())+changed_amount[j]);
+                if(changed_order_amount[j] >= 0){
+                    $(this).find('td:eq(8)').html(parseInt($(this).find('td:eq(6)').text())+changed_order_amount[j]);
                 }
             }
         }
@@ -304,12 +404,15 @@ $(document).on('click','.auto_distribute',function(e){
             $(this).find('td:eq(11)').html('己调配');
         }
     })
-})
+});
 
 /**
  * 生成配送列表
  */
 $(document).on('click','.shengchan-peisong',function(e){
+
+    save_distribute();
+
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_changed_distribution';
     $.ajaxSetup({
         headers: {
@@ -330,7 +433,7 @@ $(document).on('click','.shengchan-peisong',function(e){
             delivery_count: parseInt($(this).find('td:eq(8)').text()),
             comment:$(this).find('td:eq(12)').text(),
             id: id
-        }
+        };
 
         table_info[i] = formData;
         i++;
@@ -352,4 +455,4 @@ $(document).on('click','.shengchan-peisong',function(e){
             console.log('Error:', data);
         }
     });
-})
+});

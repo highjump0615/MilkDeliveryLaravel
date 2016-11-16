@@ -47,6 +47,7 @@ class MilkManDeliveryPlan extends Model
     const MILKMAN_DELIVERY_PLAN_TYPE_GROUP = 2;
     const MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL = 3;
     const MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK = 4;
+    const MILKMAN_DELIVERY_PLAN_TYPE_RETAIL = 6;
     const MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL = 5;
 
     const MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER = 1;
@@ -121,5 +122,27 @@ class MilkManDeliveryPlan extends Model
 
     public function milkman(){
         return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
+    }
+
+    public function getTypeDesc() {
+        $strRes = '';
+
+        if ($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
+            $strRes = '计划订单';
+        }
+        else if ($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP) {
+            $strRes = '团购业务';
+        }
+        else if ($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK) {
+            $strRes = '试饮赠品';
+        }
+        else if ($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL) {
+            $strRes = '渠道业务';
+        }
+        else if ($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL) {
+            $strRes = '店内零售';
+        }
+
+        return $strRes;
     }
 }

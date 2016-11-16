@@ -26,6 +26,8 @@
 								<table id="distribute" class="table table-bordered" style="font-size: 12px;">
 									<tbody>
 									<?php $p = count($dsproduction_plans); ?>
+
+										<!-- 无数据 -->
 										<tr class="product_id_tr">
 											<td colspan="2" class="col-md-5"></td>
 											@if($p == 0)
@@ -36,17 +38,39 @@
 												@endforeach
 											@endif
 										</tr>
+
+										<!-- 基础数据 -->
 										<tr class="produced_tr">
-											<td colspan="2" style="width: 20%">签收数量</td>
+											<td colspan="2" style="width: 20%">上日库存余量</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td id="confirm_count{{$dsp->id}}" class="produced">{{$dsp->confirm_count}}</td>
+												<td class="remained">{{$dsp->dp_remain_before}}</td>
 											@endforeach
 										</tr>
+										<tr class="produced_tr">
+											<td colspan="2" style="width: 20%">当日签收数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td>{{$dsp->confirm_count}}</td>
+											@endforeach
+										</tr>
+										<tr class="produced_tr">
+											<td colspan="2" style="width: 20%">当日奶站可出库数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td id="confirm_count{{$dsp->id}}" class="produced">{{$dsp->confirm_count + $dsp->dp_remain_before}}</td>
+											@endforeach
+										</tr>
+
+										<!-- 配送业务数据 -->
 										<tr class="order_tr">
-											<td rowspan="3">配送计划</td>
+											<td rowspan="3">配送业务</td>
 											<td class="dingdan">订单数量</td>
 											@if($p == 0)
 												<td></td>
@@ -61,11 +85,13 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td  class="order">{{$dsp->changed_amount}}</td>
+												<td  class="order editable_amount @if($is_distributed!=1) editfill @endif" @if($is_distributed!=1) contenteditable="true" @endif>
+													{{$dsp->changed_amount}}
+												</td>
 											@endforeach
 										</tr>
 										<tr class="sum_tr">
-											<td>合计</td>
+											<td>可配送数量合计</td>
 											@if($p == 0)
 												<td></td>
 											@endif
@@ -73,14 +99,16 @@
 												<td  class="sum order_sum" id="order_sum{{$dsp->id}}"></td>
 											@endforeach
 										</tr>
+
+										<!-- 店内零售数据 -->
 										<tr class="retail_tr">
-											<td rowspan="3">站内零售</td>
-											<td>计划数量</td>
+											<td rowspan="3">店内零售</td>
+											<td>订单数量</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td class="retail" id="retail_count{{$dsp->id}}">{{$dsp->retail}}</td>
+												<td class="retail retail_origin" id="retail_count{{$dsp->id}}">{{$dsp->retail}}</td>
 											@endforeach
 										</tr>
 										<tr class="retail_tr">
@@ -89,7 +117,7 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td @if($is_distributed != 1) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif class="retail editable_amount" id="{{$dsp->id}}">{{$dsp->dp_retail}}</td>
+												<td class="retail retail_diff"></td>
 											@endforeach
 										</tr>
 										<tr class="sum_tr">
@@ -98,82 +126,28 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td id="retail_sum{{$dsp->id}}" class="sum retail_sum"></td>
+												<td id="retail_sum{{$dsp->id}}" class="sum retail_sum">{{$dsp->dp_retail}}</td>
 											@endforeach
 										</tr>
+
+										<!-- 试饮赠品数据 -->
 										<tr class="drink_tr">
-											<td rowspan="3">团购业务</td>
-											<td>计划数量</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td class="drink" id="drink_count{{$dsp->id}}">{{$dsp->test_drink}}</td>
-											@endforeach
-										</tr>
-										<tr class="drink_tr">
-											<td>调整数量</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td @if($is_distributed != 1) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$dsp->id}}" class="editable_amount drink">{{$dsp->dp_test_drink}}</td>
-											@endforeach
-										</tr>
-										<tr class="sum_tr">
-											<td>合计</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td id="drink_sum{{$dsp->id}}" class="sum drink_sum"></td>
-											@endforeach
-										</tr>
-										<tr class="group_tr">
-											<td rowspan="3">渠道销售</td>
-											<td>计划数量</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td class="group" id="group_count{{$dsp->id}}">{{$dsp->group_sale}}</td>
-											@endforeach
-										</tr>
-										<tr class="group_tr">
-											<td>调整数量</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td @if($is_distributed != 1) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif class="editable_amount group" id="{{$dsp->id}}">{{$dsp->dp_group_sale}}</td>
-											@endforeach
-										</tr>
-										<tr class="sum_tr">
-											<td>合计</td>
-											@if($p == 0)
-												<td></td>
-											@endif
-											@foreach($dsproduction_plans as $dsp)
-												<td class="sum group_sum" id="group_sum{{$dsp->id}}"></td>
-											@endforeach
-										</tr>
-										<tr class="channel_tr">
 											<td rowspan="3">试饮赠品</td>
-											<td>计划数量</td>
+											<td>订单数量</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td class="channel" id="channel_count{{$dsp->id}}">{{$dsp->channel_sale}}</td>
+												<td class="drink drink_origin" id="drink_count{{$dsp->id}}">{{$dsp->test_drink}}</td>
 											@endforeach
 										</tr>
-										<tr class="channel_tr">
+										<tr class="drink_tr">
 											<td>调整数量</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td @if($is_distributed!=1) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif class="editable_amount channel" id="{{$dsp->id}}">{{$dsp->dp_channel_sale}}</td>
+												<td class="drink drink_diff"></td>
 											@endforeach
 										</tr>
 										<tr class="sum_tr">
@@ -182,11 +156,73 @@
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td class="sum channel_sum" id="channel_sum{{$dsp->id}}"></td>
+												<td id="drink_sum{{$dsp->id}}" class="sum drink_sum">{{$dsp->dp_test_drink}}</td>
 											@endforeach
 										</tr>
+
+										<!-- 团购业务数据 -->
+										<tr class="group_tr">
+											<td rowspan="3">团购业务</td>
+											<td>订单数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="group group_origin" id="group_count{{$dsp->id}}">{{$dsp->group_sale}}</td>
+											@endforeach
+										</tr>
+										<tr class="group_tr">
+											<td>调整数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="group group_diff"></td>
+											@endforeach
+										</tr>
+										<tr class="sum_tr">
+											<td>合计</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="sum group_sum" id="group_sum{{$dsp->id}}">{{$dsp->dp_channel_sale}}</td>
+											@endforeach
+										</tr>
+
+										<!-- 渠道业务数据 -->
+										<tr class="channel_tr">
+											<td rowspan="3">渠道业务</td>
+											<td>订单数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="channel channel_origin" id="channel_count{{$dsp->id}}">{{$dsp->channel_sale}}</td>
+											@endforeach
+										</tr>
+										<tr class="channel_tr">
+											<td>调整数量</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="channel channel_diff"></td>
+											@endforeach
+										</tr>
+										<tr class="sum_tr">
+											<td>合计</td>
+											@if($p == 0)
+												<td></td>
+											@endif
+											@foreach($dsproduction_plans as $dsp)
+												<td class="sum channel_sum" id="channel_sum{{$dsp->id}}">{{$dsp->dp_channel_sale}}</td>
+											@endforeach
+										</tr>
+
+										<!-- 结果数据 -->
 										<tr>
-											<td colspan="2">总计</td>
+											<td colspan="2">出库总计</td>
 											@if($p == 0)
 												<td></td>
 											@endif
@@ -195,21 +231,21 @@
 											@endforeach
 										</tr>
 										<tr>
-											<td colspan="2">计划差异</td>
+											<td colspan="2">配送业务实际配送数量</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td id="plan{{$dsp->id}}" class="plan_sum"></td>
+												<td id="delivered{{$dsp->id}}" class="delivered_sum">{{$dsp->deliverd_count}}</td>
 											@endforeach
 										</tr>
 										<tr>
-											<td colspan="2">可配送数量</td>
+											<td colspan="2">当日库存剩余</td>
 											@if($p == 0)
 												<td></td>
 											@endif
 											@foreach($dsproduction_plans as $dsp)
-												<td id="delivery_amount{{$dsp->id}}" class="remain_as_order"></td>
+												<td id="remain_amount{{$dsp->id}}" class="remain_sum">{{$dsp->dp_remain}}</td>
 											@endforeach
 										</tr>
 									</tbody>
@@ -217,18 +253,18 @@
 								</table>
 							</div>
 						</div>
+
+						<!-- 调配按钮 -->
 						<div>
-							<div class="col-md-3 col-md-offset-8">
-								@if($is_distributed != 1)
-									@if($p != 0)
-									<div class="col-md-6"><button id="save_distribution" class="btn btn-success btn-outline" style="width:90%; bottom:0;">确定</button></div>
-									@endif
-									@if(count($changed_plans) != 0)
-									<div class="col-md-6"><button class="btn btn-success auto_distribute" style="width:90%; bottom:0;">自动调配</button></div>
-									@endif
-								@endif
+							<div class="col-md-3 col-md-offset-9">
+								<div class="col-md-6 col-md-offset-6">
+									<button class="btn btn-success auto_distribute" style="width:90%;" @if($is_distributed==1) disabled @endif>
+										调配
+									</button>
+								</div>
 							</div>
 						</div>
+
 						<div class="ibox-content">
 	                        <table id="changed_distribute" class="table footable table-bordered" style="font-size: 14px;">
 	                            <thead style="background-color:#33cccc;">
@@ -304,10 +340,14 @@
 				<div class="ibox-content">
 					<div class="col-lg-10"></div>
 					<div class="col-lg-2">
-						@if($is_distributed!=1)
-						<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;">生成配送列表</button>
+						@if($is_distributed != 1)
+							<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;">
+								生成配送列表
+							</button>
 						@else
-						<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-outline btn-success" style="width: 100%;">查看配送列表</button>
+							<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-outline btn-success" style="width: 100%;">
+								查看配送列表
+							</button>
 						@endif
 					</div>
 				</div>

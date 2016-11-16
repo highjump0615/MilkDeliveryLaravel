@@ -20,33 +20,37 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-			
+
+				<!-- 库存统计 -->
 				<div class="ibox float-e-margins">
-					<div class="col-lg-12"><label class="col-lg-12">自营计划量：</label></div>
+					<div class="col-lg-12"><label class="col-lg-12">自营库存量：</label></div>
 					<div class="col-lg-1"></div>
                     <div class="col-lg-10">
                         <table id="produced_milk" class="table footable table-bordered">
                             <thead style="background-color:#33cccc;">
 								<tr>
-									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">奶品</th>
-									<th data-sort-ignore="true">试饮</th>
-									<th data-sort-ignore="true">团购业务（瓶）</th>
-									<th data-sort-ignore="true">渠道销售(瓶)</th>
-									<th data-sort-ignore="true">剩余量统计</th>
+									<th data-sort-ignore="true" rowspan="2">奶品</th>
+									<th data-sort-ignore="true" rowspan="2">库存</th>
+									<th data-sort-ignore="true" colspan="4">出库数量</th>
+									<th data-sort-ignore="true" rowspan="2">剩余库存</th>
+								</tr>
+								<tr>
+									<th>店内零售</th>
+									<th>团购业务</th>
+									<th>渠道销售</th>
+									<th>试饮赠品</th>
 								</tr>
                             </thead>
                             <tbody>
-							<?php $i=0; ?>
 							@foreach($delivery_plans as $ds)
-								<?php $i++; ?>
 								<tr>
-									<td>{{$i}}</td>
 									<td>{{$ds->product_name}}</td>
-									<td>{{$ds->test_drink}}</td>
-									<td>{{$ds->group_sale}}</td>
-									<td>{{$ds->channel_sale}}</td>
-									<td id="rest_amount{{$ds->product_id}}">{{$ds->rest_amount}}</td>
+									<td>{{$ds->remain}}</td>
+									<td id="retail{{$ds->product_id}}">{{$ds->retail}}</td>
+									<td id="group{{$ds->product_id}}">{{$ds->group_sale}}</td>
+									<td id="channel{{$ds->product_id}}">{{$ds->channel_sale}}</td>
+									<td id="test{{$ds->product_id}}">{{$ds->test_drink}}</td>
+									<td id="rest_amount{{$ds->product_id}}">{{$ds->remain_final}}</td>
 								</tr>
 							@endforeach
                             </tbody>
@@ -54,6 +58,7 @@
                     </div>
 					<div class="col-lg-1"></div>
 				</div>
+
 				<div class="col-lg-12">
 					<label class="col-lg-12 gray-bg" style="padding:10px;">添加任务</label>
 				</div>
@@ -100,8 +105,10 @@
 						<label class="control-label col-md-2" style="padding-top: 5px;">分类:</label>
 						<div class="col-md-4" style="padding-left: 10px;">
 							<select data-placeholder="" id="type" class="form-control chosen-select" style="width:100%;" tabindex="2">
-								<option value="2">团购订单</option>
-								<option value="3">渠道订单</option>
+								<option value="{{\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK}}">试饮赠品</option>
+								<option value="{{\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP}}">团购订单</option>
+								<option value="{{\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL}}">渠道订单</option>
+								<option value="{{\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL}}">店内零售</option>
 							</select>
 						</div>
 					</div>
