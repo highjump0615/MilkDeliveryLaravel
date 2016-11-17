@@ -10,6 +10,7 @@ class WechatUser extends Model
     protected $table = 'wxusers';
     protected $fillable = [
         'name',
+        'openid',
         'customer_id',
         'device_token',
         'last_session',

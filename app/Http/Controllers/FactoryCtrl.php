@@ -7,6 +7,7 @@ use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
+use App\Model\WechatModel\Wxmenu;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
@@ -94,6 +95,11 @@ class FactoryCtrl extends Controller
         $wechat_id = $request->input('wechat_id');
         $app_id = $request->input('app_id');
         $app_secret = $request->input('app_secret');
+        $app_url           = $request->input('app_url');
+        $app_token         = $request->input('app_token');
+        $app_encoding_key  = $request->input('app_encoding_key');
+        $app_mchid         = $request->input('app_mchid');
+        $app_paysignkey    = $request->input('app_paysignkey');
         $wechat_type = $request->input('wechat_type');
         $qrcode = $request->input('qrcode');
 
@@ -112,6 +118,11 @@ class FactoryCtrl extends Controller
         $fa->wechat_id = $wechat_id;
         $fa->app_id = $app_id;
         $fa->app_secret = $app_secret;
+        $fa->app_url           = $app_url;
+        $fa->app_token         = $app_token;
+        $fa->app_encoding_key  = $app_encoding_key;
+        $fa->app_mchid         = $app_mchid;
+        $fa->app_paysignkey    = $app_paysignkey;
         $fa->wechat_type = $wechat_type;
         $fa->qrcode = $qrcode;
         $fa->is_deleted = 0;
@@ -165,34 +176,43 @@ class FactoryCtrl extends Controller
         $phonenumber = $request->input('phonenumber');
         $status = $request->input('status');
 
-        $end_at = $request->input('end_at');
-        $factory_id = $request->input('factory_id');
-        $factory_password = $request->input('factory_password');
-        $public_name = $request->input('public_name');
-        $public_id = $request->input('public_id');
-        $wechat_id = $request->input('wechat_id');
-        $app_id = $request->input('app_id');
-        $app_secret = $request->input('app_secret');
+        $end_at            = $request->input('end_at');
+        $factory_id        = $request->input('factory_id');
+        $factory_password  = $request->input('factory_password');
+        $public_name       = $request->input('public_name');
+        $public_id         = $request->input('public_id');
+        $wechat_id         = $request->input('wechat_id');
+        $app_id            = $request->input('app_id');
+        $app_secret        = $request->input('app_secret');
+        $app_url           = $request->input('app_url');
+        $app_token         = $request->input('app_token');
+        $app_encoding_key  = $request->input('app_encoding_key');
+        $app_mchid         = $request->input('app_mchid');
+        $app_paysignkey    = $request->input('app_paysignkey');
         $wechat_type = $request->input('wechat_type');
         $qrcode = $request->input('qrcode');
 
-        $fa->name = $name;
-        $fa->number = $number;
-        $fa->contact = $contact;
-        $fa->phone = $phonenumber;
-        $fa->status = $status;
-
-        $fa->end_at = $end_at;
-        $fa->factory_id = $factory_id;
-        $fa->factory_password = bcrypt($factory_password);
-        $fa->public_name = $public_name;
-        $fa->public_id = $public_id;
-        $fa->wechat_id = $wechat_id;
-        $fa->app_id = $app_id;
-        $fa->app_secret = $app_secret;
-        $fa->wechat_type = $wechat_type;
-        $fa->qrcode = $qrcode;
-        $fa->is_deleted = 0;
+        $fa->name              = $name;
+        $fa->number            = $number;
+        $fa->contact           = $contact;
+        $fa->phone             = $phonenumber;
+        $fa->status            = $status;
+        $fa->end_at            = $end_at;
+        $fa->factory_id        = $factory_id;
+        $fa->factory_password  = bcrypt($factory_password);
+        $fa->public_name       = $public_name;
+        $fa->public_id         = $public_id;
+        $fa->wechat_id         = $wechat_id;
+        $fa->app_id            = $app_id;
+        $fa->app_secret        = $app_secret;
+        $fa->app_url           = $app_url;
+        $fa->app_token         = $app_token;
+        $fa->app_encoding_key  = $app_encoding_key;
+        $fa->app_mchid         = $app_mchid;
+        $fa->app_paysignkey    = $app_paysignkey;
+        $fa->wechat_type       = $wechat_type;
+        $fa->qrcode            = $qrcode;
+        $fa->is_deleted        = 0;
 
         if ($request->hasFile('logo')) {
             $file = Input::file('logo');
@@ -222,7 +242,7 @@ class FactoryCtrl extends Controller
         if(!$factory) {
             abort(403);
         }
-
+        $wxmeun = Wxmenu::where('factoryid', $factory_id)->get();
         $products = $factory->active_products;
         
         //load ad images
@@ -249,6 +269,8 @@ class FactoryCtrl extends Controller
             'products' => $products,
             'banners' => $banner_ads,
             'promos' => $promo_ads,
+            'wxmeun' => $wxmeun,
+            'factory' => $factory,
             'factory_id' => $factory->id,
         ]);
     }

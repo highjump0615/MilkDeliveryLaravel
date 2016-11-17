@@ -939,6 +939,10 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* shopping cart */
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
+	Route::get('/weixinservice', 'Weixin\WeChatsCtrl@index');
+	Route::post('/weixinservice', 'Weixin\WeChatsCtrl@index');
+	Route::get('/createMenus', 'Weixin\WeChatsCtrl@createMenus');
+	Route::post('/createMenus', 'Weixin\WeChatsCtrl@createMenus');
     Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
     Route::post('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
     Route::post('/gouwuche/api/delete_selected_wop', 'WeChatCtrl@delete_selected_wop');
