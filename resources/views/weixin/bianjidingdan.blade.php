@@ -164,28 +164,28 @@
         </div>
 
     </div>
+
     <div class="sppj pa2t">
         <div class="sppti">商品评价</div>
-        <ul class="sppul">
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i></i></span>137*******125</div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
 
-            </li>
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i class="stno"></i></span>137*******125
-                </div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
-
-            </li>
-        </ul>
+        @if(isset($reviews))
+            <ul class="sppul">
+                @forelse($reviews as $review)
+                    <li>
+                        <div class="spnum"><span class="spstart">@for($i=0; $i<$review->mark; $i++)<i></i>@endfor</span>
+                            <p>{{$review->tel_number}}</p>
+                        </div>
+                        <div class="pjxx">
+                            {{$review->content}}
+                        </div>
+                    </li>
+                @empty
+                    <p style="text-align: center;">没有评价</p>
+                @endforelse
+            </ul>
+        @endif
     </div>
+
     <div class="he50"></div>
 
     <div class="dnsbt clearfix">
@@ -236,8 +236,8 @@
             var gap_day = parseInt("{{$gap_day}}");
                     @endif
 
-            var today = new Date();
-            var able_date = new Date();
+            var today = new Date("{{$today}}");
+            var able_date = today;
             if (gap_day)
                 able_date.setDate(today.getDate() + gap_day);
             else {

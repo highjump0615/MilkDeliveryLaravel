@@ -1,6 +1,6 @@
 @charset "utf-8";
 html {font-size: 62.5%; width:100%}
-body{font-size:1.4rem; font-family:'Microsoft Yahei','宋体',Arial,sans-serif; line-height:1.6; color:#323232; width:100%; min-width:320px;max-width:640px; margin:0 auto; overflow-x:hidden}
+body{padding:1px; font-size:1.4rem; font-family:'Microsoft Yahei','宋体',Arial,sans-serif; line-height:1.6; color:#323232; width:100%; min-width:320px;max-width:640px; margin:0 auto; overflow-x:hidden}
 h1,h2,h3,h4,h5,h6,p,dl,dt,dd,ul,li,span,div,input,textarea,form{margin:0;padding:0}
 ul,li{list-style:none outside none }
 a{ text-decoration:none; color:#323232}
@@ -88,7 +88,7 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .dzmon{ color:#de5a02}
 .dnsl{ border-top:1px solid #c4c4c4}
 .dnsli{ margin:2% 0}
-.dnsti{ float:left; width:30%; text-align:right; font-size:1.4rem; line-height:26px}
+.dnsti{ float:left; width:35%; text-align:right; font-size:1.4rem; line-height:26px}
 .addSubtract{height:24px; line-height:24px; overflow:hidden;display:inline-block; margin-right:5px; width:78px; vertical-align:middle; background:#e7e7e7}
 .addSubtract a{width:23px;display:inline-block; text-align:center}
 .addSubtract a.subtract,.addSubtract a.subtractDisable{ float:left}
@@ -275,7 +275,7 @@ a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../image
 .ordxz.remove{padding:0;background-color:#ed5a02;color:white;}
 
 .del_selected{ float:right; height:25px; border:1px solid #6e6e6e; border-radius: 2px; margin-top: 5px;background-color:#ed5a02;color:white;}
-.account{ position:fixed; left:0; bottom:42px; width:100%; padding:1% 1% 1% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
+.account{ position:fixed; left:0; bottom:42px; width:100%; padding:2% 1% 2% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
 .ac-l{ float:left; width:40%; font-size:1.2rem; line-height:1.2}
 .ac-r{ float:right; width:60%; text-align:right}
 .ac-r span{font-size:1.2rem; line-height:2.4; padding-right:2%}

@@ -81,18 +81,18 @@
 
     @if(isset($products))
         @foreach($products as $p)
-            @if($p->category == $category)
+            @if($p[0]->category == $category)
                 <dl class="pr_dl">
                     <div class="pr_img">
-                        <a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
-                            <img src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                        <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
+                            <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
                         </a>
                     </div>
                     <div class="pr_ds">
-                        <dt>{{$p->name}}</dt>
-                        <dd>包装：{{$p->bottle_type_name}}</dd>
-                        <dd>储存条件：{{$p->guarantee_req}}</dd>
-                        <dd>￥{{$p->retail_price}}</dd>
+                        <dt>{{$p[0]->name}}</dt>
+                        <dd>包装：{{$p[0]->bottle_type_name}}</dd>
+                        <dd>储存条件：{{$p[0]->guarantee_req}}</dd>
+                        <dd>￥{{$p[1]}}</dd>
                     </div>
                 </dl>
             @endif

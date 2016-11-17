@@ -11,7 +11,7 @@
             @if(isset($cartn))
                 <a href="{{url('/weixin/gouwuche')}}"><i class="mni3"></i>购物车<span class="cartn">{{$cartn}}</span></a>
             @else
-                <a href="{{url('/weixin/gouwuche')}}"><i class="mni3"></i>购物车<span class="cartn">1</span></a>
+                <a href="{{url('/weixin/gouwuche')}}"><i class="mni3"></i>购物车<span class="cartn">0</span></a>
             @endif
         </li>
         <li>

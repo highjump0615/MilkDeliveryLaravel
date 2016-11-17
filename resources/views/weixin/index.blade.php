@@ -39,13 +39,13 @@
         <dl class="prob clearfix">
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
-                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
+                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
                         <div class="milk_img_div">
-                            <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                            <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
                         </div>
-                        <h3 class="proh3">{{$p->name}}</h3>
-                        <div class="proml">{{$p->bottle_type_name}}</div>
-                        <div class="promon"><strong>￥{{$p->retail_price}}</strong>(人民币)</div>
+                        <h3 class="proh3">{{$p[0]->name}}</h3>
+                        <div class="proml">{{$p[0]->bottle_type_name}}</div>
+                        <div class="promon"><strong>￥{{$p[1]}}</strong>(人民币)</div>
                     </a></dd>
             @empty
                 <dd class="prol">

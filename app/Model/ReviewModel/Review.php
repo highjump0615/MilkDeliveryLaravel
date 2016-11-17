@@ -2,6 +2,7 @@
 
 namespace App\Model\ReviewModel;
 
+use App\Model\BasicModel\Customer;
 use App\Model\OrderModel\Order;
 use Illuminate\Database\Eloquent\Model;
 use DateTime;
@@ -18,11 +19,37 @@ class Review extends Model
 
     protected $fillable =[
         'customer_id',
-        'product_id',
         'order_id',
         'mark',
         'content',
         'status',
         'created_at',
     ];
+
+    protected $appends = [
+        'tel_number'
+    ];
+
+    public function getTelNumberAttribute()
+    {
+        $customer = Customer::find($this->customer_id);
+        if($customer)
+        {
+            $phone=$customer->phone;
+            $length = strlen($phone);
+            $asterisk = "";
+            for($i = 0; $i<$length-6; $i++)
+            {
+                $asterisk .= "*";
+            }
+
+            $tel_number = substr_replace($phone, $asterisk, 3, $length-6);
+            return $tel_number;
+
+        } else
+        {
+            return "122*****112";
+        }
+    }
+
 }
