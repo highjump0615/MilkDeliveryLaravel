@@ -864,16 +864,23 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     public function updateNaizhanPlanTable(Request $request){
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $current_date_str = $currentDate->format('Y-m-d');
+
         $current_station_id = $request->input('station_id');
         $product_id = $request->input('product_id');
         $actual_count = $request->input('actual_count');
         $product_name = Product::find($product_id)->name;
 
-        $dsplans = DSProductionPlan::where('station_id',$current_station_id)->where('product_id',$product_id)->where('produce_end_at',$current_date_str)->
-        where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)->get()->first();
+        $dsplans = DSProductionPlan::where('station_id',$current_station_id)
+            ->where('product_id',$product_id)
+            ->where('produce_end_at',$current_date_str)
+            ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
+            ->get()
+            ->first();
+
         if($dsplans != null){
             $dsplans->actual_count = $actual_count;
             $dsplans->status = DSProductionPlan::DSPRODUCTION_PRODUCE_SENT;
@@ -965,11 +972,21 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         ]);
     }
 
+    /**
+     * 打开打印出库单
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showDayinchukuchan(Request $request){
+
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
+        // 页面信息
         $child = 'naizhanpeisong';
         $parent = 'shengchan';
         $current_page = 'dayinchukuchan';
+        $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
+
         $station_name = $request->input('station_name');
         if($station_name == null){
             $station_name = '';
@@ -983,7 +1000,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $address = '';
         }
 
-        $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
         $current_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $current_date->format('Y-m-d');
         $current_date->add(\DateInterval::createFromDateString('yesterday'));
@@ -998,23 +1014,36 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $input_date_str = $current_date_str;
         }
 
-        $station = DeliveryStation::where('factory_id',$current_factory_id)->where('is_deleted',0)->where('status',Factory::FACTORY_STATUS_ACTIVE)->
-        where('address','LIKE','%'.$address.'%')->where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->get(['id','name']);
+        $station = DeliveryStation::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->where('status',Factory::FACTORY_STATUS_ACTIVE)
+            ->where('address','LIKE','%'.$address.'%')
+            ->where('name','LIKE','%'.$station_name.'%')
+            ->where('number','LIKE','%'.$station_number.'%')
+            ->get(['id','name']);
+
         foreach ($station as $st){
-            $st['station_plan'] = DSProductionPlan::where('station_id', $st->id)->where('produce_end_at', $produced_date)->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)->get();
+            $st['station_plan'] = DSProductionPlan::where('station_id', $st->id)
+                ->where('produce_end_at', $produced_date)
+                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
+                ->get();
+
             $st['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+            $st['mfbox_type'] = FactoryBoxType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
         }
 
         return view('gongchang.shengchan.naizhanpeisong.dayinchukuchan',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'current_date'=>$input_date_str,
-            'station'=>$station,
-            'station_name'=>$station_name,
-            'station_number'=>$station_number,
-            'address'=>$address,
+            'pages'             =>$pages,
+            'child'             =>$child,
+            'parent'            =>$parent,
+
+            'current_page'      =>$current_page,
+            'current_date'      =>$input_date_str,
+
+            'station'           =>$station,
+            'station_name'      =>$station_name,
+            'station_number'    =>$station_number,
+            'address'           =>$address,
 //            'station_plan'=>$station_plan,
 //            'mfbottle_type'=>$mfbottle_type,
         ]);

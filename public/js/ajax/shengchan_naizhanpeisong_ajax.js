@@ -7,23 +7,33 @@ $(document).on('click','.determine_count',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
-    $(this).prop("disabled",true);
+    });
+
+    var butSubmit = $(this);
+
     $('#by_station tr:not(:first,:last)').each(function(){
         var id = $(this).attr('value');
+
+        var nRemain = parseInt($('#rest'+id).html());
+        if (nRemain < 0) {
+            show_err_msg('库存不足，请重新提交');
+            return;
+        }
+
         if($(this).attr('id')=='tablerow'+order+''){
             var station_id = $('#station_id'+order+'').attr('value');
             var formData = {
                 actual_count: $('#confirm'+order+''+id+'').text(),
                 product_id: id,
-                station_id: station_id,
-            }
+                station_id: station_id
+            };
             console.log(formData);
             var type = "PUT";
             current_row_number = $(this).closest('tr').find('td:first').text();
 
-            $.ajax({
+            butSubmit.prop("disabled",true);
 
+            $.ajax({
                 type: type,
                 url: url,
                 data: formData,
@@ -39,5 +49,5 @@ $(document).on('click','.determine_count',function(e){
                 }
             });
         }
-    })
-})
+    });
+});

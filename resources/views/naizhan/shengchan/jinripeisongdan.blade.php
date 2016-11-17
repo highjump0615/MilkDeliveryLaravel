@@ -117,7 +117,11 @@
 									<?php $i++; ?>
 									<tr>
 									<td>
-										@if($oi->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
+										<!-- 如果是订单第一次配送，加星号标出来 -->
+										@if($oi->flag == 1)
+											<i class="fa fa-star"></i>
+										@endif
+										{{$i}}
 									</td>
 									<td>
 										@if($oi->delivery_type==1)

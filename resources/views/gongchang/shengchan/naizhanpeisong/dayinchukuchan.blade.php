@@ -104,11 +104,11 @@
 									</tr>
 									@endforeach
 									<?php $i=0; ?>
-									@foreach($st->mfbottle_type as $bt)
+									@foreach($st->mfbox_type as $bt)
 										<?php $i++; ?>
 									<tr>
 										@if($i == 1)
-										<td rowspan="{{count($st->mfbottle_type)}}">奶筐</td>
+										<td rowspan="{{count($st->mfbox_type)}}">奶筐</td>
 										@endif
 										<td width="20%">{{$bt->name}}</td>
 										<td width="30%" contenteditable="true"></td>
@@ -127,7 +127,6 @@
 	</div>
 @endsection
 
-@section('script')
 @section('script')
 	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
    

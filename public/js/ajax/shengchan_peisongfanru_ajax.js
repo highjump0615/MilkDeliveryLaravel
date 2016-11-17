@@ -5,20 +5,20 @@ $(document).on('change','#milkman_name',function(){
     var milkman_id = $('#milkman_name option:selected').val();
     var current_date = $('#search_date').val();
     window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
-})
+});
 
 $(document).on('change','#date_select',function(){
     var milkman_id = $('#milkman_name option:selected').val();
     var current_date = $('#search_date').val();
     window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
-})
+});
 
 $(document).on('click','#save',function(){
 
     confirmdelivery();
     savebottlebox();
     $(this).hide();
-})
+});
 
 function savebottlebox() {
     var url = API_URL + 'naizhan/shengchan/peisongfanru/bottleboxsave';
@@ -26,18 +26,18 @@ function savebottlebox() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var milkman_id = $('#current_milkman_id').val();
     $('#refund_bottle tr:not(:first,:last)').each(function () {
         var bottle_type = $(this).attr('id');
         var count = $(this).find('td:eq(1)').text();
-        if(parseInt(count)>0){
+        if(parseInt(count) >= 0){
             var form_data = {
                 milkman_id: milkman_id,
                 bottle_type: bottle_type,
                 count: count,
-            }
+            };
 
             var type = "POST";
 
@@ -65,7 +65,7 @@ function confirmdelivery() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var table_info = [];
     var i = 0;
@@ -88,7 +88,7 @@ function confirmdelivery() {
         }
         table_info[i] = formData;
         i++;
-    })
+    });
     var send_type = "POST";
 
     $.ajax({

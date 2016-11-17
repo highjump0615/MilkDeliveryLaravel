@@ -53,9 +53,11 @@
 				</div>
 				
 				<div class="ibox float-e-margins">
+
 					@if($deliver_date == $current_date && $is_todayrefund != 0)
 					<label style="color: red; font-size: 18px;">你已经检查配送</label>
 					@endif
+
                     <div class="ibox-content">
 						<div id="delivered_info">
                         <table id="delivery_table" class="table table-bordered">
