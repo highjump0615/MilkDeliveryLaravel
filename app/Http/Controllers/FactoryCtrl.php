@@ -95,6 +95,11 @@ class FactoryCtrl extends Controller
         $wechat_id = $request->input('wechat_id');
         $app_id = $request->input('app_id');
         $app_secret = $request->input('app_secret');
+        $app_url           = $request->input('app_url');
+        $app_token         = $request->input('app_token');
+        $app_encoding_key  = $request->input('app_encoding_key');
+        $app_mchid         = $request->input('app_mchid');
+        $app_paysignkey    = $request->input('app_paysignkey');
         $wechat_type = $request->input('wechat_type');
         $qrcode = $request->input('qrcode');
 
@@ -113,6 +118,11 @@ class FactoryCtrl extends Controller
         $fa->wechat_id = $wechat_id;
         $fa->app_id = $app_id;
         $fa->app_secret = $app_secret;
+        $fa->app_url           = $app_url;
+        $fa->app_token         = $app_token;
+        $fa->app_encoding_key  = $app_encoding_key;
+        $fa->app_mchid         = $app_mchid;
+        $fa->app_paysignkey    = $app_paysignkey;
         $fa->wechat_type = $wechat_type;
         $fa->qrcode = $qrcode;
         $fa->is_deleted = 0;
