@@ -214,7 +214,6 @@ class WeChatCtrl extends Controller
     public function dingdanrijihua(Request $request)
     {
 
-
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
@@ -233,9 +232,9 @@ class WeChatCtrl extends Controller
 
             $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where(function ($query) {
-                    $query->where('status', Order::ORDER_FINISHED_STATUS);
+//                    $query->where('status', Order::ORDER_FINISHED_STATUS);
                     $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+//                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
                 })
                 ->orderBy('id', 'desc')
                 ->get()->all();
@@ -442,11 +441,10 @@ class WeChatCtrl extends Controller
 
         $customer_id = $wechat_user->customer_id;
 
-
         $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
-        if ($type == 'daishenhe') {
+        if ($type == 'waiting') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_WAITING_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
@@ -454,21 +452,21 @@ class WeChatCtrl extends Controller
                 ->orderBy('ordered_at', 'desc')
                 ->get();
 
-        } else if ($type == 'yiwan') {
+        } else if ($type == 'finished') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_FINISHED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
-        } else if ($type == 'zanting') {
+        } else if ($type == 'stopped') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_STOPPED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
-        } else if ($type == 'zaipeisong') {
+        } else if ($type == 'on_delivery') {
             $orders = Order::where('is_deleted', 0)
                 ->where(function ($query) {
                     $query->where('status', Order::ORDER_PASSED_STATUS);

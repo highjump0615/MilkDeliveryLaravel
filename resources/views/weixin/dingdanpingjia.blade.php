@@ -1,9 +1,10 @@
 
 @extends('weixin.layout.master')
 @section('title','订单评价')
-@section('css')
 
+@section('css')
 @endsection
+
 @section('content')
     <div class="top">
         <h1>订单评价</h1>
@@ -13,13 +14,16 @@
     <div class="pj_t">订单号：{{$order->number}}</div>
 
     <div class="pj_img">
-        @forelse($order->order_products as $op)
-        <a href="#"><img src="{{'img/product/logo/'.$op->product->photo_url1}}" border="0"></a>
-        @empty
-        @endforelse
-
-
-        <span><a href="#">共{{$order->total_count}}种></a></span>
+        <div class="swiper-container" style="height:100%">
+            <div class="swiper-wrapper">
+                @forelse($order->order_products as $op)
+                    <div class="swiper-slide"><img class="bimg img-responsive" src="{{asset('img/product/logo/'.$op->product->photo_url1)}}" border="0"/></div>
+                @empty
+                @endforelse
+            </div>
+            <!-- Add Pagination -->
+            <div class="swiper-pagination"></div>
+        </div>
 
     </div>
 
@@ -46,6 +50,14 @@
 @section('script')
     <script src="js/jquery-1.10.1.min.js"></script>
     <script language="javascript">
+
+        var swiper = new Swiper('.swiper-container', {
+            pagination: '.swiper-pagination',
+            paginationClickable: true,
+            spaceBetween: 30,
+        });
+
+
         var marks = 5;
         function level_click(level)
         {

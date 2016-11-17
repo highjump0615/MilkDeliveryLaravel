@@ -147,7 +147,7 @@ header h1{ font-size:1.6rem; display: inline-block;}
 
 /**********************修改订单-单个品种*/
 .ordtop{ padding:2% 3%; position:relative; font-size:0}
-.ordpro{ margin-right:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1}
+.ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1}
 .ordtop p{ padding-top:2%; font-size:1.4rem}
 .ordtop p span{ float:right}
 .ordye{ position:absolute; right:3%; bottom:3%; color:#ed5a02; font-size:1.4rem}
@@ -182,7 +182,7 @@ a.tjord3{ width:55%; background:#00a040}
 button.tjord3{ width:55%; background:#00a040}
 
 /**********************订单日计划修改*/
-.ordjl{ margin-top:4%; border-top:1px solid #b7b7b7; max-height:200px; overflow:auto;}
+.ordjl{border-top:1px solid #b7b7b7; max-height:200px; overflow:auto;}
 .ordjl dt{ font-size:1.4rem; font-weight:bold; line-height:2.2}
 .ordjl dd{ font-size:1.2rem; border-bottom:1px solid #d6d6d6; line-height:2.1}
 .ordjl dd span{ padding-right:6%}
@@ -197,8 +197,8 @@ button.tjord3{ width:55%; background:#00a040}
 .ordtop .ordlr{ top:2%}
 .ordsl .ordtop{ padding:2.5% 3% 7% 3%;border-bottom:1px solid #c4c4c4}
 .ordxz.cart_check{float:none;}
-.ord-l {display:inline-block; width:6%; vertical-align:top; font-size:1.3rem; line-height:1.3}
-.ord-r{ display:inline-block; width:64%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
+.ord-l {display:inline-block; width:6%; margin-right: 2%; vertical-align:top; font-size:1.3rem; line-height:1.3}
+.ord-r{ display:inline-block; width:62%; vertical-align:bottom; font-size:1.3rem; line-height:1.3}
 .ordsl .ordpro{ vertical-align:bottom; float:none}
 .ordshz{ padding:2% 3%; text-align:center; margin: 0 auto;}
 .shsp{ display:inline-block; padding:5px 8px; font-size:1.2rem; border:1px solid #c4c4c4; -moz-border-radius:6px; border-radius:6px; background-color: chocolate;}
@@ -270,9 +270,9 @@ a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../image
 .ordsl .lastcd,.lastcd{ border-bottom:none}
 
 /**********************结算页*/
-.ordxz{ float:right;width:25px; height:25px; border:1px solid #6e6e6e; border-radius: 2px;}
+.ordxz{ float:right;width:22px; height:22px; border:1px solid #6e6e6e; border-radius: 2px;}
 .ordxz:checked{ background:#ed5a02 url(../images/mrdz.png) no-repeat 50% 70%; background-size:80%; border-color:#ed5a02; margin:0;}
-.ordxz.remove{margin-left: 5px;background-color:#ed5a02;color:white;}
+.ordxz.remove{padding:0;background-color:#ed5a02;color:white;}
 
 .del_selected{ float:right; height:25px; border:1px solid #6e6e6e; border-radius: 2px; margin-top: 5px;background-color:#ed5a02;color:white;}
 .account{ position:fixed; left:0; bottom:42px; width:100%; padding:1% 1% 1% 1%; border-top:1px solid #c7c7c7; background:#fff; z-index:1}
@@ -324,9 +324,8 @@ button.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; li
 
 /*我的评价*/
 .pj_t{ height:35px; line-height:35px; border-bottom:solid 1px #ccc; font-size:1.6rem; margin-bottom:10px; text-indent:10px;}
-.pj_img{ margin:2%; height:100px;clear:both ; padding-bottom:10px  }
-.pj_img img{ width:32%; text-align:center; border:solid 1px #ccc; float:left; margin-left:2%;}
-.pj_img  span{ float:right; margin-top:40px;}
+.pj_img{ margin:2%; height:200px;clear:both ; padding-bottom:10px  }
+.pj_img img{ width:50%; text-align:center; border:solid 1px #ccc; margin: 0 auto;}
 
 .evali{border-top:solid 1px #ccc;border-bottom: dashed 1px #ccc; padding-top:3%; margin-top:10px; clear:both;}
 .start{}
@@ -365,9 +364,11 @@ button.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; li
 .pr_ul li.current{ border:solid 1px #e17c04; background:none  }
 .pr_ul li.current a{ color:#e99d43}
 
-.pr_dl{ height:155px; display:block;border-bottom:solid 1px #ccc; padding-left:10px; margin-top:13px; clear:both}
-.pr_dl img{ width:30%; height:140px; float:left; border:solid 1px #ccc; margin-right:2%}
-.pr_dl dt{  margin-left:2%; padding-top:10%}
+.pr_dl{ height:155px; display:block;border-bottom:solid 1px #ccc; padding: 10px; clear:both}
+.pr_dl .pr_img{display:inline-block; width: 30%;}
+.pr_dl .pr_img img{ width:100%; height:auto; max-height:135px; float:left; border:solid 1px #ccc; margin-right:2%}
+.pr_dl .pr_ds {display:inline-block; width: 64%; margin-left:4%}
+.pr_dl dt{ margin-left:2%; padding-top:10%}
 .pr_dl dd{ margin-left:2%}
 .pr_dl dd b{ color:#de5a02}
 
