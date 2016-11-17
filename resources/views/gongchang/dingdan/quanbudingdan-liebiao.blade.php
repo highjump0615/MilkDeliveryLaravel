@@ -291,7 +291,7 @@
             var f_phone = $('#filter_phone').val().trim().toLowerCase();
             var f_station = $('#filter_station').val();
             var f_delivery_property = $('#filter_delivery_property').val();
-            var f_number = $('#filter_number').val().trim();
+            var f_number = $('#filter_number').val().trim().toLowerCase();
             var f_checker = $('#filter_order_checker').val().trim();
             var f_term_kind = $('#filter_term_kind').val();
             var f_payment_type = $('#filter_payment_type').val();
