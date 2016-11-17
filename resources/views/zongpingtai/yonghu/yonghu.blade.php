@@ -60,7 +60,7 @@
 									<td>
 										<a href="{{url('zongpingtai/yonghu/xiangqing')}}/{{$fa->id}}">修改</a>
 										&nbsp;
-										<a href="{{url('zongpingtai/yonghu/gongzhonghaosheding', $fa->id)}}">公众号管理</a>
+										<a href="{{url('zongpingtai/yonghu/gongzhonghaosheding', $fa->id)}}">页面管理</a>
 									</td>
 								</tr>
 							@endforeach

@@ -98,79 +98,68 @@
 					</div>
 				</div>
 			</div>
+                        <div class="wrapper-content">
+                                <div class="feed-element">
+                                        <label class="col-lg-12 gray-bg" style="padding:5px;background-color: #f3f3f4;"> 微信设置</label>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信公众号</label>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-5"> AppID(公众号):</label>
+                                    <div class="col-lg-4 col-md-7">
+                                        <input name="app_id" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-5"> AppSecret:</label>
+                                    <div class="col-lg-4 col-md-7">
+                                        <input name="app_secret" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-5"> 服务器接口 (URL):</label>
+                                    <div class="col-lg-4 col-md-7">
+                                        <input name="app_url" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-5"> 令牌 (Token)：</label>
+                                    <div class="col-lg-4 col-md-7">
+                                       <input name="app_token" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-3"> 消息加解密密钥 (EncodingAESKey)：</label>
+                                    <div class="col-lg-4 col-md-3">
+                                        <input name="app_encoding_key" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信商户号</label>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-3"> 微信支付商户号(Mch Id): </label>
+                                    <div class="col-lg-4 col-md-3">
+                                        <input name="app_mchid" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
 
-			<div class="wrapper-content">
-				<div class="feed-element">
-					<label class="col-lg-12 gray-bg" style="padding:5px;"> 添加公众号</label>
-				</div>
-				
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> 公众号名称:</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="public_name" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<label class="col-lg-2 col-md-3"></label>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> 公众号原始id:</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="public_id" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<label><span style="color:#ff0000;">请认真填写，错了不能修改。</span> 比如: akf789234</label>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> 微信号:</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="wechat_id" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<label>比如: abc1234</label>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> AppID(公众号):</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="app_id" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<label>用于自定义菜单等高级功能，必填</label>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> AppSecret:</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="app_secret" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<label>用于自定义菜单等高级功能，必填</label>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-lg-2 col-md-3"><span style="color:#ff0000;">*</span> 二维码:</label>
-					<div class="col-lg-2 col-md-3">
-						<input name="qr_code" type="text" class="form-control" placeholder="" style="width:100%;" value="">
-					</div>
-					<div class="col-lg-3 col-md-4">
-						<button>上传</button>
-						&nbsp;
-						<label>预览</label>
-					</div>
-				</div>
-				<div class="feed-element col-md-12">
-					<label class="control-label col-md-2">微信号类型:</label>
-					&nbsp;
-					<div class="col-lg-2 col-md-3">
-					<select name="wechat_type" data-placeholder="" class="form-control chosen-select" style="height:35px; width:100%;" tabindex="2">
-						<option value="Type1">Type1</option>
-						<option value="Type2">Type2</option>
-						<option value="Type3">Type3</option>
-						<option value="Type4">Type4</option>
-					</select>
-					</div>
-					<label>认证服务号是每年向微信官方交300元认证费的公众号</label>
-				</div>
-				<div class="feed-element col-md-12">
-					<div class="col-md-5"></div>
-					<div class="col-md-2">
-						<button id="save" class="btn btn-success col-md-2" type="submit" style="width:100%;">确定</button>
-					</div>
-				</div>
+                             <div class="feed-element col-md-12">
+                                    <label class="control-label col-lg-4 col-md-3"> 通信密钥/商户支付密钥 (api密钥): </label>
+                                    <div class="col-lg-4 col-md-3">
+                                        <input name="app_paysignkey" type="text" placeholder="" style="width:100%;" value="">
+                                    </div>
+                                </div>
+                                <div class="feed-element col-md-12">
+                                        <div class="col-md-5"></div>
+                                        <div class="col-md-2">
+                                                <button id="submit" class="btn btn-success col-md-2" type="submit" style="width:100%;">确定</button>
+                                        </div>
+                                </div>
+
+                        </div>
 			
-			</div>
 		</div>
 	</form>
 	</div>
