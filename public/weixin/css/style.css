@@ -325,7 +325,7 @@ button.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; li
 /*我的评价*/
 .pj_t{ height:35px; line-height:35px; border-bottom:solid 1px #ccc; font-size:1.6rem; margin-bottom:10px; text-indent:10px;}
 .pj_img{ margin:2%; height:200px;clear:both ; padding-bottom:10px  }
-.pj_img img{ width:50%; text-align:center; border:solid 1px #ccc; margin: 0 auto;}
+.pj_img img{ width:32%; text-align:center; border:solid 1px #ccc; margin: 0 auto;}
 
 .evali{border-top:solid 1px #ccc;border-bottom: dashed 1px #ccc; padding-top:3%; margin-top:10px; clear:both;}
 .start{}

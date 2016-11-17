@@ -71,9 +71,9 @@
             var content = $('#content').val();
             var url = SITE_URL + 'weixin/dingdanpingjia/addpingjia';
             var formData = {
-                order_id: order_id,
-                marks: marks,
-                contents: content,
+                'order_id': order_id,
+                'marks': marks,
+                'contents': content,
             }
             $.ajax({
                 type: "POST",
@@ -82,7 +82,10 @@
                 dataType: 'json',
                 success: function (data) {
                     console.log(data);
-                    window.location.href = SITE_URL+"weixin/wodepingjia/"+order_id;
+                    if(data.status == "success")
+                    {
+                        window.location.href = SITE_URL+"weixin/wodepingjia/"+order_id;
+                    }
                 },
                 error: function (data) {
                     console.log('Error:', data);

@@ -869,6 +869,8 @@ class WeChatCtrl extends Controller
         $gap_day = $factory->gap_day;
         $factory_order_types = $factory->factory_order_types;
 
+        //show reviews
+
         return view('weixin.tianjiadingdan', [
             "product" => $product,
             'file1' => $file1_path,
@@ -1790,9 +1792,29 @@ class WeChatCtrl extends Controller
 
     public function addPingjia(Request $request)
     {
-        $review = new Review();
-        $review->addReview($request->input('order_id'), $request->input('marks'), $request->input('contents'));
-        return Response::json($review);
+        $order_id = $request->input('order_id');
+        $marks = $request->input('marks');
+        $content = $request->input('contents');
+        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
+
+        $order = Order::find($order_id);
+        $customer_id = $order->customer_id;
+        foreach($order->order_products as $op)
+        {
+            $review = new Review;
+            $review->mark = $marks;
+            $review->content = $content;
+            $review->order_id = $order_id;
+            $review->customer_id = $customer_id;
+            $review->product_id = $op->product_id;
+            $review->created_at = $current_datetime_str;
+            $review->status = Review::REVIEW_STATUS_WAITTING;
+            $review->save();
+        }
+
+        return response()->json(['status'=>'success', 'order_id'=>$order_id]);
+
     }
 
     //show check telephone number page
