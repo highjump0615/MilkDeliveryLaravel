@@ -72,7 +72,7 @@
 								<?php $i++; ?>
 								<tr>
 									<td>
-										@if($dp->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
+										{{$i}}
 									</td>
 									<td>
 										@if($dp->delivery_type==1)

@@ -339,13 +339,20 @@ class Order extends Model
     public function getUnfinishedDeliveryPlansAttribute()
     {
         $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
+            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->get();
+
         return $dps;
     }
 
     public function getLastDeliveryPlans($plan_id)
     {
-        $ldps = MilkManDeliveryPlan::where('order_id', $this->id)->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('id', '>', $plan_id)->orderBy('deliver_at', 'desc')->get();
+        $ldps = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->where('id', '>', $plan_id)
+            ->orderBy('deliver_at', 'desc')
+            ->get();
+
         return $ldps;
     }
 

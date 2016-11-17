@@ -54,7 +54,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         $changed_counts = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
-            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get();
 
@@ -109,7 +109,7 @@ class DSDeliveryPlanCtrl extends Controller
             $deliver_finished_count = 0;
             foreach($deliver_finished_plans as $dfp){
                 if($dfp->order_product->product->id == $dp->product_id){
-                    $deliver_finished_count++;
+                    $deliver_finished_count += $dfp->delivered_count;
                 }
             }
 

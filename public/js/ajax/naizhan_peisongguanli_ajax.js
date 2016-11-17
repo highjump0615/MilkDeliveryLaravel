@@ -278,7 +278,7 @@ function calc_total(){
 
     // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - 可配送数量合计 + 配送业务实际配送数量
     $('#distribute td.remain_sum').each(function(i) {
-        remain_amount[i] = produced_totals[i] - sum_totals[i] -/* order_totals[i]*/ + delivered_total[i];
+        remain_amount[i] = produced_totals[i] - sum_totals[i]/* - order_totals[i] + delivered_total[i]*/;
         $(this).html(remain_amount[i]);
     });
 }
