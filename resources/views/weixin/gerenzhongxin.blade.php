@@ -21,12 +21,12 @@
         <h2>订单列表</h2>
 
         <ul class="cen_ul">
-            <li><p>待付款</p>
-                <a href="{{url('/weixin/gouwuche')}}"><img src="<?=asset('/weixin/images/dfk.png')?>" border="0"></a></li>
-            <li style="margin-left:25%"><p>已付款</p>
-                <a href="{{url('/weixin/dingdanliebiao?type=daishenhe')}}"><img src="<?=asset('/weixin/images/yfk.png')?>" border="0"></a></li>
-            <li style="margin-left:25%"><p>完成</p>
-                <a href="{{url('/weixin/dingdanliebiao?type=yiwan')}}"><img src="<?=asset('/weixin/images/wc.png')?>" border="0"></a></li>
+            <li><p>待审核</p>
+                <a href="{{url('/weixin/dingdanliebiao?type=waiting')}}"><img src="<?=asset('/weixin/images/dfk.png')?>" border="0"></a></li>
+            <li style="margin-left:25%"><p>在配送</p>
+                <a href="{{url('/weixin/dingdanliebiao?type=on_delivery')}}"><img src="<?=asset('/weixin/images/yfk.png')?>" border="0"></a></li>
+            <li style="margin-left:25%"><p>已完成</p>
+                <a href="{{url('/weixin/dingdanliebiao?type=finished')}}"><img src="<?=asset('/weixin/images/wc.png')?>" border="0"></a></li>
         </ul>
 
         <ul class="cen_menu">

@@ -41,8 +41,6 @@ class MilkManDeliveryPlan extends Model
         'plan_product_image',
     ];
 
-
-
     const MILKMAN_DELIVERY_PLAN_TYPE_USER = 1;
     const MILKMAN_DELIVERY_PLAN_TYPE_GROUP = 2;
     const MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL = 3;

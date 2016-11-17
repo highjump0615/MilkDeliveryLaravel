@@ -39,13 +39,13 @@
         <dl class="prob clearfix">
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
-                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
+                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
                         <div class="milk_img_div">
-                            <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
+                            <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
                         </div>
-                        <h3 class="proh3">{{$p->name}}</h3>
-                        <div class="proml">{{$p->bottle_type_name}}</div>
-                        <div class="promon"><strong>￥4.8</strong>(人民币)</div>
+                        <h3 class="proh3">{{$p[0]->name}}</h3>
+                        <div class="proml">{{$p[0]->bottle_type_name}}</div>
+                        <div class="promon"><strong>￥{{$p[1]}}</strong>(人民币)</div>
                     </a></dd>
             @empty
                 <dd class="prol">
@@ -57,7 +57,9 @@
             <dt class="proti"><a href="javascript:void(0)">促销活动</a></dt>
             <dd>
                 @foreach($promos as $p)
-                    <img class="bimg img-responsive" src="<?=asset($p->image_url)?>"/>
+                    @if($p->image_url)
+                        <img class="bimg img-responsive" src="<?=asset($p->image_url)?>"/>
+                    @endif
                 @endforeach
             </dd>
         </dl>
@@ -114,8 +116,10 @@
             var address = "{{$address}}";
 
             if(!address)
-                show_warning_msg('选择您的地址');
-            else {
+            {
+//                show_warning_msg('选择您的地址');
+                alert('选择您的地址')
+            } else {
                 var province_name = address.split(' ')[0];
                 $('#prov_title').text(province_name);
             }

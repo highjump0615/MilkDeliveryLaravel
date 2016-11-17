@@ -80,7 +80,7 @@
     <script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
    
     <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/daterangepicker/daterangepicker.js') ?>"></script>
+    <script src="<?=asset('js/plugins/daterangepicker/daterangepicker.js') ?>"></script>fo
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 
     <!-- FooTable -->

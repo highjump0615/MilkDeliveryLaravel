@@ -281,16 +281,6 @@
                                         <input type="text" class="form-control col-md-2 " id="template_name">
                                     </div>
 
-                                    <div class="form-group col-md-6" style="text-align:left;">
-
-                                        <button type="button" class="btn btn-outline btn-success"
-                                                style="margin-right: 10px;" onclick="add_price_template()"><i
-                                                    class="fa fa-plus"></i>添加价格模板
-                                        </button>
-                                        <button type="button" class="btn btn-outline btn-success"
-                                                onclick="init_price_template()">取消
-                                        </button>
-                                    </div>
 
                                 </div>
                                 <div class="form-group area_select" style="margin-bottom: 15px !important;">
@@ -369,7 +359,18 @@
                                         <input type="number" min="0.1" step="any" id="settle_price"
                                                class="form-control col-md-2">
                                     </div>
-                                    <label class="control-label">元</label>
+                                    <label class="control-label col-md-1" style="text-align: left; padding:0">元</label>
+
+                                    <div class="form-group col-md-6" style="text-align:left;">
+
+                                        <button type="button" class="btn btn-outline btn-success"
+                                                style="margin-right: 10px;" onclick="add_price_template()"><i
+                                                    class="fa fa-plus"></i>添加价格模板
+                                        </button>
+                                        <button type="button" class="btn btn-outline btn-success"
+                                                onclick="init_price_template()">取消
+                                        </button>
+                                    </div>
 
                                 </div>
                             </div>

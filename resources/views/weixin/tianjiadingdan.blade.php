@@ -132,7 +132,7 @@
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
             <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at" >
+                <input class="qssj single_date" name="start_at" id="start_at">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
@@ -160,26 +160,25 @@
     </div>
     <div class="sppj pa2t">
         <div class="sppti">商品评价</div>
-        <ul class="sppul">
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i></i></span>137*******125</div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
 
-            </li>
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i class="stno"></i></span>137*******125
-                </div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
-
-            </li>
-        </ul>
+        @if(isset($reviews))
+            <ul class="sppul">
+                @forelse($reviews as $review)
+                    <li>
+                        <div class="spnum"><span class="spstart">@for($i=0; $i<$review->mark; $i++)<i></i>@endfor</span>
+                         <p>{{$review->tel_number}}</p>
+                        </div>
+                        <div class="pjxx">
+                            {{$review->content}}
+                        </div>
+                    </li>
+                @empty
+                    <p style="text-align: center;">没有评价</p>
+                @endforelse
+            </ul>
+        @endif
     </div>
+
     <div class="he50"></div>
 
     <div class="dnsbt clearfix">
@@ -214,19 +213,18 @@
             dnsel_changed("dnsel_item0");
         });
 
-        $('select#order_type').change(function(){
+        $('select#order_type').change(function () {
 
             var count_input = $('#total_count');
 
             var cur_val = $(this).val();
-            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
-            {
+            if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}") {
                 count_input.attr('min', 30);
                 count_input.val(30);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+            } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}") {
                 count_input.attr('min', 90);
                 count_input.val(90);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+            } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}") {
                 count_input.attr('min', 180);
                 count_input.val(180);
             }
@@ -249,8 +247,8 @@
             var gap_day = parseInt("{{$gap_day}}");
                     @endif
 
-            var today = new Date();
-            var able_date = new Date();
+            var today = new Date("{{$today}}");
+            var able_date = today;
             if (gap_day)
                 able_date.setDate(today.getDate() + gap_day);
             else {
@@ -270,12 +268,11 @@
             $('select#order_type').trigger('change');
         });
 
-        function check_bottle_count(){
+        function check_bottle_count() {
             var count_input = $('#total_count');
-            var min_b = parseInt( $(count_input).attr('min'));
+            var min_b = parseInt($(count_input).attr('min'));
             var current_b = $(count_input).val();
-            if(current_b < min_b)
-            {
+            if (current_b < min_b) {
                 return true;
             }
             return false;
@@ -283,8 +280,7 @@
 
         $('button#make_order').click(function () {
 
-            if(check_bottle_count())
-            {
+            if (check_bottle_count()) {
                 show_info_msg('请正确设置订奶数量');
                 return;
             }
@@ -346,8 +342,7 @@
             }
 
             var start_at = $('#start_at').val();
-            if(!start_at)
-            {
+            if (!start_at) {
                 show_warning_msg("请选择起送时间");
                 return;
             }
@@ -437,8 +432,7 @@
             }
 
             var start_at = $('#start_at').val();
-            if(!start_at)
-            {
+            if (!start_at) {
                 show_warning_msg("请选择起送时间");
                 return;
             }
