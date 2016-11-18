@@ -5626,8 +5626,6 @@ class OrderCtrl extends Controller
 
     public function delete_all_order_products_and_delivery_plans_for_update_order($order)
     {
-
-
         //delete waiting and passed delivery  plan
         MilkManDeliveryPlan::where('order_id', $order->id)->where(function ($query) {
             $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);

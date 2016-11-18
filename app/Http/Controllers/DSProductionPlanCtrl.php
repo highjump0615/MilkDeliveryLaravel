@@ -36,13 +36,13 @@ class DSProductionPlanCtrl extends Controller
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $start_date = $end_date = $request->input('current_date');
 
+        $produce_Date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
+        $produce_start_date = $produce_Date->format('Y-m-d');
+
         // 默认是今天倒数5天
         if ($start_date == '') {
             // 获取系统时间，第二天开始生产
-            $produce_Date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-            $produce_start_date = $produce_Date->format('Y-m-d');
-
             $end_date = $produce_start_date;
 
             $date = str_replace('-','/',$end_date);
@@ -59,7 +59,10 @@ class DSProductionPlanCtrl extends Controller
         $current_page = 'jihuaguanli';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->wherebetween('produce_start_at', [$start_date, $end_date])->orderby('produce_start_at', 'desc')->get();
+        $dsplan = DSProductionPlan::where('station_id',$current_station_id)
+            ->wherebetween('produce_start_at', [$start_date, $end_date])
+            ->orderby('produce_start_at', 'desc')
+            ->get();
 
         $dsplanResult = array();
 
@@ -74,8 +77,9 @@ class DSProductionPlanCtrl extends Controller
             }
         }
 
+        // 是否已经提交
         $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
-            ->where('produce_start_at',$start_date)
+            ->where('produce_start_at', $produce_start_date)
             ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])
             ->get());
 

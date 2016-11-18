@@ -145,6 +145,7 @@ class FactoryCtrl extends Controller
         $current_page = 'xiangqing';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
         $factory = Factory::where('id',$user_id)->get()->first();
+
         return view('zongpingtai.yonghu.yonghu.xiangqing', [
             'pages' => $pages,
             'child' => $child,
