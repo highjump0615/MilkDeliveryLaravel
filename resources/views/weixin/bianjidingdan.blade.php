@@ -207,7 +207,6 @@
 @section('script')
 
     <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/showmyweek.js')?>"></script>
 
@@ -256,7 +255,7 @@
             }
 
             //Single and Multiple Datepicker
-            $('.single_date').datepicker({
+            $('#start_at').datepicker({
                 todayBtn: false,
                 keyboardNavigation: false,
                 forceParse: false,

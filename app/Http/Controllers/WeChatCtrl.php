@@ -539,10 +539,14 @@ class WeChatCtrl extends Controller
             $delivery_plans = $order->grouped_delivery_plans;
         }
 
+        $wechat_user_id = session('wechat_user_id');
+        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
         return view('weixin.dingdanxiangqing', [
             'order' => $order,
             'plans' => $delivery_plans,
             'comment' => $comment,
+            'cartn'=>$cartn,
         ]);
     }
 
@@ -1026,9 +1030,13 @@ class WeChatCtrl extends Controller
 
         $total_amount = $total_count * $product_price;
 
-        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $gap_day = intval($factory->gap_day);
-        $start_at = $today_date->modify("+" . $gap_day . " days");
+//        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+//        $gap_day = intval($factory->gap_day);
+//        $start_at = $today_date->modify("+" . $gap_day . " days");
+//        $start_at = $start_at->format('Y-m-d');
+
+        $start_at = $request->input('start_at');
+        $start_at = new DateTime($start_at);
         $start_at = $start_at->format('Y-m-d');
 
         $group_id = $this->get_new_group_id();
@@ -1118,6 +1126,8 @@ class WeChatCtrl extends Controller
 //            $start_at = $start_at->format('Y-m-d');
 
             $start_at = $request->input('start_at');
+            $start_at = new DateTime($start_at);
+            $start_at = $start_at->format('Y-m-d');
 
             //add wechat order products
             $wcop = new WechatOrderProduct;
@@ -1424,9 +1434,11 @@ class WeChatCtrl extends Controller
 
             $total_amount = $total_count * $product_price;
 
-            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $gap_day = intval($factory->gap_day);
-            $start_at = $today_date->modify("+" . $gap_day . " days");
+//            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+//            $gap_day = intval($factory->gap_day);
+//            $start_at = $today_date->modify("+" . $gap_day . " days");
+            $start_at = $request->input('start_at');
+            $start_at = new DateTime($start_at);
             $start_at = $start_at->format('Y-m-d');
 
             //add wechat order products
