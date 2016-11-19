@@ -16,6 +16,7 @@ class SelfOrder extends Model
         'deliver_at',
         'phone',
         'address',
+        'delivery_time'
     ];
     //
 }

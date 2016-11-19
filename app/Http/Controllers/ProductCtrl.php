@@ -313,7 +313,6 @@ class ProductCtrl extends Controller
             $current_product->save();
             $product_id = $current_product->id;
 
-
             if ($product_id)
                 return response()->json(['status' => 'success', 'updated_product_id' => $product_id]);
             else

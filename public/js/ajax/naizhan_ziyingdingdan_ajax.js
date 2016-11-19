@@ -8,12 +8,15 @@ $(document).on('click','#save',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
+
     e.preventDefault();
+
     var count = 0;
     $('#delivery_milk #user').each(function(){
         count++;
-    })
+    });
+
     var order_count = 0;
     $('#delivery_milk #user').each(function(){
         order_count++;
@@ -53,10 +56,10 @@ $(document).on('click','#save',function(e){
                 console.log('Error:', data);
             }
         });
-    })
+    });
     // window.location.href = SITE_URL+"naizhan/shengchan/peisongliebiao";
     // self.location = SITE_URL+"naizhan/shengchan/peisongliebiao";
-})
+});
 
 
 $(document).on('click','#add',function(){
@@ -219,4 +222,4 @@ $(document).on('click','#plan_cancel',function () {
     // })
     // $('#delivery_milk').tbody.remove();
     window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
-})
+});

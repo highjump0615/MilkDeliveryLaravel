@@ -1055,9 +1055,17 @@ class OrderCtrl extends Controller
         $rest_with_this = $this->get_rest_plans_count($order_id, $plan_id);
 
         if ($changed <= $rest_with_this) {
-            //set current changed delivery plan
-            $plan->changed_plan_count = $changed;
-            $plan->delivery_count = $changed;
+            // 已提交生产计划才算是修改
+            if ($plan->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+                //set current changed delivery plan
+                $plan->changed_plan_count = $changed;
+                $plan->delivery_count = $changed;
+            }
+            else {
+                $plan->changed_plan_count = $changed;
+                $plan->delivery_count = $changed;
+                $plan->plan_count = $changed;
+            }
             $plan->save();
 
             //get each delivery plans from last delivery day and delete or create plans

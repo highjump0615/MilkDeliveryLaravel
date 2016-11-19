@@ -68,7 +68,6 @@ class MilkManDeliveryPlan extends Model
         }
     }
 
-
     public function getStatusNameAttribute(){
         if($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             return "已配送";
@@ -142,5 +141,13 @@ class MilkManDeliveryPlan extends Model
         }
 
         return $strRes;
+    }
+
+    /**
+     * 是否奶箱安装
+     * @return bool
+     */
+    public function isBoxInstall() {
+        return ($this->flag && $this->order->milk_box_install);
     }
 }

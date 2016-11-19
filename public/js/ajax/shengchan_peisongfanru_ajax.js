@@ -14,13 +14,13 @@ $(document).on('change','#date_select',function(){
 });
 
 $(document).on('click','#save',function(){
-
     confirmdelivery();
     savebottlebox();
     $(this).hide();
 });
 
 function savebottlebox() {
+
     var url = API_URL + 'naizhan/shengchan/peisongfanru/bottleboxsave';
     $.ajaxSetup({
         headers: {
@@ -29,9 +29,10 @@ function savebottlebox() {
     });
 
     var milkman_id = $('#current_milkman_id').val();
-    $('#refund_bottle tr:not(:first,:last)').each(function () {
+    $('#refund_bottle tr:not(:first)').each(function () {
         var bottle_type = $(this).attr('id');
         var count = $(this).find('td:eq(1)').text();
+
         if(parseInt(count) >= 0){
             var form_data = {
                 milkman_id: milkman_id,

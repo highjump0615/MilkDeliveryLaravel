@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Model\BasicModel\Customer;
 use App\Model\DeliveryModel\DeliveryStation;
+use App\Model\DeliveryModel\DeliveryType;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\DeliveryModel\DSDeliveryPlan;
 use App\Model\DeliveryModel\DSProductionPlan;
@@ -242,6 +243,11 @@ class DSDeliveryPlanCtrl extends Controller
         return Response::json();
     }
 
+    /**
+     * 打开配送列表
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showPeisongliebiao(Request $request){
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
@@ -264,17 +270,19 @@ class DSDeliveryPlanCtrl extends Controller
 
         $res = array();
         foreach ($delivery_plans as $o=>$dps_by_type) {
-            if ($o == 1){
+            // 订单配送
+            if ($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
                 $regular_delivers = $dps_by_type->groupBy(function($sort){
                     return $sort->order_id;
                 });
 
                 foreach ($regular_delivers as $r=>$by_order_id) {
-
-                    $res[$r] = Order::find($r);
+                    // 获取订单信息
+                    $orderData = Order::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
+                    $box_install_count = 0;     // 奶箱安装数量
 
                     foreach($by_order_id as $dp) {
                         $name = $dp->order_product->product->name;
@@ -283,21 +291,33 @@ class DSDeliveryPlanCtrl extends Controller
                         if($dp->plan_count != $dp->changed_plan_count)
                             $is_changed = 1;
                         $delivery_type = $dp->type;
+
+                        if ($dp->isBoxInstall()) {
+                            $box_install_count++;
+                        }
                     }
 
-                    $res[$r]['product'] = implode(',', $products);
-                    $res[$r]['changed'] = $is_changed;
-                    $res[$r]['delivery_type'] = $delivery_type;
+                    $orderData['product'] = implode(',', $products);
+                    if ($box_install_count > 0) {
+                        $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
+                    }
+
+                    $orderData['changed'] = $is_changed;
+                    $orderData['delivery_type'] = $delivery_type;
+
+                    // 添加到主数组
+                    array_push($res, $orderData);
                 }
             }
+            // 自营配送
             else{
                 $regular_delivers = $dps_by_type->groupBy(function($sort){
                     return $sort->order_id;
                 });
 
                 foreach ($regular_delivers as $r=>$by_order_id) {
-
-                    $res[$r] = SelfOrder::find($r);
+                    // 获取自营项目信息
+                    $orderData = SelfOrder::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
@@ -309,9 +329,12 @@ class DSDeliveryPlanCtrl extends Controller
                         $delivery_type = $dp->type;
                     }
 
-                    $res[$r]['product'] = implode(',', $products);
-                    $res[$r]['changed'] = $is_changed;
-                    $res[$r]['delivery_type'] = $delivery_type;
+                    $orderData['product'] = implode(',', $products);
+                    $orderData['changed'] = $is_changed;
+                    $orderData['delivery_type'] = $delivery_type;
+
+                    // 添加到主数组
+                    array_push($res, $orderData);
                 }
             }
         }
@@ -573,7 +596,7 @@ class DSDeliveryPlanCtrl extends Controller
         $self_orders->deliver_at = $deliver_date_str;
         $self_orders->phone = $phone;
         $self_orders->address = $address;
-        $self_orders->deliver_at = $deliver_time;
+        $self_orders->delivery_time = $deliver_time;
         $self_orders->save();
 
         $order_id = $self_orders->id;
@@ -615,218 +638,97 @@ class DSDeliveryPlanCtrl extends Controller
         return Response::json(['status'=>"success"]);
     }
 
+    /**
+     * 今日配送单 - 配送员统计
+     * @param $milkman_id
+     * @return array
+     */
     public function MilkmanProductInfo($milkman_id){
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
-        wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])->where('milkman_id',$milkman_id)->get();
+
+        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at',$deliver_date_str)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->where('milkman_id',$milkman_id)
+            ->get();
+
+        // 配送员当日配送的奶品数组
+        // 键是产品id
         $products = array();
-        $i = 0;
-        $flag = 0;
-        foreach ($milkman_delivery_plans as $k=>$mdp){
-            if($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-                $product_number = -1;
-                if($i == 0){
-                    if($flag == 0){
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['planed_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['channel_count'] = 0;
-                        $flag = 1;
-                    }
-                    else{
-                        if($products[$i]['name'] == $mdp->order_product->product->name){
-                            $products[$i]['planed_count'] += $mdp->delivery_count;
-                        }
-                        else{
-                            $i++;
-                            $products[$i]['name'] = $mdp->order_product->product->name;
-                            $products[$i]['planed_count'] = $mdp->delivery_count;
-                            $products[$i]['test_drink'] = 0;
-                            $products[$i]['group_count'] = 0;
-                            $products[$i]['channel_count'] = 0;
-                        }
-                    }
-                }
-                else{
-                    for($j=0; $j<=$i;$j++){
-                        if($products[$j]['name']==$mdp->order_product->product->name){
-                            $product_number = $j;
-                        }
-                    }
-                    if($product_number == -1){
-                        $i++;
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['planed_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['channel_count'] = 0;
-                    }
-                    else{
-                        $products[$product_number]['planed_count'] = +$mdp->delivery_count;
-                    }
-                }
-            }
-            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP){
-                $product_number = -1;
-                if($i == 0){
-                    if($flag == 0){
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['group_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                        $products[$i]['channel_count'] = 0;
-                        $flag = 1;
-                    }
-                    else{
-                        if($products[$i]['name'] == $mdp->order_product->product->name){
-                            $products[$i]['group_count'] += $mdp->delivery_count;
-                        }
-                        else{
-                            $i++;
-                            $products[$i]['name'] = $mdp->order_product->product->name;
-                            $products[$i]['group_count'] = $mdp->delivery_count;
-                            $products[$i]['test_drink'] = 0;
-                            $products[$i]['planed_count'] = 0;
-                            $products[$i]['channel_count'] = 0;
-                        }
-                    }
-                }
-                else{
-                    for($j=0; $j<=$i;$j++){
-                        if($products[$j]['name']==$mdp->order_product->product->name){
-                            $product_number = $j;
-                        }
-                    }
-                    if($product_number == -1){
-                        $i++;
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['group_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                        $products[$i]['channel_count'] = 0;
-                    }
-                    else{
-                        $products[$product_number]['group_count'] += $mdp->delivery_count;
-                    }
-                }
-            }
-            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL){
-                $product_number = -1;
-                if($i == 0){
-                    if($flag == 0){
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['channel_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                        $flag = 1;
-                    }
-                    else{
-                        if($products[$i]['name'] == $mdp->order_product->product->name){
-                            $products[$i]['channel_count'] += $mdp->delivery_count;
-                        }
-                        else{
-                            $i++;
-                            $products[$i]['name'] = $mdp->order_product->product->name;
-                            $products[$i]['channel_count'] = $mdp->delivery_count;
-                            $products[$i]['test_drink'] = 0;
-                            $products[$i]['group_count'] = 0;
-                            $products[$i]['planed_count'] = 0;
-                        }
-                    }
-                }
-                else{
-                    for($j=0; $j<=$i;$j++){
-                        if($products[$j]['name']==$mdp->order_product->product->name){
-                            $product_number = $j;
-                        }
-                    }
-                    if($product_number == -1){
-                        $i++;
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['channel_count'] = $mdp->delivery_count;
-                        $products[$i]['test_drink'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                    }
-                    else{
-                        $products[$product_number]['channel_count'] += $mdp->delivery_count;
-                    }
-                }
-            }
-            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK){
-                $product_number = -1;
-                if($i == 0){
-                    if($flag == 0){
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['test_drink'] = $mdp->delivery_count;
-                        $products[$i]['planed_count'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                        $flag = 1;
-                    }
-                    else{
-                        if($products[$i]['name'] == $mdp->order_product->product->name){
-                            $products[$i]['test_drink'] += $mdp->delivery_count;
-                        }
-                        else{
-                            $i++;
-                            $products[$i]['name'] = $mdp->order_product->product->name;
-                            $products[$i]['test_drink'] = $mdp->delivery_count;
-                            $products[$i]['planed_count'] = 0;
-                            $products[$i]['group_count'] = 0;
-                            $products[$i]['planed_count'] = 0;
-                        }
-                    }
-                }
-                else{
-                    for($j=0; $j<=$i;$j++){
-                        if($products[$j]['name']==$mdp->order_product->product->name){
-                            $product_number = $j;
-                        }
-                    }
-                    if($product_number == -1){
-                        $i++;
-                        $products[$i]['name'] = $mdp->order_product->product->name;
-                        $products[$i]['test_drink'] = $mdp->delivery_count;
-                        $products[$i]['planed_count'] = 0;
-                        $products[$i]['group_count'] = 0;
-                        $products[$i]['planed_count'] = 0;
-                    }
-                    else{
-                        $products[$product_number]['test_drink'] += $mdp->delivery_count;
-                    }
-                }
+
+        foreach ($milkman_delivery_plans as $mdp) {
+            $prodData = null;
+
+            $index = $mdp->order_product->product->id;
+            if (array_key_exists($index, $products)) {
+                $prodData = $products[$index];
             }
 
+            if (!$prodData) {
+                $prodData = array();
+
+                // 初始化
+                $prodData['name'] = $mdp->order_product->product->name;
+                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER] = 0;
+                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP] = 0;
+                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL] = 0;
+                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK] = 0;
+                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL] = 0;
+            }
+
+            $prodData[$mdp->type] += $mdp->delivery_count;
+
+            $products[$index] = $prodData;
         }
+
         return $products;
     }
 
+    /**
+     * 今日配送单的配送量统计
+     * @param $milkman_id
+     * @return array
+     */
     public function jinrichangestatus($milkman_id){
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
-        where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->where('milkman_id',$milkman_id)->get();
+
+        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at',$deliver_date_str)
+            ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
+            ->where('milkman_id',$milkman_id)
+            ->get();
+
         $status = array();
         $status['new_order_amount'] = 0;
         $status['new_changed_order_amount'] = 0;
         $status['milkbox_amount'] = 0;
+
         foreach ($milkman_delivery_plans as $k=>$mdp){
-            if($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER)
+            // 只考虑订单配送
+            if ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
+                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER) {
+                    // 第一次配送的数量合计
                     $status['new_order_amount'] += $mdp->delivery_count;
-                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE)
+                }
+                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE) {
                     $status['new_changed_order_amount'] += $mdp->delivery_count;
+                }
+
+                if ($mdp->isBoxInstall()) {
+                    $status['milkbox_amount']++;
+                }
             }
-            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL){
-                $status['milkbox_amount']++;
-            }
+//            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL){
+//                $status['milkbox_amount']++;
+//            }
         }
+
         return $status;
     }
 
@@ -871,14 +773,14 @@ class DSDeliveryPlanCtrl extends Controller
 
                     foreach ($regular_delivers as $r=>$by_order_id){
                         // 获取订单信息
-                        $delivery_info[$r] = Order::find($r);
+                        $orderData = Order::find($r);
 
                         $products = array();
                         $is_changed = 0;
                         $delivery_type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
 
-                        // 是否第一次配送
-                        $flag = 0;
+                        $flag = 0;                  // 是否第一次配送
+                        $box_install_count = 0;     // 奶箱安装数量
 
                         foreach ($by_order_id as $dp) {
                             $name = $dp->order_product->product->name;
@@ -890,12 +792,23 @@ class DSDeliveryPlanCtrl extends Controller
 
                             $delivery_type = $dp->type;
                             $flag = $dp->flag;
+
+                            if ($dp->isBoxInstall()) {
+                                $box_install_count++;
+                            }
                         }
 
-                        $delivery_info[$r]['product'] = implode(',', $products);
-                        $delivery_info[$r]['changed'] = $is_changed;
-                        $delivery_info[$r]['delivery_type'] = $delivery_type;
-                        $delivery_info[$r]['flag'] = $flag;
+                        $orderData['product'] = implode(',', $products);
+                        if ($box_install_count > 0) {
+                            $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
+                        }
+
+                        $orderData['changed'] = $is_changed;
+                        $orderData['delivery_type'] = $delivery_type;
+                        $orderData['flag'] = $flag;
+
+                        // 添加到主数组
+                        array_push($delivery_info, $orderData);
                     }
                 }
                 else{
@@ -904,7 +817,8 @@ class DSDeliveryPlanCtrl extends Controller
                     });
 
                     foreach ($extra_delivers as $r=>$by_order_id){
-                        $delivery_info[$r] = SelfOrder::find($r);
+                        // 获取自营项目信息
+                        $orderData = SelfOrder::find($r);
                         $products = array();
                         $is_changed = 0;
                         $delivery_type = 1;
@@ -916,9 +830,12 @@ class DSDeliveryPlanCtrl extends Controller
                             $delivery_type = $dp->type;
                         }
 
-                        $delivery_info[$r]['product'] = implode(',', $products);
-                        $delivery_info[$r]['changed'] = $is_changed;
-                        $delivery_info[$r]['delivery_type'] = $delivery_type;
+                        $orderData['product'] = implode(',', $products);
+                        $orderData['changed'] = $is_changed;
+                        $orderData['delivery_type'] = $delivery_type;
+
+                        // 添加到主数组
+                        array_push($delivery_info, $orderData);
                     }
                 }
             }
@@ -942,7 +859,11 @@ class DSDeliveryPlanCtrl extends Controller
 
     public function undelivered_process($order_product_id, $delivered_count, $deliver_at)
     {
-        $plan = MilkManDeliveryPlan::where('order_product_id', $order_product_id)->where('deliver_at', $deliver_at)->get()->first();
+        $plan = MilkManDeliveryPlan::where('order_product_id', $order_product_id)
+            ->where('deliver_at', $deliver_at)
+            ->get()
+            ->first();
+
         $delivery_count = $plan->changed_plan_count;
         $order_id = $plan->order_id;
 
@@ -952,10 +873,18 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         $undelivered_count = $delivery_count - $delivered_count;
+
         $delivery_type = OrderProduct::find($order_product_id);
+
+        // 获取该订单该奶品的最后配送任务
         $last_delivery_date_info = MilkManDeliveryPlan::where('order_product_id',$order_product_id)->orderby('deliver_at','desc')->get()->first();
+
+        // 最后一天配送数量还没提交
         if($last_delivery_date_info->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED){
-            if($last_delivery_date_info->plan_count < $delivery_type->count_per_day){
+
+            // 最后一天的配送数量少于每次数量
+            if ($delivery_type->isDayCountAvailable() && $last_delivery_date_info->plan_count < $delivery_type->count_per_day){
+                // 加剩余量超过每次数量
                 if($last_delivery_date_info->plan_count + $undelivered_count >= $delivery_type->count_per_day){
                     $undelivered_count = $undelivered_count-($delivery_type->count_per_day - $last_delivery_date_info->plan_count);
                     $last_delivery_date_info->plan_count = $delivery_type->count_per_day;
@@ -965,26 +894,31 @@ class DSDeliveryPlanCtrl extends Controller
                 }
                 else{
                     $last_delivery_date_info->plan_count = $last_delivery_date_info->plan_count + $undelivered_count;
-                    $last_delivery_date_info->changed_plan_count = $delivery_type->count_per_day;
-                    $last_delivery_date_info->delivery_count = $delivery_type->count_per_day;
+                    $last_delivery_date_info->changed_plan_count = $last_delivery_date_info->plan_count;
+                    $last_delivery_date_info->delivery_count = $last_delivery_date_info->plan_count;
                     $last_delivery_date_info->save();
                     return;
                 }
             }
+
+            // 实际配送数量少于改配送的数量
             if($undelivered_count > 0){
-                if($delivery_type->delivery_type == 1){
+                // 天天送
+                if($delivery_type->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY){
                     $p_date = str_replace('-','/',$last_delivery_date_info->produce_at);
                     $produce_date = date('Y-m-d',strtotime($p_date."+1 days"));
                     $d_date = str_replace('-','/',$last_delivery_date_info->deliver_at);
                     $deliver_date = date('Y-m-d',strtotime($d_date."+1 days"));
                 }
-                elseif($delivery_type->delivery_type == 2){
+                // 隔日送
+                elseif($delivery_type->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY){
                     $p_date = str_replace('-','/',$last_delivery_date_info->produce_at);
                     $produce_date = date('Y-m-d',strtotime($p_date."+2 days"));
                     $d_date = str_replace('-','/',$last_delivery_date_info->deliver_at);
                     $deliver_date = date('Y-m-d',strtotime($d_date."+2 days"));
                 }
-                elseif($delivery_type->delivery_type == 3){
+                // 按周送
+                elseif($delivery_type->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK){
                     $delivered_dates = explode(',',$delivery_type->custom_order_dates);
                     $last_delivery_weekday = date('w', strtotime($last_delivery_date_info->deliver_at));
                     $i = 0;
@@ -1004,6 +938,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $production_period = Product::find(OrderProduct::find($order_product_id)->product_id)->production_period/24;
                     $produce_date = date('Y-m-d',strtotime($deliver_date."-".$production_period." days"));
                 }
+                // 随心送
                 else{
                     $last_deliver_day = explode('-',$last_delivery_date_info->deliver_at);
                     $delivered_dates = explode(',',$delivery_type->custom_order_dates);
@@ -1025,11 +960,13 @@ class DSDeliveryPlanCtrl extends Controller
                     $production_period = Product::find(OrderProduct::find($order_product_id)->product_id)->production_period/24;
                     $produce_date = date('Y-m-d',strtotime($deliver_date."-".$production_period." days"));
                 }
+
                 $addplan = new MilkManDeliveryPlan;
                 $addplan->milkman_id = $last_delivery_date_info->milkman_id;
                 $addplan->station_id = $last_delivery_date_info->station_id;
                 $addplan->order_id = $last_delivery_date_info->order_id;
                 $addplan->order_product_id = $last_delivery_date_info->order_product_id;
+                $addplan->product_price = $last_delivery_date_info->product_price;
                 $addplan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
                 $addplan->type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
                 $addplan->plan_count = $undelivered_count;
@@ -1039,6 +976,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $addplan->deliver_at = $deliver_date;
                 $addplan->save();
             }
+
             return;
         }
         elseif($last_delivery_date_info->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT){
@@ -1154,6 +1092,7 @@ class DSDeliveryPlanCtrl extends Controller
         $parent = 'shengchan';
         $current_page = 'peisongfanru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         $milkman = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get();
         $current_milkman = $request->input('milkman_id');
 
@@ -1203,18 +1142,19 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         foreach ($order_by_types as $o=>$dbm){
-
-            if($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
+            // 订单配送
+            if($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
                 $regular_delivers = $dbm->groupBy(function($sort){
                     return $sort->order_id;
                 });
 
                 foreach ($regular_delivers as $r=>$by_order_id){
-
-                    $delivery_info[$r] = Order::find($r);
+                    // 获取订单信息
+                    $orderData = Order::find($r);
                     $products = array();
                     $is_changed = 0;
                     $delivery_type = 1;
+                    $milkboxinstall = 0;
 
                     foreach($by_order_id as $pro=>$dp) {
                         $name = $dp->order_product->product->name;
@@ -1229,13 +1169,24 @@ class DSDeliveryPlanCtrl extends Controller
                         if($dp->plan_count != $dp->changed_plan_count)
                             $is_changed = 1;
                         $delivery_type = $dp->type;
+
                         $milk_man = $dp->milkman->name;
+
+                        if($dp->isBoxInstall())
+                            $milkboxinstall = 1;
                     }
+
+                    $orderData['milkbox_install'] = 0;
+
 //                    $delivery_info[$r]['product'] = implode(',', $products);
-                    $delivery_info[$r]['product'] = $products;
-                    $delivery_info[$r]['changed'] = $is_changed;
-                    $delivery_info[$r]['delivery_type'] = $delivery_type;
-                    $delivery_info[$r]['milkman_name'] = $milk_man;
+                    $orderData['product'] = $products;
+                    $orderData['changed'] = $is_changed;
+                    $orderData['delivery_type'] = $delivery_type;
+                    $orderData['milkman_name'] = $milk_man;
+                    $orderData['milkbox_install'] = $milkboxinstall;
+
+                    // 添加到主数组
+                    array_push($delivery_info, $orderData);
                 }
             }
             else{
@@ -1244,10 +1195,10 @@ class DSDeliveryPlanCtrl extends Controller
                 });
 
                 foreach ($extra_delivers as $r=>$by_order_id){
+                    // 获取自营项目信息
+                    $orderData = SelfOrder::find($r);
 
-                    $delivery_info[$r] = SelfOrder::find($r);
-
-                    if($delivery_info[$r] != null){
+                    if($orderData != null){
                         $products = array();
                         $is_changed = 0;
                         $delivery_type = 2;
@@ -1265,17 +1216,18 @@ class DSDeliveryPlanCtrl extends Controller
                             $products[$pro]['comment'] = $dp->comment;
                             $delivery_type = $dp->type;
                             $milk_man = $dp->milkman->name;
-                            if($dp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL)
-                                $milkboxinstall = 1;
                         }
 
-                        $delivery_info[$r]['is_milkbox'] = 0;
+                        $orderData['is_milkbox'] = 0;
 //                        $delivery_info[$r]['product'] = implode(',', $products);
-                        $delivery_info[$r]['product'] = $products;
-                        $delivery_info[$r]['changed'] = $is_changed;
-                        $delivery_info[$r]['delivery_type'] = $delivery_type;
-                        $delivery_info[$r]['milkman_name'] = $milk_man;
-                        $delivery_info[$r]['milkbox_install'] = $milkboxinstall;
+                        $orderData['product'] = $products;
+                        $orderData['changed'] = $is_changed;
+                        $orderData['delivery_type'] = $delivery_type;
+                        $orderData['milkman_name'] = $milk_man;
+                        $orderData['milkbox_install'] = $milkboxinstall;
+
+                        // 添加到主数组
+                        array_push($delivery_info, $orderData);
                     }
                 }
             }
@@ -1323,7 +1275,6 @@ class DSDeliveryPlanCtrl extends Controller
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
@@ -1347,7 +1298,7 @@ class DSDeliveryPlanCtrl extends Controller
 
             if($delivered_count == 0){
                 $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-                $milkmandeliverys->cancel_reasone = "配送取消";
+                $milkmandeliverys->cancel_reason = "配送取消";
             }
             else{
                 $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;

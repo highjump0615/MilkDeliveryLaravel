@@ -126,8 +126,8 @@
 						<label class="control-label col-md-2" style="padding-top: 5px;">配送时间:</label>
 						<div class="col-md-4" style="padding-left: 10px;">
 							<select data-placeholder="" id="time" class="form-control chosen-select" style="width:100%;" tabindex="2">
-								<option value="0">上午</option>
-								<option value="1">下午</option>
+								<option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING}}">上午</option>
+								<option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON}}">下午</option>
 							</select>
 						</div>	
 					</div>

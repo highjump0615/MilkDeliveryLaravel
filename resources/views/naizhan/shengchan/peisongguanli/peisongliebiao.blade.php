@@ -17,7 +17,7 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-			
+
 				<div class="ibox-content">
 					<div class="feed-element">
 						<div class="col-md-2"></div>
@@ -49,7 +49,7 @@
 					</div>
 					@endif
 				</div>
-			
+
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
@@ -75,15 +75,15 @@
 										{{$i}}
 									</td>
 									<td>
-										@if($dp->delivery_type==1)
+										@if($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
 											计划订单
-										@elseif($dp->delivery_type==2)
+										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
 											团购订单
-										@elseif($dp->delivery_type==3)
+										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
 											渠道订单
-										@elseif($dp->delivery_type==4)
+										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
 											赠品订单
-										@elseif($dp->delivery_type==6)
+										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
 											店内零售
 										@endif
 									</td>
@@ -94,7 +94,13 @@
 									@else
 										<td>{{$dp->customer_name}}</td>
 									@endif
-									<td>@if($dp->delivery_time == 0)上午@elseif($dp->delivery_time == 1)下午 @endif</td>
+									<td>
+										@if($dp->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
+											上午
+										@elseif($dp->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
+											下午
+										@endif
+									</td>
 									<td>{{$dp->phone}}</td>
 									<td></td>
 								</tr>
@@ -104,7 +110,7 @@
                                 <tr>
                                     <td colspan="8">
 										<label  class="control-label pull-right" style="padding-top:5px;"></label>
-                                        <ul class="pagination pull-right"></ul>								
+                                        <ul class="pagination pull-right"></ul>
 										<label class="control-label pull-right" style="padding-top:5px;"></label>
                                     </td>
                                 </tr>
@@ -115,6 +121,6 @@
 
 			</div>
 		</div>
-		
+
 	</div>
 @endsection

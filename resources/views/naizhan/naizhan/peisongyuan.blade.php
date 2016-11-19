@@ -109,7 +109,7 @@
                                 </div>
                             </div>
                             <label class="col-md-offset-2 col-md-3" id="street_alert"
-                                   style="color: red; padding-top: 5px; display: none">(请输入身街道!)</label>
+                                   style="color: red; padding-top: 5px; display: none">(请输入街道!)</label>
                         </div>
                     </div>
 

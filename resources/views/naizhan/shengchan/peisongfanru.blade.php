@@ -93,14 +93,16 @@
 										@if($di->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
 									</td>
 									<td  rowspan="{{count($di->product)}}" value="{{$di->delivery_type}}">
-										@if($di->delivery_type==1)
+										@if($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
 											计划订单
-										@elseif($di->delivery_type==2)
+										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
 											团购订单
-										@elseif($di->delivery_type==3)
+										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
 											渠道订单
-										@elseif($di->delivery_type==4)
+										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
 											赠品订单
+										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
+											店内零售
 										@endif
 									</td>
 									<td  rowspan="{{count($di->product)}}">
@@ -130,7 +132,7 @@
 									</td>
 									@if($j == 1)
 										<td rowspan="{{count($di->product)}}">
-											@if($di->milkbox_install == 1)是@endif
+											@if($di->milkbox_install > 0){{$di->milkbox_install}}@endif
 										</td>
 									{{--<td rowspan="{{count($di->product)}}" id="status{{$di->id}}">--}}
 										{{--@if($di->flag == 0)--}}
@@ -155,7 +157,7 @@
                         		<p>奶瓶回收数量:</p>
                         	</div>
                         	<div class="col-md-10" style="padding-right: 0;">
-								<table id="refund_bottle" class="table footable table-bordered">
+								<table id="refund_bottle" class="table table-bordered">
 									<thead>
 									<tr>
 										<th data-sort-ignore="true">奶瓶型</th>
@@ -179,13 +181,6 @@
 										@endforeach
 									@endif
 									</tbody>
-									<tfoot>
-									<tr>
-										<td colspan="100%">
-											<ul class="pagination pull-right"></ul>
-										</td>
-									</tr>
-									</tfoot>
 								</table>
                         	</div>
                         </div>

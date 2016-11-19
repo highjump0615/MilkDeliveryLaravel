@@ -253,6 +253,12 @@ class OrderProduct extends Model
 
     }
 
-
+    /**
+     * 要不要考虑每次数量
+     * @return bool
+     */
+    public function isDayCountAvailable() {
+        return ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY);
+    }
 
 }

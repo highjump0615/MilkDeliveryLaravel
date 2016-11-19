@@ -117,6 +117,10 @@ class Order extends Model
     const ORDER_FLAT_ENTER_MODE_CALL_DEFAULT = 2;
     const ORDER_FLAT_ENTER_MODE_PASSWORD_DEFAULT = 1;
 
+    // 配送时间
+    const ORDER_DELIVERY_TIME_MORNING             = 1;
+    const ORDER_DELIVERY_TIME_AFTERNOON           = 2;
+
     // 收件人地址信息
     private $mStrProvince;
     private $mStrCity;
@@ -411,8 +415,13 @@ class Order extends Model
             $order_product_id = $op->id;
             $remain_count = $op->total_count;
 
+            // 配送明细只针对订单的配送
             $op_dps = MilkManDeliveryPlan::where('order_id', $this->id)
                 ->where('order_product_id', $order_product_id)
+                ->where(function($query) {
+                    $query->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER);
+                    $query->orwhere('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL);
+                })
                 ->orderBy('deliver_at')
                 ->get();
 

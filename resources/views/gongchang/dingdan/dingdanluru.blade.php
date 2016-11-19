@@ -326,8 +326,18 @@
                         &nbsp;
                         <div class="col-md-2">
                             <select required class="form-control" id="delivery_noon" name="delivery_noon">
-                                <option value="1" @if (isset($order) && $order->delivery_time == 1) selected @endif>上午</option>
-                                <option value="2" @if (isset($order) && $order->delivery_time == 2) selected @endif>下午</option>
+                                <option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING}}"
+                                        @if (isset($order) && $order->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
+                                        selected
+                                        @endif>
+                                    上午
+                                </option>
+                                <option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON}}"
+                                        @if (isset($order) && $order->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
+                                        selected
+                                        @endif>
+                                    下午
+                                </option>
                             </select>
                         </div>
                     </div>
