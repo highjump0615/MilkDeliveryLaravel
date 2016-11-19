@@ -38,48 +38,39 @@ class WeChatCtrl extends Controller
     public function showIndexPage(Request $request)
     {
 //        //todo: get factory_id from phone owner's address or phone number
-//        if(!session('factory_id') && isset($_GET['state']))
-//        {
-//            $factory_id = $_GET['state'];
-//
-//            //save factory id in session
-//            $request->session()->put('factory_id', $factory_id);
-//
-//            $factory = Factory::find($factory_id);
-//            $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
-//            $codees = $wechatObj->codes($_GET['code']);
-//
-//            //save wechat user id
-//            $wechat_user_id =$codees['openid'];
-//            session(['wechat_user_id'=>$wechat_user_id]);
-//
-//        } else {
-//
-//            $factory_id = session('factory_id');
-//            $factory = Factory::find($factory_id);
-//            $wechat_user_id = session('wechat_user_id');
-//        }
-
-        $factory_id = 1;
-        $factory = Factory::find($factory_id);
-        session(['factory_id' => $factory_id]);
-        $open_id = 'ol_Qfv5U9Uy3kHLjm407pOKyIorc';
-        $wechat_user =  WechatUser::where('openid', $open_id)->get()->first();
-        if(!$wechat_user)
+        if(!session('factory_id') && isset($_GET['state']))
         {
-            $wechat_user = new WechatUser;
-            $wechat_user->openid = $open_id;
-            $wechat_user->factory_id = $factory_id;
-            $wechat_user->save();
+            $factory_id = $_GET['state'];
+
+            //save factory id in session
+            $request->session()->put('factory_id', $factory_id);
+
+            $factory = Factory::find($factory_id);
+            $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
+            $codees = $wechatObj->codes($_GET['code']);
+
+            //save wechat user id
+            $open_id =$codees['openid'];
+
+            $wechat_user =  WechatUser::where('openid', $open_id)->get()->first();
+            if(!$wechat_user)
+            {
+                $wechat_user = new WechatUser;
+                $wechat_user->openid = $open_id;
+                $wechat_user->factory_id = $factory_id;
+                $wechat_user->save();
+            }
+            $wechat_user_id = $wechat_user->id;
+
+            session(['wechat_user_id'=>$wechat_user_id]);
+
+        } else {
+
+            $factory_id = session('factory_id');
+            $factory = Factory::find($factory_id);
+            $wechat_user_id = session('wechat_user_id');
         }
-        $wechat_user_id = $wechat_user->id;
 
-        session(['wechat_user_id'=>$wechat_user_id]);
-
-
-		//var_dump($factory_id); - factory_id
-		//var_dump($codees['openid']); - wechat_user_id
-        //$wechat_user_id =  WechatUser::all()->first()->id;
 
         if ($factory == null)
             abort(403);
@@ -519,15 +510,20 @@ class WeChatCtrl extends Controller
                 ->orderBy('ordered_at', 'desc')
                 ->get();
         }
+
+        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
         if($type)
         {
             return view('weixin.dingdanliebiao', [
                 'set_type'=>true,
                 'orders' => $orders,
+                'cartn'=>$cartn,
             ]);
         } else {
             return view('weixin.dingdanliebiao', [
                 'orders' => $orders,
+                'cartn'=>$cartn,
             ]);
         }
 

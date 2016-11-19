@@ -147,11 +147,22 @@
                 订购天数：<span id="order_day_num">16</span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
-            <p>规格：{{$product->bottle_type_name}}</p>
-            <p>保质期：{{$product->guarantee_period}}天</p>
-            <p>储藏条件：{{$product->guarantee_req}}</p>
-            {{--<p>包装：玻璃瓶</p>--}}
-            <p>配料：{{$product->material}}</p>
+            <div class="dnsli clearfix">
+                <div class="dnsti">规格：</div>
+                <div class="dnsti-r">{{$product->bottle_type_name}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">保质期：</div>
+                <div class="dnsti-r">{{$product->guarantee_period}}天</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">储藏条件：</div>
+                <div class="dnsti-r">{{$product->guarantee_req}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">配料：</div>
+                <div class="dnsti-r">{{$product->material}}</div>
+            </div>
         </div>
 
     </div>
