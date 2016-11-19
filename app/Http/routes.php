@@ -980,7 +980,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/xinxizhongxin', 'WeChatCtrl@xinxizhongxin');
 
     /* view review */
-    Route::get('/wodepingjia/{order_id?}', 'WeChatCtrl@wodepingjia')->name('wodepingjia');
+    Route::get('/wodepingjia', 'WeChatCtrl@wodepingjia')->name('wodepingjia');
 
     /* write review */
     Route::get('/dingdanpingjia', 'WeChatCtrl@dingdanpingjia');
