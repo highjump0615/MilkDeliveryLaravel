@@ -21,9 +21,9 @@
 </head>
 <body>
 @yield('content')
-
 <script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
-<script src="<?=asset('weixin/js/ui/jquery-ui.js')?>"></script>
+<script src="<?=asset('weixin/js/bootstrap-datepicker.js') ?>"></script>
+<script src="<?=asset('js/bootstrap.min.js')?>"></script>
 <script src="<?=asset('js/global.js')?>"></script>
 <script src="<?=asset('js/plugins/notify/notify.min.js') ?>"></script>
 <script src="<?=asset('weixin/js/moment.min.js')?>"></script>
