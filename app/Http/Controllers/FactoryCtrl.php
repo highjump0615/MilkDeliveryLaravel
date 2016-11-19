@@ -12,6 +12,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\Weixin\WechatesCtrl;
 use App\Model\WechatModel\WechatMenu;
 use App\Model\WechatModel\WechatAd;
 
@@ -121,8 +122,6 @@ class FactoryCtrl extends Controller
         $fa->app_url           = $app_url;
         $fa->app_token         = $app_token;
         $fa->app_encoding_key  = $app_encoding_key;
-        $fa->app_mchid         = $app_mchid;
-        $fa->app_paysignkey    = $app_paysignkey;
         $fa->wechat_type = $wechat_type;
         $fa->qrcode = $qrcode;
         $fa->is_deleted = 0;
@@ -135,6 +134,10 @@ class FactoryCtrl extends Controller
             $fa->logo_url = $path;
         }
         $fa->save();
+        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
+            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
+            $wechatObj->createMenu();
+        }
         $current_factory_id = $fa->id;
 
         $factory_user = new User;
@@ -186,8 +189,6 @@ class FactoryCtrl extends Controller
         $app_url           = $request->input('app_url');
         $app_token         = $request->input('app_token');
         $app_encoding_key  = $request->input('app_encoding_key');
-        $app_mchid         = $request->input('app_mchid');
-        $app_paysignkey    = $request->input('app_paysignkey');
         $wechat_type = $request->input('wechat_type');
         $qrcode = $request->input('qrcode');
 
@@ -221,12 +222,17 @@ class FactoryCtrl extends Controller
             $fa->logo_url = $path;
         }
         $fa->save();
-
+        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
+            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
+            $wechatObj->createMenu();
+        }
+        
+                
         $user = User::where('factory_id',$user_id)->where('user_role_id',1)->get()->first();
         $user->name = $factory_id;
         $user->password = bcrypt($factory_password);
         $user->save();
-
+            
         return redirect()->route('yonghu_page');
     }
 

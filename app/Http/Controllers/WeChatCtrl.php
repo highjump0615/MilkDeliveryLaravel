@@ -23,6 +23,7 @@ use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
 use App\Model\WechatModel\WechatOrderProduct;
 use App\Model\WechatModel\WechatUser;
+use App\Http\Controllers\Weixin\WechatesCtrl;
 use Auth;
 use DateTime;
 use DateTimeZone;
@@ -36,11 +37,16 @@ class WeChatCtrl extends Controller
     //First page
     public function showIndexPage(Request $request)
     {
-
         //todo: get factory_id from phone owner's address or phone number
-        $factory_id = 1;
+        $factory_id = $_GET['state'];
 
         $factory = Factory::find($factory_id);
+		$wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
+		$codees = $wechatObj->codes($_GET['code']);
+
+		var_dump($factory_id);
+		var_dump($codees['openid']);
+
         if ($factory == null)
             abort(403);
 
@@ -130,8 +136,17 @@ class WeChatCtrl extends Controller
             ->where('is_deleted', 0)
             ->where('status', Product::PRODUCT_STATUS_ACTIVE)
             ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->take(4)
             ->get();
+
+        $product_list = [];
+        foreach($products as $product)
+        {
+            $pid = $product->id;
+            $product_list[$pid][0]= $product;
+            $product_list[$pid][1] = $this->get_retail_price_of_product($pid);
+        }
 
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
@@ -159,7 +174,7 @@ class WeChatCtrl extends Controller
             return view('weixin.index', [
                 'banners' => $banners,
                 'promos' => $promos,
-                'products' => $products,
+                'products' => $product_list,
                 'address' => $address,
                 'prov'=>$province_name,
                 'city'=>$city_name,
@@ -171,7 +186,7 @@ class WeChatCtrl extends Controller
             return view('weixin.index', [
                 'banners' => $banners,
                 'promos' => $promos,
-                'products' => $products,
+                'products' => $product_list,
                 'address' => $address,
                 'cartn' => $cartn,
                 'addr_list' => $result,
@@ -214,7 +229,6 @@ class WeChatCtrl extends Controller
     public function dingdanrijihua(Request $request)
     {
 
-
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
@@ -233,9 +247,9 @@ class WeChatCtrl extends Controller
 
             $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where(function ($query) {
-                    $query->where('status', Order::ORDER_FINISHED_STATUS);
+//                    $query->where('status', Order::ORDER_FINISHED_STATUS);
                     $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+//                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
                 })
                 ->orderBy('id', 'desc')
                 ->get()->all();
@@ -442,11 +456,10 @@ class WeChatCtrl extends Controller
 
         $customer_id = $wechat_user->customer_id;
 
-
         $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
-        if ($type == 'daishenhe') {
+        if ($type == 'waiting') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_WAITING_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
@@ -454,21 +467,21 @@ class WeChatCtrl extends Controller
                 ->orderBy('ordered_at', 'desc')
                 ->get();
 
-        } else if ($type == 'yiwan') {
+        } else if ($type == 'finished') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_FINISHED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
-        } else if ($type == 'zanting') {
+        } else if ($type == 'stopped') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_STOPPED_STATUS)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
-        } else if ($type == 'zaipeisong') {
+        } else if ($type == 'on_delivery') {
             $orders = Order::where('is_deleted', 0)
                 ->where(function ($query) {
                     $query->where('status', Order::ORDER_PASSED_STATUS);
@@ -521,6 +534,7 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+
     /* 商品列表 */
     public function shangpinliebiao(Request $request)
     {
@@ -534,7 +548,15 @@ class WeChatCtrl extends Controller
             abort(403);
         }
 
+        $product_list = [];
+
         $products = $factory->active_products;
+        foreach($products as $product)
+        {
+            $pid = $product->id;
+            $product_list[$pid][0]= $product;
+            $product_list[$pid][1] = $this->get_retail_price_of_product($pid);
+        }
 
         $categories = ProductCategory::where('factory_id', $factory_id)
             ->where('is_deleted', 0)
@@ -555,20 +577,21 @@ class WeChatCtrl extends Controller
 
         if($request->has('search_product'))
         {
-            $search_products = [];
             $search_pname = $request->input('search_product');
 
-            foreach($products as $product)
+            foreach($product as $product)
             {
                 if(contains($product->name, $search_pname))
                 {
-                    $search_products[] = $product;
+                    $pid = $product->id;
+                    $search_product_list[$pid][0] = $product;
+                    $search_product_list[$pid][1] = $this->get_retail_price_of_product($pid);
                 }
             }
 
             return view('weixin.shangpinliebiao', [
                 'categories' => $categories,
-                'products' => $search_products,
+                'products' => $search_product_list,
                 'category' => $category_id,
                 'cartn' => $cartn,
             ]);
@@ -577,13 +600,33 @@ class WeChatCtrl extends Controller
 
             return view('weixin.shangpinliebiao', [
                 'categories' => $categories,
-                'products' => $products,
+                'products' => $product_list,
                 'category' => $category_id,
                 'cartn' => $cartn,
             ]);
 
         }
     }
+
+    //get retail price of product based on address
+    public function get_retail_price_of_product($product_id)
+    {
+        $address = session('address');
+        if($address)
+        {
+            $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
+        } else {
+
+            $pp = ProductPrice::where('product_id', $product_id)->get()->first();
+        }
+
+        if($pp)
+        {
+            return $pp->retail_price;
+        }
+
+    }
+
 
     public function wodepingjia($order_id = null)
     {
@@ -699,6 +742,7 @@ class WeChatCtrl extends Controller
             $c_address = $address->address;
             $c_sub_address = $address->sub_address;
             $c_primary = $address->primary;
+            
         } else {
             $c_name = $c_phone = $c_address = $c_sub_address = '';
             $c_primary = 1;
@@ -870,6 +914,29 @@ class WeChatCtrl extends Controller
         $gap_day = $factory->gap_day;
         $factory_order_types = $factory->factory_order_types;
 
+        //show reviews
+        $reviews = array();
+
+        $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
+
+        foreach($all_review as $review)
+        {
+            $order_id = $review->order_id;
+            $order = Order::find($order_id);
+            foreach( $order->order_products as $op)
+            {
+                if($op->product_id == $product_id)
+                {
+                    array_push($reviews, $review);
+                    break;
+                }
+            }
+
+        }
+
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+
         return view('weixin.tianjiadingdan', [
             "product" => $product,
             'file1' => $file1_path,
@@ -881,6 +948,8 @@ class WeChatCtrl extends Controller
             'half_year_price' => $half_year_price,
             'gap_day' => $gap_day,
             'factory_order_types' => $factory_order_types,
+            'reviews'=>$reviews,
+            'today'=>$today,
         ]);
     }
 
@@ -892,6 +961,16 @@ class WeChatCtrl extends Controller
         $product_id = $request->input('product_id');
         $order_type = $request->input('order_type');
         $total_count = $request->input('total_count');
+
+        $delivery_type = $request->input('delivery_type');
+
+        $count_per = $custom_date = null;
+        if ($delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+            $count_per = $request->input('count_per');
+        } else {
+            $custom_date = $request->input('custom_date');
+            $custom_date = rtrim($custom_date, ',');
+        }
 
         $factory_id = session('factory_id');
         $factory = Factory::find($factory_id);
@@ -937,11 +1016,15 @@ class WeChatCtrl extends Controller
         $wcop->factory_id = $factory_id;
         $wcop->product_id = $product_id;
         $wcop->order_type = $order_type;
-        $wcop->delivery_type = DeliveryType::DELIVERY_TYPE_EVERY_DAY;
+        $wcop->delivery_type = $delivery_type;
         $wcop->total_count = $total_count;
         $wcop->product_price = $product_price;
-        $wcop->count_per_day = 1;//default
-        $wcop->custom_date = null;
+
+        if ($count_per)
+            $wcop->count_per_day = $count_per;
+        else
+            $wcop->custom_date = $custom_date;
+
         $wcop->total_amount = $total_amount;
         $wcop->start_at = $start_at;
         $wcop->group_id = $group_id;
@@ -972,6 +1055,16 @@ class WeChatCtrl extends Controller
             $product_id = $request->input('product_id');
             $order_type = $request->input('order_type');
             $total_count = $request->input('total_count');
+
+            $delivery_type = $request->input('delivery_type');
+
+            $count_per = $custom_date = null;
+            if ($delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+                $count_per = $request->input('count_per');
+            } else {
+                $custom_date = $request->input('custom_date');
+                $custom_date = rtrim($custom_date, ',');
+            }
 
             $wxuser_id = session('wechat_user_id');
             $factory_id = session('factory_id');
@@ -1007,11 +1100,15 @@ class WeChatCtrl extends Controller
             $wcop->factory_id = $factory_id;
             $wcop->product_id = $product_id;
             $wcop->order_type = $order_type;
-            $wcop->delivery_type = DeliveryType::DELIVERY_TYPE_EVERY_DAY;
+            $wcop->delivery_type = $delivery_type;
             $wcop->total_count = $total_count;
             $wcop->product_price = $product_price;
-            $wcop->count_per_day = 1;//default
-            $wcop->custom_date = null;
+
+            if ($count_per)
+                $wcop->count_per_day = $count_per;
+            else
+                $wcop->custom_date = $custom_date;
+
             $wcop->total_amount = $total_amount;
             $wcop->start_at = $start_at;
             $wcop->save();
@@ -1075,6 +1172,25 @@ class WeChatCtrl extends Controller
         }
 
         return redirect()->route('gouwuche');
+    }
+
+    //delete selected products from cart
+    public function delete_selected_wop(Request $request)
+    {
+        $cart_ids = $request->input('cart_ids');
+
+        $cart_ids = explode(',', $cart_ids);
+
+        foreach ($cart_ids as $cid) {
+            $cart = WechatCart::find($cid);
+            if ($cart) {
+                $wop = $cart->order_item;
+                $cart->delete();
+                $wop->delete();
+            }
+        }
+
+        return response()->json(['status'=>'success']);
     }
 
     //make wop group with cart_ids
@@ -1203,6 +1319,29 @@ class WeChatCtrl extends Controller
             $order_day_num = $ord_ctrl->get_number_of_days_for_wechat_product($wop->id);
         }
 
+        //show reviews
+        $reviews = array();
+
+        $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
+
+        foreach($all_review as $review)
+        {
+            $order_id = $review->order_id;
+            $order = Order::find($order_id);
+            foreach( $order->order_products as $op)
+            {
+                if($op->product_id == $product_id)
+                {
+                    array_push($reviews, $review);
+                    break;
+                }
+            }
+
+        }
+
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+
         return view('weixin.bianjidingdan', [
             "product" => $product,
             'file1' => $file1_path,
@@ -1217,6 +1356,8 @@ class WeChatCtrl extends Controller
             'wop' => $wop,
             'group_id' => $group_id,
             'order_day_num'=>$order_day_num,
+            'reviews'=>$reviews,
+            'today'=>$today,
         ]);
     }
 
@@ -1744,9 +1885,30 @@ class WeChatCtrl extends Controller
 
     public function addPingjia(Request $request)
     {
-        $review = new Review();
-        $review->addReview($request->input('order_id'), $request->input('marks'), $request->input('contents'));
-        return Response::json($review);
+        $order_id = $request->input('order_id');
+        $marks = $request->input('marks');
+        $content = $request->input('contents');
+        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
+
+        $order = Order::find($order_id);
+        $customer_id = $order->customer_id;
+
+//        foreach($order->order_products as $op)
+//        {
+            $review = new Review;
+            $review->mark = $marks;
+            $review->content = $content;
+            $review->order_id = $order_id;
+            $review->customer_id = $customer_id;
+//            $review->product_id = $op->product_id;
+            $review->created_at = $current_datetime_str;
+            $review->status = Review::REVIEW_STATUS_WAITTING;
+            $review->save();
+//        }
+
+        return response()->json(['status'=>'success', 'order_id'=>$order_id]);
+
     }
 
     //show check telephone number page
