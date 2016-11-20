@@ -35,7 +35,6 @@ class WeChatCtrl extends Controller
     //First page
     public function showIndexPage(Request $request)
     {
-        /*
         //todo: get factory_id from phone owner's address or phone number
         if (!session('factory_id') && isset($_GET['state'])) {
             $factory_id = $_GET['state'];
@@ -66,13 +65,13 @@ class WeChatCtrl extends Controller
             $factory_id = session('factory_id');
             $factory = Factory::find($factory_id);
             $wechat_user_id = session('wechat_user_id');
-        }*/
+        }
 
-        $factory_id = 1;
-        session(['factory_id'=>1]);
-        $factory = Factory::find($factory_id);
-        session(['wechat_user_id'=>97]);
-        $wechat_user_id = 97;
+//        $factory_id = 1;
+//        session(['factory_id'=>1]);
+//        $factory = Factory::find($factory_id);
+//        session(['wechat_user_id'=>97]);
+//        $wechat_user_id = 97;
 
         if ($factory == null)
             abort(403);
@@ -2082,6 +2081,5 @@ class WeChatCtrl extends Controller
         } else
             return response()->json(['status' => 'fail']);
     }
-
 
 }
