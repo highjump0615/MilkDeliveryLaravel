@@ -40,9 +40,10 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .proti{ height:21px; color:#fff; font-size:1.2rem; border-top:1px solid #a3e2c3}
 .proti a{ padding:1px 2px; display:inline-block; color:#fff; background:#00a040}
 .prol{ padding-bottom:3%; float:left; width:48.5%}
+.prol .milk_img_div{}
 .prol:nth-child(2n){ margin-right:3%}
 .prol a{ display:block; text-align:center; line-height:1.4}
-.prol img{ border:1px solid #c4c4c4; -moz-box-sizing:border-box; -webkit-box-sizing:border-box; box-sizing:border-box}
+.prol img{ border:1px solid #c4c4c4; -moz-box-sizing:border-box; -webkit-box-sizing:border-box; box-sizing:border-box;}
 .proh3{ padding-top:4px; font-size:1.2rem; font-weight:normal}
 .proml{ font-size:1.2rem}
 .promon{ font-size:1rem}

@@ -32,7 +32,30 @@ class Customer extends Model
         'xiaoqu',
         'sub_addr',
         'has_milkbox',
+        'remaining_bottle_count',
     ];
+
+    public function getRemainingBottleCountAttribute()
+    {
+        $total_remain_count = 0;
+        //get all orders from customer
+        $orders = Order::where('customer_id', $this->id)
+            ->where(function ($query) {
+                $query->where('status', Order::ORDER_PASSED_STATUS);
+                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+            })->get()->all();
+
+        foreach($orders as $order)
+        {
+            $plans = $order->unfinished_delivery_plans;
+            foreach($plans as $plan)
+            {
+                $total_remain_count+=$plan->delivery_count;
+            }
+        }
+
+        return $total_remain_count;
+    }
 
     public function getHasMilkboxAttribute()
     {

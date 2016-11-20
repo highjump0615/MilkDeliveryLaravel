@@ -126,21 +126,12 @@
 
 
             $('.milk_img_div').each(function () {
-                var width = $(this).css('width');
 
-                var height = parseInt(width);
-
+                var height = parseInt($(this).css('width'));
                 $(this).css('height', height);
 
                 var img = $(this).find('img');
-                var img_height = parseInt($(img).css('height'));
-
-                var padding_height = 0;
-                if (img_height < height) {
-                     padding_height = parseInt((height - img_height) / 2);
-                    $(img).css('padding-top', padding_height);
-                    $(img).css('padding-bottom', padding_height);
-                }
+                $(img).css('height', height);
             });
 
 

@@ -131,7 +131,7 @@
 
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
-            <div class="input-group">
+            <div class="input-group datepicker">
                 <input type="text" required class="" name="start_at" id="start_at">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
@@ -240,6 +240,14 @@
             $("#" + id).css("display", "block");
         }
 
+        function pad(number){
+            var r= String(number);
+            if(r.length === 1){
+                r= '0'+r;
+            }
+            return r;
+        }
+
 
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
@@ -260,14 +268,22 @@
                 able_date.setDate(today.getDate() + 3);
             }
 
-            //Single and Multiple Datepicker
+            Date.prototype.toISOString = function(){
+              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+            };
+
+            //set default day for start at
+//            var default_start_date = able_date.toISOString();
+            var default_start_date = able_date.toLocaleDateString();
+            $('#start_at').val(default_start_date);
+
             $('#start_at').datepicker({
                 todayBtn: false,
                 keyboardNavigation: false,
                 forceParse: false,
                 calendarWeeks: false,
                 autoclose: true,
-                startDate: able_date,
+                minDate: able_date,
             });
 
             $('select#order_type').trigger('change');

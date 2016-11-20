@@ -9,12 +9,12 @@
             <h1>我的评价</h1>
             <a class="topa1" href="{{url('/weixin/gerenzhongxin')}}">&nbsp;</a>
       </div>
-      @foreach($pingjia as $pj)
-      <div class="pj_t">订单号：{{\App\Model\OrderModel\Order::where('id',$pj->order_id)->get()->first()->number}}</div>
+      @foreach($reviews as $review)
+      <div class="pj_t">订单号：{{\App\Model\OrderModel\Order::where('id',$review->order_id)->get()->first()->number}}</div>
       <div class="pj_img">
             <div class="swiper-container" style="height:100%">
                   <div class="swiper-wrapper">
-                        @forelse(\App\Model\OrderModel\Order::find($pj->order_id)->order_products as $op)
+                        @forelse(\App\Model\OrderModel\Order::find($review->order_id)->order_products as $op)
                               <div class="swiper-slide"><img class="bimg img-responsive" src="{{asset('img/product/logo/'.$op->product->photo_url1)}}" border="0"/></div>
                         @empty
                         @endforelse
@@ -29,14 +29,14 @@
 
       <div class="evali pa2">
             <div class="start"><b>整体评价</b>
-                  <span @if($pj->mark < 1) class="nostart" @endif></span>
-                  <span @if($pj->mark < 2) class="nostart" @endif></span>
-                  <span @if($pj->mark < 3) class="nostart" @endif></span>
-                  <span @if($pj->mark < 4) class="nostart" @endif></span>
-                  <span @if($pj->mark < 5) class="nostart" @endif></span>
+                  <span @if($review->mark < 1) class="nostart" @endif></span>
+                  <span @if($review->mark < 2) class="nostart" @endif></span>
+                  <span @if($review->mark < 3) class="nostart" @endif></span>
+                  <span @if($review->mark < 4) class="nostart" @endif></span>
+                  <span @if($review->mark < 5) class="nostart" @endif></span>
             </div>
             <div class="evaxx">
-                  &nbsp;&nbsp;&nbsp;&nbsp;{{$pj->content}}
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{$review->content}}
             </div>
       </div>
       @endforeach

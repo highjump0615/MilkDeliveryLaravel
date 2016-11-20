@@ -84,7 +84,7 @@
                     console.log(data);
                     if(data.status == "success")
                     {
-                        window.location.href = SITE_URL+"weixin/wodepingjia/"+order_id;
+                        window.location.href = SITE_URL+"weixin/wodepingjia?"+order_id;
                     }
                 },
                 error: function (data) {

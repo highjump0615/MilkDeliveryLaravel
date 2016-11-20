@@ -11,7 +11,7 @@
 
     <link href="<?=asset('css/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('font-awesome/css/font-awesome.css') ?>" rel="stylesheet">
-    <link rel="stylesheet" href="<?=asset('weixin/css/themes/base/jquery-ui.css')?>">
+    <link rel="stylesheet" href="<?=asset('weixin/css/jquery-ui.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/style.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
 
@@ -22,7 +22,7 @@
 <body>
 @yield('content')
 <script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
-<script src="<?=asset('weixin/js/bootstrap-datepicker.js') ?>"></script>
+<script src="<?=asset('weixin/js/jquery-ui-1.10.4.min.js')?>"></script>
 <script src="<?=asset('js/bootstrap.min.js')?>"></script>
 <script src="<?=asset('js/global.js')?>"></script>
 <script src="<?=asset('js/plugins/notify/notify.min.js') ?>"></script>

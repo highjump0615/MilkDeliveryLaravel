@@ -137,7 +137,7 @@
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
             <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at" value="{{$wop->start_at}}">
+                <input class="qssj single_date" name="start_at" id="start_at" value="">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
@@ -254,6 +254,8 @@
                 able_date.setDate(today.getDate() + 3);
             }
 
+            var default_start_date = able_date.toLocaleDateString();
+
             //Single and Multiple Datepicker
             $('#start_at').datepicker({
                 todayBtn: false,
@@ -261,8 +263,13 @@
                 forceParse: false,
                 calendarWeeks: false,
                 autoclose: true,
-                startDate: able_date,
+                minDate: default_start_date,
             });
+
+            var current_start = '{{$wop->start_at}}';
+            var current_start_date = new Date(current_start);
+            current_start_date = current_start_date.toLocaleDateString();
+            $('#start_at').val(current_start_date);
 
             $('select#order_type').trigger('change');
 
