@@ -45,6 +45,7 @@
                     @else
                         ??
                     @endif元</div>
+                <input type="hidden" id="total_amount" val="{{$wop->total_amount}}">
             </div>
         @empty
 
@@ -79,6 +80,8 @@
 
             var order_bt = $(this);
             $(order_bt).prop('disabled', true);
+
+            var total_amount = $('#total_amount').val();
 
             $.ajax({
                 type: "POST",

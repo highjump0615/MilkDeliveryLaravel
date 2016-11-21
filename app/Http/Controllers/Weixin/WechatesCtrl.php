@@ -4,6 +4,7 @@ use App\Http\Controllers\Controller;
 use App\Model\WechatModel\WechatUser;
 use App\Model\WechatModel\Wxmenu;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
  
 class WechatesCtrl extends Controller
 {
@@ -51,20 +52,15 @@ class WechatesCtrl extends Controller
         }
     }
 
-    public function responseMsg()
+    public function responseMsg(Request $request)
     {
         $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
 		
-		file_put_contents("WeixinLog.txt","[ Weixin ] postStr ".$postStr."\n", FILE_APPEND);	
+		file_put_contents("WeixinLog.txt","[ Weixin ] postStr ".$postStr."\n", FILE_APPEND);
+
 		
         if (!empty($postStr)){
             $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-			if(empty($_SESSION['openid'])){
-				$_SESSION['openid'] = $postObj->FromUserName;
-			}
-			if(empty($_SESSION['factoryid'])){
-				$_SESSION['factoryid'] = $this->factoryid;
-			}	
             $RX_TYPE = trim($postObj->MsgType);
 
             switch ($RX_TYPE)
@@ -81,6 +77,7 @@ class WechatesCtrl extends Controller
             echo "";
             exit;
         }
+
     }
     //关注/取消/点击事件
     private function receiveEvent($object)
@@ -134,12 +131,22 @@ class WechatesCtrl extends Controller
         else{
             $accessTokenArr = json_decode($accessTokenJson, true);
             if(empty($accessTokenArr['errcode']) AND !empty($accessTokenArr['access_token'])){
-				file_put_contents("WeixinLog.txt","[ Weixin ] access_token ".$accessTokenArr['access_token']."\n", FILE_APPEND);	
                 return $accessTokenArr['access_token'];
             }else return '';
         }
 	}
-	
+	//获取用户openid
+	public function codes($code){
+		$url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=".$this->appId."&secret=".$this->appSecret."&code=".$code."&grant_type=authorization_code";			
+        $usercodes = $this->sendGetRequest($url);
+        if($usercodes != ''){
+            $usercodess = json_decode($usercodes, true);
+            if(!empty($usercodess['errcode'])){
+                return array();
+            }
+        }else $usercodess = array();
+        return $usercodess;
+	}
     //获取用户的详细信息
     public function getFanInfo($accessToken, $openId)
     {
@@ -159,8 +166,9 @@ class WechatesCtrl extends Controller
 		$wxmenu = Wxmenu::where('factoryid',$this->factoryid)->get();
 		$jsonmenu = '{ "button":[ ';
 		foreach($wxmenu as $wxvalue){
-			$jsonmenu .='{ "name":"'.$wxvalue->name.'", "type":"'.$wxvalue->type.'", "url":"http://niu.vfushun.com/milk'.$wxvalue->url.'" } ,';
+			$jsonmenu .='{ "name":"'.$wxvalue->name.'", "type":"'.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect" } ,';
 		}
+		//.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state=yuying#wechat_redirect
 		$jsonmenu = substr($jsonmenu,0,-1); 
 		$jsonmenu .= ']}';
 		/*$jsonmenu = '{

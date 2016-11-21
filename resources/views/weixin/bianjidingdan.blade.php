@@ -137,7 +137,7 @@
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
             <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at" value="{{$wop->start_at}}">
+                <input class="qssj single_date" name="start_at" id="start_at" value="">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
@@ -147,11 +147,22 @@
                 订购天数：<span id="order_day_num">16</span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
-            <p>规格：{{$product->bottle_type_name}}</p>
-            <p>保质期：{{$product->guarantee_period}}天</p>
-            <p>储藏条件：{{$product->guarantee_req}}</p>
-            {{--<p>包装：玻璃瓶</p>--}}
-            <p>配料：{{$product->material}}</p>
+            <div class="dnsli clearfix">
+                <div class="dnsti">规格：</div>
+                <div class="dnsti-r">{{$product->bottle_type_name}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">保质期：</div>
+                <div class="dnsti-r">{{$product->guarantee_period}}天</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">储藏条件：</div>
+                <div class="dnsti-r">{{$product->guarantee_req}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">配料：</div>
+                <div class="dnsti-r">{{$product->material}}</div>
+            </div>
         </div>
 
     </div>
@@ -196,7 +207,6 @@
 @section('script')
 
     <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/showmyweek.js')?>"></script>
 
@@ -244,15 +254,22 @@
                 able_date.setDate(today.getDate() + 3);
             }
 
+            var default_start_date = able_date.toLocaleDateString();
+
             //Single and Multiple Datepicker
-            $('.single_date').datepicker({
+            $('#start_at').datepicker({
                 todayBtn: false,
                 keyboardNavigation: false,
                 forceParse: false,
                 calendarWeeks: false,
                 autoclose: true,
-                startDate: able_date,
+                minDate: default_start_date,
             });
+
+            var current_start = '{{$wop->start_at}}';
+            var current_start_date = new Date(current_start);
+            current_start_date = current_start_date.toLocaleDateString();
+            $('#start_at').val(current_start_date);
 
             $('select#order_type').trigger('change');
 

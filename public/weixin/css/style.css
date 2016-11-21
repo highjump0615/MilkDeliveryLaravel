@@ -40,9 +40,10 @@ header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .proti{ height:21px; color:#fff; font-size:1.2rem; border-top:1px solid #a3e2c3}
 .proti a{ padding:1px 2px; display:inline-block; color:#fff; background:#00a040}
 .prol{ padding-bottom:3%; float:left; width:48.5%}
+.prol .milk_img_div{}
 .prol:nth-child(2n){ margin-right:3%}
 .prol a{ display:block; text-align:center; line-height:1.4}
-.prol img{ border:1px solid #c4c4c4; -moz-box-sizing:border-box; -webkit-box-sizing:border-box; box-sizing:border-box}
+.prol img{ border:1px solid #c4c4c4; -moz-box-sizing:border-box; -webkit-box-sizing:border-box; box-sizing:border-box;}
 .proh3{ padding-top:4px; font-size:1.2rem; font-weight:normal}
 .proml{ font-size:1.2rem}
 .promon{ font-size:1rem}
@@ -86,9 +87,10 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .prodz{ font-size:1.4rem; padding-top:2%}
 .prodz td{ padding-left:20%}
 .dzmon{ color:#de5a02}
-.dnsl{ border-top:1px solid #c4c4c4}
+.dnsl{ border-top:1px solid #c4c4c4; padding: 0 5px;}
 .dnsli{ margin:2% 0}
 .dnsti{ float:left; width:35%; text-align:right; font-size:1.4rem; line-height:26px}
+.dnsti-r{float:left; width: 60%;}
 .addSubtract{height:24px; line-height:24px; overflow:hidden;display:inline-block; margin-right:5px; width:78px; vertical-align:middle; background:#e7e7e7}
 .addSubtract a{width:23px;display:inline-block; text-align:center}
 .addSubtract a.subtract,.addSubtract a.subtractDisable{ float:left}

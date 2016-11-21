@@ -131,22 +131,29 @@
 
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
-            <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at">
+            <div class="input-group datepicker">
+                <input type="text" required class="" name="start_at" id="start_at">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
 
         <div class="dnsall">
-            <!--div class="dnsts">
-                订购天数：<span>16天</span>
-                <a class="cxsd" href="javascript:void(0);">重新设定</a>
-            </div-->
-            <p>规格：{{$product->bottle_type_name}}</p>
-            <p>保质期：{{$product->guarantee_period}}天</p>
-            <p>储藏条件：{{$product->guarantee_req}}</p>
-            {{--<p>包装：玻璃瓶</p>--}}
-            <p>配料：{{$product->material}}</p>
+            <div class="dnsli clearfix">
+                <div class="dnsti">规格：</div>
+                <div class="dnsti-r">{{$product->bottle_type_name}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">保质期：</div>
+                <div class="dnsti-r">{{$product->guarantee_period}}天</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">储藏条件：</div>
+                <div class="dnsti-r">{{$product->guarantee_req}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">配料：</div>
+                <div class="dnsti-r">{{$product->material}}</div>
+            </div>
         </div>
 
     </div>
@@ -166,7 +173,7 @@
                 @forelse($reviews as $review)
                     <li>
                         <div class="spnum"><span class="spstart">@for($i=0; $i<$review->mark; $i++)<i></i>@endfor</span>
-                         <p>{{$review->tel_number}}</p>
+                            <p>{{$review->tel_number}}</p>
                         </div>
                         <div class="pjxx">
                             {{$review->content}}
@@ -188,8 +195,6 @@
 @endsection
 @section('script')
 
-    <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/myweek.js')?>"></script>
 
@@ -235,6 +240,14 @@
             $("#" + id).css("display", "block");
         }
 
+        function pad(number){
+            var r= String(number);
+            if(r.length === 1){
+                r= '0'+r;
+            }
+            return r;
+        }
+
 
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
@@ -255,14 +268,22 @@
                 able_date.setDate(today.getDate() + 3);
             }
 
-            //Single and Multiple Datepicker
-            $('.single_date').datepicker({
+            Date.prototype.toISOString = function(){
+              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+            };
+
+            //set default day for start at
+//            var default_start_date = able_date.toISOString();
+            var default_start_date = able_date.toLocaleDateString();
+            $('#start_at').val(default_start_date);
+
+            $('#start_at').datepicker({
                 todayBtn: false,
                 keyboardNavigation: false,
                 forceParse: false,
                 calendarWeeks: false,
                 autoclose: true,
-                startDate: able_date,
+                minDate: able_date,
             });
 
             $('select#order_type').trigger('change');
@@ -346,6 +367,7 @@
                 show_warning_msg("请选择起送时间");
                 return;
             }
+            send_data.append('start_at', start_at);
 
             console.log(send_data);
 

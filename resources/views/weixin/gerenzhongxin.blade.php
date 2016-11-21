@@ -6,7 +6,8 @@
 
     <div class="top">
         <h1>个人中心</h1>
-        <a class="topa2" href="javascript:void(0)"></a></div>
+        <a class="topa2" href="javascript:void(0)"></a>
+    </div>
 
     <div class="cen_t">
         <img src="{{$user->image_url}}">
@@ -14,7 +15,7 @@
     </div>
 
     <div class="cen_1">
-        金额<b>￥36.5</b> 剩余数量 <b>12</b>
+        金额<b>￥{{$remain_amount}}</b> 剩余数量 <b>{{$remaining_bottle_count}}</b>
     </div>
 
     <div class="cen_in">
