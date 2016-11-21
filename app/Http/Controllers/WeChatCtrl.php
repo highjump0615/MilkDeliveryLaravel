@@ -75,7 +75,7 @@ class WeChatCtrl extends Controller
 
         //add verified flag
         if (!session('verified')) {
-            session(['verified' => 'yes']);
+            session(['verified' => 'no']);
         }
 
         /*
