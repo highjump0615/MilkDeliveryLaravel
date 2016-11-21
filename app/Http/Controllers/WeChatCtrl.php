@@ -159,9 +159,10 @@ class WeChatCtrl extends Controller
             ->get();
 
         $product_list = [];
-        foreach ($products as $product) {
+        foreach($products as $product)
+        {
             $pid = $product->id;
-            $product_list[$pid][0] = $product;
+            $product_list[$pid][0]= $product;
             $product_list[$pid][1] = $this->get_retail_price_of_product($pid);
         }
 
@@ -1460,11 +1461,14 @@ class WeChatCtrl extends Controller
 
         $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
 
-        foreach ($all_review as $review) {
+        foreach($all_review as $review)
+        {
             $order_id = $review->order_id;
             $order = Order::find($order_id);
-            foreach ($order->order_products as $op) {
-                if ($op->product_id == $product_id) {
+            foreach( $order->order_products as $op)
+            {
+                if($op->product_id == $product_id)
+                {
                     array_push($reviews, $review);
                     break;
                 }
@@ -2010,7 +2014,7 @@ class WeChatCtrl extends Controller
         $order_id = $request->input('order_id');
         $marks = $request->input('marks');
         $content = $request->input('contents');
-        $current_datetime = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
 
         $order = Order::find($order_id);
@@ -2018,9 +2022,6 @@ class WeChatCtrl extends Controller
 
 //        foreach($order->order_products as $op)
 //        {
-        $review_exist = Review::find('order_id', $order_id);
-        if(!$review_exist)
-        {
             $review = new Review;
             $review->mark = $marks;
             $review->content = $content;
@@ -2030,11 +2031,9 @@ class WeChatCtrl extends Controller
             $review->created_at = $current_datetime_str;
             $review->status = Review::REVIEW_STATUS_WAITTING;
             $review->save();
-        }
-
 //        }
 
-        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        return response()->json(['status'=>'success', 'order_id'=>$order_id]);
 
     }
 

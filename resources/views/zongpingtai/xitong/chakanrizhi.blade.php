@@ -17,78 +17,120 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-				
-				 <div class="tabs-container">
-                        <ul class="nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="#tab-1">微信曰志</a></li>
-                            <li><a data-toggle="tab" href="#tab-2">系统曰志</a></li>
-                            <li><a data-toggle="tab" href="#tab-3">数据库曰志</a></li>
-                            <li><a data-toggle="tab" href="#tab-4">短信发送曰志</a></li>
-                        </ul>
-
-                        <div class="tab-content">
-                            <div id="tab-1" class="tab-pane active">
-                                <div class="panel-body">
-                                   <div class="ibox float-e-margins row wrapper-content col-lg-12">
-                                        <div class="ibox-content">
-                                            <h3>日志</h3>
-                                            <div class="hr-line-dashed"></div>
-                                            <div class="panel panel-wb">
-                                                <div class="panel-heading">
-                                                 曰志信息
-                                                </div>
-                                                <div class="panel-body">
-                                                    <label class="col-sm-2 control-label">曰期选择</label>
-                                                    <div class="col-sm-7">
-                                                        <select class="form-control m-b" name="account">
-                                                            <option>20170820</option>
-                                                            <option>20170821</option>
-                                                            <option>20170822</option>
-                                                            <option>20170823</option>
-                                                        </select>
-                                                    </div>
-                                                    <button class="col-sm-1 col-sm-offset-2 btn btn-outline btn-default wgray-bg" type="button">&nbsp;&nbsp;搜索</button>
-                                                </div>
-
-                                            </div>
-                                            <textarea class="wgray-bg" rows="20"></textarea>
-                                        </div>
+                            <div class="ibox-content">
+                                <label class="col-md-1 text-right">登录ID:</label>
+                                <div class="col-md-2">
+                                   <input id="filter_start_date" type="text" class="input-md form-control" name="start"/>
+                                </div>
+                                <div class="feed-element form-group" id="data_range_select">
+                                    <label class="col-md-2 control-label">下单日期:</label>
+                                    <div class="input-daterange input-group col-md-3" id="datepicker">
+                                        <input type="text" id="filter_order_start_date" class="input-sm form-control" name="start"/>
                                     </div>
                                 </div>
-                            </div>
-                            <div id="tab-2" class="tab-pane">
-                                <div class="panel-body">
-                                    <strong>Donec quam felis</strong>
-
-                                    <p>Thousand unknown plants are noticed by me: when I hear the buzz of the little world among the stalks, and grow familiar with the countless indescribable forms of the insects
-                                        and flies, then I feel the presence of the Almighty, who formed us in his own image, and the breath </p>
-
-                                    <p>I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite
-                                        sense of mere tranquil existence, that I neglect my talents. I should be incapable of drawing a single stroke at the present moment; and yet.</p>
+                                <div class="col-md-4" style="float:right;margin-top: -40px;">
+                                    <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>
+                                    <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
                                 </div>
                             </div>
+                        <div class="tabs-container">
 
-                            <div id="tab-3" class="tab-pane">
+                        <div class="tab-content">
+                            <div id="tab-1" class="tab-pane active"  style="border-color:#fff;">
                                 <div class="panel-body">
-                                    <strong>Donec quam felis</strong>
+                                   <table id="order_table" class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th data-sort-ignore="true">序号</th>
+                                                <th data-sort-ignore="true">登录ID</th>
+                                                <th data-sort-ignore="true">角色权限</th>
+                                                <th data-sort-ignore="true">管理端</th>
+                                                <th data-sort-ignore="true">IP地址</th>
+                                                <th data-sort-ignore="true">模块</th>
+                                                <th data-sort-ignore="true">页面</th>
+                                                <th data-sort-ignore="true">操作</th>
+                                                <th data-sort-ignore="true">时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                            <tr>
+                                               <td>1</td>
+                                               <td>sanyuan</td>
+                                               <td>客服</td>
+                                               <td>总平台</td>
+                                               <td>185.15.123</td>
+                                               <td>订单管理</td>
+                                               <td>未生成</td>
+                                               <td>导出</td>
+                                               <td>2016-11-11 14:45:55</td>
+                                            </tr>
+                                        </tbody>
+                                     </table>
+                                        <ul class="pagination">
+                                            <li><a target="_blank" href="https://www.baidu.com/">&laquo;</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">1</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">2</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">3</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">4</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">5</a></li>
+                                            <li><a target="_blank" href="https://www.baidu.com/">&raquo;</a></li>
+                                        </ul>
 
-                                    <p>Thousand unknown plants are noticed by me: when I hear the buzz of the little world among the stalks, and grow familiar with the countless indescribable forms of the insects
-                                        and flies, then I feel the presence of the Almighty, who formed us in his own image, and the breath </p>
-
-                                    <p>I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite
-                                        sense of mere tranquil existence, that I neglect my talents. I should be incapable of drawing a single stroke at the present moment; and yet.</p>
-                                </div>
-                            </div>
-
-                            <div id="tab-4" class="tab-pane">
-                                <div class="panel-body">
-                                    <strong>Donec quam felis</strong>
-
-                                    <p>Thousand unknown plants are noticed by me: when I hear the buzz of the little world among the stalks, and grow familiar with the countless indescribable forms of the insects
-                                        and flies, then I feel the presence of the Almighty, who formed us in his own image, and the breath </p>
-
-                                    <p>I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite
-                                        sense of mere tranquil existence, that I neglect my talents. I should be incapable of drawing a single stroke at the present moment; and yet.</p>
                                 </div>
                             </div>
                         </div>
@@ -98,4 +140,7 @@
 		</div>
 		
 	</div>
+@endsection
+@section('script')
+    <script src="<?=asset('js/pages/naizhan/order_select_export_print.js') ?>"></script>
 @endsection
