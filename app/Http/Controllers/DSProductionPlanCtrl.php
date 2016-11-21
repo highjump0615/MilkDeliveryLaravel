@@ -1053,19 +1053,20 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
-        $child = 'qianshoujihua';
-        $parent = 'shengchan';
-        $current_page = 'qianshoujihua';
-
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
         $current_date_str = $currentDate->format('Y-m-d');
 
-        $RefundDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $refund_date_str = $RefundDate->format('Y-m-d');
-        $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->get();
+        $child = 'qianshoujihua';
+        $parent = 'shengchan';
+        $current_page = 'qianshoujihua';
+        $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
+
         $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_end_at',$current_date_str)->
         where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)->orderby('product_id')->get();
+
+        $RefundDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $refund_date_str = $RefundDate->format('Y-m-d');
 
         $station_addr = DeliveryStation::find($current_station_id)->address;
         $station_addr = explode(' ',$station_addr);
@@ -1088,16 +1089,16 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $received_count += $dp->confirm_count;
         }
         return view('naizhan.shengchan.qianshoujihua',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'dsplan'=>$dsplan,
-            'fbottle'=>$bottle_types,
-            'fbox'=>$box_types,
-            'bottle_refund'=>$bottle_refund,
-            'box_refund'=>$box_refund,
-            'sent_status'=>$received_count,
+            'pages'         =>$pages,
+            'child'         =>$child,
+            'parent'        =>$parent,
+            'current_page'  =>$current_page,
+            'dsplan'        =>$dsplan,
+            'fbottle'       =>$bottle_types,
+            'fbox'          =>$box_types,
+            'bottle_refund' =>$bottle_refund,
+            'box_refund'    =>$box_refund,
+            'sent_status'   =>$received_count,
         ]);
     }
 
