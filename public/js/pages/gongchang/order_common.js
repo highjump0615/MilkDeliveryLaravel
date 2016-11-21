@@ -18,15 +18,17 @@ $(document).ready(function () {
     }
 
     // 录入订单
-    if ($('#my_camera').html().trim().length == 0) {
-        show_camera();
-    }
-    // 修改订单，如果有图片
-    else {
-        $('#capture_camera').hide();
-        $('#reset_camera').show();
-        if($('video').attr('src') != '')
-            $('#check_capture').show();
+    if ($('#my_camera').length) {   // 是否存在
+        if ($('#my_camera').html().trim().length == 0) {
+            show_camera();
+        }
+        // 修改订单，如果有图片
+        else {
+            $('#capture_camera').hide();
+            $('#reset_camera').show();
+            if ($('video').attr('src') != '')
+                $('#check_capture').show();
+        }
     }
 
     $('[data-target="#card_info"]').on("change", function () {
@@ -497,14 +499,14 @@ function getStartDate() {
     $.extend(able_date, dateToday);
 
     // 如果是修改订单
-    // if (!gbIsEdit) {
+    if (!gbIsEdit) {
         if (gap_day)
             able_date.setDate(dateToday.getDate() + gap_day);
         else {
             gap_day = 3; //default
             able_date.setDate(dateToday.getDate() + 3);
         }
-    // }
+    }
 
     return able_date;
 }

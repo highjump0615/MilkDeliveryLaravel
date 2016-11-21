@@ -292,7 +292,7 @@
                                     <!-- 正常状态才允许单日修改 -->
                                     @if ($order->isAvailable())
                                     <td>
-                                        @if($gpp['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
+                                        @if($gpp['can_edit'])
                                             <button type="button" class="btn btn-success xiugai_plan_bt"
                                                     disabled="disabled">修改
                                             </button>

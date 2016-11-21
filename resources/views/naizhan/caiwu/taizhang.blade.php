@@ -142,14 +142,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>43640</td>
-                                    <td>45640</td>
-                                    <td>23460</td>
-                                    <td>3454350</td>
-                                    <td>131234</td>
-                                    <td>43564560</td>
-                                    <td>23340</td>
-                                    <td>9670</td>
+                                    <td>{{$station->bottle_count_before_this_term}}</td>
+                                    <td>{{$station->term_start_amount}}</td>
+                                    <td>{{$station->bottle_count_increased_this_term}}</td>
+                                    <td>{{$station->order_amount_increased_this_term}}</td>
+                                    <td>{{$station->bottle_count_done_this_term}}</td>
+                                    <td>{{$station->order_amount_done_this_term}}</td>
+                                    <td>{{$station->bottle_count_before_this_term + $station->bottle_count_increased_this_term - $station->bottle_count_done_this_term}}</td>
+                                    <td>{{$station->term_start_amount + $station->order_amount_done_this_term}}</td>
                                 </tr>
                                 </tbody>
                             </table>

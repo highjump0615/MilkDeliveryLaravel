@@ -43,7 +43,7 @@ class MilkCardCtrl extends Controller
 
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
 
-        $balance = $request->input('balance');
+//        $balance = $request->input('balance');
         $milkcard_info = MilkCard::where('factory_id',$current_factory_id)
 //            ->where('balance',$balance)
             ->where('sale_status',0)
@@ -72,16 +72,26 @@ class MilkCardCtrl extends Controller
     }
 
     public function registerNaikaInfo(Request $request){
+
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
+
         $user = $request->input('user');
         $balance = $request->input('balance');
         $quantity = $request->input('quantity');
         $start_num = $request->input('start_num');
+        $end_num = $request->input('end_num');
         $payment_method = $request->input('payment_method');
+
         $card_status = 0;
-        $milkcards = MilkCard::where('factory_id',$current_factory_id)->where('balance',$balance)->where('sale_status',0)->get();
+
+        $milkcards = MilkCard::where('factory_id',$current_factory_id)
+            ->wherebetween('number', [$start_num, $end_num])
+            ->where('sale_status',0)
+            ->get();
+
         foreach ($milkcards as $mc){
             for($i=0; $i<$quantity; $i++){
                 if($mc->number == $start_num+$i){
@@ -89,6 +99,7 @@ class MilkCardCtrl extends Controller
                 }
             }
         }
+
         if($card_status == $quantity){
             for($i=0; $i<$quantity; $i++){
                 foreach ($milkcards as $mc){

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Model\BasicModel\PaymentType;
+use App\Model\DeliveryModel\DSDeliveryPlan;
 use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\MilkCard;
@@ -1032,6 +1033,10 @@ class OrderCtrl extends Controller
     //This module can be used to change the plan for one day, cancel the production plan for one day
     public function change_delivery_plan($order_id, $plan_id, $diff)
     {
+        if ($diff == 0) {
+            return;
+        }
+
         $plan = MilkManDeliveryPlan::find($plan_id);
 
         $order = Order::find($order_id);
@@ -1055,18 +1060,9 @@ class OrderCtrl extends Controller
         $rest_with_this = $this->get_rest_plans_count($order_id, $plan_id);
 
         if ($changed <= $rest_with_this) {
-            // 已提交生产计划才算是修改
-            if ($plan->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
-                //set current changed delivery plan
-                $plan->changed_plan_count = $changed;
-                $plan->delivery_count = $changed;
-            }
-            else {
-                $plan->changed_plan_count = $changed;
-                $plan->delivery_count = $changed;
-                $plan->plan_count = $changed;
-            }
-            $plan->save();
+
+            // 更新数量
+            $plan->setCount($changed);
 
             //get each delivery plans from last delivery day and delete or create plans
             //enable to change the plan
@@ -1372,9 +1368,8 @@ class OrderCtrl extends Controller
                     }
 
                 } else {
-                    $plan->changed_plan_count = $origin;
-                    $plan->delivery_count = $origin;
-                    $plan->save();
+                    $plan->setCount($origin);
+
                     return ['status' => 'fail', 'message' => '同时改变了计划，发生错误.'];
                 }
 
@@ -1787,31 +1782,45 @@ class OrderCtrl extends Controller
                 return response()->json(['status' => 'fail', 'message' => '找不到订单.']);
             }
 
-            //get closet plan to today from order
-//            $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
+            // 获取今日或下个配送日期
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get();
-            foreach ($plans as $plan) {
+            $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get()->first();
+
+            if ($plan) {
+                // 已生成配送列表
+                if (DSDeliveryPlan::getDeliveryPlanGenerated($order->delivery_station_id, $plan->order_product_id)) {
+                    $plan = null;
+                }
+            }
+
+            // 没有今日的配送任务或今日配送列表已生成，于是暂停下一个配送任务
+            if (!$plan) {
+                $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->get()->first();
+            }
+
+            if ($plan) {
                 $plan_id = $plan->id;
                 $origin = $plan->changed_plan_count;
                 $changed = 0;
                 $diff = $changed - $origin;
-                if ($diff == 0)
-                    continue;
-                $result = $this->change_delivery_plan($order_id, $plan_id, $diff);
+
+                $this->change_delivery_plan($order_id, $plan_id, $diff);
+
+                $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
+                $plan->cancel_reason = '已顺延';
+                $plan->save();
             }
 
-            $station_id = $order->station_id;
-            $customer_name = Customer::find($order->customer_id)->name;
-
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
+//            $station_id = $order->station_id;
+//            $customer_name = Customer::find($order->customer_id)->name;
+//
+//            $notification = new DSNotification();
+//            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
 
             return response()->json(['status' => 'success']);
         }
-
     }
 
     //restart stopped dingdan
@@ -3515,8 +3524,6 @@ class OrderCtrl extends Controller
                 else {
                     $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
                     $milk_card->save();
-
-                    $remain_from_card = $milk_card->balance - $total_amount;
                 }
             }
         }
@@ -3728,16 +3735,11 @@ class OrderCtrl extends Controller
 //                $dsdelivery_history->time = $today;
 //                $dsdelivery_history->save();
         }
-        else {
-            //add card amount remained to customer account
-//                $customer->remain_amount += $remain_from_card;
-//                $customer->save();
-        }
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
     }
 
-    //Insert Order In gongchang
+    //Insertpostpone_order Order In gongchang
     function insert_order_in_gongchang(Request $request)
     {
         if ($request->ajax()) {
@@ -4625,6 +4627,15 @@ class OrderCtrl extends Controller
             $order = Order::find($order_id);
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
+
+            // 新订单通过把卡余额加到客户账户余额
+            if ($order->status == Order::ORDER_NEW_WAITING_STATUS && $order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
+                $remain_from_card = $order->milkcard->balance - $order->total_amount;
+
+                $customer = $order->customer;
+                $customer->remain_amount += $remain_from_card;
+                $customer->save();
+            }
 
             // 订单通过
             if ($order->status == Order::ORDER_NEW_WAITING_STATUS || $order->status == Order::ORDER_WAITING_STATUS) {

@@ -434,6 +434,23 @@ class Order extends Model
 
                 $remain_count -= $count;
 
+                // 能否修改
+                $editAvailable = true;
+
+                // 已配送、配送取消，当天配送列表生成的情况下不能修改
+                if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
+                    $opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
+                    DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $op->product_id)) {
+                    $editAvailable = false;
+                }
+
+                // 配送时间已过的不能修改
+                $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+                $deliverDate = DateTime::createFromFormat('Y-m-j', $opdp->deliver_at);
+                if ($currentDate > $deliverDate) {
+                    $editAvailable = false;
+                }
+
                 $result_group[] = [
                     'time'          =>$opdp->deliver_at,
                     'plan_id'       =>$opdp->id,
@@ -441,6 +458,7 @@ class Order extends Model
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
+                    'can_edit'      =>$editAvailable,
                     'status_name'   =>$opdp->status_name,
                 ];
             }

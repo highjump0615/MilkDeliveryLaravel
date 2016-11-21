@@ -64,4 +64,20 @@ class DSDeliveryPlan extends Model
         $this->save();
     }
 
+    /**
+     * 今日该奶站该产品的配送列表是否已生成
+     * @param $stationid
+     * @param $productid
+     * @return mixed
+     */
+    public static function getDeliveryPlanGenerated($stationid, $productid) {
+        $deliveryPlan = DSDeliveryPlan::where('product_id', $productid)
+            ->where('station_id', $stationid)
+            ->where('deliver_at', getCurDataString())
+            ->get()
+            ->first();
+
+        return $deliveryPlan;
+    }
+
 }

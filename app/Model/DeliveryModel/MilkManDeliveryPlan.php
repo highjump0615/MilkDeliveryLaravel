@@ -150,4 +150,21 @@ class MilkManDeliveryPlan extends Model
     public function isBoxInstall() {
         return ($this->flag && $this->order->milk_box_install);
     }
+
+    /**
+     * 设置配送数量
+     * @param $value
+     */
+    public function setCount($value) {
+
+        $this->changed_plan_count = $value;
+        $this->delivery_count = $value;
+
+        // 已提交生产计划才算是修改
+        if ($this->status < MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+            $this->plan_count = $value;
+        }
+
+        $this->save();
+    }
 }

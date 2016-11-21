@@ -243,9 +243,15 @@ $('#customer_form').on("submit", function (e) {
                 $('#station_list').append(station_data);
 
                 //trigger to calculate the product price
-                init_product_lines();
+                // init_product_lines();
 
-            } else {
+                // 根据得到的奶站信息，重新计算价格
+                $('#product_table tbody tr').each(function () {
+                    calculate_current_product_value(tr);
+                    set_avg_count(tr);
+                });
+            }
+            else {
                 if (data.message) {
                     show_err_msg(data.message);
                 }
@@ -257,8 +263,6 @@ $('#customer_form').on("submit", function (e) {
                     var station_data = '<option value="' + data.station_id + '">' + data.station_name + '</option>';
                     $('#station_list').append(station_data);
                 }
-
-                init_product_lines();
             }
 
         },
