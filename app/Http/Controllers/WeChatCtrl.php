@@ -1910,15 +1910,24 @@ class WeChatCtrl extends Controller
     public function querendingdan(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
+        $wechat_user = WechatUser::find($wechat_user_id);
 
-        $primary_addr_obj = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
+        if(!$wechat_user)
+            abort(403);
+
+        $primary_addr_obj = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary',1)->get()->first();
 
         $group_id = session('group_id');
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
 
+
+        $openid= $wechat_user->openid;
+
         //set new product price on primary address for the wechat order product
-        if ($primary_addr_obj) {
+        $total_amount = 0;
+        if($primary_addr_obj)
+        {
             $primary_address = $primary_addr_obj->address;
 
             if ($wechat_order_products) {
@@ -1942,10 +1951,13 @@ class WeChatCtrl extends Controller
 
                         $wop->total_amount = $wop->product_price * $wop->total_count;
                         $wop->save();
+
+                        $total_amount += $wop->total_amount;
                     } else {
 
                         $wop->product_price = null;
                         $wop->total_amount = null;
+                        $total_amount = null;
 
                         //there is not product price for this primary address
                         return view('weixin.querendingdan', [
@@ -1954,6 +1966,8 @@ class WeChatCtrl extends Controller
                             'group_id' => $group_id,
                             'wxuser_id' => $wechat_user_id,
                             'message' => '未定义地址的产品价格',
+                            'total_amount' => $total_amount,
+                            'openid' => $openid,
                         ]);
                     }
 
@@ -1998,6 +2012,9 @@ class WeChatCtrl extends Controller
             $message = "订单数量总合得符合订单类型条件";
         }
 
+        $total_amount = round($total_amount, 2);
+
+
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
             'wechat_order_products' => $wechat_order_products,
@@ -2005,6 +2022,8 @@ class WeChatCtrl extends Controller
             'wxuser_id' => $wechat_user_id,
             'passed' => $passed,
             'message' => $message,
+            'total_amount' => $total_amount,
+            'openid' => $openid,
         ]);
 
     }
