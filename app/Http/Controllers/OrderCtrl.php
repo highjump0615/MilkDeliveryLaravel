@@ -258,18 +258,19 @@ class OrderCtrl extends Controller
 
             $dp = new MilkManDeliveryPlan;
 
-            // 临时设置状态
-            $dp->determineStatus();
-            if ($dp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
-                $plan_count = 0;
-            }
-
             $dp->milkman_id = $milkman_id;
             $dp->station_id = $station_id;
             $dp->order_id = $order_id;
             $dp->order_product_id = $order_product_id;
             $dp->produce_at = $produce_at;
             $dp->deliver_at = $deliver_at;
+
+            // 临时设置状态
+            $dp->determineStatus();
+            if ($dp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+                $plan_count = 0;
+            }
+
             $dp->status = $status;
             $dp->plan_count = $plan_count;
             $dp->product_price = $product_price;

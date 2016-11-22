@@ -174,7 +174,20 @@ class MilkManDeliveryPlan extends Model
      * 根据生产日期，决定配送明细的状态
      */
     public function determineStatus() {
+        $nProductId = 0;
         $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+        // 这个明细已生成，直接用奶品id
+        if ($this->order_product) {
+            $nProductId = $this->order_product->product->id;
+        }
+        else {
+            // 这个明细未生成，查询奶品id
+            $product = OrderProduct::find($this->order_product_id);
+            if ($product) {
+                $nProductId = $product->product->id;
+            }
+        }
 
         // 计算提交日期
         $strDateProduce = str_replace('-','/', $this->produce_at);
@@ -189,7 +202,7 @@ class MilkManDeliveryPlan extends Model
             // 如果今天是提交日期，是查看是否已提交
             $count = DSProductionPlan::where('station_id', $this->station_id)
                 ->where('produce_start_at', $this->produce_at)
-                ->where('product_id', $this->order_product->product->id)
+                ->where('product_id', $nProductId)
                 ->count();
 
             // 已提交，状态就设成已提交
