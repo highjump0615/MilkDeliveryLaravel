@@ -5674,11 +5674,11 @@ class OrderCtrl extends Controller
             $plan->save();
         }
 
-        $order_products = $order->order_products;
-        foreach($order_products as $op)
-        {
-            $op->delete();
-        }
+//        $order_products = $order->order_products;
+//        foreach($order_products as $op)
+//        {
+//            $op->delete();
+//        }
 
         return;
     }

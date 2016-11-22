@@ -107,16 +107,16 @@ class MilkManDeliveryPlan extends Model
 
     public function order(){
         if($this->type == 1)
-            return $this->belongsTo('App\Model\OrderModel\Order');
+            return $this->belongsTo('App\Model\OrderModel\Order', 'order_id', 'id');
         else
-            return $this->belongsTo('App\Model\OrderModel\SelfOrder');
+            return $this->belongsTo('App\Model\OrderModel\SelfOrder', 'order_id', 'id');
     }
 
     public function order_product(){
         if($this->type == 1)
-            return $this->belongsTo('App\Model\OrderModel\OrderProduct');
+            return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id', 'id');
         else
-            return $this->belongsTo('App\Model\OrderModel\SelfOrderProduct');
+            return $this->belongsTo('App\Model\OrderModel\SelfOrderProduct', 'order_product_id', 'id');
     }
 
     public function milkman(){
@@ -171,11 +171,11 @@ class MilkManDeliveryPlan extends Model
     }
 
     /**
-     * 根据生产日期，决定配送明细的状态
+     * 获取奶品id
+     * @return int
      */
-    public function determineStatus() {
+    public function getProductId() {
         $nProductId = 0;
-        $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
 
         // 这个明细已生成，直接用奶品id
         if ($this->order_product) {
@@ -188,6 +188,16 @@ class MilkManDeliveryPlan extends Model
                 $nProductId = $product->product->id;
             }
         }
+
+        return $nProductId;
+    }
+
+    /**
+     * 根据生产日期，决定配送明细的状态
+     */
+    public function determineStatus() {
+        $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $nProductId = $this->getProductId();
 
         // 计算提交日期
         $strDateProduce = str_replace('-','/', $this->produce_at);

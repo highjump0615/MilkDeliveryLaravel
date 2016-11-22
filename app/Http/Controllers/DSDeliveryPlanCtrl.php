@@ -86,7 +86,7 @@ class DSDeliveryPlanCtrl extends Controller
             if (!$planProduct) {
                 // 初始化
                 foreach($DSProduction_plans as $dp){
-                    if($cc->order_product->product->id == $dp->product_id){
+                    if($index == $dp->product_id){
                         $planProduct = $dp;
                         break;
                     }
