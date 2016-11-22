@@ -11,8 +11,8 @@ function multiexplode ($delimiters,$string) {
  * @return string
  */
 function getCurDataString() {
-    $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-    $strDate = $currentDate->format('Y-m-d');
+    $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+    $strDate = $dateCurrent->format('Y-m-d');
 
     return $strDate;
 }

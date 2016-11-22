@@ -32,6 +32,11 @@ use App\Http\Controllers\Controller;
 
 class DSDeliveryPlanCtrl extends Controller
 {
+    /**
+     * 显示配送管理页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showPeisongguanli(Request $request){
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
@@ -66,20 +71,41 @@ class DSDeliveryPlanCtrl extends Controller
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get();
 
-        foreach($DSProduction_plans as $dp){
+        // DSProductionPlan有可能不包括当天配送的所有数据、因为有配送变化量等，于是手工设置
+        $planResult = array();
 
-            $changed_plan_count_per_product = 0;
+        foreach($changed_counts as $cc) {
 
-            foreach($changed_counts as $cc){
-                if($cc->order_product->product->id == $dp->product_id){
-                    $changed_plan_count_per_product += $cc->changed_plan_count;
-                }
+            $planProduct = null;
+
+            $index = $cc->order_product->product->id;
+            if (array_key_exists($index, $planResult)) {
+                $planProduct = $planResult[$index];
             }
 
-            // 配送计划调整数量
-            $dp["changed_amount"] = $changed_plan_count_per_product - $dp->order_count;
+            if (!$planProduct) {
+                // 初始化
+                foreach($DSProduction_plans as $dp){
+                    if($cc->order_product->product->id == $dp->product_id){
+                        $planProduct = $dp;
+                        break;
+                    }
+                }
 
-            $delivery_plans = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $dp->product_id);
+                // 这产品不在DSProductionPlan里面，即没提交过来的
+                if (!$planProduct) {
+                    $planProduct = new DSProductionPlan;
+                    $planProduct->product_id = $index;
+                }
+
+                $planProduct["changed_plan_count"] = 0;
+            }
+
+            // 合计总数量
+            $planProduct["changed_plan_count"] += $cc->changed_plan_count;
+
+            // 查看配送任务是否已经生成了
+            $delivery_plans = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $index);
 
             // 已调配
             if ($delivery_plans != null){
@@ -92,7 +118,7 @@ class DSDeliveryPlanCtrl extends Controller
             }
 
             // 获取昨日库存量
-            $delivery_plans = DSDeliveryPlan::where('product_id',$dp->product_id)
+            $delivery_plans = DSDeliveryPlan::where('product_id',$index)
                 ->where('station_id', $current_station_id)
                 ->where('deliver_at', $currentDate_str)
                 ->get()
@@ -105,20 +131,28 @@ class DSDeliveryPlanCtrl extends Controller
             // 配送业务实际配送数量
             $deliver_finished_count = 0;
             foreach($deliver_finished_plans as $dfp){
-                if($dfp->order_product->product->id == $dp->product_id){
+                if($dfp->order_product->product->id == $index){
                     $deliver_finished_count += $dfp->delivered_count;
                 }
             }
 
-            $dp["deliverd_count"] = $deliver_finished_count;
+            $planProduct["deliverd_count"] = $deliver_finished_count;
+
+            // 添加到主数组
+            $planResult[$index] = $planProduct;
         }
 
+        // 计算配送计划调整数量
+        foreach ($planResult as $planProduct) {
+            $planProduct["changed_amount"] = $planProduct["changed_plan_count"] - $planProduct->order_count;
+        }
+
+        // 有数量变化的配送明细，排除数量为0的配送明细
         $changed_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->get();
-
-        $isDeliveryPlanGenerated = true;
 
         return view('naizhan.shengchan.peisongguanli',[
             'pages'                 =>$pages,
@@ -126,7 +160,7 @@ class DSDeliveryPlanCtrl extends Controller
             'parent'                =>$parent,
             'current_page'          =>$current_page,
 
-            'dsproduction_plans'    =>$DSProduction_plans,
+            'dsproduction_plans'    =>$planResult,
             'is_distributed'        =>$is_distributed,
             'changed_plans'         =>$changed_plans,
         ]);
@@ -256,7 +290,7 @@ class DSDeliveryPlanCtrl extends Controller
         $child = 'peisongguanli';
         $parent = 'shengchan';
         $current_page = 'peisongliebiao';
-        $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
 
         $delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)

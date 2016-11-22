@@ -5,6 +5,8 @@ namespace App\Model\DeliveryModel;
 use Illuminate\Database\Eloquent\Model;
 use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\Order;
+use DateTime;
+use DateTimeZone;
 
 class MilkManDeliveryPlan extends Model
 {
@@ -165,6 +167,54 @@ class MilkManDeliveryPlan extends Model
             $this->plan_count = $value;
         }
 
+        $this->save();
+    }
+
+    /**
+     * 根据生产日期，决定配送明细的状态
+     */
+    public function determineStatus() {
+        $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+        // 计算提交日期
+        $strDateProduce = str_replace('-','/', $this->produce_at);
+        $dateSubmit = date('Y-m-d',strtotime($strDateProduce."-1 days"));
+        $datetimeSubmit = DateTime::createFromFormat('Y-m-j', $dateSubmit);
+
+        // 提交日期已过
+        if ($dateCurrent > $datetimeSubmit) {
+            $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
+        }
+        else {
+            // 如果今天是提交日期，是查看是否已提交
+            $count = DSProductionPlan::where('station_id', $this->station_id)
+                ->where('produce_start_at', $this->produce_at)
+                ->where('product_id', $this->order_product->product->id)
+                ->count();
+
+            // 已提交，状态就设成已提交
+            if ($count) {
+                $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
+            }
+        }
+    }
+
+    /**
+     * 把自己的flag转给下个配送明细
+     */
+    public function transferFlag() {
+        // 获取下一个配送明细
+        $deliverPlanNext = MilkManDeliveryPlan::where('order_product_id', $this->order_product_id)
+            ->where('deliver_at', '>', $this->deliver_at)
+            ->get()
+            ->first();
+
+        // 切换两个配送明细的flag
+        $temp = $this->flag;
+        $this->flag = $deliverPlanNext->flag;
+        $deliverPlanNext->flag = $temp;
+
+        $deliverPlanNext->save();
         $this->save();
     }
 }

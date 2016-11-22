@@ -237,14 +237,16 @@ class OrderCtrl extends Controller
         //check exist of delivery plan that remains because of submitted to production plan before
         $sub_to_mmdp = MilkManDeliveryPlan::where('order_id', $order_id)
             ->where('order_product_id', $order_product_id)
-            ->where('deliver_at', $deliver_at)->get()->first();
+            ->where('deliver_at', $deliver_at)
+            ->get()
+            ->first();
 
         if ($sub_to_mmdp) {
             $sub_to_mmdp->changed_plan_count = $changed_plan_count;
             $sub_to_mmdp->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE;
             $sub_to_mmdp->save();
-
-        } else {
+        }
+        else {
             $sub_to_pp = DSProductionPlan::where('station_id', $station_id)
                 ->where('produce_start_at', $produce_at)
 //                ->where('product_id', $product_id)
@@ -255,6 +257,12 @@ class OrderCtrl extends Controller
             }
 
             $dp = new MilkManDeliveryPlan;
+
+            // 临时设置状态
+            $dp->determineStatus();
+            if ($dp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+                $plan_count = 0;
+            }
 
             $dp->milkman_id = $milkman_id;
             $dp->station_id = $station_id;
@@ -1375,6 +1383,11 @@ class OrderCtrl extends Controller
 
             }
 
+            if ($changed == 0) {
+                // 如果数量变成0，要把自己的flag转给下个配送明细
+                $plan->transferFlag();
+            }
+
             return ['status' => 'success', 'message' => '交付变更成功.'];
         } else {
             //impossible to change the plan
@@ -1786,21 +1799,22 @@ class OrderCtrl extends Controller
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get()->first();
+            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get()->first();
 
-            if ($plan) {
+            foreach ($plans as $plan) {
                 // 已生成配送列表
                 if (DSDeliveryPlan::getDeliveryPlanGenerated($order->delivery_station_id, $plan->order_product_id)) {
-                    $plan = null;
+                    $plans = null;
+                    break;
                 }
             }
 
             // 没有今日的配送任务或今日配送列表已生成，于是暂停下一个配送任务
-            if (!$plan) {
-                $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->get()->first();
+            if (!$plans) {
+                $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->get()->first();
             }
 
-            if ($plan) {
+            foreach ($plans as $plan) {
                 $plan_id = $plan->id;
                 $origin = $plan->changed_plan_count;
                 $changed = 0;
@@ -3739,7 +3753,7 @@ class OrderCtrl extends Controller
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
     }
 
-    //Insertpostpone_order Order In gongchang
+    //Insert Order In gongchang
     function insert_order_in_gongchang(Request $request)
     {
         if ($request->ajax()) {
@@ -5340,6 +5354,8 @@ class OrderCtrl extends Controller
                 }
             } while ($total_count > 0);
         }
+
+
     }
 
     function days_in_month($dd)

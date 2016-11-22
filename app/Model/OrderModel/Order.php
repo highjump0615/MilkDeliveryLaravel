@@ -437,18 +437,20 @@ class Order extends Model
                 // 能否修改
                 $editAvailable = true;
 
-                // 已配送、配送取消，当天配送列表生成的情况下不能修改
-                if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
-                    $opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
-                    DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $op->product_id)) {
+                // 配送时间已过的不能修改
+                $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+                $dateDeliver = DateTime::createFromFormat('Y-m-j', $opdp->deliver_at);
+                if ($dateCurrent > $dateDeliver) {
                     $editAvailable = false;
                 }
-
-                // 配送时间已过的不能修改
-                $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-                $deliverDate = DateTime::createFromFormat('Y-m-j', $opdp->deliver_at);
-                if ($currentDate > $deliverDate) {
-                    $editAvailable = false;
+                else {
+                    // 已配送、配送取消，当天配送列表生成的情况下不能修改
+                    if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
+                        $opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
+                        DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $op->product_id)
+                    ) {
+                        $editAvailable = false;
+                    }
                 }
 
                 $result_group[] = [

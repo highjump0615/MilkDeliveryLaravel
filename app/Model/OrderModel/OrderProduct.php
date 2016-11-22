@@ -473,7 +473,7 @@ class OrderProduct extends Model
             if ($nIncrease == 0) {
                 $deliveryPlan = $lastDeliverPlan->replicate();
 
-                $deliveryPlan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
+                $deliveryPlan->status = $deliveryPlan->determineStatus();
                 $deliveryPlan->delivered_count = 0;
 
                 $deliveryPlan->deliver_at = $this->getNextDeliverDate($lastDeliverPlan->deliver_at);
