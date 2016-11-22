@@ -7,11 +7,23 @@ function multiexplode ($delimiters,$string) {
 }
 
 /**
- * 获取当前
+ * 获取当前日期
  * @return string
  */
-function getCurDataString() {
+function getCurDateString() {
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+    $strDate = $dateCurrent->format('Y-m-d');
+
+    return $strDate;
+}
+
+/**
+ * 获取昨日日期
+ * @return string
+ */
+function getPrevDateString() {
+    $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+    $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
     $strDate = $dateCurrent->format('Y-m-d');
 
     return $strDate;

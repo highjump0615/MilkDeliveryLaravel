@@ -197,7 +197,7 @@
             <form method="POST" enctype="multipart/form-data" id="order_form">
 
                 @if ($is_edit)
-                    <input type="hidden" name="order_id" value="{{$order->id}}">
+                    <input type="hidden" name="order_id" id="input_order_id" value="{{$order->id}}">
                 @endif
 
                 <!--Station Info-->

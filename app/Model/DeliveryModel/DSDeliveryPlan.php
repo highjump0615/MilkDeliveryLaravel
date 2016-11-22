@@ -73,7 +73,7 @@ class DSDeliveryPlan extends Model
     public static function getDeliveryPlanGenerated($stationid, $productid) {
         $deliveryPlan = DSDeliveryPlan::where('product_id', $productid)
             ->where('station_id', $stationid)
-            ->where('deliver_at', getCurDataString())
+            ->where('deliver_at', getCurDateString())
             ->get()
             ->first();
 

@@ -408,7 +408,7 @@ class Order extends Model
         $result_group=[];
 
         //get order products
-        $order_products = $this->order_products;
+        $order_products = $this->order_products_all;
 
         foreach ($order_products as $op)
         {
@@ -443,7 +443,7 @@ class Order extends Model
                 if ($dateCurrent > $dateDeliver) {
                     $editAvailable = false;
                 }
-                else {
+                else if ($dateCurrent == $dateDeliver) {
                     // 已配送、配送取消，当天配送列表生成的情况下不能修改
                     if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
                         $opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
@@ -644,6 +644,11 @@ class Order extends Model
     public function order_products()
     {
         return $this->hasMany('App\Model\OrderModel\OrderProduct');
+    }
+
+    public function order_products_all()
+    {
+        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
     }
 
     public function getOrderPropertyNameAttribute()

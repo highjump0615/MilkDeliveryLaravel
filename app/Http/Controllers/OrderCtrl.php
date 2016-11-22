@@ -3498,14 +3498,6 @@ class OrderCtrl extends Controller
 
         $ordered_at = $today;
 
-//            $diff = date_diff($order_start_at, $today);
-//            $diff = intval($diff->days);
-//
-//            $gap_day = intval($factory->gap_day);
-////            if ($diff < $gap_day) {
-////                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
-////            }
-
         $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
         $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
 
@@ -5671,14 +5663,19 @@ class OrderCtrl extends Controller
         $plans = $order->delivery_plans_sent_to_production_plan;
         foreach ($plans as $plan) {
             $plan->changed_plan_count = 0;
+
+            // 改成取消状态
+            $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
+            $plan->cancel_reason = '修改订单';
+
             $plan->save();
         }
 
-//        $order_products = $order->order_products;
-//        foreach($order_products as $op)
-//        {
-//            $op->delete();
-//        }
+        $order_products = $order->order_products;
+        foreach($order_products as $op)
+        {
+            $op->delete();
+        }
 
         return;
     }

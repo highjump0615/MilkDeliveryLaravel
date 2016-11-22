@@ -7,14 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use App\Model\OrderModel\OrderType;
 use App\Model\ProductModel\Product;
 use App\Model\DeliveryModel\DeliveryType;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderProduct extends Model
 {
+    use SoftDeletes;
+
+    protected $table = 'orderproducts';
+
     const ORDER_PRODUCT_ORDERTYPE_YUEDAN = 1;
     const ORDER_PRODUCT_ORDERTYPE_JIDAN = 2;
     const ORDER_PRODUCT_ORDERTYPE_BANNIANDAN = 3;
-
-    protected $table = 'orderproducts';
 
     protected $fillable = [
         'order_id',

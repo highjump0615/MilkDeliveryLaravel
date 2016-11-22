@@ -81,11 +81,7 @@ class MilkManDeliveryPlan extends Model
 
     public function getProductNameAttribute()
     {
-        $op = OrderProduct::find($this->order_product_id);
-        if($op)
-            return $op->product_name;
-        else
-            return "";
+        return $this->order_product->product_name;
     }
 
     public function getPlanPriceAttribute()
@@ -114,7 +110,7 @@ class MilkManDeliveryPlan extends Model
 
     public function order_product(){
         if($this->type == 1)
-            return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id', 'id');
+            return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id', 'id')->withTrashed();
         else
             return $this->belongsTo('App\Model\OrderModel\SelfOrderProduct', 'order_product_id', 'id');
     }
