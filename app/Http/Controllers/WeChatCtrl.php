@@ -789,6 +789,24 @@ class WeChatCtrl extends Controller
 
         }
     }
+
+    //get retail price of product based on address
+    public function get_retail_price_of_product($product_id)
+    {
+        $address = session('address');
+        if ($address) {
+            $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
+        } else {
+
+            $pp = ProductPrice::where('product_id', $product_id)->get()->first();
+        }
+
+        if ($pp) {
+            return $pp->retail_price;
+        }
+
+    }
+
     public function wodepingjia(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
