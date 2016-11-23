@@ -82,10 +82,7 @@
                 dataType: 'json',
                 success: function (data) {
                     console.log(data);
-                    if(data.status == "success")
-                    {
-                        window.location.href = SITE_URL+"weixin/wodepingjia?"+order_id;
-                    }
+                    window.location.href = SITE_URL+"weixin/wodepingjia";
                 },
                 error: function (data) {
                     console.log('Error:', data);
