@@ -807,7 +807,6 @@ class WeChatCtrl extends Controller
 
     }
 
-
     public function wodepingjia(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
@@ -843,7 +842,7 @@ class WeChatCtrl extends Controller
         $order = Order::find($order_id);
         $review = Review::where('order_id', $order_id)->get()->first();
         if ($review != '') {
-            return redirect()->route('wodepingjia', ['pingjia_order' => $order_id]);
+            return redirect()->route('wodepingjia');
         }
 
         if ($order == null) {
