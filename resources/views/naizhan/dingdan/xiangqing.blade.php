@@ -1,4 +1,4 @@
-@extends('naizhan.layout.master')
+\@extends('naizhan.layout.master')
 @section('css')
 <style>
     .plan_count {

@@ -262,20 +262,23 @@ class MilkManDeliveryPlan extends Model
     public function isEditAvailable() {
         $editAvailable = true;
 
-        // 配送时间已过的不能修改
-        $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $dateDeliver = DateTime::createFromFormat('Y-m-j', $this->deliver_at);
-
-        if ($dateCurrent > $dateDeliver) {
+        // 已完成或已取消的不能修改
+        if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
+            $this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL) {
             $editAvailable = false;
         }
-        else if ($dateCurrent == $dateDeliver) {
-            // 已配送、配送取消，当天配送列表生成的情况下不能修改
-            if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
-                $this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
-                DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $this->order_product->product->id)
-            ) {
+        else {
+            // 配送时间已过的不能修改
+            $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+            $dateDeliver = DateTime::createFromFormat('Y-m-j', $this->deliver_at);
+
+            if ($dateCurrent > $dateDeliver) {
                 $editAvailable = false;
+            } else if ($dateCurrent == $dateDeliver) {
+                // 已配送、配送取消，当天配送列表生成的情况下不能修改
+                if (DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $this->order_product->product->id)) {
+                    $editAvailable = false;
+                }
             }
         }
 

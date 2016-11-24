@@ -447,9 +447,10 @@ class Order extends Model
             }
         }
 
-       $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
-
-        return $new_array;
+//       $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
+//
+//        return $new_array;
+        return $result_group;
     }
 
     public function getProvinceIdAttribute()
