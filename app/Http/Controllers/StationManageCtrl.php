@@ -241,6 +241,16 @@ class StationManageCtrl extends Controller
 
             $station = DeliveryStation::find($sid);
 
+            $user_info = User::where('station_id',$sid)->where('user_role_id',200)->get()->first();
+            if($user_info){
+                if($checked == "true")
+                    $user_info->status = User::USER_STATUS_ACTIVE;
+                else
+                    $user_info->status = User::USER_STATUS_INACTIVE;
+                $user_info->save();
+
+            }
+
             if ($station) {
                 if ($checked == "true")
                     $station->status = DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE;
