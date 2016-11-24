@@ -55,7 +55,7 @@
 				<div class="ibox float-e-margins">
 
 					@if($deliver_date == $current_date && $is_todayrefund != 0)
-					<label style="color: red; font-size: 18px;">你已经检查配送</label>
+					<label style="color: red; font-size: 18px;">你已经完成了反录</label>
 					@endif
 
                     <div class="ibox-content">
@@ -144,7 +144,7 @@
 											{{--交货了--}}
 										{{--@endif--}}
 									{{--</td>--}}
-									<td rowspan="{{count($di->product)}}"></td>
+									<td rowspan="{{count($di->product)}}">{{$di->comment_delivery}}</td>
 									@endif
 								</tr>
 								@endforeach

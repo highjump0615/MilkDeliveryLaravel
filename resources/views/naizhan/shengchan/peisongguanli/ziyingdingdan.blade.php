@@ -203,7 +203,7 @@
 										@elseif($dp->delivery_time == 1)下午
 										@endif
 									</td>
-									<td></td>
+									<td>{{$mdp->comment_delivery}}</td>
 								</tr>
 							@endforeach
 							@endif

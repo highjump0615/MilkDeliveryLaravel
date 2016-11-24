@@ -9,13 +9,37 @@ use Illuminate\Database\Eloquent\Model;
 
 class DSProductionPlan extends Model
 {
+    /**
+     * 奶站提交计划正常状态, 审核通过后状态
+     */
     const DSPRODUCTION_SENT_PLAN = 1;
+
+    /**
+     * 奶站提交计划待审核状态
+     */
     const DSPRODUCTION_PENDING_PLAN = 2;
+
+    /**
+     * 奶站提交计划审核不通过状态
+     */
     const DSPRODUCTION_PRODUCE_CANCEL = 3;
     const DSPRODUCTION_PASSED_PLAN = 4;
+
+    /**
+     * 生产确认后的状态
+     */
     const DSPRODUCTION_PRODUCE_FINNISHED = 5;
+
+    /**
+     * 发货后状态
+     */
     const DSPRODUCTION_PRODUCE_SENT = 6;
+
+    /**
+     * 签收后状态
+     */
     const DSPRODUCTION_PRODUCE_RECEIVED = 7;
+
 
     protected $table = 'dsproductionplan';
 

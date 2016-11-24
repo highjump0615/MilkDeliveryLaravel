@@ -26,8 +26,8 @@
 								<tr>
 									<th data-sort-ignore="true">序号</th>
 									<th data-sort-ignore="true">奶品</th>
-									<th data-sort-ignore="true">计划汇总量</th>
-									<th data-sort-ignore="true">实际生产总量</th>
+									<th data-sort-ignore="true">生产计划量</th>
+									<th data-sort-ignore="true">实际生产量</th>
 									<th data-sort-ignore="true">富余量</th>
 									<th data-sort-ignore="true">实际发货总量</th>
 									<th data-sort-ignore="true">库存结余</th>

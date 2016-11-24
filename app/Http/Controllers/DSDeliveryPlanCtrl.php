@@ -53,8 +53,10 @@ class DSDeliveryPlanCtrl extends Controller
         $deliver_date_str = getCurDateString();
         $currentDate_str = getPrevDateString();
 
+        // 只有考虑已签收的计划
         $DSProduction_plans = DSProductionPlan::where('station_id',$current_station_id)
             ->where('produce_end_at',$currentDate_str)
+            ->where('status', DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED)
             ->orderby('product_id')
             ->get();
 
@@ -359,6 +361,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $is_changed = 0;
                     $delivery_type = 1;
                     $box_install_count = 0;     // 奶箱安装数量
+                    $comment = '';
 
                     foreach($by_order_id as $dp) {
                         $name = $dp->order_product->product->name;
@@ -371,6 +374,8 @@ class DSDeliveryPlanCtrl extends Controller
                         if ($dp->isBoxInstall()) {
                             $box_install_count++;
                         }
+
+                        $comment = $dp->comment;
                     }
 
                     $orderData['product'] = implode(',', $products);
@@ -380,6 +385,7 @@ class DSDeliveryPlanCtrl extends Controller
 
                     $orderData['changed'] = $is_changed;
                     $orderData['delivery_type'] = $delivery_type;
+                    $orderData['comment_delivery'] = $comment;
 
                     // 添加到主数组
                     array_push($res, $orderData);
@@ -403,11 +409,14 @@ class DSDeliveryPlanCtrl extends Controller
                         $count = $dp->delivery_count;
                         $products[] = $name.'*'.$count;
                         $delivery_type = $dp->type;
+
+                        $comment = $dp->comment;
                     }
 
                     $orderData['product'] = implode(',', $products);
                     $orderData['changed'] = $is_changed;
                     $orderData['delivery_type'] = $delivery_type;
+                    $orderData['comment_delivery'] = $comment;
 
                     // 添加到主数组
                     array_push($res, $orderData);
@@ -446,7 +455,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
-            ->where('type',"!=", 1)
+            ->where('type',"!=", MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get()
             ->groupBy(function($sort){
                 return $sort->order_id;
@@ -459,6 +468,8 @@ class DSDeliveryPlanCtrl extends Controller
             $is_changed = 0;
             $delivery_type = 1;
             $milk_man = '';
+            $comment = '';
+
             foreach($dps_by_order as $dp) {
                 $name = $dp->order_product->product->name;
                 $count = $dp->delivery_count;
@@ -467,11 +478,13 @@ class DSDeliveryPlanCtrl extends Controller
                     $is_changed = 1;
                 $delivery_type = $dp->type;
                 $milk_man = $dp->milkman->name;
+                $comment = $dp->comment;
             }
             $res[$o]['product'] = implode(',', $products);
             $res[$o]['changed'] = $is_changed;
             $res[$o]['delivery_type'] = $delivery_type;
             $res[$o]['milkman_name'] = $milk_man;
+            $res[$o]['comment_delivery'] = $comment;
         }
         $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
 
@@ -512,6 +525,7 @@ class DSDeliveryPlanCtrl extends Controller
             'child'                     =>$child,
             'parent'                    =>$parent,
             'current_page'              =>$current_page,
+
             'delivery_plans'            =>$delivery_plans,
             'streets'                   =>$street,
             'milk_man'                  =>$milk_mans,
@@ -665,6 +679,7 @@ class DSDeliveryPlanCtrl extends Controller
         $deliver_time = $request->input('deliver_time');
         $product_id = $request->input('product_id');
         $product_count = $request->input('product_count');
+        $comment = $request->input('comment');
 
         $self_orders = new SelfOrder;
         $self_orders->station_id = $current_station_id;
@@ -697,6 +712,7 @@ class DSDeliveryPlanCtrl extends Controller
             $milkman_delivery_plans->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
             $milkman_delivery_plans->delivery_count = $product_count[$i];
             $milkman_delivery_plans->type = $type;
+            $milkman_delivery_plans->comment = $comment;
             $milkman_delivery_plans->save();
 
             // 更新
@@ -845,8 +861,8 @@ class DSDeliveryPlanCtrl extends Controller
         });
 
         foreach ($milkman_delivery_plans as $m => $dps_by_milkman) {
-
             $delivery_info = array();
+            $comment = '';
 
             // 配送员的任务根据配送类型分组
             $order_by_types = $dps_by_milkman->groupBy(function ($sort) {
@@ -854,6 +870,7 @@ class DSDeliveryPlanCtrl extends Controller
             });
 
             foreach ($order_by_types as $o => $dbm) {
+
                 // 订单配送
                 if ($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
                     // 配送任务根据订单分组
@@ -886,6 +903,8 @@ class DSDeliveryPlanCtrl extends Controller
                             if ($dp->isBoxInstall()) {
                                 $box_install_count++;
                             }
+
+                            $comment = $dp->comment;
                         }
 
                         $orderData['product'] = implode(',', $products);
@@ -896,6 +915,7 @@ class DSDeliveryPlanCtrl extends Controller
                         $orderData['changed'] = $is_changed;
                         $orderData['delivery_type'] = $delivery_type;
                         $orderData['flag'] = $flag;
+                        $orderData['comment_delivery'] = $comment;
 
                         // 添加到主数组
                         array_push($delivery_info, $orderData);
@@ -917,11 +937,13 @@ class DSDeliveryPlanCtrl extends Controller
                             $count = $dp->delivery_count;
                             $products[] = $name . '*' . $count;
                             $delivery_type = $dp->type;
+                            $comment = $dp->comment;
                         }
 
                         $orderData['product'] = implode(',', $products);
                         $orderData['changed'] = $is_changed;
                         $orderData['delivery_type'] = $delivery_type;
+                        $orderData['comment_delivery'] = $comment;
 
                         // 添加到主数组
                         array_push($delivery_info, $orderData);
@@ -1059,6 +1081,8 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         foreach ($order_by_types as $o=>$dbm){
+            $comment = '';
+
             // 订单配送
             if($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
                 $regular_delivers = $dbm->groupBy(function($sort){
@@ -1091,6 +1115,8 @@ class DSDeliveryPlanCtrl extends Controller
 
                         if($dp->isBoxInstall())
                             $milkboxinstall = 1;
+
+                        $comment = $dp->comment;
                     }
 
                     $orderData['milkbox_install'] = 0;
@@ -1101,6 +1127,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $orderData['delivery_type'] = $delivery_type;
                     $orderData['milkman_name'] = $milk_man;
                     $orderData['milkbox_install'] = $milkboxinstall;
+                    $orderData['comment_delivery'] = $comment;
 
                     // 添加到主数组
                     array_push($delivery_info, $orderData);
@@ -1133,6 +1160,8 @@ class DSDeliveryPlanCtrl extends Controller
                             $products[$pro]['comment'] = $dp->comment;
                             $delivery_type = $dp->type;
                             $milk_man = $dp->milkman->name;
+
+                            $comment = $dp->comment;
                         }
 
                         $orderData['is_milkbox'] = 0;
@@ -1142,6 +1171,7 @@ class DSDeliveryPlanCtrl extends Controller
                         $orderData['delivery_type'] = $delivery_type;
                         $orderData['milkman_name'] = $milk_man;
                         $orderData['milkbox_install'] = $milkboxinstall;
+                        $orderData['comment_delivery'] = $comment;
 
                         // 添加到主数组
                         array_push($delivery_info, $orderData);

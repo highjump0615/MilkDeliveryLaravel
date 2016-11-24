@@ -35,7 +35,8 @@ $(document).on('click','#save',function(e){
             type:$(this).find('td:eq(1)').attr('value'),
             phone: $(this).find('td:eq(5)').text(),
             milkman_id: $(this).find('td:eq(6)').attr('value'),
-            deliver_time: $('#delivery_milk #user td:eq(7)').attr('value'),
+            deliver_time: $(this).find('td:eq(7)').attr('value'),
+            comment: $(this).find('td:eq(8)').html(),
             product_id: product_id_array,
             product_count: product_name_array,
         };
@@ -152,7 +153,7 @@ $(document).on('click','#add',function(){
 
     var role = '<tr id="user"><td>'+last_row_number+'</td><td value="'+type_val+'">'+type+'</td><td value="'+address_val+'">'+address+'</td>';
     role+='<td>'+customer_name+'</td><td value="'+product_id+'">'+product+'</td>';
-    role+='<td>'+phone_number+'</td><td value="'+milkman_id+'">'+milkman_name+'</td><td value="'+time_val+'">'+time+'</td><td></td></tr>';
+    role+='<td>'+phone_number+'</td><td value="'+milkman_id+'">'+milkman_name+'</td><td value="'+time_val+'">'+time+'</td><td contenteditable="true" class="editfill"></td></tr>';
     $('#delivery_milk').append(role);
 
     // 清空输入框

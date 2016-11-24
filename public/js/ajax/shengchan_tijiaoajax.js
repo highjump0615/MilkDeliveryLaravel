@@ -54,31 +54,7 @@ $(document).ready(function() {
 
 $(document).on('keyup','.sales_val',function(){
     setPlanData();
-    // $('tr:not(:first)').each(function(){
-    //     var sum = 0;
-    //     var price = $(this).find('.current_price').val();
-    //     var ordered_price = $(this).find('.ordered_price').val();
-    //     $(this).find('.sales_val').each(function(){
-    //         var plan_val = $(this).text();
-    //
-    //         if(!isNaN(plan_val)&& plan_val.length!==0){
-    //             sum+=parseFloat(plan_val,2);
-    //         }
-    //     })
-    //
-    //     var ordered_count = parseInt($(this).find('.ordered_count').text());
-    //     $('.total_count',this).html(sum);
-    //     var total_price = (sum-ordered_count)*price+parseFloat(ordered_price,2);
-    //     $('.total_price',this).html(total_price.toFixed(2));
-    // })
-    // $('tr:last td:not(:first,:last)').text(function(i){
-    //     var t = 0;
-    //     $(this).parent().prevAll().find('td:nth-child('+(i+3)+')').each(function(){
-    //         t+=parseFloat($(this).text(),2)||0;
-    //     });
-    //     return Number(t.toFixed(2));
-    // })
-})
+});
 
 $(document).on('click','.confirm_submit',function(e){
     used_money = $('#total_amount').text() - $('#total_ordered_money').val();
@@ -102,7 +78,7 @@ $(document).on('click','.confirm_submit',function(e){
     }else {
         send_plan();
     }
-})
+});
 
 function send_plan() {
     used_money = $('#total_amount').text() - $('#total_ordered_money').val();
@@ -116,7 +92,7 @@ function send_plan() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     $('.confirm_submit').prop("disabled",true);
 
@@ -136,11 +112,11 @@ function send_plan() {
                 channel_sale: $('#channel' + id + '').text(),
                 subtotal_count: $('#subtotal_count' + id + '').text(),
                 subtotal_money: $('#subtotal_price' + id + '').text(),
-            }
+            };
             table_info[i] = formData;
             i++;
         }
-    })
+    });
 
     var type = "POST"; //for creating new resource
     var my_url = url;

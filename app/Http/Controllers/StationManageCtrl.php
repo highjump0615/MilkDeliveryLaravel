@@ -734,7 +734,6 @@ class StationManageCtrl extends Controller
     //Show Station's Delivery Area
     public function show_delivery_area_of_station($station_id)
     {
-
         $factory_id = Auth::guard('gongchang')->user()->factory_id;
 
         //first get province, city, district of station: give limitation to this
@@ -802,15 +801,18 @@ class StationManageCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.jichuxinxi.naizhan.peisongfanwei-chakanbianji', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'station_id' => $station_id,
-            'area_address' => $area_address,
-            'province' => $province,
-            'city' => $city,
-            'district' => $district,
+            // 页面信息
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+
+            // 数据
+            'station'           => $station,
+            'area_address'      => $area_address,
+            'province'          => $province,
+            'city'              => $city,
+            'district'          => $district,
             'available_address' => $available_address,
         ]);
     }

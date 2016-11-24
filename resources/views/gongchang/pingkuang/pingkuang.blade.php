@@ -30,7 +30,7 @@
 							<th data-sort-ignore="true">物流退回数</th>
 							<th data-sort-ignore="true">其他退回数</th>
 							<th data-sort-ignore="true">生产领用数</th>
-							<th data-sort-ignore="true">库内盘亏损</th>
+							<th data-sort-ignore="true">库内盘亏数</th>
 							<th data-sort-ignore="true">期未库存</th>
 							<th data-sort-ignore="true" style="background-color: #0b8cc5; color: #FFFFFF">奶站交物流数</th>
 							<th data-sort-ignore="true" style="background-color: #0b8cc5; color: #FFFFFF">物流存量</th>

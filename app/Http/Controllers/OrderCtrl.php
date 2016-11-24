@@ -2639,7 +2639,7 @@ class OrderCtrl extends Controller
             } else if ($station_milkman == $this::NOT_EXIST_STATION) {
                 return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
             } else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+                return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
             }
 
             foreach ($station_milkman as $delivery_station_id => $milkman_id) {
@@ -3961,7 +3961,7 @@ class OrderCtrl extends Controller
             return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
         }
         else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+            return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
         }
 
         $ext_customer = Customer::where('phone', $phone)->where('factory_id', $this->factory->id)->get()->first();
@@ -4134,7 +4134,10 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $this->mStationId)
-            ->where('status', Order::ORDER_NOT_PASSED_STATUS)
+            ->where(function($query) {
+                $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
+                $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
+            })
             ->orderBy('id', 'desc')
 			->get();
 

@@ -28,3 +28,15 @@ function getPrevDateString() {
 
     return $strDate;
 }
+
+/**
+ * 获取明日日期
+ * @return string
+ */
+function getNextDateString() {
+    $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+    $dateCurrent->add(\DateInterval::createFromDateString('tomorrow'));
+    $strDate = $dateCurrent->format('Y-m-d');
+
+    return $strDate;
+}

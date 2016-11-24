@@ -63,7 +63,7 @@
 									<th data-sort-ignore="true">收货人</th>
 									<th data-sort-ignore="true">配送时间</th>
 									<th data-sort-ignore="true">电话</th>
-									<th data-sort-ignore="true">操作</th>
+									<th data-sort-ignore="true">备注</th>
 								</tr>
                             </thead>
                             <tbody>
@@ -102,7 +102,7 @@
 										@endif
 									</td>
 									<td>{{$dp->phone}}</td>
-									<td></td>
+									<td>{{$dp->comment_delivery}}</td>
 								</tr>
 							@endforeach
                             </tbody>

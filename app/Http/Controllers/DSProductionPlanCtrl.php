@@ -208,14 +208,17 @@ class DSProductionPlanCtrl extends Controller
         ]);
     }
 
+    /**
+     * 提交计划
+     * @param Request $request
+     * @return mixed
+     */
     public function storeTijiaojihuaPlan(Request $request) {
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-        $produce_start_at = $produce_Date->format('Y-m-d');
 
-        $current_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $current_Date->format('Y-m-d');
+        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
+        $produce_start_at = getNextDateString();
+        $current_date_str = getCurDateString();
 
         $milkmandeliveryplans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('produce_at',$produce_start_at)->get();
         foreach ($milkmandeliveryplans as $mp){
@@ -714,19 +717,29 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         return Response::json($plan_status);
     }
 
-    /*Determine Station Plan*/
+    /**
+     * 给待审核计划通过
+     * @param Request $request
+     * @return mixed
+     */
     public function determineStationPlan(Request $request){
         $station_id = $request->input('station_id');
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-        $current_date_str = $currentDate->format('Y-m-d');
+
+        $current_date_str = getNextDateString();
+
         if($station_id == null)
             return Response::json(['status'=>"没有奶站！"]);
-        $dsproductionplans = DSProductionPlan::where('station_id',$station_id)->where('produce_start_at',$current_date_str)->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN)->get();
+
+        $dsproductionplans = DSProductionPlan::where('station_id',$station_id)
+            ->where('produce_start_at',$current_date_str)
+            ->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN)
+            ->get();
+
         foreach ($dsproductionplans as $dsp){
             $dsp->status = DSProductionPlan::DSPRODUCTION_SENT_PLAN;
             $dsp->save();
         }
+
         return Response::json(['status'=>"successfully_called"]);
     }
     

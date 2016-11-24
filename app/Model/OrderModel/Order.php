@@ -447,10 +447,10 @@ class Order extends Model
             }
         }
 
-//       $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
-//
-//        return $new_array;
-        return $result_group;
+       $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
+
+        return $new_array;
+//        return $result_group;
     }
 
     public function getProvinceIdAttribute()
@@ -630,7 +630,7 @@ class Order extends Model
 
     public function order_products_all()
     {
-        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id');
+        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
     }
 
     public function getOrderPropertyNameAttribute()

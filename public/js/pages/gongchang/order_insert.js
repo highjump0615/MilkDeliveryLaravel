@@ -386,19 +386,25 @@ $('#order_form').on('submit', function (e) {
                 var order_id = data.order_id;
 
                 if (gbIsEdit) {
+                    show_success_msg('订单修改成功');
+
                     // 如果是订单修改，跳转到待审核订单
                     strUrlAfter = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
                     if (gbIsStation) {
                         strUrlAfter = SITE_URL + 'naizhan/dingdan/xiangqing/' + order_id;
                     }
-
-                    window.location.replace(strUrlAfter);
                 }
                 else {
-                    // 如果是订单录入，清空页面，易于录入别的
                     show_success_msg('订单录入成功');
-                    location.reload();
+
+                    // 如果是订单录入，清空页面，易于录入别的
+                    strUrlAfter = SITE_URL + 'gongchang/dingdan/dingdanluru';
+                    if (gbIsStation) {
+                        strUrlAfter = SITE_URL + 'naizhan/dingdan/dingdanluru';
+                    }
                 }
+
+                window.location.replace(strUrlAfter);
 
             } else {
                 if (data.message)
