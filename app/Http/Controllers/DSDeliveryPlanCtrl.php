@@ -330,99 +330,15 @@ class DSDeliveryPlanCtrl extends Controller
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
+        $deliver_date_str = getCurDateString();;
 
+        $res = $this->getOrderDeliverList($current_station_id, $deliver_date_str);
+
+        // 页面信息
         $child = 'peisongguanli';
         $parent = 'shengchan';
         $current_page = 'peisongliebiao';
         $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
-
-        $delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
-            ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
-            ->get()
-            ->groupBy(function($sort){
-                return $sort->type;
-            });
-
-        $res = array();
-        foreach ($delivery_plans as $o=>$dps_by_type) {
-            // 订单配送
-            if ($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-                $regular_delivers = $dps_by_type->groupBy(function($sort){
-                    return $sort->order_id;
-                });
-
-                foreach ($regular_delivers as $r=>$by_order_id) {
-                    // 获取订单信息
-                    $orderData = Order::find($r);
-                    $products = array();
-                    $is_changed = 0;
-                    $delivery_type = 1;
-                    $box_install_count = 0;     // 奶箱安装数量
-                    $comment = '';
-
-                    foreach($by_order_id as $dp) {
-                        $name = $dp->order_product->product->name;
-                        $count = $dp->delivery_count;
-                        $products[] = $name.'*'.$count;
-                        if($dp->plan_count != $dp->changed_plan_count)
-                            $is_changed = 1;
-                        $delivery_type = $dp->type;
-
-                        if ($dp->isBoxInstall()) {
-                            $box_install_count++;
-                        }
-
-                        $comment = $dp->comment;
-                    }
-
-                    $orderData['product'] = implode(',', $products);
-                    if ($box_install_count > 0) {
-                        $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
-                    }
-
-                    $orderData['changed'] = $is_changed;
-                    $orderData['delivery_type'] = $delivery_type;
-                    $orderData['comment_delivery'] = $comment;
-
-                    // 添加到主数组
-                    array_push($res, $orderData);
-                }
-            }
-            // 自营配送
-            else{
-                $regular_delivers = $dps_by_type->groupBy(function($sort){
-                    return $sort->order_id;
-                });
-
-                foreach ($regular_delivers as $r=>$by_order_id) {
-                    // 获取自营项目信息
-                    $orderData = SelfOrder::find($r);
-                    $products = array();
-                    $is_changed = 0;
-                    $delivery_type = 1;
-
-                    foreach($by_order_id as $dp) {
-                        $name = $dp->order_product->product->name;
-                        $count = $dp->delivery_count;
-                        $products[] = $name.'*'.$count;
-                        $delivery_type = $dp->type;
-
-                        $comment = $dp->comment;
-                    }
-
-                    $orderData['product'] = implode(',', $products);
-                    $orderData['changed'] = $is_changed;
-                    $orderData['delivery_type'] = $delivery_type;
-                    $orderData['comment_delivery'] = $comment;
-
-                    // 添加到主数组
-                    array_push($res, $orderData);
-                }
-            }
-        }
 
         return view('naizhan.shengchan.peisongguanli.peisongliebiao',[
             'pages'             =>$pages,
@@ -431,6 +347,64 @@ class DSDeliveryPlanCtrl extends Controller
             'current_page'      =>$current_page,
             'delivery_plans'    =>$res,
         ]);
+    }
+
+    /**
+     * 查询配送列表
+     * @param $station_id
+     * @param $date
+     * @return array
+     */
+    private function getOrderDeliverList($station_id, $date) {
+
+        $delivery_plans = MilkManDeliveryPlan::where('station_id', $station_id)
+            ->where('deliver_at', $date)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->get()
+            ->groupBy(function($sort){
+                return $sort->order_id;
+            });
+
+        $aryRes = array();
+        foreach ($delivery_plans as $r=>$by_order_id) {
+            // 获取订单信息
+            $orderData = Order::find($r);
+            $products = array();
+            $is_changed = 0;
+            $delivery_type = 1;
+            $box_install_count = 0;     // 奶箱安装数量
+            $comment = '';
+
+            foreach ($by_order_id as $dp) {
+                $name = $dp->order_product->product->name;
+                $count = $dp->delivery_count;
+                $products[] = $name . '*' . $count;
+                if ($dp->plan_count != $dp->changed_plan_count)
+                    $is_changed = 1;
+                $delivery_type = $dp->type;
+
+                if ($dp->isBoxInstall()) {
+                    $box_install_count++;
+                }
+
+                $comment = $dp->comment;
+            }
+
+            $orderData['product'] = implode(',', $products);
+            if ($box_install_count > 0) {
+                $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
+            }
+
+            $orderData['changed'] = $is_changed;
+            $orderData['delivery_type'] = $delivery_type;
+            $orderData['comment_delivery'] = $comment;
+
+            // 添加到主数组
+            array_push($aryRes, $orderData);
+        }
+
+        return $aryRes;
     }
 
     public function showZiyingdingdan(Request $request){
@@ -995,25 +969,25 @@ class DSDeliveryPlanCtrl extends Controller
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $currentDate->format('Y-m-d');
+        $current_date_str = getCurDateString();
 
+        // 配送日期，默认是今日
         $deliver_date_str = $request->input('current_date');
         if($deliver_date_str == ''){
-            $deliver_date_str = $currentDate->format('Y-m-d');
+            $deliver_date_str = getCurDateString();
         }
 
-        $MilkboxSetupDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $MilkboxSetupDate->add(\DateInterval::createFromDateString('tomorrow'));
-
+        // 页面信息
         $child = 'peisongfanru';
         $parent = 'shengchan';
         $current_page = 'peisongfanru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
+        // 配送员列表
         $milkman = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get();
-        $current_milkman = $request->input('milkman_id');
 
+        // 配送员信息，默认是第一个
+        $current_milkman = $request->input('milkman_id');
         if ($current_milkman == ''){
             $current_milkmans = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get()->first();
             if($current_milkmans != null){
@@ -1024,15 +998,17 @@ class DSDeliveryPlanCtrl extends Controller
             }
         }
 
+        // 是否已生成配送列表？
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
+            ->where('deliver_at', $deliver_date_str)
+            ->where('type', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->where('milkman_id',$current_milkman)
             ->get();
 
         $deliveryPlan = $milkman_delivery_plans->first();
 
-        // 只有生成了配送列表之后才显示今日配送单
+        // 只有生成了配送列表之后才显示反录
         if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id)) {
             return view('naizhan.shengchan.peisongfanru',[
                 'pages'                     =>$pages,
@@ -1051,11 +1027,9 @@ class DSDeliveryPlanCtrl extends Controller
             ]);
         }
 
-        $delivery_info = array();
-        $order_by_types = $milkman_delivery_plans->groupBy(function ($sort){
-            return $sort->type;
-        });
-
+        //
+        // 查询瓶框数据
+        //
         $station_addr = DeliveryStation::find($current_station_id)->address;
         $station_addr = explode(' ',$station_addr);
         $station_addr = $station_addr[0]." ".$station_addr[1]." ".$station_addr[2];
@@ -1080,104 +1054,53 @@ class DSDeliveryPlanCtrl extends Controller
             $is_todayrefund += $tbr->count;
         }
 
-        foreach ($order_by_types as $o=>$dbm){
-            $comment = '';
+        //
+        // 查询配送数据
+        //
+        $delivery_info = array();
 
-            // 订单配送
-            if($o == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
-                $regular_delivers = $dbm->groupBy(function($sort){
-                    return $sort->order_id;
-                });
+        // 根据订单分类
+        $mdp_by_order = $milkman_delivery_plans->groupBy(function ($sort){
+            return $sort->order_id;
+        });
 
-                foreach ($regular_delivers as $r=>$by_order_id){
-                    // 获取订单信息
-                    $orderData = Order::find($r);
-                    $products = array();
-                    $is_changed = 0;
-                    $delivery_type = 1;
-                    $milkboxinstall = 0;
+        foreach ($mdp_by_order as $r=>$by_order_id){
+            // 获取订单信息
+            $orderData = SelfOrder::find($r);
+            $products = array();
+            $is_changed = 0;
+            $delivery_type = 1;
+            $milkboxinstall = 0;
 
-                    foreach($by_order_id as $pro=>$dp) {
-                        $name = $dp->order_product->product->name;
-                        $count = $dp->delivery_count;
-                        $products[$pro]['name'] = $name;
-                        $products[$pro]['count'] = $count;
-                        $products[$pro]['id'] = $dp->order_product->product->id;
-                        $products[$pro]['order_product_id'] = $dp->order_product_id;
-                        $products[$pro]['delivered_count'] = $dp->delivered_count;
-                        $products[$pro]['report'] = $dp->report;
-//                        $products[] = $name.'*'.$count;
-                        if($dp->plan_count != $dp->changed_plan_count)
-                            $is_changed = 1;
-                        $delivery_type = $dp->type;
+            foreach($by_order_id as $pro=>$dp) {
+                $name = $dp->order_product->product->name;
+                $count = $dp->delivery_count;
+                $products[$pro]['name'] = $name;
+                $products[$pro]['count'] = $count;
+                $products[$pro]['id'] = $dp->order_product->product->id;
+                $products[$pro]['order_product_id'] = $dp->order_product_id;
+                $products[$pro]['delivered_count'] = $dp->delivered_count;
+                $products[$pro]['report'] = $dp->report;
+                $products[$pro]['comment'] = $dp->comment;
 
-                        $milk_man = $dp->milkman->name;
+                if($dp->plan_count != $dp->changed_plan_count)
+                    $is_changed = 1;
+                $delivery_type = $dp->type;
 
-                        if($dp->isBoxInstall())
-                            $milkboxinstall = 1;
+                $milk_man = $dp->milkman->name;
 
-                        $comment = $dp->comment;
-                    }
-
-                    $orderData['milkbox_install'] = 0;
-
-//                    $delivery_info[$r]['product'] = implode(',', $products);
-                    $orderData['product'] = $products;
-                    $orderData['changed'] = $is_changed;
-                    $orderData['delivery_type'] = $delivery_type;
-                    $orderData['milkman_name'] = $milk_man;
-                    $orderData['milkbox_install'] = $milkboxinstall;
-                    $orderData['comment_delivery'] = $comment;
-
-                    // 添加到主数组
-                    array_push($delivery_info, $orderData);
-                }
+                if($dp->isBoxInstall())
+                    $milkboxinstall = 1;
             }
-            else{
-                $extra_delivers = $dbm->groupBy(function($sort) {
-                    return $sort->order_id;
-                });
 
-                foreach ($extra_delivers as $r=>$by_order_id){
-                    // 获取自营项目信息
-                    $orderData = SelfOrder::find($r);
+            $orderData['product'] = $products;
+            $orderData['changed'] = $is_changed;
+            $orderData['delivery_type'] = $delivery_type;
+            $orderData['milkman_name'] = $milk_man;
+            $orderData['milkbox_install'] = $milkboxinstall;
 
-                    if($orderData != null){
-                        $products = array();
-                        $is_changed = 0;
-                        $delivery_type = 2;
-                        $milkboxinstall = 0;
-
-                        foreach($by_order_id as $pro=>$dp) {
-                            $name = $dp->order_product->product->name;
-                            $count = $dp->delivery_count;
-//                            $products[] = $name.'*'.$count;
-                            $products[$pro]['name'] = $name;
-                            $products[$pro]['id'] = $dp->order_product->product->id;
-                            $products[$pro]['count'] = $count;
-                            $products[$pro]['order_product_id'] = $dp->order_product_id;
-                            $products[$pro]['delivered_count'] = $dp->delivered_count;
-                            $products[$pro]['comment'] = $dp->comment;
-                            $delivery_type = $dp->type;
-                            $milk_man = $dp->milkman->name;
-
-                            $comment = $dp->comment;
-                        }
-
-                        $orderData['is_milkbox'] = 0;
-//                        $delivery_info[$r]['product'] = implode(',', $products);
-                        $orderData['product'] = $products;
-                        $orderData['changed'] = $is_changed;
-                        $orderData['delivery_type'] = $delivery_type;
-                        $orderData['milkman_name'] = $milk_man;
-                        $orderData['milkbox_install'] = $milkboxinstall;
-                        $orderData['comment_delivery'] = $comment;
-
-                        // 添加到主数组
-                        array_push($delivery_info, $orderData);
-                    }
-                }
-            }
+            // 添加到主数组
+            array_push($delivery_info, $orderData);
         }
 
         return view('naizhan.shengchan.peisongfanru',[
@@ -1232,7 +1155,7 @@ class DSDeliveryPlanCtrl extends Controller
             $delivered_count = $ti['delivered_count'];
             $delivery_type = $ti['delivery_type'];
             // 这是反录情况内容，不是备注内容
-            $comment = $ti['comment'];
+            $report = $ti['report'];
             $order_id = $ti['order_id'];
 
             $delivered_count = preg_replace('/\s+/', '', $delivered_count);
@@ -1255,7 +1178,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
 //            }
 
-            $milkmandeliverys->report = $comment;
+            $milkmandeliverys->report = report;
             $milkmandeliverys->save();
 
             if($milkmandeliverys->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){

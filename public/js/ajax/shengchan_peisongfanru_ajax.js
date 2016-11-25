@@ -75,7 +75,7 @@ function confirmdelivery() {
         var oder_product_id = $(this).find('.delivered_count').attr('id');
         var delivered_product_count = $(this).find('.delivered_count').text();
         var delivery_type = $(this).attr('ordertype');
-        var comment = $(this).find('.comment').text();
+        var report = $(this).find('.report').text();
         if(isNaN(parseInt(delivered_product_count)) || delivered_product_count == ''){
             delivered_product_count = 0;
         }
@@ -84,9 +84,9 @@ function confirmdelivery() {
             order_product_id: oder_product_id,
             delivered_count: delivered_product_count,
             delivery_type: delivery_type,
-            comment: comment,
+            report: report,
             order_id:order_id,
-        }
+        };
         table_info[i] = formData;
         i++;
     });

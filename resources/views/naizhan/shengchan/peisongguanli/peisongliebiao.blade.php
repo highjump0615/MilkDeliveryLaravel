@@ -57,7 +57,6 @@
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">分类</th>
 									<th data-sort-ignore="true">地址</th>
 									<th data-sort-ignore="true">配送内容</th>
 									<th data-sort-ignore="true">收货人</th>
@@ -73,19 +72,6 @@
 								<tr>
 									<td>
 										{{$i}}
-									</td>
-									<td>
-										@if($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-											计划订单
-										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
-											团购订单
-										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
-											渠道订单
-										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
-											赠品订单
-										@elseif($dp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
-											店内零售
-										@endif
 									</td>
 									<td>{{$dp->address}}</td>
 									<td>{{$dp->product}}</td>

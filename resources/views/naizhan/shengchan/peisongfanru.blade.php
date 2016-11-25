@@ -51,7 +51,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="ibox float-e-margins">
 
 					@if($deliver_date == $current_date && $is_todayrefund != 0)
@@ -64,7 +64,6 @@
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">分类</th>
 									<th data-sort-ignore="true">地址</th>
 									<th data-sort-ignore="true">收货人</th>
 									<th data-sort-ignore="true">电话</th>
@@ -89,22 +88,7 @@
 									<?php $j++; ?>
 								<tr class="order_info" id="{{$di->id}}" ordertype="{{$di->delivery_type}}">
 									@if($j == 1)
-									<td rowspan="{{count($di->product)}}" class="by_order" value="{{$di->di}}">
-										@if($di->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
-									</td>
-									<td  rowspan="{{count($di->product)}}" value="{{$di->delivery_type}}">
-										@if($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-											计划订单
-										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
-											团购订单
-										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
-											渠道订单
-										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
-											赠品订单
-										@elseif($di->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
-											店内零售
-										@endif
-									</td>
+									<td rowspan="{{count($di->product)}}" class="by_order" value="{{$di->id}}">{{$i}}</td>
 									<td  rowspan="{{count($di->product)}}">
 										{{$di->address}}
 									</td>
@@ -127,9 +111,11 @@
 									<td @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
 										@if($deliver_date == $current_date && $is_todayrefund!=0) {{$pro['delivered_count']}} @endif
 									</td>
-									<td class="comment" @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif>
-										{{$pro['report']}}
-									</td>
+									<td class="report"
+										@if($deliver_date == $current_date && $is_todayrefund==0)
+											contenteditable="true"
+											style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"
+										@endif>{{$pro['report']}}</td>
 									@if($j == 1)
 										<td rowspan="{{count($di->product)}}">
 											@if($di->milkbox_install > 0){{$di->milkbox_install}}@endif
@@ -144,8 +130,8 @@
 											{{--交货了--}}
 										{{--@endif--}}
 									{{--</td>--}}
-									<td rowspan="{{count($di->product)}}">{{$di->comment_delivery}}</td>
 									@endif
+									<td rowspan="{{count($di->product)}}">{{$pro['comment']}}</td>
 								</tr>
 								@endforeach
 							@endforeach
