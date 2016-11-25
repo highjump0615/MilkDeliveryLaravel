@@ -703,29 +703,11 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     });
 
     Route::get('/zongpingtai/xitong', function (Request $request) {
-        $child = '';
-        $parent = 'xitong';
-        $current_page = 'xitong';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.gengxinhuankun', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
+        return Redirect::to('/zongpingtai/xitong/chakanrizhi');
     });
-    Route::get('/zongpingtai/xitong/chakanrizhi', function (Request $request) {
-        $child = 'chakanrizhi';
-        $parent = 'xitong';
-        $current_page = 'chakanrizhi';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.chakanrizhi', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-    });
+
+    Route::get('/zongpingtai/xitong/chakanrizhi', 'SysManagerCtrl@showSystemLog');
+
     Route::get('/zongpingtai/xitong/fujianshezhi', function (Request $request) {
         $child = 'fujianshezhi';
         $parent = 'xitong';

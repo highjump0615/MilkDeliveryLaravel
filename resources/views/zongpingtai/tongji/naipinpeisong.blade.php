@@ -96,7 +96,7 @@
 									<td>{{$fb->gift}}</td>
 									<td>{{$fb->group}}</td>
 									<td>{{$fb->channel}}</td>
-									<td>362594</td>
+									<td></td>
 								</tr>
 							@endforeach
                             </tbody>

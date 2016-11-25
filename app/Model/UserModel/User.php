@@ -8,6 +8,12 @@ class User extends Authenticatable
 {
     const USER_STATUS_ACTIVE = 1;
     const USER_STATUS_INACTIVE = 0;
+
+    /** backend type */
+    const USER_BACKEND_ADMIN = 1;
+    const USER_BACKEND_FACTORY = 2;
+    const USER_BACKEND_STATION = 3;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -24,6 +30,7 @@ class User extends Authenticatable
         'backend_type',
         'description',
         'last_session',
+        'last_used_ip',
     ];
 
     /**
@@ -76,5 +83,22 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    /**
+     * 用户类型
+     * @return string
+     */
+    public function getBackendTypeName() {
+        $result = '总平台';
+
+        if ($this->backend_type == 2) {
+            $result = '奶厂';
+        }
+        else if ($this->backend_type == 3) {
+            $result = '奶站';
+        }
+
+        return $result;
     }
 }

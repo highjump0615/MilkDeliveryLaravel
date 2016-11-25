@@ -79,12 +79,12 @@
     <!-- Switchery -->
     <script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
 
-    <!-- Icheck -->
-    <script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
-
     <!-- Date picker and Date Range Picker-->
     <script src="<?=asset('js/plugins/daterangepicker/daterangepicker.js') ?>"></script>
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
+
+    <!-- Icheck -->
+    <script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
 
     <!-- FooTable -->
     <script src="<?=asset('js/plugins/footable/footable.all.min.js') ?>"></script>

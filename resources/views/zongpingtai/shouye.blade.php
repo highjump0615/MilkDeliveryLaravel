@@ -19,7 +19,7 @@
                 @foreach($role_pages as $rp)
                     @if($rp->page_id == 59)
                         <div class="col-lg-6">
-                            <button class="btn btn-lg btn-success dim" onclick="location.href='xitong/gengxinhuankun'" type="button" style="width:100%; height: 100px;"><i class="fa fa-tasks"></i> 系统管理</button>
+                            <button class="btn btn-lg btn-success dim" onclick="location.href='xitong/chakanrizhi'" type="button" style="width:100%; height: 100px;"><i class="fa fa-tasks"></i> 系统管理</button>
                         </div>
                     @endif
                     @if($rp->page_id == 68)
