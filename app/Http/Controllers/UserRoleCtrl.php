@@ -139,7 +139,7 @@ class UserRoleCtrl extends Controller
         $ur = new UserRole;
         $ur->name = $name;
         $ur->backend_type = $type;
-        if($type == UserRole::USERROLE_BACLEND_TYPE_GONGCHANG){
+        if($type == UserRole::USERROLE_BACKEND_TYPE_GONGCHANG){
             $current_factory_id = Auth::guard('gongchang')->User()->factory_id;
             $ur->factory_id = $current_factory_id;
         }

@@ -88,7 +88,7 @@
 							<table class="table table-bordered table-hover " id="roles-list" >
 								<tbody>
 								@foreach($role_name as $rn)
-									<tr id="role{{$rn->id}}" class="clickable-row gradeX" idnumber="{{$rn->id}}" style="height: 50px;">
+									<tr id="role{{$rn->id}}" class="clickable-row gradeX @if ($role_id == $rn->id) active @endif" idnumber="{{$rn->id}}" style="height: 50px;">
 										<td>{{$rn->name}}</td>
 										@if($rn->id == 100)
 											<td class="center">不可删</td>

@@ -69,7 +69,6 @@ $(document).ready(function(){
                 var role = '<tr id="role' + data.id + '" class="clickable-row gradeX" idnumber="'+data.id+'"><td>' + data.name + '</td>';
                 role += '<td><button class="btn btn-md btn-success delete-role" id="role'+data.id+'" value="' + data.id + '">删除</button></td></tr>';
 
-
                 console.log(role);
                 console.log("state:"+state);
                 if (state == "add"){ //if user added a new record
@@ -90,7 +89,10 @@ $(document).ready(function(){
     });
 });
 
-$(document).on('click','.delete-role',function(){
+$(document).on('click','.delete-role',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
     var role_id = $(this).val();
     $.confirm({
         icon: 'fa fa-warning',
@@ -125,23 +127,3 @@ function deleteRole($role_id){
         }
     });
 }
-
-
-$(document).on('click','.clickable-row',function(){
-    var message = document.getElementById('alertMessage');
-    message.style.color="#ff6666";
-    message.innerHTML="";
-    
-    rows.removeClass('highlight');
-    var row = $(this);
-    role_id=row.attr('idnumber');
-    if(role_id == 1){
-        $('#save_change').hide();
-    }
-    else{
-        $('#save_change').show();
-    }
-    console.log("*******role_id:"+role_id);
-    var type = "GET"; //for get Permisstion table
-    var data = {id:$('#role_id').val()};
-});
