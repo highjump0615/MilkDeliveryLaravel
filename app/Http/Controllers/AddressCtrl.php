@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Model\DeliveryModel\DeliveryStation;
+use App\Model\SystemModel\SysLog;
 use Illuminate\Http\Request;
 use App\Model\BasicModel\Address;
 use App\Model\UserModel\Page;
@@ -12,12 +13,14 @@ use App\Http\Controllers\Controller;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\BasicModel\CityData;
 use App\Model\BasicModel\DistrictData;
+use App\Model\UserModel\User;
 
 use Auth;
 use Excel;
 
 class AddressCtrl extends Controller
 {
+
     public function show()
     {
         $fuser = Auth::guard('gongchang')->user();
@@ -36,7 +39,7 @@ class AddressCtrl extends Controller
         $child = 'dizhiku';
         $parent = 'jichuxinxi';
         $current_page = 'dizhiku';
-        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type', User::USER_BACKEND_FACTORY)->where('parent_page', '0')->get();
 
         $provinces = ProvinceData::all();
 
@@ -220,7 +223,6 @@ class AddressCtrl extends Controller
     //Enable-Disable Street and Xiaoqus
     public function setflag(Request $request)
     {
-
         if ($request->ajax()) {
 
             $fuser = Auth::guard('gongchang')->user();
@@ -359,6 +361,10 @@ class AddressCtrl extends Controller
                 });
 
             })->store('xls', 'exports');
+
+            // 添加系统日志
+            $sysMgrCtrl = new SysManagerCtrl();
+            $sysMgrCtrl->addSystemLog($fuser, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
 
             return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/addresslist.xls']);
         }
