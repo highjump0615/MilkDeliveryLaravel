@@ -29,6 +29,7 @@ class MilkManDeliveryPlan extends Model
         'delivery_count',
         'delivered_count',
         'comment',
+        'report',
         'type',
         'flag',
         'milkman_id',

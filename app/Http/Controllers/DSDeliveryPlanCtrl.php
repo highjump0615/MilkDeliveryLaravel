@@ -1105,7 +1105,7 @@ class DSDeliveryPlanCtrl extends Controller
                         $products[$pro]['id'] = $dp->order_product->product->id;
                         $products[$pro]['order_product_id'] = $dp->order_product_id;
                         $products[$pro]['delivered_count'] = $dp->delivered_count;
-                        $products[$pro]['comment'] = $dp->comment;
+                        $products[$pro]['report'] = $dp->report;
 //                        $products[] = $name.'*'.$count;
                         if($dp->plan_count != $dp->changed_plan_count)
                             $is_changed = 1;
@@ -1231,6 +1231,7 @@ class DSDeliveryPlanCtrl extends Controller
             $order_product_id = $ti['order_product_id'];
             $delivered_count = $ti['delivered_count'];
             $delivery_type = $ti['delivery_type'];
+            // 这是反录情况内容，不是备注内容
             $comment = $ti['comment'];
             $order_id = $ti['order_id'];
 
@@ -1254,7 +1255,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
 //            }
 
-            $milkmandeliverys->comment = $comment;
+            $milkmandeliverys->report = $comment;
             $milkmandeliverys->save();
 
             if($milkmandeliverys->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){

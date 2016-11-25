@@ -128,7 +128,7 @@
 										@if($deliver_date == $current_date && $is_todayrefund!=0) {{$pro['delivered_count']}} @endif
 									</td>
 									<td class="comment" @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif>
-										{{$pro['comment']}}
+										{{$pro['report']}}
 									</td>
 									@if($j == 1)
 										<td rowspan="{{count($di->product)}}">
