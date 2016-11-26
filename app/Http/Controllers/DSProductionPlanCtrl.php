@@ -794,8 +794,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             }
             $p["plan_count"] = $plan_count;
 
-            $factory_plan = FactoryProductionPlan::where('factory_id',$current_factory_id)->where('product_id',$p->id)->where('end_at',$current_date_str)->get(['count'])->first();
-//            $factory_plan = FactoryProductionPlan::where('factory_id',1)->where('product_id',$p->id)->where('time',$current_date_str)->get(['count'])->first();
+            $factory_plan = FactoryProductionPlan::where('factory_id',$current_factory_id)
+                ->where('product_id',$p->id)
+                ->where('end_at',$current_date_str)
+                ->get(['count'])
+                ->first();
+
             if($factory_plan != null){
                 $p["produce_count"] = $factory_plan->count;
             }
@@ -819,24 +823,29 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 //            }
 //            $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;
         }
+
         $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
-        foreach($stations as $si) {
+
+        foreach ($stations as $si) {
             $areas = explode(" ",$si->address);
             $si["area"] = $areas[0];
-            $station_plans = DSProductionPlan::where('station_id', $si->id)->where('produce_end_at', $current_date_str)->
-            where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)->get();
+            $station_plans = DSProductionPlan::where('station_id', $si->id)
+                ->where('produce_end_at', $current_date_str)
+                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
+                ->get();
 
             foreach($station_plans as $sp) {
                 $product_id = $sp->product_id;
 
                 $total_changed = 0;
                 $delivery_plans = MilkManDeliveryPlan::where('deliver_at', $deliver_date_str)
+                    ->where('station_id', $si->id)
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
                     ->get();
 
                 foreach($delivery_plans as $dp) {
-                    if($dp->order->station->id == $si->id && $dp->order_product->product->id == $product_id) {
+                    if($dp->order->deliveryStation->id == $si->id && $dp->order_product->product->id == $product_id) {
                         //calc process
                         $total_changed += $dp->changed_plan_count;
                     }
@@ -854,12 +863,17 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $si["plan_status"] = (count($station_plans) > 0);
         }
         return view('gongchang.shengchan.naizhanpeisong',[
-            'pages'=>$pages,
-            'child'=>$child,
-            'parent'=>$parent,
-            'current_page'=>$current_page,
-            'DeliveryStations_info'=>$stations,
-            'products'=>$products,
+            // 页面信息
+            'pages'                     =>$pages,
+            'child'                     =>$child,
+            'parent'                    =>$parent,
+            'current_page'              =>$current_page,
+
+            // 奶站信息
+            'DeliveryStations_info'     =>$stations,
+
+            //生产结果信息
+            'products'                  =>$products,
         ]);
     }
 

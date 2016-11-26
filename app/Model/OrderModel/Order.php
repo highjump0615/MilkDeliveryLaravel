@@ -343,7 +343,7 @@ class Order extends Model
     public function getUnfinishedDeliveryPlansAttribute()
     {
         $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
             ->get();
 
         return $dps;
@@ -434,25 +434,6 @@ class Order extends Model
 
                 $remain_count -= $count;
 
-                // 能否修改
-                $editAvailable = true;
-
-                // 配送时间已过的不能修改
-                $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-                $dateDeliver = DateTime::createFromFormat('Y-m-j', $opdp->deliver_at);
-                if ($dateCurrent > $dateDeliver) {
-                    $editAvailable = false;
-                }
-                else if ($dateCurrent == $dateDeliver) {
-                    // 已配送、配送取消，当天配送列表生成的情况下不能修改
-                    if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
-                        $opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
-                        DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $op->product_id)
-                    ) {
-                        $editAvailable = false;
-                    }
-                }
-
                 $result_group[] = [
                     'time'          =>$opdp->deliver_at,
                     'plan_id'       =>$opdp->id,
@@ -460,7 +441,7 @@ class Order extends Model
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
-                    'can_edit'      =>$editAvailable,
+                    'can_edit'      =>$opdp->isEditAvailable(),
                     'status_name'   =>$opdp->status_name,
                 ];
             }
@@ -648,7 +629,7 @@ class Order extends Model
 
     public function order_products_all()
     {
-        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
+        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id');
     }
 
     public function getOrderPropertyNameAttribute()

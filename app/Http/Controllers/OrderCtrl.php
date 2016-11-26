@@ -4659,8 +4659,7 @@ class OrderCtrl extends Controller
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
             foreach ($udps as $udp) {
-                $udp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
-                $udp->save();
+                $udp->passCheck(true);
             }
 
             return response()->json(['status' => 'success', 'message' => '订单通过成功.']);
@@ -4707,7 +4706,7 @@ class OrderCtrl extends Controller
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;
             foreach ($udps as $udp) {
-                $udp->delete();
+                $udp->passCheck(false);
             }
 
             return response()->json(['status' => 'success', 'message' => '订单未通过成功.']);
@@ -5663,6 +5662,7 @@ class OrderCtrl extends Controller
         $plans = $order->delivery_plans_sent_to_production_plan;
         foreach ($plans as $plan) {
             $plan->changed_plan_count = 0;
+            $plan->delivery_count = 0;
 
             // 改成取消状态
             $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;

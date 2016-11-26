@@ -46,8 +46,6 @@ class OrderProduct extends Model
         'delivery_plans_sent_to_production_plan',
     ];
 
-    public $timestamps = false;
-
     public function getDeliveryPlansSentToProductionPlanAttribute()
     {
         //delivery_plans_sent_to_production_plan

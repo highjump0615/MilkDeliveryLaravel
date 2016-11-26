@@ -236,4 +236,49 @@ class MilkManDeliveryPlan extends Model
         $deliverPlanNext->save();
         $this->save();
     }
+
+    /**
+     * 审核通过处理
+     * @param $passed - true: 通过, false: 不通过
+     */
+    public function passCheck($passed) {
+        if ($passed) {
+            // 把待审核状态设成通过
+            if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING) {
+                $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
+                $this->save();
+            }
+        }
+        else {
+            // 不通过
+            $this->delete();
+        }
+    }
+
+    /**
+     * 查询能否修改数量
+     * @return bool
+     */
+    public function isEditAvailable() {
+        $editAvailable = true;
+
+        // 配送时间已过的不能修改
+        $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $dateDeliver = DateTime::createFromFormat('Y-m-j', $this->deliver_at);
+
+        if ($dateCurrent > $dateDeliver) {
+            $editAvailable = false;
+        }
+        else if ($dateCurrent == $dateDeliver) {
+            // 已配送、配送取消，当天配送列表生成的情况下不能修改
+            if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED ||
+                $this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL ||
+                DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $this->order_product->product->id)
+            ) {
+                $editAvailable = false;
+            }
+        }
+
+        return $editAvailable;
+    }
 }

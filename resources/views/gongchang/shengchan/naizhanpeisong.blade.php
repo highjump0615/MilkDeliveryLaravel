@@ -40,8 +40,8 @@
 								<tr id="{{$p->id}}">
 									<td>{{$i}}</td>
 									<td>{{$p->name}}</td>
-									<td>{{$p->plan_count}}</td>
-									<td class="editfill" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
+									<td>{{$p->produce_count}}</td>
+									<td class="editfill product_count" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
 									<td></td>
 									<td id="total_confirm{{$p->id}}"></td>
 									<td id="rest{{$p->id}}"></td>
@@ -147,67 +147,5 @@
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/shengchan_naizhanpeisong_ajax.js') ?>"></script>
-    <script type="text/javascript">
-		$('#date_2 .input-group.date').datepicker({
-            todayBtn: "linked",
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: false,
-            autoclose: true
-        });
-
-		$(document).ready(function() {
-			$('.footable').footable();
-
-
-			$('#current_status tr:not(:first,:last)').each(function(){
-				var id=$(this).attr('id');
-				var total_sum = 0;
-				$('#by_station tr:not(:first,:last)').each(function() {
-					var trval = $(this).attr('value');
-					var order = $(this).attr('order');
-					$('#f_detail'+order+'').hide();
-					var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
-					if(isNaN(content)){
-						content = 0;
-					}
-					else {
-						if (trval == id) {
-							total_sum += content;
-						}
-					}
-				})
-				$('#total_confirm'+id+'').html(total_sum);
-				var produced_count = parseInt($('#produce_count'+id+'').text());
-				$('#rest'+id+'').html(produced_count-total_sum);
-			})
-
-
-			$('#current_status tr:not(:first)').each(function(){
-				var plan_count = parseInt($(this).find("td").eq(2).html());
-				var produce_count = parseInt($(this).find("td").eq(3).html());
-				$(this).find("td").eq(4).html(produce_count-plan_count);
-			})
-		});
-		$(document).on('keyup','.confirm_count',function(){
-			var id = $(this).attr('value');
-			var total_sum = 0;
-			$('#by_station tr:not(:first,:last)').each(function() {
-				var trval = $(this).attr('value');
-				var order = $(this).attr('order');
-				var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
-				if(isNaN(content)){
-					content = 0;
-				}
-				else {
-					if (trval == id) {
-						total_sum += content;
-					}
-				}
-			})
-			$('#total_confirm'+id+'').html(total_sum);
-			var produced_count = parseInt($('#produce_count'+id+'').text());
-			$('#rest'+id+'').html(produced_count-total_sum);
-		})
-    </script>
+    <script src="<?=asset('js/pages/gongchang/naizhanpeisong.js') ?>"></script>
 @endsection
