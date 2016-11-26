@@ -329,8 +329,6 @@ $('body').on('change', 'select.order_delivery_type', function () {
     initBottleNumCalendar(tr);
 });
 
-
-
 $('body').on('change', '#product_table tbody tr.one_product select.order_product_id', function () {
     var tr = $(this).closest('.one_product');
     // $(tr).find('.factory_order_type').trigger('change');
@@ -382,8 +380,6 @@ $(document).on('click', 'button.remove_one_product', function () {
     }
 });
 
-
-
 // Card Verfiy
 $('.verify-card').click(function () {
     var card_id = $('#card_id').val();
@@ -429,8 +425,6 @@ $('.verify-card').click(function () {
             $('#form-card-panel').hide();
         }
     });
-
-
 });
 
 $('.cancel-card').click(function () {

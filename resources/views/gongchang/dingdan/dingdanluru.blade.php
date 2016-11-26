@@ -375,6 +375,9 @@
                                     <td class="col-sm-1">
                                         数量
                                     </td>
+                                    <td class="col-sm-2">
+                                        起送日期
+                                    </td>
                                     <td class="col-sm-1">
                                         配送规则
                                     </td>
@@ -383,9 +386,6 @@
                                     </td>
                                     <td class="col-sm-2">
                                         配送日期
-                                    </td>
-                                    <td class="col-sm-2">
-                                        起送日期
                                     </td>
                                     <td class="col-sm-1">
                                         单数
@@ -462,6 +462,12 @@
                                                 </div>
                                             </td>
                                             <td>
+                                                <div class="input-group date single_date">
+                                                    <input required type="text" class="form-control start_at" name="start_at[]" value="{{$op->start_at}}"><span
+                                                            class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <select required class="form-control order_delivery_type " name="order_delivery_type[]">
                                                     @if (isset($order_delivery_types))
                                                         @foreach ($order_delivery_types as $odt)
@@ -495,12 +501,6 @@
                                                             <i class="fa fa-calendar"></i>
                                                         </span>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group date single_date">
-                                                    <input required type="text" class="form-control start_at" name="start_at[]" value="{{$op->start_at}}"><span
-                                                            class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                                 </div>
                                             </td>
                                             <td>
@@ -565,6 +565,12 @@
                                             </div>
                                         </td>
                                         <td>
+                                            <div class="input-group date single_date">
+                                                <input required type="text" class="form-control start_at" name="start_at[]"><span
+                                                        class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            </div>
+                                        </td>
+                                        <td>
                                             <select required class="form-control order_delivery_type " name="order_delivery_type[]">
                                                 @if (isset($order_delivery_types))
                                                     @foreach ($order_delivery_types as $odt)
@@ -591,12 +597,6 @@
                                                             <i class="fa fa-calendar"></i>
                                                         </span>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group date single_date">
-                                                <input required type="text" class="form-control start_at" name="start_at[]"><span
-                                                        class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                             </div>
                                         </td>
                                         <td>

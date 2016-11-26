@@ -2593,7 +2593,7 @@ class OrderCtrl extends Controller
     {
         //save changed customer info
 
-
+/*
         if ($request->ajax()) {
 
             
@@ -2776,6 +2776,7 @@ class OrderCtrl extends Controller
 
             }
         }
+*/
     }
 
     //Change Order Products in order xiugai page
@@ -3952,7 +3953,8 @@ class OrderCtrl extends Controller
         $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
 
         //select avaiable one station and milkman
-        $station_milkman = $this->get_station_milkman_with_address_from_factory($this->factory->id, $d_addr);
+        $station = null;
+        $station_milkman = $this->get_station_milkman_with_address_from_factory($this->factory->id, $d_addr, $station);
 
         if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
             return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
@@ -3961,7 +3963,12 @@ class OrderCtrl extends Controller
             return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
         }
         else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-            return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
+            return response()->json([
+                'status'        => 'fail',
+                'message'       => '奶站没有配送员.',
+                'station_name'  => $station->name,
+                'station_id'    => $station->id
+            ]);
         }
 
         $ext_customer = Customer::where('phone', $phone)->where('factory_id', $this->factory->id)->get()->first();
@@ -5564,9 +5571,8 @@ class OrderCtrl extends Controller
 
     //MODULE
     //Get Station and Milk Pair from Factory With address
-    public function get_station_milkman_with_address_from_factory($factory_id, $address)
+    public function get_station_milkman_with_address_from_factory($factory_id, $address, &$station)
     {
-
         $factory = Factory::find($factory_id);
 
         $stations = $factory->active_stations;
@@ -5575,7 +5581,6 @@ class OrderCtrl extends Controller
         foreach ($stations as $fstation) {
             $station_ids[] = $fstation->id;
         }
-
 
         $delivery_areas = DSDeliveryArea::where('address', 'like', $address . '%')->get();
 
@@ -5596,6 +5601,9 @@ class OrderCtrl extends Controller
             if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
 
                 $delivery_station_count++;
+
+                // 保存奶站信息
+                $station = $delivery_station;
 
                 //get this station's milkman that supports this address
                 $milkman = $delivery_station->get_milkman_of_address($address);

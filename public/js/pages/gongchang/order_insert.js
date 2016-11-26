@@ -110,8 +110,13 @@ $('.district_list').on('change', function () {
 
     var current_district = $(this).val();
 
+    // 清空街道列表
     var street_list = $(this).parent().parent().find('.street_list');
     street_list.empty();
+
+    // 清空小区列表
+    var xiaoqu_list = $(this).parent().parent().find('.xiaoqu_list');
+    $(xiaoqu_list).empty();
 
     if (!current_district) {
         return;
@@ -177,7 +182,7 @@ $('.street_list').on("change", function () {
     var street_id = $(this).find('option:selected').data('street-id');
     var dataString = {
         'street_id':street_id,
-    }
+    };
 
     $.ajax({
         type: "GET",
