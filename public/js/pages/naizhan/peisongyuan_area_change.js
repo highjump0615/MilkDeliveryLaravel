@@ -67,9 +67,21 @@ $('#submit_change_form').on('click', function () {
     sendData.push({'name': "milkman_id", 'value': milkman_id});
     sendData.push({'name': "street_id_to_change", 'value': street_id_to_change});
 
-    console.log(sendData);
-
     $('select#js_multiselect_to_1 > option').prop('selected', false);
+
+    // 查看是否存在to[]
+    var bExist = false;
+    for (var idx in sendData) {
+        if (sendData[idx]['name'] == 'to[]') {
+            bExist = true;
+            break;
+        }
+    }
+
+    // 没有选择小区信息
+    if (!bExist) {
+        return;
+    }
 
     $.ajax({
         type: "POST",

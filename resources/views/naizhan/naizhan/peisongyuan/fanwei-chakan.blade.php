@@ -2,7 +2,6 @@
 
 @section('css')
 	<link href="<?=asset('css/plugins/chosen/chosen.css')?>" rel="stylesheet">
-	<link href="<?=asset('css/plugins/select2/select2.min.css')?>" rel="stylesheet">
 	<link href="<?=asset('css/plugins/iCheck/custom.css')?>" rel="stylesheet">
 @endsection
 
@@ -159,8 +158,7 @@
 											</div>
 										</div>
 										<div class="modal-footer">
-											<button type="button" class="btn btn-white"
-													id="submit_change_form" onclick="submit()">确定
+											<button type="button" class="btn btn-white" onclick="submit()">确定
 											</button>
 											<button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
 										</div>
@@ -176,7 +174,6 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/select2/select2.full.min.js')?>"></script>
 	<script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
 	<script src="<?=asset('js/plugins/multiselect/multiselect.min.js') ?>"></script>
 	<script src="<?=asset('js/global.js')?>"></script>
@@ -191,9 +188,6 @@
         $used = json_encode($area_address);
         echo "var used_obj = ". $used . ";\n";
         ?>
-
-        console.log(avail_obj);
-		console.log(used_obj);
 
 	</script>
 @endsection

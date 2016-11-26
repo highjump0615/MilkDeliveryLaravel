@@ -17,7 +17,9 @@ use App\Http\Controllers\Controller;
 class MilkManCtrl extends Controller
 {
     public function showPeisongyuanRegister(Request $request){
+
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'peisongyuan';
@@ -80,11 +82,13 @@ class MilkManCtrl extends Controller
                     $mm['xiaoqi'] .= ', '.$addr[4];
             }
         }
+
         return view('naizhan.naizhan.peisongyuan', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
+
             'deliveryarea'=> $dsdeliveryarea,
             'street' => $street,
             'milkmans'=>$milkmans,
@@ -131,6 +135,27 @@ class MilkManCtrl extends Controller
             $milkman_delivery_area->save();
         }
         return $milkman_id;
+    }
+
+    /**
+     * 修改配送员信息
+     * @param Request $request
+     * @return mixed
+     */
+    public function updatePeisongyuan(Request $request){
+        $nId = $request->input('milkman_id');
+        $strName = $request->input('name');
+        $strNumber = $request->input('number');
+        $strPhone = $request->input('phone');
+
+        $milkman = MilkMan::find($nId);
+        $milkman->name = $strName;
+        $milkman->phone = $strPhone;
+        $milkman->number = $strNumber;
+
+        $milkman->save();
+
+        return redirect()->route('peisongyuan_page');
     }
 
     public function deletePeisongyuan($peisongyuan){
@@ -238,7 +263,7 @@ class MilkManCtrl extends Controller
         return Response::json(['status'=>'success']);
     }
 
-        public function modifyPeisongyuanArea(Request $request){
+    public function modifyPeisongyuanArea(Request $request){
         $milkman_id = $request->input('milkman_id');
         $street_id = $request->input('street_id_to_change');
 
@@ -251,13 +276,11 @@ class MilkManCtrl extends Controller
         $city_name = $street->city->name;
         $province_name = $street->province->name;
 
-
         $milkman_areas = MilkManDeliveryArea::where('milkman_id',$milkman_id)
             ->where('address','LIKE',$province_name.' '.$city_name.' '.$district_name. ' '. $street_name. '%')->get();
         foreach ($milkman_areas as $ma){
             $ma->delete();
         }
-
 
         $i = 0;
         foreach ($xiaoqus as $xid){

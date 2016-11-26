@@ -27,8 +27,6 @@ $(document).on('change', '#area', function () {
 
     var type = "GET";
 
-
-
     $.ajax({
         type: type,
         url: url,
@@ -41,8 +39,8 @@ $(document).on('change', '#area', function () {
                 var value = data[key];
                 role +='<tr><td class="col-sm-3">'+key+'</td><td class="col-sm-9" style="text-align: left">';
                 for(i=0;i<value.length; i++){
-                role += '<div class="col-sm-3" style="padding-bottom:5px;">';
-                role += '<label><input type="checkbox"  class="i-checks" name="checkboxlist" value="'+key+" "+value[i]+'">'+' '+''+value[i]+'</label></div>';
+                    role += '<div class="col-sm-3" style="padding-bottom:5px;">';
+                    role += '<label><input type="checkbox"  class="i-checks" name="checkboxlist" value="'+key+" "+value[i]+'">'+' '+''+value[i]+'</label></div>';
                 }
                 role += '</td></tr>';
             }
@@ -109,7 +107,7 @@ $('#add_milkman').submit(function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var form_data = {
         name: name,
@@ -117,7 +115,7 @@ $('#add_milkman').submit(function(e){
         number: number,
         street: street,
         xiaoqi: checkValues,
-    }
+    };
 
     var button = $('#save');
     $(button).prop('disabled', true);
@@ -135,8 +133,8 @@ $('#add_milkman').submit(function(e){
             var role = '<tr id="peisongyuan'+data+'"><td>'+last_row_number+'</td><td>'+name+'</td><td>'+phone+'</td><td>'+number+'</td>';
             role += '<td><a href="fanwei-chakan/'+data+'">'+street+'</a></td>';
             role += '<td><a href="fanwei-chakan/'+data+'">'+xiaoqi_val+'</a></td>';
-            role += '<td><button class="btn btn-sm btn-success modify" value="'+data+'">修改</button>&nbsp;';
-            role += '<button class="btn btn-sm btn-success delete" value="'+data+'">删除</button></td>';
+            role += '<td><button class="btn btn-sm btn-success modify" data-toggle="modal" href="#modal-form" value="'+data+'">修改</button>&nbsp;';
+            role += '<button class="btn btn-sm btn-success delete disabled" value="'+data+'">删除</button></td>';
             $('#peisongyuan').append(role);
             $('#xiaoqu_alert').hide();
 
@@ -155,12 +153,25 @@ $('#add_milkman').submit(function(e){
             $(button).prop('disabled', false);
         }
     });
-})
+});
 
 
 $(document).on('click','.modify',function(){
     var milkman_id = $(this).val();
-    window.location.href = SITE_URL+"naizhan/naizhan/fanwei-chakan/"+milkman_id;
+
+    // 设置修改对话框的内容
+    var tr = $(this).parent().parent();
+
+    // 名称
+    $('#edit_name').val($(tr).find('td:eq(1)').html());
+    // 电话
+    $('#edit_phone').val($(tr).find('td:eq(2)').html());
+    // 身份证号
+    $('#edit_idcard').val($(tr).find('td:eq(3)').html());
+
+    // id
+    $('#edit_id').val(milkman_id);
+
 });
 
 $(document).on('click','.delete',function(){

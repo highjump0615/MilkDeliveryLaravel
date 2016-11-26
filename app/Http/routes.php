@@ -467,13 +467,14 @@ Route::group(['middleware' => ['naizhan']], function () {
     //update station info
     Route::post('api/naizhan/naizhan/jibenziliao/update_station_info', 'StationManageCtrl@update_station_info');
     /*Peisongyuan register Pagw*/
-    Route::get('/naizhan/naizhan/peisongyuan', 'MilkManCtrl@showPeisongyuanRegister');
+    Route::get('/naizhan/naizhan/peisongyuan', 'MilkManCtrl@showPeisongyuanRegister')->name('peisongyuan_page');;
     /*Peisongyuan fanwei-chakan*/
     Route::get('/naizhan/naizhan/fanwei-chakan/{peisongyuan}', 'MilkManCtrl@showFanwei');
     /*Get xiaoqi from street*/
     Route::get('api/naizhan/naizhan/peisongyuan/getXiaoqi', 'MilkManCtrl@getXiaoqi');
     /*Save peisongyuan info*/
     Route::post('api/naizhan/naizhan/peisongyuan/savePeisongyuan', 'MilkManCtrl@savePeisongyuan');
+    Route::post('api/naizhan/naizhan/peisongyuan/updatePeisongyuan', 'MilkManCtrl@updatePeisongyuan');
     /*delete peisongyuan*/
     Route::delete('api/naizhan/naizhan/peisongyuan/deletePeisongyuan/{peisongyuan}', 'MilkManCtrl@deletePeisongyuan');
     /*delete peisongyuanArea*/

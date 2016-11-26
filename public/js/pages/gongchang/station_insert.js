@@ -231,11 +231,10 @@ function init_delivery_area(){
 $(document).on('change', '#area_street_list', function () {
 
     var deliver_result_div = $('#delivery_result');
-
-    deliver_result_div.html("");
-
     var streets = $(this).find('option:selected');
     var length = streets.length;
+    
+    deliver_result_div.html("");
 
     // 如果没有选择街道，则不用显示小区信息
     if (length == 0) {

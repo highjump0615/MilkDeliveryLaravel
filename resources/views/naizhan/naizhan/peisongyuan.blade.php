@@ -1,9 +1,10 @@
 @extends('naizhan.layout.master')
+
 @section('css')
     <link href="<?=asset('css/plugins/chosen/chosen.css')?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/select2/select2.min.css')?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/iCheck/custom.css')?>" rel="stylesheet">
 @endsection
+
 @section('content')
     @include('naizhan.theme.sidebar')
     <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -108,42 +109,36 @@
                                     </select>
                                 </div>
                             </div>
-                            <label class="col-md-offset-2 col-md-3" id="street_alert"
-                                   style="color: red; padding-top: 5px; display: none">(请输入街道!)</label>
+                            <label id="street_alert"
+                                   style="color: red; padding-top: 5px; display: none">(请选择街道!)</label>
+
+                            <div class="col-md-12 wrapper-content">
+                                <div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">小区添加</label>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <label id="xiaoqu_alert"
+                                               style="color: red; padding-top: 5px; display: none">(请选择小区!)</label>
+                                    </div>
+                                    <table id="xiaoqi_table" class="table footable table-bordered white-bg">
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <ul class="pagination pull-right"></ul>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div><br></div>
-                    <div class="wrapper-content">
-                        <div class="col-md-2">
-                            <label class="control-label">&emsp;小区添加</label>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="wrapper-content">
-                                <table id="xiaoqi_table" class="table footable table-bordered white-bg">
-                                    <tbody>
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <ul class="pagination pull-right"></ul>
-                                    </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                        </div>
-                    </div>
-                    <label class="col-md-offset-2 col-md-10" id="xiaoqu_alert"
-                           style="color: red; padding-top: 5px; display: none">(请输入身小区!)</label>
                     <div class="wrapper">
-                        <div class="col-md-5"></div>
-                        <div class="col-md-2">
-                            <button class="btn btn-danger" id="save" type="submit"
-                                    style="width:100%; padding-bottom: 10px;"><i class="fa fa-plus"></i> 保存并添加
-                            </button>
+                        <div class="col-md-2 col-md-offset-5">
+                            <button class="btn btn-danger" id="save" type="submit" style="width:100%; padding-bottom: 10px;"><i class="fa fa-plus"></i>保存并添加</button>
                         </div>
-                        <div class="col-md-5"></div>
                     </div>
                 </form>
 
@@ -183,9 +178,9 @@
                                         <a href="{{ url('/naizhan/naizhan/fanwei-chakan/'.$mm->id) }}">{{$mm->xiaoqi}}</a>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-success modify" value="{{$mm->id}}">修改</button>
+                                        <button class="btn btn-sm btn-success modify" data-toggle="modal" href="#modal-form" value="{{$mm->id}}">修改</button>
                                         &nbsp;
-                                        <button class="btn btn-sm btn-success delete" value="{{$mm->id}}">删除</button>
+                                        <button class="btn btn-sm btn-success" disabled value="{{$mm->id}}">删除</button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -227,31 +222,56 @@
                 </div>
             </div>
         </div>
-
     </div>
+
+    <!-- 修改对话框 -->
+    <div id="modal-form" class="modal fade" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form role="form" class="form-horizontal" method="post" action="{{url('api/naizhan/naizhan/peisongyuan/updatePeisongyuan')}}">
+                    <div class="modal-body">
+                        <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-3">名称</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" placeholder="" class="form-control" id="edit_name" name="name" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">电话</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" placeholder="" class="form-control" id="edit_phone" name="phone" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3">身份证号</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" placeholder="" class="form-control" id="edit_idcard" name="number" />
+                                    </div>
+                                </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" id="btn-save" value="add">确定</button>
+                        <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                        <input type="hidden" id="edit_id" name="milkman_id" value="0">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @section('script')
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/plugins/select2/select2.full.min.js')?>"></script>
     <script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
     <script src="<?=asset('js/global.js')?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
+
     <script type="text/javascript">
         $(document).ready(function () {
-
-//			var config = {
-//				'.chosen-select'           : {},
-//				'.chosen-select-deselect'  : {allow_single_deselect:true},
-//				'.chosen-select-no-single' : {disable_search_threshold:10},
-//				'.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
-//				'.chosen-select-width'     : {width:"95%"}
-//			}
-//			for (var selector in config) {
-//				$(selector).chosen(config[selector]);
-//			}
-
             $(".chosen-select").chosen();
-//			$('#area').multiSelect( {keepOrder: true });
         });
     </script>
 @endsection
