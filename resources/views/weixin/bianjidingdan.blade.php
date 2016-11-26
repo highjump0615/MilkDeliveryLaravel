@@ -137,7 +137,7 @@
         <div class="dnsli clearfix">
             <div class="dnsti">起送时间：</div>
             <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at" value="{{$wop->start_at}}">
+                <input class="qssj single_date" name="start_at" id="start_at" value="">
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
@@ -147,11 +147,22 @@
                 订购天数：<span id="order_day_num">16</span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
-            <p>规格：{{$product->bottle_type_name}}</p>
-            <p>保质期：{{$product->guarantee_period}}天</p>
-            <p>储藏条件：{{$product->guarantee_req}}</p>
-            {{--<p>包装：玻璃瓶</p>--}}
-            <p>配料：{{$product->material}}</p>
+            <div class="dnsli clearfix">
+                <div class="dnsti">规格：</div>
+                <div class="dnsti-r">{{$product->bottle_type_name}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">保质期：</div>
+                <div class="dnsti-r">{{$product->guarantee_period}}天</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">储藏条件：</div>
+                <div class="dnsti-r">{{$product->guarantee_req}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">配料：</div>
+                <div class="dnsti-r">{{$product->material}}</div>
+            </div>
         </div>
 
     </div>
@@ -164,28 +175,28 @@
         </div>
 
     </div>
+
     <div class="sppj pa2t">
         <div class="sppti">商品评价</div>
-        <ul class="sppul">
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i></i></span>137*******125</div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
 
-            </li>
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i class="stno"></i></span>137*******125
-                </div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
-
-            </li>
-        </ul>
+        @if(isset($reviews))
+            <ul class="sppul">
+                @forelse($reviews as $review)
+                    <li>
+                        <div class="spnum"><span class="spstart">@for($i=0; $i<$review->mark; $i++)<i></i>@endfor</span>
+                            <p>{{$review->tel_number}}</p>
+                        </div>
+                        <div class="pjxx">
+                            {{$review->content}}
+                        </div>
+                    </li>
+                @empty
+                    <p style="text-align: center;">没有评价</p>
+                @endforelse
+            </ul>
+        @endif
     </div>
+
     <div class="he50"></div>
 
     <div class="dnsbt clearfix">
@@ -196,7 +207,6 @@
 @section('script')
 
     <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/showmyweek.js')?>"></script>
 
@@ -236,23 +246,30 @@
             var gap_day = parseInt("{{$gap_day}}");
                     @endif
 
-            var today = new Date();
-            var able_date = new Date();
+            var today = new Date("{{$today}}");
+            var able_date = today;
             if (gap_day)
                 able_date.setDate(today.getDate() + gap_day);
             else {
                 able_date.setDate(today.getDate() + 3);
             }
 
+            var default_start_date = able_date.toLocaleDateString();
+
             //Single and Multiple Datepicker
-            $('.single_date').datepicker({
+            $('#start_at').datepicker({
                 todayBtn: false,
                 keyboardNavigation: false,
                 forceParse: false,
                 calendarWeeks: false,
                 autoclose: true,
-                startDate: able_date,
+                minDate: default_start_date,
             });
+
+            var current_start = '{{$wop->start_at}}';
+            var current_start_date = new Date(current_start);
+            current_start_date = current_start_date.toLocaleDateString();
+            $('#start_at').val(current_start_date);
 
             $('select#order_type').trigger('change');
 
@@ -263,24 +280,6 @@
         $('button#cancel').click(function(){
             var group_id = $('#group_id').val();
             window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
-        });
-
-        $('select#order_type').change(function(){
-
-            var count_input = $('#total_count');
-
-            var cur_val = $(this).val();
-            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
-            {
-                count_input.attr('min', 30);
-                count_input.val(30);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
-                count_input.attr('min', 90);
-                count_input.val(90);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
-                count_input.attr('min', 180);
-                count_input.val(180);
-            }
         });
 
 
@@ -381,7 +380,7 @@
             //start at
             var start_at = $('#start_at').val();
             if (!start_at) {
-                show_warning_msg('请填写产品的所有字段');
+                show_warning_msg('请选择起送时间');
                 return;
             }
             send_data.append('start_at', start_at);

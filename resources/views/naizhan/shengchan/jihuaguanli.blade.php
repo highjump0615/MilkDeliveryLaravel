@@ -24,7 +24,9 @@
 				@else
 					<div class="ibox-content">
 						<div class="col-md-2">
-							<button id="import_plan" class="btn btn-success" onclick="window.location='{{ url('/naizhan/shengchan/tijiaojihua') }}'" type="button" style="width: 100%;">提交计划</button>
+							<button id="import_plan" class="btn btn-success" onclick="window.location='{{ url('/naizhan/shengchan/tijiaojihua') }}'" type="button" style="width: 100%;">
+								提交计划
+							</button>
 						</div>
 					</div>
 				@endif
@@ -33,7 +35,8 @@
 						<div class="feed-element col-lg-5" id="date_1">
 							<label class="col-lg-3 control-label" style="padding-top:7px;">选择日期:</label>
 							<div class="input-group date col-lg-8">
-								<input type="text" class="form-control" value="{{$current_date}}" id="search_date"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+								<input type="text" class="form-control" value="{{$current_date}}" id="search_date">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
 							</div>
 						</div>
 						<div class="col-lg-3 col-lg-offset-4 text-right"  style="padding-top:5px;">

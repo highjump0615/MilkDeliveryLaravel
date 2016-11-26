@@ -5,39 +5,40 @@ $(document).on('change','#milkman_name',function(){
     var milkman_id = $('#milkman_name option:selected').val();
     var current_date = $('#search_date').val();
     window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
-})
+});
 
 $(document).on('change','#date_select',function(){
     var milkman_id = $('#milkman_name option:selected').val();
     var current_date = $('#search_date').val();
     window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
-})
+});
 
 $(document).on('click','#save',function(){
-
     confirmdelivery();
     savebottlebox();
     $(this).hide();
-})
+});
 
 function savebottlebox() {
+
     var url = API_URL + 'naizhan/shengchan/peisongfanru/bottleboxsave';
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var milkman_id = $('#current_milkman_id').val();
-    $('#refund_bottle tr:not(:first,:last)').each(function () {
+    $('#refund_bottle tr:not(:first)').each(function () {
         var bottle_type = $(this).attr('id');
         var count = $(this).find('td:eq(1)').text();
-        if(parseInt(count)>0){
+
+        if(parseInt(count) >= 0){
             var form_data = {
                 milkman_id: milkman_id,
                 bottle_type: bottle_type,
                 count: count,
-            }
+            };
 
             var type = "POST";
 
@@ -65,7 +66,7 @@ function confirmdelivery() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var table_info = [];
     var i = 0;
@@ -74,7 +75,7 @@ function confirmdelivery() {
         var oder_product_id = $(this).find('.delivered_count').attr('id');
         var delivered_product_count = $(this).find('.delivered_count').text();
         var delivery_type = $(this).attr('ordertype');
-        var comment = $(this).find('.comment').text();
+        var report = $(this).find('.report').text();
         if(isNaN(parseInt(delivered_product_count)) || delivered_product_count == ''){
             delivered_product_count = 0;
         }
@@ -83,12 +84,12 @@ function confirmdelivery() {
             order_product_id: oder_product_id,
             delivered_count: delivered_product_count,
             delivery_type: delivery_type,
-            comment: comment,
+            report: report,
             order_id:order_id,
-        }
+        };
         table_info[i] = formData;
         i++;
-    })
+    });
     var send_type = "POST";
 
     $.ajax({

@@ -18,7 +18,7 @@
 		<div class="row wrapper">
 			<div class="wrapper-content">
 			@if($sent_status != 0)
-			<label style="color: red; font-size: 18px;">您已经接受产品。</label>
+			<label style="color: red; font-size: 18px;">您今日已签收。</label>
 			@endif
 			<div class="ibox float-e-margins">
                     <div class="ibox-content">

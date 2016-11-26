@@ -1,8 +1,6 @@
 var current_row_number;
 
 $(document).on('click','.confirm_values',function(e){
-    $(this).prop("disabled",true);
-    $(this).html("已签收");
 
     var update_url = API_URL + 'naizhan/shengchan/qianshoujihua/confirm_product';
     $.ajaxSetup({
@@ -31,7 +29,13 @@ $(document).on('click','.confirm_values',function(e){
             dataType: 'json',
             success: function (data) {
                 console.log('Success:', data);
-                tdEdit.removeClass('editfill');
+
+                if (parseInt(data) > 0) {   // 收货成功
+                    tdEdit.removeClass('editfill');
+                }
+                else {
+                    show_warning_msg("奶厂还没发货!");
+                }
             },
             error: function (data) {
                 console.log('Error:', data);
@@ -60,8 +64,11 @@ $(document).on('click','.confirm_values',function(e){
             dataType: 'json',
             success: function (data) {
                 console.log(data);
-                // $('.confirm_values').hide();
                 tdEdit.removeClass('editfill');
+
+                // 确定按钮状态变化
+                $('.confirm_values').html("已签收");
+                $('.confirm_values').prop("disabled",true);
             },
             error: function (data) {
                 console.log('Error:', data);

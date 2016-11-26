@@ -26,8 +26,8 @@
 								<tr>
 									<th data-sort-ignore="true">序号</th>
 									<th data-sort-ignore="true">奶品</th>
-									<th data-sort-ignore="true">计划汇总量</th>
-									<th data-sort-ignore="true">实际生产总量</th>
+									<th data-sort-ignore="true">生产计划量</th>
+									<th data-sort-ignore="true">实际生产量</th>
 									<th data-sort-ignore="true">富余量</th>
 									<th data-sort-ignore="true">实际发货总量</th>
 									<th data-sort-ignore="true">库存结余</th>
@@ -40,8 +40,8 @@
 								<tr id="{{$p->id}}">
 									<td>{{$i}}</td>
 									<td>{{$p->name}}</td>
-									<td>{{$p->plan_count}}</td>
-									<td id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
+									<td>{{$p->produce_count}}</td>
+									<td class="editfill product_count" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
 									<td></td>
 									<td id="total_confirm{{$p->id}}"></td>
 									<td id="rest{{$p->id}}"></td>
@@ -133,7 +133,9 @@
                 </div>
 				<div class="ibox float-e-margins bg-white">
 					<div class="col-lg-offset-5 col-lg-2">
-						<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren')}}'" style="width: 100%;">看法</button>
+						<button class="btn btn-success" onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren')}}'" style="width: 100%;">
+							查看历史
+						</button>
 					</div>
 				</div>
 			</div>
@@ -145,67 +147,5 @@
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/shengchan_naizhanpeisong_ajax.js') ?>"></script>
-    <script type="text/javascript">
-		$('#date_2 .input-group.date').datepicker({
-            todayBtn: "linked",
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: false,
-            autoclose: true
-        });
-
-		$(document).ready(function() {
-			$('.footable').footable();
-
-
-			$('#current_status tr:not(:first,:last)').each(function(){
-				var id=$(this).attr('id');
-				var total_sum = 0;
-				$('#by_station tr:not(:first,:last)').each(function() {
-					var trval = $(this).attr('value');
-					var order = $(this).attr('order');
-					$('#f_detail'+order+'').hide();
-					var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
-					if(isNaN(content)){
-						content = 0;
-					}
-					else {
-						if (trval == id) {
-							total_sum += content;
-						}
-					}
-				})
-				$('#total_confirm'+id+'').html(total_sum);
-				var produced_count = parseInt($('#produce_count'+id+'').text());
-				$('#rest'+id+'').html(produced_count-total_sum);
-			})
-
-
-			$('#current_status tr:not(:first)').each(function(){
-				var plan_count = parseInt($(this).find("td").eq(2).html());
-				var produce_count = parseInt($(this).find("td").eq(3).html());
-				$(this).find("td").eq(4).html(produce_count-plan_count);
-			})
-		});
-		$(document).on('keyup','.confirm_count',function(){
-			var id = $(this).attr('value');
-			var total_sum = 0;
-			$('#by_station tr:not(:first,:last)').each(function() {
-				var trval = $(this).attr('value');
-				var order = $(this).attr('order');
-				var content = parseInt($(this).find('#confirm'+order+''+trval+'').text());
-				if(isNaN(content)){
-					content = 0;
-				}
-				else {
-					if (trval == id) {
-						total_sum += content;
-					}
-				}
-			})
-			$('#total_confirm'+id+'').html(total_sum);
-			var produced_count = parseInt($('#produce_count'+id+'').text());
-			$('#rest'+id+'').html(produced_count-total_sum);
-		})
-    </script>
+    <script src="<?=asset('js/pages/gongchang/naizhanpeisong.js') ?>"></script>
 @endsection

@@ -48,7 +48,7 @@
                 <td class="dzmon">￥{{$season_price}}</td>
             </tr>
             <tr>
-                <td height="16">半年单</td>
+                <td>半年单</td>
                 <td class="dzmon">￥{{$half_year_price}}</td>
             </tr>
         </table>
@@ -77,16 +77,83 @@
                  </span>（瓶）
         </div>
 
+        <div class="dnsli clearfix">
+            <div class="dnsti">配送规则：</div>
+            <select class="dnsel" id="delivery_type" onChange="javascript:dnsel_changed(this.value)">
+                <option value="dnsel_item0"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送
+                </option>
+                <option value="dnsel_item1"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送
+                </option>
+                <option value="dnsel_item2"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送
+                </option>
+                <option value="dnsel_item3"
+                        data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送
+                </option>
+            </select>
+            <div class="clear"></div>
+        </div>
+
+        <!-- combo box change -->
+        <!-- 天天送 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
+            <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
+        </div>
+
+        <!--隔日送 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
+            <div class="dnsti">每天配送数量：</div>
+            <span class="addSubtract">
+                <a class="subtract" href="javascript:;">-</a>
+                <input type="text" value="1" style="ime-mode: disabled;">
+                <a class="add" href="javascript:;">+</a>
+            </span>（瓶）
+        </div>
+
+        <!-- 按周规则 -->
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item2">
+            <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
+            </table>
+        </div>
+
+        <!-- 随心送 -->
+        <div class="dnsel_item" id="dnsel_item3">
+            <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
+            </table>
+        </div>
+
+        <div class="dnsli clearfix">
+            <div class="dnsti">起送时间：</div>
+            <div class="input-group datepicker">
+                <input type="text" required class="" name="start_at" id="start_at">
+                <span><i class="fa fa-calendar"></i></span>
+            </div>
+        </div>
+
         <div class="dnsall">
-            <!--div class="dnsts">
-                订购天数：<span>16天</span>
-                <a class="cxsd" href="javascript:void(0);">重新设定</a>
-            </div-->
-            <p>规格：{{$product->bottle_type_name}}</p>
-            <p>保质期：{{$product->guarantee_period}}天</p>
-            <p>储藏条件：{{$product->guarantee_req}}</p>
-            {{--<p>包装：玻璃瓶</p>--}}
-            <p>配料：{{$product->material}}</p>
+            <div class="dnsli clearfix">
+                <div class="dnsti">规格：</div>
+                <div class="dnsti-r">{{$product->bottle_type_name}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">保质期：</div>
+                <div class="dnsti-r">{{$product->guarantee_period}}天</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">储藏条件：</div>
+                <div class="dnsti-r">{{$product->guarantee_req}}</div>
+            </div>
+            <div class="dnsli clearfix">
+                <div class="dnsti">配料：</div>
+                <div class="dnsti-r">{{$product->material}}</div>
+            </div>
         </div>
 
     </div>
@@ -100,26 +167,25 @@
     </div>
     <div class="sppj pa2t">
         <div class="sppti">商品评价</div>
-        <ul class="sppul">
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i></i></span>137*******125</div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
 
-            </li>
-            <li>
-                <div class="spnum"><span class="spstart"><i></i><i></i><i></i><i></i><i class="stno"></i></span>137*******125
-                </div>
-                <div class="pjxx">
-                    牛奶配送人员很守时，每天按时配送，也很贴心的提醒我家里哈登三角符
-                    可见哈登哈哈客和卡号的好多号喝酒肯定很
-                </div>
-
-            </li>
-        </ul>
+        @if(isset($reviews))
+            <ul class="sppul">
+                @forelse($reviews as $review)
+                    <li>
+                        <div class="spnum"><span class="spstart">@for($i=0; $i<$review->mark; $i++)<i></i>@endfor</span>
+                            <p>{{$review->tel_number}}</p>
+                        </div>
+                        <div class="pjxx">
+                            {{$review->content}}
+                        </div>
+                    </li>
+                @empty
+                    <p style="text-align: center;">没有评价</p>
+                @endforelse
+            </ul>
+        @endif
     </div>
+
     <div class="he50"></div>
 
     <div class="dnsbt clearfix">
@@ -129,12 +195,11 @@
 @endsection
 @section('script')
 
-    <!-- Date picker and Date Range Picker-->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/myweek.js')?>"></script>
 
     <script type="text/javascript">
+        var calen, week;
 
         var obj = $('#uecontent');
         var content = '{{$product->uecontent}}';
@@ -147,23 +212,41 @@
             $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
         })
 
-        $('select#order_type').change(function(){
+        $(function () {
+            calen = new showfullcalendar("calendar");
+            week = new myweek("week");
+            dnsel_changed("dnsel_item0");
+        });
+
+        $('select#order_type').change(function () {
 
             var count_input = $('#total_count');
 
             var cur_val = $(this).val();
-            if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}")
-            {
+            if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}") {
                 count_input.attr('min', 30);
                 count_input.val(30);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}" ){
+            } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}") {
                 count_input.attr('min', 90);
                 count_input.val(90);
-            }else if(cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}" ){
+            } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}") {
                 count_input.attr('min', 180);
                 count_input.val(180);
             }
         });
+
+        function dnsel_changed(id) {
+            $(".dnsel_item").css("display", "none");
+            $("#" + id).css("display", "block");
+        }
+
+        function pad(number){
+            var r= String(number);
+            if(r.length === 1){
+                r= '0'+r;
+            }
+            return r;
+        }
 
 
         $(document).ready(function () {
@@ -172,15 +255,45 @@
                 paginationClickable: true,
                 spaceBetween: 30,
             });
+
+                    @if(isset($gap_day))
+            var gap_day = parseInt("{{$gap_day}}");
+                    @endif
+
+            var today = new Date("{{$today}}");
+            var able_date = today;
+            if (gap_day)
+                able_date.setDate(today.getDate() + gap_day);
+            else {
+                able_date.setDate(today.getDate() + 3);
+            }
+
+            Date.prototype.toISOString = function(){
+              return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+            };
+
+            //set default day for start at
+//            var default_start_date = able_date.toISOString();
+            var default_start_date = able_date.toLocaleDateString();
+            $('#start_at').val(default_start_date);
+
+            $('#start_at').datepicker({
+                todayBtn: false,
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                autoclose: true,
+                minDate: able_date,
+            });
+
             $('select#order_type').trigger('change');
         });
 
-        function check_bottle_count(){
+        function check_bottle_count() {
             var count_input = $('#total_count');
-            var min_b = parseInt( $(count_input).attr('min'));
+            var min_b = parseInt($(count_input).attr('min'));
             var current_b = $(count_input).val();
-            if(current_b < min_b)
-            {
+            if (current_b < min_b) {
                 return true;
             }
             return false;
@@ -188,8 +301,7 @@
 
         $('button#make_order').click(function () {
 
-            if(check_bottle_count())
-            {
+            if (check_bottle_count()) {
                 show_info_msg('请正确设置订奶数量');
                 return;
             }
@@ -206,6 +318,56 @@
             //total_count
             var total_count = $('#total_count').val();
             send_data.append('total_count', total_count);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            var start_at = $('#start_at').val();
+            if (!start_at) {
+                show_warning_msg("请选择起送时间");
+                return;
+            }
+            send_data.append('start_at', start_at);
 
             console.log(send_data);
 
@@ -247,6 +409,56 @@
             //total_count
             var total_count = $('#total_count').val();
             send_data.append('total_count', total_count);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            var start_at = $('#start_at').val();
+            if (!start_at) {
+                show_warning_msg("请选择起送时间");
+                return;
+            }
+            send_data.append('start_at', start_at);
 
             console.log(send_data);
 

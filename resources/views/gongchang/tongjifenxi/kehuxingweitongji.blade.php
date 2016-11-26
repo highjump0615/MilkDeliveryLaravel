@@ -93,7 +93,7 @@
 									<th data-sort-ignore="true">在配送-剩余订单金额</th>
 									<th data-sort-ignore="true">暂停客户数</th>
 									<th data-sort-ignore="true">剩余订单金额</th>
-									<th data-sort-ignore="true">总之/退款客户数</th>
+									<th data-sort-ignore="true">终止/退款客户数</th>
 									<th data-sort-ignore="true">期末订单金额结余</th>
 								</tr>
                             </thead>

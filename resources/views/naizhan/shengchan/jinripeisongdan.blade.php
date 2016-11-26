@@ -61,6 +61,7 @@
 									<th data-sort-ignore="true">赠品数量(瓶)</th>
 									<th data-sort-ignore="true">配送团购量(瓶)</th>
 									<th data-sort-ignore="true">配送渠道量(瓶)</th>
+									<th data-sort-ignore="true">店内零售(瓶)</th>
 									<th data-sort-ignore="true">合计</th>
 									<th data-sort-ignore="true">变化量统计</th>
 								</tr>
@@ -76,10 +77,11 @@
 								<?php $i++; ?>
 								<tr>
 									<td>{{$mp['name']}}</td>
-									<td>{{$mp['planed_count']}}</td>
-									<td>{{$mp['test_drink']}}</td>
-									<td>{{$mp['group_count']}}</td>
-									<td>{{$mp['channel_count']}}</td>
+									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER]}}</td>
+									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK]}}</td>
+									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP]}}</td>
+									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL]}}</td>
+									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL]}}</td>
 									<td></td>
 									@if($i==1)
 									<td rowspan="{{count($mi['milkman_products'])}}">
@@ -108,7 +110,7 @@
 									<th data-sort-ignore="true">收货人</th>
 									<th data-sort-ignore="true">配送时间</th>
 									<th data-sort-ignore="true">电话</th>
-									<th data-sort-ignore="true">操作</th>
+									<th data-sort-ignore="true">备注</th>
 								</tr>
                             </thead>
                             <tbody>
@@ -117,17 +119,23 @@
 									<?php $i++; ?>
 									<tr>
 									<td>
-										@if($oi->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
+										<!-- 如果是订单第一次配送，加星号标出来 -->
+										@if($oi->flag == 1)
+											<i class="fa fa-star"></i>
+										@endif
+										{{$i}}
 									</td>
 									<td>
-										@if($oi->delivery_type==1)
+										@if($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
 											计划订单
-										@elseif($oi->delivery_type==2)
+										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
 											团购订单
-										@elseif($oi->delivery_type==3)
+										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
 											渠道订单
-										@elseif($oi->delivery_type==4)
+										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
 											赠品订单
+										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
+											店内零售
 										@endif
 									</td>
 									<td>{{$oi->address}}</td>
@@ -137,9 +145,15 @@
 									@else
 										<td>{{$oi->customer_name}}</td>
 									@endif
-									<td>@if($oi->delivery_time == 0)上午@elseif($oi->delivery_time == 1)下午 @endif</td>
+									<td>
+										@if($oi->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
+											上午
+										@elseif($oi->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
+											下午
+										@endif
+									</td>
 									<td>{{$oi->phone}}</td>
-									<td></td>
+									<td>{{$oi->comment_delivery}}</td>
 								</tr>
 								@endforeach
                             </tbody>
@@ -161,11 +175,16 @@
 @section('script')
 	<script type="text/javascript">
 		$(document).ready(function(){
+			/**
+			 * 计算配送统计的合计
+			 */
 			$('.delivery_amount tr:not(:first)').each(function(){
 				var plan_sale=0;
 				var test_drink=0;
 				var group_sale=0;
 				var channel_sale=0;
+				var store_sale=0;
+
 				if(!isNaN(parseInt($(this).find('td:eq(1)').text()))){
 					plan_sale = parseInt($(this).find('td:eq(1)').text());
 				}
@@ -178,7 +197,10 @@
 				if(!isNaN(parseInt($(this).find('td:eq(4)').text()))){
 					channel_sale = parseInt($(this).find('td:eq(4)').text());
 				}
-				$(this).find('td:eq(5)').html(plan_sale+test_drink+group_sale+channel_sale);
+				if(!isNaN(parseInt($(this).find('td:eq(5)').text()))){
+					store_sale = parseInt($(this).find('td:eq(5)').text());
+				}
+				$(this).find('td:eq(6)').html(plan_sale + test_drink + group_sale + channel_sale + store_sale);
 			})
 		});
 

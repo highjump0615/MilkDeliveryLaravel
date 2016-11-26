@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Model\BasicModel\PaymentType;
+use App\Model\DeliveryModel\DSDeliveryPlan;
 use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\MilkCard;
@@ -236,14 +237,16 @@ class OrderCtrl extends Controller
         //check exist of delivery plan that remains because of submitted to production plan before
         $sub_to_mmdp = MilkManDeliveryPlan::where('order_id', $order_id)
             ->where('order_product_id', $order_product_id)
-            ->where('deliver_at', $deliver_at)->get()->first();
+            ->where('deliver_at', $deliver_at)
+            ->get()
+            ->first();
 
         if ($sub_to_mmdp) {
             $sub_to_mmdp->changed_plan_count = $changed_plan_count;
             $sub_to_mmdp->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE;
             $sub_to_mmdp->save();
-
-        } else {
+        }
+        else {
             $sub_to_pp = DSProductionPlan::where('station_id', $station_id)
                 ->where('produce_start_at', $produce_at)
 //                ->where('product_id', $product_id)
@@ -261,6 +264,13 @@ class OrderCtrl extends Controller
             $dp->order_product_id = $order_product_id;
             $dp->produce_at = $produce_at;
             $dp->deliver_at = $deliver_at;
+
+            // 临时设置状态
+            $dp->determineStatus();
+            if ($dp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+                $plan_count = 0;
+            }
+
             $dp->status = $status;
             $dp->plan_count = $plan_count;
             $dp->product_price = $product_price;
@@ -1032,6 +1042,10 @@ class OrderCtrl extends Controller
     //This module can be used to change the plan for one day, cancel the production plan for one day
     public function change_delivery_plan($order_id, $plan_id, $diff)
     {
+        if ($diff == 0) {
+            return;
+        }
+
         $plan = MilkManDeliveryPlan::find($plan_id);
 
         $order = Order::find($order_id);
@@ -1055,10 +1069,9 @@ class OrderCtrl extends Controller
         $rest_with_this = $this->get_rest_plans_count($order_id, $plan_id);
 
         if ($changed <= $rest_with_this) {
-            //set current changed delivery plan
-            $plan->changed_plan_count = $changed;
-            $plan->delivery_count = $changed;
-            $plan->save();
+
+            // 更新数量
+            $plan->setCount($changed);
 
             //get each delivery plans from last delivery day and delete or create plans
             //enable to change the plan
@@ -1364,12 +1377,16 @@ class OrderCtrl extends Controller
                     }
 
                 } else {
-                    $plan->changed_plan_count = $origin;
-                    $plan->delivery_count = $origin;
-                    $plan->save();
+                    $plan->setCount($origin);
+
                     return ['status' => 'fail', 'message' => '同时改变了计划，发生错误.'];
                 }
 
+            }
+
+            if ($changed == 0) {
+                // 如果数量变成0，要把自己的flag转给下个配送明细
+                $plan->transferFlag();
             }
 
             return ['status' => 'success', 'message' => '交付变更成功.'];
@@ -1779,31 +1796,46 @@ class OrderCtrl extends Controller
                 return response()->json(['status' => 'fail', 'message' => '找不到订单.']);
             }
 
-            //get closet plan to today from order
-//            $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
+            // 获取今日或下个配送日期
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get();
+            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get()->first();
+
+            foreach ($plans as $plan) {
+                // 已生成配送列表
+                if (DSDeliveryPlan::getDeliveryPlanGenerated($order->delivery_station_id, $plan->order_product_id)) {
+                    $plans = null;
+                    break;
+                }
+            }
+
+            // 没有今日的配送任务或今日配送列表已生成，于是暂停下一个配送任务
+            if (!$plans) {
+                $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->get()->first();
+            }
+
             foreach ($plans as $plan) {
                 $plan_id = $plan->id;
                 $origin = $plan->changed_plan_count;
                 $changed = 0;
                 $diff = $changed - $origin;
-                if ($diff == 0)
-                    continue;
-                $result = $this->change_delivery_plan($order_id, $plan_id, $diff);
+
+                $this->change_delivery_plan($order_id, $plan_id, $diff);
+
+                $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
+                $plan->cancel_reason = '已顺延';
+                $plan->save();
             }
 
-            $station_id = $order->station_id;
-            $customer_name = Customer::find($order->customer_id)->name;
-
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
+//            $station_id = $order->station_id;
+//            $customer_name = Customer::find($order->customer_id)->name;
+//
+//            $notification = new DSNotification();
+//            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
 
             return response()->json(['status' => 'success']);
         }
-
     }
 
     //restart stopped dingdan
@@ -2607,7 +2639,7 @@ class OrderCtrl extends Controller
             } else if ($station_milkman == $this::NOT_EXIST_STATION) {
                 return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
             } else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+                return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
             }
 
             foreach ($station_milkman as $delivery_station_id => $milkman_id) {
@@ -3466,14 +3498,6 @@ class OrderCtrl extends Controller
 
         $ordered_at = $today;
 
-//            $diff = date_diff($order_start_at, $today);
-//            $diff = intval($diff->days);
-//
-//            $gap_day = intval($factory->gap_day);
-////            if ($diff < $gap_day) {
-////                return response()->json(['status' => 'fail', 'message' => '实现' . $gap_day . '天后，订单开始日期.']);
-////            }
-
         $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
         $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
 
@@ -3507,8 +3531,6 @@ class OrderCtrl extends Controller
                 else {
                     $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
                     $milk_card->save();
-
-                    $remain_from_card = $milk_card->balance - $total_amount;
                 }
             }
         }
@@ -3719,11 +3741,6 @@ class OrderCtrl extends Controller
 //
 //                $dsdelivery_history->time = $today;
 //                $dsdelivery_history->save();
-        }
-        else {
-            //add card amount remained to customer account
-//                $customer->remain_amount += $remain_from_card;
-//                $customer->save();
         }
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
@@ -3944,7 +3961,7 @@ class OrderCtrl extends Controller
             return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
         }
         else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
+            return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
         }
 
         $ext_customer = Customer::where('phone', $phone)->where('factory_id', $this->factory->id)->get()->first();
@@ -4117,7 +4134,10 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $this->mStationId)
-            ->where('status', Order::ORDER_NOT_PASSED_STATUS)
+            ->where(function($query) {
+                $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
+                $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
+            })
             ->orderBy('id', 'desc')
 			->get();
 
@@ -4618,6 +4638,15 @@ class OrderCtrl extends Controller
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
 
+            // 新订单通过把卡余额加到客户账户余额
+            if ($order->status == Order::ORDER_NEW_WAITING_STATUS && $order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
+                $remain_from_card = $order->milkcard->balance - $order->total_amount;
+
+                $customer = $order->customer;
+                $customer->remain_amount += $remain_from_card;
+                $customer->save();
+            }
+
             // 订单通过
             if ($order->status == Order::ORDER_NEW_WAITING_STATUS || $order->status == Order::ORDER_WAITING_STATUS) {
                 $order->status = Order::ORDER_ON_DELIVERY_STATUS;
@@ -4633,8 +4662,7 @@ class OrderCtrl extends Controller
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
             foreach ($udps as $udp) {
-                $udp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
-                $udp->save();
+                $udp->passCheck(true);
             }
 
             return response()->json(['status' => 'success', 'message' => '订单通过成功.']);
@@ -4681,7 +4709,7 @@ class OrderCtrl extends Controller
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;
             foreach ($udps as $udp) {
-                $udp->delete();
+                $udp->passCheck(false);
             }
 
             return response()->json(['status' => 'success', 'message' => '订单未通过成功.']);
@@ -5321,6 +5349,8 @@ class OrderCtrl extends Controller
                 }
             } while ($total_count > 0);
         }
+
+
     }
 
     function days_in_month($dd)
@@ -5626,8 +5656,6 @@ class OrderCtrl extends Controller
 
     public function delete_all_order_products_and_delivery_plans_for_update_order($order)
     {
-
-
         //delete waiting and passed delivery  plan
         MilkManDeliveryPlan::where('order_id', $order->id)->where(function ($query) {
             $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
@@ -5637,6 +5665,12 @@ class OrderCtrl extends Controller
         $plans = $order->delivery_plans_sent_to_production_plan;
         foreach ($plans as $plan) {
             $plan->changed_plan_count = 0;
+            $plan->delivery_count = 0;
+
+            // 改成取消状态
+            $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
+            $plan->cancel_reason = '修改订单';
+
             $plan->save();
         }
 

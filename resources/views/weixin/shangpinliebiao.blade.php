@@ -11,8 +11,8 @@
         }
 
         .swiper-slide {
-            min-width:90px;
-            margin-left:7px;
+            min-width: 90px;
+            margin-left: 7px;
             text-align: center;
             background: #fff;
             /* Center slide text vertically */
@@ -32,7 +32,7 @@
 
         /*RCU*/
         .swiper-slide div {
-            min-width:100px;
+            min-width: 100px;
             width: 100%;
             text-align: center;
             line-height: 28px;
@@ -81,15 +81,19 @@
 
     @if(isset($products))
         @foreach($products as $p)
-            @if($p->category == $category)
+            @if($p[0]->category == $category)
                 <dl class="pr_dl">
-                    <a href="{{url('/weixin/tianjiadingdan?product='.$p->id)}}">
-                        <img src="<?=asset('img/product/logo/' . $p->photo_url1)?>">
-                    </a>
-                    <dt>{{$p->name}}</dt>
-                    <dd>包装：{{$p->bottle_type_name}}</dd>
-                    <dd>储存条件：{{$p->guarantee_req}}</dd>
-                    <dd><b>￥{{$p->settle_price}}</b></dd>
+                    <div class="pr_img">
+                        <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
+                            <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
+                        </a>
+                    </div>
+                    <div class="pr_ds">
+                        <dt>{{$p[0]->name}}</dt>
+                        <dd>包装：{{$p[0]->bottle_type_name}}</dd>
+                        <dd>储存条件：{{$p[0]->guarantee_req}}</dd>
+                        <dd>￥{{$p[1]}}</dd>
+                    </div>
                 </dl>
             @endif
         @endforeach
@@ -109,6 +113,12 @@
         var current_menu = 1;
         $(document).ready(function () {
             set_current_menu();
+
+            $('.pr_img img').each(function () {
+                var width = $(this).css('width');
+                var height = parseInt(width);
+                $(this).css('height', height);
+            });
         });
     </script>
 @endsection

@@ -1,0 +1,162 @@
+[ Weixin ] contents object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(9) {
+    ["body"]=>
+    string(4) "test"
+    ["attach"]=>
+    string(4) "test"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082846"
+    ["total_fee"]=>
+    string(1) "1"
+    ["time_start"]=>
+    string(14) "20161119082846"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+  }
+}
+
+[ Weixin ] content object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(9) {
+    ["body"]=>
+    string(4) "test"
+    ["attach"]=>
+    string(4) "test"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082846"
+    ["total_fee"]=>
+    string(1) "1"
+    ["time_start"]=>
+    string(14) "20161119082846"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+  }
+}
+object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(14) {
+    ["appid"]=>
+    string(18) "wx03ec7c55e818f174"
+    ["attach"]=>
+    string(4) "test"
+    ["body"]=>
+    string(4) "test"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["mch_id"]=>
+    string(10) "1385249202"
+    ["nonce_str"]=>
+    string(32) "usam32xiis4fix1v5npt0io66psojxpa"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082846"
+    ["spbill_create_ip"]=>
+    string(14) "111.161.105.17"
+    ["time_start"]=>
+    string(14) "20161119082846"
+    ["total_fee"]=>
+    string(1) "1"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["sign"]=>
+    string(32) "9C285ED742B4910B3106BBF73134493B"
+  }
+}
+
+[ Weixin ] contents object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(9) {
+    ["body"]=>
+    string(4) "test"
+    ["attach"]=>
+    string(4) "test"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082907"
+    ["total_fee"]=>
+    string(1) "1"
+    ["time_start"]=>
+    string(14) "20161119082907"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+  }
+}
+
+[ Weixin ] content object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(9) {
+    ["body"]=>
+    string(4) "test"
+    ["attach"]=>
+    string(4) "test"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082907"
+    ["total_fee"]=>
+    string(1) "1"
+    ["time_start"]=>
+    string(14) "20161119082907"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+  }
+}
+object(WxPayUnifiedOrder)#2 (1) {
+  ["values":protected]=>
+  array(14) {
+    ["appid"]=>
+    string(18) "wx03ec7c55e818f174"
+    ["attach"]=>
+    string(4) "test"
+    ["body"]=>
+    string(4) "test"
+    ["goods_tag"]=>
+    string(4) "test"
+    ["mch_id"]=>
+    string(10) "1385249202"
+    ["nonce_str"]=>
+    string(32) "eaegsuoc6ehst5ed1wcuycxw5t8czv6c"
+    ["notify_url"]=>
+    string(55) "http://niu.vfushun.com/milk/public/Payweixin/notify.php"
+    ["openid"]=>
+    string(28) "ol_QfvyUenaDXbWbt2ezeyfUWSME"
+    ["out_trade_no"]=>
+    string(24) "138524920220161119082907"
+    ["spbill_create_ip"]=>
+    string(14) "111.161.105.17"
+    ["time_start"]=>
+    string(14) "20161119082907"
+    ["total_fee"]=>
+    string(1) "1"
+    ["trade_type"]=>
+    string(5) "JSAPI"
+    ["sign"]=>
+    string(32) "B13F19483F4FBC2F043B4FD28F83A137"
+  }
+}
+

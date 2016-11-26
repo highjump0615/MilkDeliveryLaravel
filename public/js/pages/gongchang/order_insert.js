@@ -243,9 +243,15 @@ $('#customer_form').on("submit", function (e) {
                 $('#station_list').append(station_data);
 
                 //trigger to calculate the product price
-                init_product_lines();
+                // init_product_lines();
 
-            } else {
+                // 根据得到的奶站信息，重新计算价格
+                $('#product_table tbody tr').each(function () {
+                    calculate_current_product_value(tr);
+                    set_avg_count(tr);
+                });
+            }
+            else {
                 if (data.message) {
                     show_err_msg(data.message);
                 }
@@ -257,8 +263,6 @@ $('#customer_form').on("submit", function (e) {
                     var station_data = '<option value="' + data.station_id + '">' + data.station_name + '</option>';
                     $('#station_list').append(station_data);
                 }
-
-                init_product_lines();
             }
 
         },
@@ -382,19 +386,25 @@ $('#order_form').on('submit', function (e) {
                 var order_id = data.order_id;
 
                 if (gbIsEdit) {
+                    show_success_msg('订单修改成功');
+
                     // 如果是订单修改，跳转到待审核订单
                     strUrlAfter = SITE_URL + 'gongchang/dingdan/daishenhedingdan/daishenhe-dingdanxiangqing/' + order_id;
                     if (gbIsStation) {
                         strUrlAfter = SITE_URL + 'naizhan/dingdan/xiangqing/' + order_id;
                     }
-
-                    window.location.replace(strUrlAfter);
                 }
                 else {
-                    // 如果是订单录入，清空页面，易于录入别的
                     show_success_msg('订单录入成功');
-                    location.reload();
+
+                    // 如果是订单录入，清空页面，易于录入别的
+                    strUrlAfter = SITE_URL + 'gongchang/dingdan/dingdanluru';
+                    if (gbIsStation) {
+                        strUrlAfter = SITE_URL + 'naizhan/dingdan/dingdanluru';
+                    }
                 }
+
+                window.location.replace(strUrlAfter);
 
             } else {
                 if (data.message)

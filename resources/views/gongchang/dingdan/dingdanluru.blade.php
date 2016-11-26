@@ -197,7 +197,7 @@
             <form method="POST" enctype="multipart/form-data" id="order_form">
 
                 @if ($is_edit)
-                    <input type="hidden" name="order_id" value="{{$order->id}}">
+                    <input type="hidden" name="order_id" id="input_order_id" value="{{$order->id}}">
                 @endif
 
                 <!--Station Info-->
@@ -239,6 +239,9 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- 微信订单修改不显示票据号 -->
+                    @if (!(isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">票据号:</label>
                         <div class="col-md-3">
@@ -271,6 +274,7 @@
                             <i class="fa fa-check-square-o" id="check_capture"></i>
                         </div>
                     </div>
+                    @endif
 
                     <input type="hidden" required name="customer_id" id="customer_id"/>
                 </div>
@@ -301,7 +305,7 @@
                     <!-- 只能在奶厂录入奶卡订单 -->
                     <div class="feed-element col-md-12">
                         <div class="col-md-1" id="check_2">
-                            <label>奶卡支付</label>
+                            <label @if ($is_edit || isset($station)) style="opacity: 0.5;" @endif>奶卡支付</label>
                         </div>
                         <div class="col-md-2">
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
@@ -326,8 +330,18 @@
                         &nbsp;
                         <div class="col-md-2">
                             <select required class="form-control" id="delivery_noon" name="delivery_noon">
-                                <option value="1" @if (isset($order) && $order->delivery_time == 1) selected @endif>上午</option>
-                                <option value="2" @if (isset($order) && $order->delivery_time == 2) selected @endif>下午</option>
+                                <option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING}}"
+                                        @if (isset($order) && $order->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
+                                        selected
+                                        @endif>
+                                    上午
+                                </option>
+                                <option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON}}"
+                                        @if (isset($order) && $order->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
+                                        selected
+                                        @endif>
+                                    下午
+                                </option>
                             </select>
                         </div>
                     </div>

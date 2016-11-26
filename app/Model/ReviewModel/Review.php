@@ -2,6 +2,7 @@
 
 namespace App\Model\ReviewModel;
 
+use App\Model\BasicModel\Customer;
 use App\Model\OrderModel\Order;
 use Illuminate\Database\Eloquent\Model;
 use DateTime;
@@ -25,17 +26,30 @@ class Review extends Model
         'created_at',
     ];
 
-    public function addReview($order_id,$marks,$content){
-        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
-        $review = new $this;
-        $review->mark = $marks;
-        $review->content = $content;
-        $review->order_id = $order_id;
-        $review->customer_id = Order::find($order_id)->customer_id;
-        $review->created_at = $current_datetime_str;
-        $review->status = $this::REVIEW_STATUS_WAITTING;
-        $review->save();
+    protected $appends = [
+        'tel_number'
+    ];
+
+    public function getTelNumberAttribute()
+    {
+        $customer = Customer::find($this->customer_id);
+        if($customer)
+        {
+            $phone=$customer->phone;
+            $length = strlen($phone);
+            $asterisk = "";
+            for($i = 0; $i<$length-6; $i++)
+            {
+                $asterisk .= "*";
+            }
+
+            $tel_number = substr_replace($phone, $asterisk, 3, $length-6);
+            return $tel_number;
+
+        } else
+        {
+            return "122*****112";
+        }
     }
-    //
+
 }

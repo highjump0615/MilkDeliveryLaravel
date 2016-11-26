@@ -46,13 +46,14 @@
             <div class="ibox-content" style="padding-left: 20px;">
                 <button class="btn btn-success col-md-1" id="add_address" type="button"><i class="fa fa-plus"></i>添加小区
                 </button>
-                <div class="col-md-3">
-                    <label style="padding-top: 5px;">奶站地址: </label>
+                <div>
+                    <label style="margin-left: 15px; padding-top: 5px;">{{$station->name}}</label>
+                    <label style="padding-top: 5px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                     <label style="padding-top: 5px;">{{$province.' '.$city.' '.$district}}</label>
                 </div>
             </div>
 
-            <input type="hidden" id="station_id" value="{{$station_id}}">
+            <input type="hidden" id="station_id" value="{{$station->id}}">
 
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
@@ -124,16 +125,19 @@
                                                 </div>
 
                                                 <div class="col-xs-2">
-                                                    <button type="button" id="js_right_All_1" class="btn btn-block"><i
-                                                                class="glyphicon glyphicon-forward"></i></button>
+                                                    <button type="button" id="js_right_All_1" class="btn btn-block">
+                                                        <i class="glyphicon glyphicon-forward"></i>
+                                                    </button>
                                                     <button type="button" id="js_right_Selected_1"
-                                                            class="btn btn-block"><i
-                                                                class="glyphicon glyphicon-chevron-right"></i></button>
+                                                            class="btn btn-block">
+                                                        <i class="glyphicon glyphicon-chevron-right"></i>
+                                                    </button>
                                                     <button type="button" id="js_left_Selected_1" class="btn btn-block">
-                                                        <i
-                                                                class="glyphicon glyphicon-chevron-left"></i></button>
-                                                    <button type="button" id="js_left_All_1" class="btn btn-block"><i
-                                                                class="glyphicon glyphicon-backward"></i></button>
+                                                        <i class="glyphicon glyphicon-chevron-left"></i>
+                                                    </button>
+                                                    <button type="button" id="js_left_All_1" class="btn btn-block">
+                                                        <i class="glyphicon glyphicon-backward"></i>
+                                                    </button>
                                                 </div>
 
                                                 <div class="col-xs-5">

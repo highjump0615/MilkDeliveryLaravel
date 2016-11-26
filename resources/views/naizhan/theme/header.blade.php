@@ -14,8 +14,9 @@
 			<p>
 			<a type="button" href="{{url('/naizhan/shengchan/jinripeisongdan')}}" class="btn btn-outline btn-success btn-xs col-xs-3">今日发货统计</a>
 			<!--a type="button" href="{{url('/naizhan/dingdan/xudan')}}" class="btn btn-outline btn-success btn-sm col-xs-4">到期订单统计</a-->
-			<a type="button" href="{{url('/naizhan/xiaoxi/zhongxin')}}" class="btn btn-outline btn-success btn-xs col-xs-3">消息中心 &nbsp;
-				<span id="notification" class="label label-success">@if(count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get()) > 0){{count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get())}} @endif</span>
+			<a type="button" href="{{url('/naizhan/xiaoxi/zhongxin')}}" class="btn btn-outline btn-success btn-xs col-xs-3">
+				消息中心 &nbsp;
+				<span id="notification" class="label label-success">@if (count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get()) > 0){{count(\App\Model\NotificationModel\DSNotification::where('station_id',Auth::guard('naizhan')->user()->station_id)->where('read',0)->get())}}@endif</span>
 			</a>
 			</p>
 		</div>

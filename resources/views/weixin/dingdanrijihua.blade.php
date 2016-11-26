@@ -3,6 +3,7 @@
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link href="<?=asset('weixin/css/fullcalendar.min.css')?>" rel="stylesheet"/>
+    <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -20,21 +21,49 @@
     <div class="ordrxg">
         <div id='calendar'></div>
 
+        <label class="pa2t" style="margin-top: 20px;">订单记录：</label>
         <dl class="ordjl">
-            <dt class="pa2t">订单记录：</dt>
-            <?php $fn_count = 0;?>
-            @forelse($plans as $plan)
-                @if($plan->status == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-                    <dd class="pa2t"><span>{{$plan->deliver_at}}</span>已配送——{{$plan->delivered_count}}瓶</dd>
-                    <?php $fn_count++;?>
+            <table class="footable table table-bordered" data-page-size="10">
+                <thead>
+                <tr>
+                    <th data-sort-ignore="true">序号</th>
+                    <th data-sort-ignore="true">配送时间</th>
+                    <th data-sort-ignore="true">状态</th>
+                    <th data-sort-ignore="true">奶品</th>
+                    <th data-sort-ignore="true">数量</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if(isset($plans))
+                    <?php $i = 0;?>
+                    @foreach($plans as $plan)
+                        <tr data-planid="{{$plan['plan_id']}}">
+                            <td>{{$i+1}}</td>
+                            <td>{{$plan['deliver_at']}}</td>
+                            <td>{{$plan['status_name']}}</td>
+                            <td>{{$plan['product_name']}}</td>
+                            @if($plan['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
+                                <td>{{$plan['delivered_count']}}</td>
+                            @else
+                                <td>
+                                    <label> {{$plan['changed_plan_count']}}</label>
+                                </td>
+                            @endif
+                        </tr>
+                        <?php $i++; ?>
+                    @endforeach
                 @endif
-            @empty
-                <p class="plan_result">没有配送计划</p>
-            @endforelse
-            @if($fn_count == 0)
-                <p class="plan_result">没有已配送</p>
-            @endif
-        </dl>
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="100%">
+                        <ul class="pagination pull-right"></ul>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+    </dl>
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
@@ -44,6 +73,8 @@
 @endsection
 @section('script')
     <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
+    <!-- FooTable -->
+    <script src="<?=asset('js/plugins/footable/footable.all.min.js') ?>"></script>
     <script type="text/javascript">
 
         var today = "{{$today}}";
@@ -70,25 +101,26 @@
                 ],
             });
 
-            $(document).on('click', '#calendar table thead tr td.fc-day-top', function(){
-                var day_td= $(this);
+            $('.footable').footable();
+
+            $(document).on('click', '#calendar table thead tr td.fc-day-top', function () {
+                var day_td = $(this);
                 var date = $(day_td).data('date');
 
-                $('#calendar table thead tr td').each(function(){
+                $('#calendar table thead tr td').each(function () {
                     $(this).removeClass('selected');
                 });
                 $(day_td).addClass('selected');
             });
 
 
-            $('#change_one_day').click(function(){
+            $('#change_one_day').click(function () {
                 var day_td = $('#calendar table thead tr').find('td.selected');
 
-                if($(day_td).length >0){
-                    if(! ($(day_td).hasClass('fc-past')) )
-                    {
-                        var date= $(day_td).data('date');
-                        window.location= SITE_URL+"weixin/danrixiugai?date="+date;
+                if ($(day_td).length > 0) {
+                    if (!($(day_td).hasClass('fc-past'))) {
+                        var date = $(day_td).data('date');
+                        window.location = SITE_URL + "weixin/danrixiugai?date=" + date;
                     } else {
                         show_warning_msg('修改单日计划不可能');
                     }

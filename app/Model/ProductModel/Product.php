@@ -44,7 +44,7 @@ class Product extends Model
         'settle_price'
     ];
 
-	public $timestamps = false;
+//	public $timestamps = false;
 
     const PRODUCT_PROPERTY_PURE_MILK = 1;
     const PRODUCT_PROPERTY_YOGURT = 2;

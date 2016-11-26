@@ -703,29 +703,11 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     });
 
     Route::get('/zongpingtai/xitong', function (Request $request) {
-        $child = '';
-        $parent = 'xitong';
-        $current_page = 'xitong';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.gengxinhuankun', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
+        return Redirect::to('/zongpingtai/xitong/chakanrizhi');
     });
-    Route::get('/zongpingtai/xitong/chakanrizhi', function (Request $request) {
-        $child = 'chakanrizhi';
-        $parent = 'xitong';
-        $current_page = 'chakanrizhi';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.chakanrizhi', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-    });
+
+    Route::get('/zongpingtai/xitong/chakanrizhi', 'SysManagerCtrl@showSystemLog');
+
     Route::get('/zongpingtai/xitong/fujianshezhi', function (Request $request) {
         $child = 'fujianshezhi';
         $parent = 'xitong';
@@ -738,19 +720,9 @@ Route::group(['middleware' => ['zongpingtai']], function () {
             'current_page' => $current_page
         ]);
     });
-    Route::get('/zongpingtai/xitong/gengxinhuankun', function (Request $request) {
-        $child = 'gengxinhuankun';
-        $parent = 'xitong';
-        $current_page = 'gengxinhuankun';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.gengxinhuankun', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-        return view('zongpingtai.xitong.gengxinhuankun');
-    });
+    Route::get('/zongpingtai/xitong/gengxinhuankun', 'HuancunCtrl@showSystemHuan');
+    Route::post('/zongpingtai/xitong/gengxinhuankun', 'HuancunCtrl@showPost');
+    
     Route::get('/zongpingtai/xitong/jianchagongju', function (Request $request) {
         $child = 'jianchagongju';
         $parent = 'xitong';
@@ -775,18 +747,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
             'current_page' => $current_page
         ]);
     });
-    Route::get('/zongpingtai/xitong/shujuku', function (Request $request) {
-        $child = 'shujuku';
-        $parent = 'xitong';
-        $current_page = 'shujuku';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.shujuku', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-    });
+    Route::get('/zongpingtai/xitong/shujuku','DatableCtrl@showDatable');
     Route::get('/zongpingtai/xitong/xinxijiekou', function (Request $request) {
         $child = 'xinxijiekou';
         $parent = 'xitong';
@@ -980,7 +941,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/xinxizhongxin', 'WeChatCtrl@xinxizhongxin');
 
     /* view review */
-    Route::get('/wodepingjia/{order_id?}', 'WeChatCtrl@wodepingjia')->name('wodepingjia');
+    Route::get('/wodepingjia', 'WeChatCtrl@wodepingjia')->name('wodepingjia');
 
     /* write review */
     Route::get('/dingdanpingjia', 'WeChatCtrl@dingdanpingjia');

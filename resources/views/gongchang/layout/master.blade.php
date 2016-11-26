@@ -75,10 +75,10 @@
 
     <!-- Toastr -->
     <script src="<?=asset('js/plugins/toastr/toastr.min.js') ?>"></script>
-    
+
     <!-- Switchery -->
     <script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
-   
+
     <!-- Date picker and Date Range Picker-->
     <script src="<?=asset('js/plugins/daterangepicker/daterangepicker.js') ?>"></script>
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>

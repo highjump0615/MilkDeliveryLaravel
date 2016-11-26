@@ -15,4 +15,4 @@ Homestead.json
 /storage/logs/
 /public/ueditor/php/upload/
 /public/csv/
-/nbproject/private/
+/public/exports/

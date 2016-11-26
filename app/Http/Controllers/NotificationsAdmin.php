@@ -17,6 +17,22 @@ use App\Http\Controllers\Controller;
 
 class NotificationsAdmin extends Controller
 {
+    /**
+     * 获取本奶站id
+     * @return mixed
+     */
+    private function getCurrentStationId() {
+        return Auth::guard('naizhan')->user()->station_id;
+    }
+
+    /**
+     * 获取本奶厂id
+     * @return mixed
+     */
+    private function getCurrentFactoryId() {
+        return Auth::guard('gongchang')->user()->factory_id;
+    }
+
     public function showGongchangZhongxin(Request $request){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
         $child = 'zhongxin';
@@ -43,8 +59,8 @@ class NotificationsAdmin extends Controller
         $notification = FactoryNotification::find($id);
         $notification->read = FactoryNotification::READ_STATUS;
         $notification->save();
-        $unreadCount = Count(FactoryNotification::where('read',0)->get());
-        return Response::json(['id'=>$id,'unread'=>$unreadCount]);
+
+        return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountFactory()]);
     }
 
     public function changetoInactiveGongchang(Request $request){
@@ -52,8 +68,8 @@ class NotificationsAdmin extends Controller
         $notification = FactoryNotification::find($id);
         $notification->read = FactoryNotification::UNREAD_STATUS;
         $notification->save();
-        $unreadCount = Count(FactoryNotification::where('read',0)->get());
-        return Response::json(['id'=>$id,'unread'=>$unreadCount]);
+
+        return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountFactory()]);
     }
 
     public function showGongchangXiangxi($id){
@@ -111,13 +127,41 @@ class NotificationsAdmin extends Controller
         ]);
     }
 
+    /**
+     * 获取本奶厂的未读消息数量
+     * @return int
+     */
+    public function getUnreadCountFactory() {
+        $current_factory_id = $this->getCurrentFactoryId();
+
+        $unreadCount = count(DSNotification::where('read',0)
+            ->where('factory_id', $current_factory_id)
+            ->get());
+
+        return $unreadCount;
+    }
+
+    /**
+     * 获取本奶站的未读消息数量
+     * @return int
+     */
+    public function getUnreadCountStation() {
+        $current_station_id = $this->getCurrentStationId();
+
+        $unreadCount = count(DSNotification::where('read',0)
+            ->where('station_id', $current_station_id)
+            ->get());
+
+        return $unreadCount;
+    }
+
     public function changetoActive(Request $request){
         $id = $request->input('id');
         $notification = DSNotification::find($id);
         $notification->read = DSNotification::READ_STATUS;
         $notification->save();
-        $unreadCount = Count(DSNotification::where('read',0)->get());
-        return Response::json(['id'=>$id,'unread'=>$unreadCount]);
+
+        return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountStation()]);
     }
 
     public function changetoInactive(Request $request){
@@ -125,8 +169,8 @@ class NotificationsAdmin extends Controller
         $notification = DSNotification::find($id);
         $notification->read = DSNotification::UNREAD_STATUS;
         $notification->save();
-        $unreadCount = Count(DSNotification::where('read',0)->get());
-        return Response::json(['id'=>$id,'unread'=>$unreadCount]);
+
+        return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountStation()]);
     }
 
     public function sendHourlyRequstforPlan(){

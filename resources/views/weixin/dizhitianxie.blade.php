@@ -6,7 +6,7 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="{{url('weixin/dizhiliebiao')}}"></a>
         <h1>填写收货地址</h1>
     </header>
 

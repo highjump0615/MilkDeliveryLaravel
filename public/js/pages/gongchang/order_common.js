@@ -1,4 +1,5 @@
 var gbIsEdit = false;
+var gnOrderId = 0;
 
 $(document).ready(function () {
     //Web Camera: this should be here
@@ -17,16 +18,23 @@ $(document).ready(function () {
         gbIsEdit = false;
     }
 
-    // 录入订单
-    if ($('#my_camera').html().trim().length == 0) {
-        show_camera();
+    // 获取订单id
+    if ($('#input_order_id').length > 0) {
+        gnOrderId = parseInt($('#input_order_id').val());
     }
-    // 修改订单，如果有图片
-    else {
-        $('#capture_camera').hide();
-        $('#reset_camera').show();
-        if($('video').attr('src') != '')
-            $('#check_capture').show();
+
+    // 录入订单
+    if ($('#my_camera').length) {   // 是否存在
+        if ($('#my_camera').html().trim().length == 0) {
+            show_camera();
+        }
+        // 修改订单，如果有图片
+        else {
+            $('#capture_camera').hide();
+            $('#reset_camera').show();
+            if ($('video').attr('src') != '')
+                $('#check_capture').show();
+        }
     }
 
     $('[data-target="#card_info"]').on("change", function () {
@@ -478,8 +486,9 @@ function initStartDateCalendar() {
         var dateVal = new Date($(input).val());
 
         // 修改要改成以保存的, 过了保存的时期，只能选择今天
-        if (gbIsEdit && $(input).val().length > 0 && dateVal > dateStart) {
+        if ($(input).val().length > 0 && dateVal > dateStart) {
             $(this).datepicker('setDate', dateVal);
+            $(this).datepicker('setStartDate', dateVal);
         }
         else {
             // 默认选择第一天
@@ -496,15 +505,15 @@ function getStartDate() {
     var able_date = new Date();
     $.extend(able_date, dateToday);
 
-    // 如果是修改订单
-    // if (!gbIsEdit) {
+    // 只有新订单才考虑3天后的问题
+    if (!gbIsEdit && gnOrderId == 0) {
         if (gap_day)
             able_date.setDate(dateToday.getDate() + gap_day);
         else {
             gap_day = 3; //default
             able_date.setDate(dateToday.getDate() + 3);
         }
-    // }
+    }
 
     return able_date;
 }

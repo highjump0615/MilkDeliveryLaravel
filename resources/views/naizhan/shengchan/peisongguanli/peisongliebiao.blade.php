@@ -17,13 +17,13 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-			
+
 				<div class="ibox-content">
 					<div class="feed-element">
 						<div class="col-md-2"></div>
 						<div class="col-lg-8">
 							<div class="col-lg-3">
-								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">添加自营配送任务</a>
+								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">添加出库</a>
 							</div>
 							<img id="shop" src="<?=asset('img/piao/arrow.png')?>" class="col-lg-1 img-responsive" width="20px;"/>
 							<div class="col-lg-3">
@@ -49,7 +49,7 @@
 					</div>
 					@endif
 				</div>
-			
+
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
@@ -57,13 +57,12 @@
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">分类</th>
 									<th data-sort-ignore="true">地址</th>
 									<th data-sort-ignore="true">配送内容</th>
 									<th data-sort-ignore="true">收货人</th>
 									<th data-sort-ignore="true">配送时间</th>
 									<th data-sort-ignore="true">电话</th>
-									<th data-sort-ignore="true">操作</th>
+									<th data-sort-ignore="true">备注</th>
 								</tr>
                             </thead>
                             <tbody>
@@ -72,18 +71,7 @@
 								<?php $i++; ?>
 								<tr>
 									<td>
-										@if($dp->changed == 1)<i class="fa fa-star"></i>@endif {{$i}}
-									</td>
-									<td>
-										@if($dp->delivery_type==1)
-											计划订单
-										@elseif($dp->delivery_type==2)
-											团购订单
-										@elseif($dp->delivery_type==3)
-											渠道订单
-										@elseif($dp->delivery_type==4)
-											赠品订单
-										@endif
+										{{$i}}
 									</td>
 									<td>{{$dp->address}}</td>
 									<td>{{$dp->product}}</td>
@@ -92,9 +80,15 @@
 									@else
 										<td>{{$dp->customer_name}}</td>
 									@endif
-									<td>@if($dp->delivery_time == 0)上午@elseif($dp->delivery_time == 1)下午 @endif</td>
+									<td>
+										@if($dp->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
+											上午
+										@elseif($dp->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
+											下午
+										@endif
+									</td>
 									<td>{{$dp->phone}}</td>
-									<td></td>
+									<td>{{$dp->comment_delivery}}</td>
 								</tr>
 							@endforeach
                             </tbody>
@@ -102,7 +96,7 @@
                                 <tr>
                                     <td colspan="8">
 										<label  class="control-label pull-right" style="padding-top:5px;"></label>
-                                        <ul class="pagination pull-right"></ul>								
+                                        <ul class="pagination pull-right"></ul>
 										<label class="control-label pull-right" style="padding-top:5px;"></label>
                                     </td>
                                 </tr>
@@ -113,6 +107,6 @@
 
 			</div>
 		</div>
-		
+
 	</div>
 @endsection

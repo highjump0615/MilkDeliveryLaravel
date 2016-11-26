@@ -89,15 +89,15 @@
                     <div class="ibox-content">
                         <input type="hidden" id="user_role_id" value="{{$role_id}}">
                         <input type="hidden" id="#backend_type" value="2">
-                        <table class="table table-bordered table-bordered" id="roles-list">
+                        <table class="table table-bordered" id="roles-list">
                             <tbody>
                             @foreach($role_name as $rn)
-                            <tr id="role{{$rn->id}}" class="clickable-row gradeX" idnumber="{{$rn->id}}" style="height: 50px;">
+                            <tr id="role{{$rn->id}}" class="clickable-row gradeX @if ($role_id == $rn->id) active @endif" idnumber="{{$rn->id}}" style="height: 50px;">
                                 <td>{{$rn->name}}</td>
                                 @if($rn->id == 1)
                                     <td class="center">不可删</td>
                                 @else
-                                    <td class="center"><button class="btn btn-md btn-success delete-role" id="delete_role{{$rn->id}}" value="{{$rn->id}}">删除</button></td>
+                                    <td class="center" ><button class="btn btn-md btn-success delete-role" id="delete_role{{$rn->id}}" value="{{$rn->id}}">删除</button></td>
                                 @endif
                             </tr>
                             @endforeach
@@ -260,10 +260,6 @@
                 e.preventDefault;
                 return false;
             })
-        });
-        /*Selectable Table row*/
-        $('#roles-list').on('click', '.clickable-row', function (event) {
-            $(this).addClass('active').siblings().removeClass('active');
         });
 
 //        $(function () {

@@ -146,7 +146,7 @@ class FactoryCtrl extends Controller
         $factory_user->status = Factory::FACTORY_STATUS_ACTIVE ;
         $factory_user->factory_id = $current_factory_id;
         $factory_user->user_role_id = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
-        $factory_user->backend_type = UserRole::USERROLE_BACLEND_TYPE_GONGCHANG;
+        $factory_user->backend_type = UserRole::USERROLE_BACKEND_TYPE_GONGCHANG;
         $factory_user->save();
 
         return redirect()->route('yonghu_page');
@@ -159,6 +159,7 @@ class FactoryCtrl extends Controller
         $current_page = 'xiangqing';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
         $factory = Factory::where('id',$user_id)->get()->first();
+
         return view('zongpingtai.yonghu.yonghu.xiangqing', [
             'pages' => $pages,
             'child' => $child,

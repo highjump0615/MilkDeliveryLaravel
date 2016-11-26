@@ -361,7 +361,7 @@
         $('body').on('click', '#order_table tbody tr', function () {
             var url = $(this).data('url');
 
-            window.location.replace(url);
+            window.location.href = url;
 
         });
     </script>

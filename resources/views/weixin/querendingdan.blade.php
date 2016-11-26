@@ -13,7 +13,7 @@
             @if(isset($primary_addr_obj) && ($primary_addr_obj != null))
                 <div class="adrtop pa2t">
                     <p>{{$primary_addr_obj->name}} {{$primary_addr_obj->phone}}<br>
-                        {{$primary_addr_obj->address}}
+                        {{$primary_addr_obj->address}} {{$primary_addr_obj->sub_address}}
                     </p>
                 </div>
             @else
@@ -45,6 +45,7 @@
                     @else
                         ??
                     @endif元</div>
+                <input type="hidden" id="total_amount" val="{{$wop->total_amount}}">
             </div>
         @empty
 
@@ -56,7 +57,7 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if( $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) )
+        @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled >去付款</button>
@@ -79,6 +80,8 @@
 
             var order_bt = $(this);
             $(order_bt).prop('disabled', true);
+
+            var total_amount = $('#total_amount').val();
 
             $.ajax({
                 type: "POST",

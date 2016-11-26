@@ -117,6 +117,10 @@ class Order extends Model
     const ORDER_FLAT_ENTER_MODE_CALL_DEFAULT = 2;
     const ORDER_FLAT_ENTER_MODE_PASSWORD_DEFAULT = 1;
 
+    // 配送时间
+    const ORDER_DELIVERY_TIME_MORNING             = 1;
+    const ORDER_DELIVERY_TIME_AFTERNOON           = 2;
+
     // 收件人地址信息
     private $mStrProvince;
     private $mStrCity;
@@ -339,13 +343,20 @@ class Order extends Model
     public function getUnfinishedDeliveryPlansAttribute()
     {
         $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
+            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->get();
+
         return $dps;
     }
 
     public function getLastDeliveryPlans($plan_id)
     {
-        $ldps = MilkManDeliveryPlan::where('order_id', $this->id)->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('id', '>', $plan_id)->orderBy('deliver_at', 'desc')->get();
+        $ldps = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->where('id', '>', $plan_id)
+            ->orderBy('deliver_at', 'desc')
+            ->get();
+
         return $ldps;
     }
 
@@ -397,15 +408,20 @@ class Order extends Model
         $result_group=[];
 
         //get order products
-        $order_products = $this->order_products;
+        $order_products = $this->order_products_all;
 
         foreach ($order_products as $op)
         {
             $order_product_id = $op->id;
             $remain_count = $op->total_count;
 
+            // 配送明细只针对订单的配送
             $op_dps = MilkManDeliveryPlan::where('order_id', $this->id)
                 ->where('order_product_id', $order_product_id)
+                ->where(function($query) {
+                    $query->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER);
+                    $query->orwhere('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL);
+                })
                 ->orderBy('deliver_at')
                 ->get();
 
@@ -425,6 +441,7 @@ class Order extends Model
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
+                    'can_edit'      =>$opdp->isEditAvailable(),
                     'status_name'   =>$opdp->status_name,
                 ];
             }
@@ -433,6 +450,7 @@ class Order extends Model
        $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
 
         return $new_array;
+//        return $result_group;
     }
 
     public function getProvinceIdAttribute()
@@ -608,6 +626,11 @@ class Order extends Model
     public function order_products()
     {
         return $this->hasMany('App\Model\OrderModel\OrderProduct');
+    }
+
+    public function order_products_all()
+    {
+        return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
     }
 
     public function getOrderPropertyNameAttribute()
