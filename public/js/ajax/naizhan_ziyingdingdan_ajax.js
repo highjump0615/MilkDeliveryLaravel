@@ -18,12 +18,16 @@ $(document).on('click','#save',function(e){
     });
 
     var order_count = 0;
+    var urlTo = SITE_URL + "naizhan/shengchan/jinripeisongdan";
+
     $('#delivery_milk #user').each(function(){
         order_count++;
+
         var product_name = $(this).find('td:eq(4)').text();
         var product_id = $(this).find('td:eq(4)').attr('value');
         var product_name_array = product_name.split(',');
         var product_id_array = product_id.split(',');
+
         for(i=0; i<product_name_array.length-1; i++){
             var product_count = product_name_array[i].split('*');
             product_name_array[i] = product_count[1];
@@ -50,8 +54,10 @@ $(document).on('click','#save',function(e){
             dataType: 'json',
             success: function (data) {
                 //console.log(data);
-                if(count == order_count)
-                    window.location.href = SITE_URL+"naizhan/shengchan/peisongliebiao";
+                if(count == order_count) {
+                    // 跳转到今日配送单
+                    window.location.href = urlTo;
+                }
             },
             error: function (data) {
                 console.log('Error:', data);
@@ -60,6 +66,11 @@ $(document).on('click','#save',function(e){
     });
     // window.location.href = SITE_URL+"naizhan/shengchan/peisongliebiao";
     // self.location = SITE_URL+"naizhan/shengchan/peisongliebiao";
+
+    // 如果没有新添加的直接跳转到今日配送单
+    if (order_count == 0) {
+        window.location.href = urlTo;
+    }
 });
 
 
@@ -222,5 +233,7 @@ $(document).on('click','#plan_cancel',function () {
     //     $(this).remove();
     // })
     // $('#delivery_milk').tbody.remove();
-    window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
+
+    // 跳转到前一页
+    parent.history.back();
 });

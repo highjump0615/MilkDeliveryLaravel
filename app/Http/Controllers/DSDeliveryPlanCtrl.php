@@ -60,6 +60,7 @@ class DSDeliveryPlanCtrl extends Controller
             ->orderby('product_id')
             ->get();
 
+        $nReceivedCount = count($DSProduction_plans);
         $is_distributed = 0;
 
         $changed_counts = MilkManDeliveryPlan::where('station_id',$current_station_id)
@@ -144,6 +145,7 @@ class DSDeliveryPlanCtrl extends Controller
             'parent'                =>$parent,
             'current_page'          =>$current_page,
 
+            'is_received'           =>$nReceivedCount,
             'dsproduction_plans'    =>$planResult,
             'is_distributed'        =>$is_distributed,
             'changed_plans'         =>$changed_plans,
@@ -429,7 +431,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
-            ->where('type',"!=", MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->where('type', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get()
             ->groupBy(function($sort){
                 return $sort->order_id;
@@ -438,6 +440,7 @@ class DSDeliveryPlanCtrl extends Controller
         $res = array();
         foreach($milkman_delivery_plans as $o=>$dps_by_order) {
             $res[$o] = SelfOrder::find($o);
+
             $products = array();
             $is_changed = 0;
             $delivery_type = 1;
@@ -460,6 +463,7 @@ class DSDeliveryPlanCtrl extends Controller
             $res[$o]['milkman_name'] = $milk_man;
             $res[$o]['comment_delivery'] = $comment;
         }
+
         $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
 
         $street = array();
@@ -489,7 +493,7 @@ class DSDeliveryPlanCtrl extends Controller
         $province = ProvinceData::all();
 
         // 页面信息
-        $child = 'peisongguanli';
+        $child = 'ziyingdingdan';
         $parent = 'shengchan';
         $current_page = 'ziyingdingdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
@@ -927,7 +931,7 @@ class DSDeliveryPlanCtrl extends Controller
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
             $milkman_info[$m]['milkman_name'] = MilkMan::find($m)->name;
-            $milkman_info[$m]['milkman_number'] = MilkMan::find($m)->number;
+            $milkman_info[$m]['milkman_number'] = MilkMan::find($m)->phone;
             $milkman_info[$m]['milkman_products'] = $this->MilkmanProductInfo(MilkMan::find($m)->id);
             $milkman_info[$m]['milkman_changestatus'] = $this->jinrichangestatus(MilkMan::find($m)->id);
         }
@@ -999,9 +1003,9 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         // 是否已生成配送列表？
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id', $current_station_id)
             ->where('deliver_at', $deliver_date_str)
-            ->where('type', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->where('milkman_id',$current_milkman)
             ->get();
@@ -1066,7 +1070,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         foreach ($mdp_by_order as $r=>$by_order_id){
             // 获取订单信息
-            $orderData = SelfOrder::find($r);
+            $orderData = Order::find($r);
             $products = array();
             $is_changed = 0;
             $delivery_type = 1;
@@ -1178,7 +1182,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
 //            }
 
-            $milkmandeliverys->report = report;
+            $milkmandeliverys->report = $report;
             $milkmandeliverys->save();
 
             if($milkmandeliverys->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){

@@ -117,10 +117,10 @@
                             <th data-sort-ignore="true">订单类型</th>
                             <th data-sort-ignore="true">数量</th>
                             <th data-sort-ignore="true">剩余量</th>
+                            <th data-sort-ignore="true">起送日期</th>
                             <th data-sort-ignore="true">单数</th>
                             <th data-sort-ignore="true">瓶/次</th>
                             <th data-sort-ignore="true">配送规则</th>
-                            <th data-sort-ignore="true">起送日期</th>
                             <th data-sort-ignore="true">订单余额</th>
                         </tr>
                         </thead>
@@ -133,10 +133,10 @@
                                     <td>{{$order_products[$i]->order_type_name}}</td>
                                     <td>{{$order_products[$i]->total_count}}</td>
                                     <td>{{$order_products[$i]->remain_count}}</td>
+                                    <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td>{{$order_products[$i]->count_per_day}}</td>
                                     <td>{{$order_products[$i]->delivery_type_name}}</td>
-                                    <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->total_amount}}</td>
                                 </tr>
                             @endfor

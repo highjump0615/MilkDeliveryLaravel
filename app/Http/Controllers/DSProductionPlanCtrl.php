@@ -1111,15 +1111,21 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $bottle_refund = DSBottleRefund::where('station_id',$current_station_id)->where('time',$refund_date_str)->get();
         $box_refund = DSBoxRefund::where('station_id',$current_station_id)->where('time',$refund_date_str)->get();
+        
+        // 是否已签收
         $received_count = 0;
         foreach ($dsplan as $dp){
+            if ($dp->status == DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED) {
                 $received_count += $dp->confirm_count;
+            }
         }
+
         return view('naizhan.shengchan.qianshoujihua',[
             'pages'         =>$pages,
             'child'         =>$child,
             'parent'        =>$parent,
             'current_page'  =>$current_page,
+
             'dsplan'        =>$dsplan,
             'fbottle'       =>$bottle_types,
             'fbox'          =>$box_types,

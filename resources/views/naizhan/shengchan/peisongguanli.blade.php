@@ -17,6 +17,9 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
+				@if ($is_received == 0)
+					<label style="color: red; font-size: 18px;">今日还没收货, 无法生成配送列表</label>
+				@endif
 
 				<div class="ibox float-e-margins">
                     <div class="ibox">
@@ -341,7 +344,7 @@
 					<div class="col-lg-10"></div>
 					<div class="col-lg-2">
 						@if($is_distributed != 1)
-							<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;">
+							<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;" @if ($is_received == 0) disabled @endif>
 								生成配送列表
 							</button>
 						@else

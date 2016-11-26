@@ -289,7 +289,7 @@ function add_price_template() {
 
     var template_name = $('#template_name').val();
     if (template_name == "" || !template_name) {
-        show_info_msg("深入模板名称");
+        show_info_msg("请输入模板名称");
         return;
     }
 

@@ -104,7 +104,6 @@
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
-									<th data-sort-ignore="true">分类</th>
 									<th data-sort-ignore="true">地址</th>
 									<th data-sort-ignore="true">配送内容</th>
 									<th data-sort-ignore="true">收货人</th>
@@ -124,19 +123,6 @@
 											<i class="fa fa-star"></i>
 										@endif
 										{{$i}}
-									</td>
-									<td>
-										@if($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-											计划订单
-										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
-											团购订单
-										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
-											渠道订单
-										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
-											赠品订单
-										@elseif($oi->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
-											店内零售
-										@endif
 									</td>
 									<td>{{$oi->address}}</td>
 									<td>{{$oi->product}}</td>

@@ -31,7 +31,7 @@ class AuthController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/naizhan/dingdan';
+    protected $redirectTo = '/naizhan/shouye';
     protected $loginPath  = '/naizhan';
     protected $redirectAfterLogout  = '/naizhan';
 

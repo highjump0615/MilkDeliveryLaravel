@@ -68,8 +68,7 @@ class BottleAdminCtrl extends Controller
                 $today_bottle_info[$bt->id]['init_store_count'] = 0;
 
             $station_refunds_count = 0;
-            $station_refund = DB::select(DB::raw("select sum(df.return_to_factory) as total from dsbottlerefunds df,deliverystations ds where ds.id = df.station_id and ds.factory_id = :factory_id and df.bottle_type = :bottle_type and
- df.time =:refund_time"),
+            $station_refund = DB::select(DB::raw("select sum(df.return_to_factory) as total from dsbottlerefunds df,deliverystations ds where ds.id = df.station_id and ds.factory_id = :factory_id and df.bottle_type = :bottle_type and df.time =:refund_time"),
                 array('factory_id'=>$current_factory_id,'refund_time'=>$current_date_str,'bottle_type'=>$bt->id));
             foreach ($station_refund as $sr){
                 $station_refunds_count += $sr->total;
