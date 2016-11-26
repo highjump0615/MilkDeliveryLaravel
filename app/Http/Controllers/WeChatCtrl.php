@@ -292,9 +292,10 @@ class WeChatCtrl extends Controller
 
         //add verified flag
         if (!session('verified')) {
-            session(['verified' => 'yes']);
+            session(['verified' => 'no']);
         }
 
+        $verified = session('verified') == 'yes';
 
         $wechat_user = WechatUser::find($wechat_user_id);
 
@@ -322,6 +323,7 @@ class WeChatCtrl extends Controller
             'remain_amount' => $remain_amount,
             'remaining_bottle_count' => $remaining_bottle_count,
             'cartn' => $cartn,
+            'verified' => $verified,
         ]);
     }
 
@@ -362,6 +364,8 @@ class WeChatCtrl extends Controller
             }
         }
 
+        usort($plans, array($this, "cmp"));
+
         if ($request->has('from')) {
             return view('weixin.dingdanrijihua', [
                 'plans' => $plans,
@@ -375,6 +379,11 @@ class WeChatCtrl extends Controller
             ]);
         }
 
+    }
+
+    function cmp($a, $b)
+    {
+        return strcmp($a->deliver_at, $b->deliver_at);
     }
 
 
@@ -721,7 +730,7 @@ class WeChatCtrl extends Controller
 
         //add verified flag
         if (!session('verified')) {
-            session(['verified' => 'yes']);
+            session(['verified' => 'no']);
         }
 
 
@@ -1335,7 +1344,7 @@ class WeChatCtrl extends Controller
 
         //add verified flag
         if (!session('verified')) {
-            session(['verified' => 'yes']);
+            session(['verified' => 'no']);
         }
 
         $wechat_user_id = session('wechat_user_id');
@@ -2129,6 +2138,12 @@ class WeChatCtrl extends Controller
     {
         return view('weixin.dengji', [
         ]);
+    }
+
+    public function dengchu(Request $request) {
+        session(['verified'=>'no']);
+
+        return redirect()->route('weixin_qianye');
     }
 
     //send verify code to phone

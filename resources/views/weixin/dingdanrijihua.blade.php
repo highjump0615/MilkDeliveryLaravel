@@ -23,10 +23,10 @@
 
         <label class="pa2t" style="margin-top: 20px;">订单记录：</label>
         <dl class="ordjl">
-            <table class="footable table table-bordered" data-page-size="10">
+            <table class="table table-bordered" data-page-size="10" id="internalActivities">
                 <thead>
                 <tr>
-                    <th data-sort-ignore="true">序号</th>
+                    <!--<th data-sort-ignore="true">序号</th>-->
                     <th data-sort-ignore="true">配送时间</th>
                     <th data-sort-ignore="true">状态</th>
                     <th data-sort-ignore="true">奶品</th>
@@ -37,8 +37,8 @@
                 @if(isset($plans))
                     <?php $i = 0;?>
                     @foreach($plans as $plan)
-                        <tr data-planid="{{$plan['plan_id']}}">
-                            <td>{{$i+1}}</td>
+                        <tr data-planid="{{$plan['plan_id']}}" data-date="{{$plan['deliver_at']}}">
+                            <!--<td>{{$i+1}}</td>-->
                             <td>{{$plan['deliver_at']}}</td>
                             <td>{{$plan['status_name']}}</td>
                             <td>{{$plan['product_name']}}</td>
@@ -55,14 +55,9 @@
                 @endif
 
                 </tbody>
-                <tfoot>
-                <tr>
-                    <td colspan="100%">
-                        <ul class="pagination pull-right"></ul>
-                    </td>
-                </tr>
-                </tfoot>
             </table>
+
+            <!--<button class="tjord" id="seeMoreRecords">More</button>-->
     </dl>
     </div>
     <div class="he50"></div>
@@ -78,6 +73,14 @@
     <script type="text/javascript">
 
         var today = "{{$today}}";
+
+        var trs = $("#internalActivities tr");
+//        var btnMore = $("#seeMoreRecords");
+        var trsLength = trs.length;
+        var currentIndex = 10;
+
+        trs.hide();
+
 
         $(function () {
             $('#calendar').fullCalendar({
@@ -99,6 +102,34 @@
                     },
                     @endforeach
                 ],
+                viewRender: function (view, element) {
+                    var start_date = view.intervalStart;
+
+                    var cal_year = start_date.format('YYYY');
+                    var cal_month = start_date.format('MM');
+
+                    $(trs).each(function(){
+                        var tr = $(this);
+                        var date_str = tr.data('date');
+
+                        if(date_str != undefined) {
+                            var date_obj = new Date(date_str);
+
+                            var year = date_obj.getUTCFullYear();
+
+                            var month = date_obj.getUTCMonth() + 1;;
+
+                            if(cal_year == year && cal_month == month) {
+                                tr.show();
+                            } else {
+                                tr.hide();
+                            }
+
+                        }
+
+
+                    });
+                }
             });
 
             $('.footable').footable();
