@@ -906,7 +906,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
 Route::group(['prefix'=>'/weixin'], function(){
     /* home page */
-    Route::get('/qianye',  'WeChatCtrl@showIndexPage');
+    Route::get('/qianye',  'WeChatCtrl@showIndexPage')->name('weixin_qianye');
     Route::post('api/set_session_address',  'WeChatCtrl@set_session_address');
 
     /* product list */
@@ -993,6 +993,7 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /*dengji*/
     Route::get('dengji', 'WeChatCtrl@dengji');
+    Route::get('dengchu', 'WeChatCtrl@dengchu');
     //send verify code to phone
     Route::post('/api/send_verify_code_to_phone', 'WeChatCtrl@send_verify_code_to_phone');
     Route::post('/api/check_verify_code', 'WeChatCtrl@check_verify_code');

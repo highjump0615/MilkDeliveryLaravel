@@ -26,6 +26,7 @@ header{ position: relative; padding:0 1%; height: 38px; line-height:38px; text-a
 header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .headl{left:1%}
 .headr{right:2%}
+.topr1{right:2%}
 .mesa{ background: url(../images/ico1.png) no-repeat center center; background-size: 24px}
 .seartop{ float: right; padding-top:6px; width: 65%}
 .seartop input{color: #1f5d2b; padding:3px 20px 3px 5px; width: 98%; line-height: 20px; vertical-align:top; border: none; background: #fff url(../images/ico2.png) no-repeat 98% 50%; background-size: 18px}
