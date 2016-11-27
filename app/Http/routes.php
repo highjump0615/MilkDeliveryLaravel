@@ -281,6 +281,7 @@ Route::group(['middleware' => ['gongchang']], function () {
     //show milk card delivery list
     Route::get('/gongchang/caiwu/taizhang/naikazhuanzhangzhangchan', 'FinanceCtrl@show_transaction_list_not_checked_for_card_in_gongchang');
     Route::post('/gongchang/caiwu/taizhang/naikakuanzhuanzhang/create_transaction', 'FinanceCtrl@show_transaction_creation_page_for_card_in_gongchang');
+
     Route::post('api/gongchang/caiwu/taizhang/naikazhuanzhangzhangchan/get_trans_data', 'FinanceCtrl@get_trans_data_for_card');
     Route::post('api/gongchang/caiwu/taizhang/naikazhuanzhangzhangchan/complete_trans', 'FinanceCtrl@complete_trans_for_card');
     //show milk card delivery record
@@ -842,7 +843,9 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     //Show wechat orders list for transactions
     Route::get('/zongpingtai/caiwu/zhangwujiesuan', 'FinanceCtrl@show_wechat_orders')->name('show_wechat_orders');
     Route::post('api/zongpingtai/factory_to_station', 'FinanceCtrl@get_station_from_factory');
-    Route::post('api/zongpingtai/caiwu/zhangwu/create_transaction', 'FinanceCtrl@create_transaction_for_wechat');
+
+    Route::post('/zongpingtai/caiwu/create_transaction', 'FinanceCtrl@show_transaction_creation_page_for_wechat');
+
     //Show wechat transactions not checked
     Route::get('/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/{factory_id}', 'FinanceCtrl@show_wechat_transaction_list_not_checked_in_zongpingtai');
     Route::post('api/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/get_trans_data', 'FinanceCtrl@get_trans_data_for_wechat');

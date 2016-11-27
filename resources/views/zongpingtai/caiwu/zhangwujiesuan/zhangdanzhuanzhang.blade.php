@@ -11,7 +11,6 @@
         }
 
         .modal-body input {
-            height: 35px;
             width: 100%;
             max-width: 100px;
             display: inline-block;
@@ -22,6 +21,10 @@
             background-color: #0b8cc5;
             overflow: auto;
             padding: 5px;
+        }
+
+        form {
+            padding: 0px;
         }
 
     </style>
@@ -48,7 +51,7 @@
             <div class="wrapper-content">
 
                 <div class="ibox-content">
-                    <label class="col-md-1" style="padding-top: 5px;">录入奶站:</label>
+                    <label class="col-md-1" style="padding-top: 5px;">奶站:</label>
                     <div class=" col-md-2">
                         <select id="filter_station" class="chosen-select form-control"
                                 style="width:100%; height: 35px;">
@@ -356,11 +359,11 @@
                     url: API_URL + 'zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/complete_trans',
                     data: sendData,
                     success: function (data) {
-                        console.log(data);
                         if (data.status = "success") {
-                            alert(" 转账账单成功");
+                            show_success_msg(" 转账账单成功");
+
                             $('#insert_modal_form').modal('hide');
-                            window.location.href = SITE_URL + "zongpingtai/caiwu/zhangwujiesuan/lishizhuanzhangjiru";
+                            window.location.href = SITE_URL + "zongpingtai/caiwu/zhangwujiesuan/lishizhuanzhangjiru/" + data.factory;
                         }
                     },
                     error: function (data) {
