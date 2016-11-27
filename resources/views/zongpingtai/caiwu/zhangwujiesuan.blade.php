@@ -42,7 +42,7 @@
             <div class="wrapper-content">
 
                 <div class="ibox-content">
-                    <label class="col-md-1 text-right">选择公司</label>
+                    <label class="col-md-1 text-right">公司</label>
                     <div class="col-md-2">
                         <select id="filter_factory" class="chosen-select form-control">
                             @if(isset($factories))
@@ -52,14 +52,14 @@
                             @endif
                         </select>
                     </div>
-                    <label class="col-md-1 text-right">奶站</label>
+<!--                    <label class="col-md-1 text-right">奶站</label>
                     <div class="col-md-2">
                         <select id="filter_station" class="chosen-select form-control">
                             <option value="none">全部</option>
                         </select>
                     </div>
-
-                    <label class="col-md-1 control-label text-right" style="padding-top:5px;">选择日期:</label>
+-->
+                    <label class="col-md-offset-3 col-md-1 control-label text-right" style="padding-top:5px;">日期:</label>
                     <div class="col-md-3">
                         <div class="input-daterange input-group">
                             <input id="filter_start_date" type="text" class="input-md form-control" name="start"/>
@@ -76,11 +76,11 @@
                 </div>
 
                 <div class="ibox-content">
-                    <form class="col-md-7" method="POST" id="create_transaction_form">
+                    <form class="col-md-7" method="post" id="create_transaction_form" action="create_transaction">
                         <input type="hidden" id="factory_id" name="factory_id" value="none">
                         <input type="hidden" id="station_id" name="station_id" value="none">
                         <div class="col-md-8 form-group data_range_select">
-                            <label class="col-md-4 control-label" style="padding-top:5px;">选择账单日期:</label>
+                            <label class="col-md-4 control-label" style="padding-top:5px;">账单日期:</label>
                             <div class="input-daterange input-group col-md-8">
                                 <input type="text" class="input-md form-control" name="start"/>
                                 <span class="input-group-addon">至</span>
@@ -197,30 +197,30 @@
 
         });
 
-        $('#create_transaction_form').submit(function (e) {
-            e.preventDefault();
-
-            var sendData = $(this).serializeArray();
-            $.ajax({
-                type: "POST",
-                url: API_URL + 'zongpingtai/caiwu/zhangwu/create_transaction',
-                data: sendData,
-                success: function (data) {
-                    console.log(data);
-                    if (data.status == "success") {
-                        var fid = data.factory_id;
-                        window.location = SITE_URL + "zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/" + fid;
-                    } else {
-                        return;
-                    }
-                },
-                error: function (data) {
-                    console.log(data);
-
-                }
-            })
-
-        });
+//        $('#create_transaction_form').submit(function (e) {
+//            e.preventDefault();
+//
+//            var sendData = $(this).serializeArray();
+//            $.ajax({
+//                type: "POST",
+//                url: API_URL + 'zongpingtai/caiwu/zhangwu/create_transaction',
+//                data: sendData,
+//                success: function (data) {
+//                    console.log(data);
+//                    if (data.status == "success") {
+//                        var fid = data.factory_id;
+//                        window.location = SITE_URL + "zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/" + fid;
+//                    } else {
+//                        return;
+//                    }
+//                },
+//                error: function (data) {
+//                    console.log(data);
+//
+//                }
+//            })
+//
+//        });
 
         //According to factory, show station list
         $('#filter_factory').on('change', function () {
@@ -230,7 +230,7 @@
 
             $('#show_history').attr('href', 'zhangwujiesuan/lishizhuanzhangjiru/' + factory_id);
             $('#show_todo').attr('href', 'zhangwujiesuan/zhangdanzhuanzhang/' + factory_id);
-
+/*
             var station_list = $('#filter_station');
             $(station_list).empty();
 
@@ -260,6 +260,7 @@
                     console.log(data);
                 }
             })
+*/
         });
 
         $('#filter_station').change(function () {

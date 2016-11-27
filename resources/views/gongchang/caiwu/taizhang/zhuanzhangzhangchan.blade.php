@@ -350,7 +350,7 @@
                     success: function (data) {
                         console.log(data);
                         if (data.status = "success") {
-                            alert(" 转账账单成功");
+                            show_success_msg(" 转账账单成功");
                             $('#insert_modal_form').modal('hide');
                             window.location.href = SITE_URL + "gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu";
                         }
@@ -363,7 +363,6 @@
             });
 
             $('button[data-action="insert_modal"]').click(function () {
-
 
                 var trans_id_list = [];
                 //get selected trans id

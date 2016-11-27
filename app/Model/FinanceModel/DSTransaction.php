@@ -71,7 +71,12 @@ class DSTransaction extends Model
     {
         $remain = 0;
 
-        $money_transfer = StationsMoneyTransfer::where('station1_id', $this->station_id)->where('station2_id', $this->delivery_station_id)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)->orderBy('time', 'desc')->get()->first();
+        $money_transfer = StationsMoneyTransfer::where('station1_id', $this->station_id)
+            ->where('station2_id', $this->delivery_station_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->orderBy('time', 'desc')
+            ->get()
+            ->first();
 
         if($money_transfer)
             $remain = $money_transfer->remaining;
@@ -82,7 +87,11 @@ class DSTransaction extends Model
     public function getPreRemainWechatAttribute()
     {
         $remain = 0;
-        $money_transfer = StationsMoneyTransfer::where('station2_id', $this->delivery_station_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)->orderBy('time', 'desc')->get()->first();
+        $money_transfer = StationsMoneyTransfer::where('station2_id', $this->delivery_station_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->orderBy('time', 'desc')
+            ->get()
+            ->first();
 
         if($money_transfer)
             $remain = $money_transfer->remaining;
