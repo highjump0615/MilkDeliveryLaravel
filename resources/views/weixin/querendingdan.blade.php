@@ -116,7 +116,7 @@
         $('button.edit_order_product').click(function () {
             var wechat_order_product_id = $(this).data('pid');
             var group_id = $('#group_id').val();
-            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id;
+            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+'&&from=queren';
         })
 
     </script>

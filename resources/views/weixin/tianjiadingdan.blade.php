@@ -105,7 +105,7 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
@@ -115,7 +115,7 @@
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>

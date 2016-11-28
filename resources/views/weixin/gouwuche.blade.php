@@ -12,9 +12,10 @@
                 <div class="ordtop clearfix">
                     <div class="ord-l">
                         <input class="ordxz cart_check" name="" type="checkbox" data-count="{{$c->order_item->total_count}}"
+                               data-order-type ="{{$c->order_item->order_type}}"
                                data-amount="{{$c->order_item->total_amount}}" data-cartid="{{$c->id}}" checked />
                     </div>
-                    <img class="ordpro" src="<?=asset('img/product/logo/' . $c->order_item->product->photo_url1)?>">
+                    <a href="{{url('weixin/bianjidingdan').'?wechat_opid='.$c->wxorder_product_id.'&&from=gouwuche'}}"><img class="ordpro" src="<?=asset('img/product/logo/' . $c->order_item->product->photo_url1)?>"></a>
                     <div class="ord-r">
                         <button class="ordxz remove" type="submit"><i class="fa fa-remove"></i></button>
                         {{$c->order_item->product->name}}
@@ -113,6 +114,32 @@
 
         });
 
+        function check_bottle_count_limit(){
+
+            var total_amount_checked = 0;
+            var max_order_type = 1;
+
+            $('input.cart_check:checked').each(function(){
+                total_amount_checked += parseInt($(this).data('count'));
+                var order_type = parseInt($(this).data('order_type'));
+                if(max_order_type < order_type)
+                {
+                    max_order_type = order_type;
+                }
+            });
+
+            if (max_order_type == "{{\App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH}}" && total_amount_checked < 30)
+            {
+                return true;
+            } else if (max_order_type == "{{\App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON}}" && total_amount_checked < 90) {
+                return true;
+            } else if (max_order_type == "{{\App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR}}" && total_amount_checked < 180) {
+                return true;
+            }
+
+            return false;
+        }
+
         $('#process_cart').click(function(){
             var cart_ids = "";
             // get all checked carts
@@ -126,6 +153,12 @@
             });
             if(!cart_ids)
                 return;
+
+            if(check_bottle_count_limit())
+            {
+                show_warning_msg('订单数量总合得符合订单类型条件');
+                return;
+            }
 
             $.ajax({
                 type:"POST",

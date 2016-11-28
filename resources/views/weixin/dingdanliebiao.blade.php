@@ -27,6 +27,7 @@
             <div class="ordnum">
                 <span>{{$o->ordered_at}}</span>
                 <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
+                &nbsp;奶站: {{$o->station_name}} &nbsp; 配送员: {{$o->milkman->name}} {{$o->milkman->phone}}
             </div>
             @forelse($o->order_products as $op)
                 <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">

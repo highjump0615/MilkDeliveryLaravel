@@ -20,8 +20,8 @@
                     <img class="ordpro" src="<?=asset('/img/product/logo/'.$plan->plan_product_image)?>">
                     <p>{{$plan->product_name}}</p>
                     <div class="ordye">金额：{{$plan->plan_price}}元</div>
-                    <span class="addSubtract">
-                        <a class="subtract" href="javascript:;">-</a>
+                    <span class="addSubtract deliver_plan_as">
+                        <a class="subtract " href="javascript:;">-</a>
                         <input type="text" value="{{$plan->changed_plan_count}}" style="ime-mode: disabled;"/>
                         <a class="add" href="javascript:;">+</a>
                     </span>
@@ -71,7 +71,8 @@
                         console.log(data);
                         if (data.status == "success") {
                             show_success_msg('修改单日成功');
-                            location.reload();
+//                            location.reload();
+                            location.href = SITE_URL + "weixin/dingdanrijihua";
                         } else {
                             show_warning_msg('修改单日失败');
                             console.log(data.messages);

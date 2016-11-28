@@ -48,3 +48,13 @@ $(".addSubtract .subtract").click(function () {
         $(this).addClass("subtractDisable");
     }
 });
+
+$(".addSubtract.deliver_plan_as .subtract").click(function () {
+    if (parseInt($(this).next().val()) > 1) {
+        $(this).next().val(parseInt($(this).next().val()) - 1);
+        $(this).removeClass("subtractDisable");
+    }
+    if (parseInt($(this).next().val()) <= 1) {
+        $(this).addClass("subtractDisable");
+    }
+});
