@@ -1874,7 +1874,8 @@ class OrderCtrl extends Controller
             //Step 3: Insert new record for stopped orders
             //These are plans after the stop end date
 
-            $restart_date = $start_at;
+            $restart = new DateTime($start_at);
+            $restart_date = $restart->format('Y-m-d');
 
             $order_products = $order->order_products;
 
@@ -1901,11 +1902,16 @@ class OrderCtrl extends Controller
                 }
             }
 
-            $order->restart_at = $start_at;
+            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+            $today = $today_date->format('Y-m-d');
+
+            $order->restart_at = $restart_date;
+            if($restart_date == $today)
+                $order->status = Order::ORDER_ON_DELIVERY_STATUS;
             $order->save();
 
             if ($result) {
-                return response()->json(['status' => 'success', 'restart_at' => $start_at]);
+                return response()->json(['status' => 'success', 'restart_at' => $restart_date]);
             } else {
                 return response()->json(['status' => 'fail', 'message' => '']);
             }
@@ -1933,6 +1939,12 @@ class OrderCtrl extends Controller
             $start_date = $request->input('start');
             $end_date = $request->input('end');
             $order_id = $request->input('order_id');
+
+            $start = new DateTime($start_date);
+            $start_date = $start->format('Y-m-d');
+
+            $end = new DateTime($end_date);
+            $end_date = $end->format('Y-m-d');
 
             $order = Order::find($order_id);
             $station_id = $order->station_id;

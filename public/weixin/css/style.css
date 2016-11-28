@@ -250,6 +250,7 @@ button.tjord3{ width:55%; background:#00a040}
 .ordrs{ font-size:1.2rem}
 .ordnum2{ font-size:1.2rem}
 .ordnum2 .tgl+.tgl-btn{ margin-top:-3px; margin-left:2px; width:30px; height:18px}
+.shsp-r{float:right;}
 
 
 /**********************订单列表-已完成订单*/

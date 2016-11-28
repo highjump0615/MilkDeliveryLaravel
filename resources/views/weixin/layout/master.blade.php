@@ -15,14 +15,14 @@
     <link rel="stylesheet" href="<?=asset('weixin/css/style.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
 
-
     @yield('css')
 
 </head>
 <body>
 @yield('content')
 <script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
-<script src="<?=asset('weixin/js/jquery-ui-1.10.4.min.js')?>"></script>
+<!--script src="<?=asset('weixin/js/jquery-ui-1.10.4.min.js')?>"></script-->
+<script src="<?=asset('weixin/js/jquery-ui.js')?>"></script>
 <script src="<?=asset('js/bootstrap.min.js')?>"></script>
 <script src="<?=asset('js/global.js')?>"></script>
 <script src="<?=asset('js/plugins/notify/notify.min.js') ?>"></script>

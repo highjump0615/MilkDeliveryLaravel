@@ -24,7 +24,7 @@
     <link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 
-    {{--<i-check box css>--}}
+    <!--check box css-->
     <link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 
     <link href="<?=asset('css/animate.css') ?>" rel="stylesheet">

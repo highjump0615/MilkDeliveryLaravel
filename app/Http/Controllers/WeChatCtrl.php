@@ -2454,12 +2454,16 @@ class WeChatCtrl extends Controller
 
         $primary_addr_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
 
+        //as this is xuedan, that means before, this has passed
+        $passed = true;
+
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
             'customer' => $customer,
             'wechat_order_products' => $wechat_order_products,
             'group_id' => $group_id,
             'wxuser_id' => $wxuser_id,
+            'passed'=>$passed,
         ]);
     }
 
