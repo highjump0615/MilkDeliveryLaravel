@@ -119,7 +119,7 @@
                 @endif
                 @if($order->has_stopped)
                     <label class="col-md-2">暂停日期:</label>
-                    <label class="col-md-2">{{$order->stop_at}} ~ {{$order->order_stop_end_date}}</label>
+                    <label class="col-md-10">{{$order->stop_at}} ~ {{$order->order_stop_end_date}}</label>
                 @endif
             </div>
             <div class=" col-md-12 gray-bg">
@@ -364,6 +364,7 @@
     <script type="text/javascript">
 
         var gbIsStation = false;
+
         // 是否奶站录入
         @if (isset($station))
             gbIsStation = true;
@@ -383,57 +384,8 @@
         var order_start_date = new Date(order_start_at);
         var order_end_date = new Date("{{$order->order_end_date}}");
 
-        var stop_start_able_date = new Date();
-        //        stop_start_able_date.setDate(today.getDate()+gap_day);
-
-        if (order_start_date > stop_start_able_date) {
-            stop_start_able_date = order_start_date;
-        }
-
-        var restart_able_date = new Date();
-        if (order_start_date > restart_able_date) {
-            restart_able_date = order_start_date;
-        }
-        //        if(gap_day)
-        //            restart_able_date.setDate(today.getDate()+gap_day);
-        //        else
-        //        {
-        //            gap_day = 3; //default
-        //            restart_able_date.setDate(today.getDate()+3);
-        //        }
-
-
-        //set the stop modal 's start stop date val as orders's start date at least.
-        if (status == "{{\App\Model\OrderModel\Order::ORDER_PASSED_STATUS}}" || status == "{{\App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS}}") {
-
-            $('#stop_order_modal').find('.input-daterange #stop_start').datepicker({
-                keyboardNavigation: false,
-                forceParse: false,
-                autoclose: true,
-                calendarWeeks: false,
-                clearBtn: true,
-                startDate: stop_start_able_date,
-                endDate: order_end_date,
-            });
-
-            $('#stop_order_modal').find('.input-daterange #stop_end').datepicker({
-                keyboardNavigation: false,
-                forceParse: false,
-                autoclose: true,
-                calendarWeeks: false,
-                clearBtn: true,
-                startDate: order_start_date,
-            });
-        } else if (status == "{{\App\Model\OrderModel\Order::ORDER_STOPPED_STATUS}}") {
-            $('#restart_order_modal').find('.single_date').datepicker({
-                keyboardNavigation: false,
-                forceParse: false,
-                autoclose: true,
-                calendarWeeks: false,
-                clearBtn: true,
-                startDate: restart_able_date,
-            });
-        }
+        var stop_from = new Date("{{$order->stop_at}}");
+        var stop_to = new Date("{{$order->restart_at}}");
 
     </script>
 

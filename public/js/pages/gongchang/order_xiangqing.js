@@ -1,3 +1,66 @@
+$(document).ready(function() {
+    //
+    // 初始化暂停和开始日期选取日历
+    //
+    var stop_start_able_date = new Date();
+
+    if (order_start_date > stop_start_able_date) {
+        stop_start_able_date = order_start_date;
+    }
+
+    var restart_able_date = new Date();
+    if (order_start_date > restart_able_date) {
+        restart_able_date = order_start_date;
+    }
+
+    //set the stop modal 's start stop date val as orders's start date at least.
+    if ($('#stop_order_modal').length) {
+        $('#stop_order_modal').find('.input-daterange #stop_start').datepicker({
+            keyboardNavigation: false,
+            forceParse: false,
+            autoclose: true,
+            calendarWeeks: false,
+            clearBtn: true,
+            startDate: stop_start_able_date,
+            endDate: order_end_date
+        });
+
+        $('#stop_order_modal').find('.input-daterange #stop_end').datepicker({
+            keyboardNavigation: false,
+            forceParse: false,
+            autoclose: true,
+            calendarWeeks: false,
+            clearBtn: true,
+            startDate: order_start_date
+        });
+    }
+
+    if ($('#restart_order_modal').length) {
+        $('#restart_order_modal').find('.single_date').datepicker({
+            keyboardNavigation: false,
+            forceParse: false,
+            autoclose: true,
+            calendarWeeks: false,
+            clearBtn: true,
+            startDate: restart_able_date
+        });
+    }
+
+    if (stop_from != "Invalid Date" && stop_to != "Invalid Date") {
+        // 显示modal事件
+        $('#stop_order_modal').on('shown.bs.modal', function () {
+            $(this).find('.input-daterange #stop_start').datepicker('setDate', stop_from);
+            $(this).find('.input-daterange #stop_end').datepicker('setDate', stop_to);
+        });
+    }
+
+    // 隐藏modal事件
+    $('#stop_order_modal').on('hidden.bs.modal', function () {
+        $(this).find('.input-daterange #stop_start').datepicker('setDate', '');
+        $(this).find('.input-daterange #stop_end').datepicker('setDate', '');
+    });
+});
+
 /*
  * Stop Order
  */

@@ -281,7 +281,8 @@ class MilkManDeliveryPlan extends Model
 
             if ($dateCurrent > $dateDeliver) {
                 $editAvailable = false;
-            } else if ($dateCurrent == $dateDeliver) {
+            }
+            else if ($dateCurrent == $dateDeliver) {
                 // 已配送、配送取消，当天配送列表生成的情况下不能修改
                 if (DSDeliveryPlan::getDeliveryPlanGenerated($this->delivery_station_id, $this->order_product->product->id)) {
                     $editAvailable = false;

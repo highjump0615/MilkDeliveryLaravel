@@ -696,6 +696,7 @@ class OrderCtrl extends Controller
                 $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
 
                 if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+
                     $deliver_at = $restart_at;
                     $stop_checked = true;
                 }
@@ -1961,6 +1962,12 @@ class OrderCtrl extends Controller
             $plans = $order->delivery_plans_sent_to_production_plan;
             foreach ($plans as $plan) {
                 $plan->changed_plan_count = 0;
+                $plan->delivery_count = 0;
+
+                // 改成取消状态
+                $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
+                $plan->cancel_reason = '暂停';
+
                 $plan->save();
             }
 
@@ -2027,6 +2034,18 @@ class OrderCtrl extends Controller
         $product_id = $op->product_id;
         $milkman_id = $order->milkman_id;
         $station_id = $order->delivery_station_id;
+
+        //
+        // 创建一个MilkmanDeliveryPlan, 之后自动生成
+        //
+        $this->addMilkmanDeliveryPlan($milkman_id,
+            $station_id,
+            $restart_date,
+            $op,
+            MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,
+            $todo);
+
+        return true;
 
         //get product production_period and order_at production_period
         $product = Product::find($product_id);
@@ -3689,27 +3708,12 @@ class OrderCtrl extends Controller
             //
             // 创建一个MilkmanDeliveryPlan, 之后自动生成
             //
-            $dp = new MilkManDeliveryPlan;
-
-            $dp->milkman_id = $milkman_id;
-            $dp->station_id = $station_id;
-            $dp->order_id = $order->id;
-            $dp->order_product_id = $op->id;
-            $dp->deliver_at = $op->getClosestDeliverDate($product_start_at);
-            $dp->produce_at = $op->getProductionDate($dp->deliver_at);
-            $dp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING;
-            $dp->setCount($op->getDeliveryTypeCount($dp->deliver_at));
-            $dp->product_price = $product_price;
-            $dp->delivered_count = 0;
-            $dp->type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
-            $dp->save();
-
-            // 自动生成配送明细
-            $op->processExtraCount($dp, $op->total_count - $dp->changed_plan_count);
-
-            // 设置配送第一天的标志
-            $dp->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-            $dp->save();
+            $this->addMilkmanDeliveryPlan($milkman_id,
+                $delivery_station_id,
+                $product_start_at,
+                $op,
+                MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
+                $op->total_count);
         }
 
 //        //set flag on first order delivery plan
@@ -3764,6 +3768,46 @@ class OrderCtrl extends Controller
         }
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
+    }
+
+    /**
+     * 创建一个MilkmanDeliveryPlan, 之后自动生成
+     * @param $milkmanId
+     * @param $stationId
+     * @param $startAt
+     * @param $orderProduct
+     * @param $status
+     * @param $count
+     */
+    private function addMilkmanDeliveryPlan($milkmanId, $stationId, $startAt, $orderProduct, $status, $count) {
+        $dp = new MilkManDeliveryPlan;
+
+        $dp->milkman_id = $milkmanId;
+        $dp->station_id = $stationId;
+        $dp->order_id = $orderProduct->order_id;
+        $dp->order_product_id = $orderProduct->id;
+        $dp->deliver_at = $orderProduct->getClosestDeliverDate($startAt);
+        $dp->produce_at = $orderProduct->getProductionDate($dp->deliver_at);
+
+        $dp->status = $status;
+        $dp->determineStatus();
+
+        $dp->setCount($orderProduct->getDeliveryTypeCount($dp->deliver_at));
+        $dp->product_price = $orderProduct->product_price;
+        $dp->delivered_count = 0;
+        $dp->type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
+
+        $dp->save();
+
+        // 自动生成配送明细
+        $orderProduct->processExtraCount($dp, $count - $dp->changed_plan_count);
+
+        // 说明这是第一条配送明细
+        if ($count == $orderProduct->total_count) {
+            // 设置配送第一天的标志
+            $dp->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
+            $dp->save();
+        }
     }
 
     //Insert Order In gongchang
