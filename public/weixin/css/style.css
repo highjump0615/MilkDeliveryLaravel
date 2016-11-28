@@ -17,7 +17,7 @@ button:active{position:relative; top:1px;}
 .under_banner .bimg{padding: 0;}
 .bann .swiper-slide img.bimg{height:100%}
 .pa2{ padding:3%}
-.pa2t{ padding:0}
+.pa2t{ padding:0 3%;}
 .plan_result{text-align:center}
 
 input[type='checkbox']{margin: 0;}
@@ -25,7 +25,8 @@ input[type='checkbox']{margin: 0;}
 header{ position: relative; padding:0 1%; height: 38px; line-height:38px; text-align: center; color:#fff; background-color:#00a040; overflow:hidden}
 header a{ position: absolute; display: block; top: 0; width:34px; height: 38px}
 .headl{left:1%}
-.headr{right:2%}
+.headr{right:2%; color: white;}
+span.headr{}
 .topr1{right:2%}
 .mesa{ background: url(../images/ico1.png) no-repeat center center; background-size: 24px}
 .seartop{ float: right; padding-top:6px; width: 65%}
@@ -143,18 +144,19 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .dnsbt button:active {position: relative; top: 1px;}
 .dnsb1{ background:#00a040}
 .dnsb2{ background:#ed5a02}
-
+.dnsbt.change_order{bottom: 50px;background:transparent;}
 /**********************商品详情-随心送规则*/
 .dnsts2{ background:#00a040}
 .ypsrl.fc-event, .ypsrl.fc-event:hover, .ypsrl.ui-widget .fc-event{ color:#fff}
 
 /**********************修改订单-单个品种*/
-.ordtop{ padding:2% 3%; position:relative; font-size:0}
+.ordtop{ padding:2% 3%; position:relative; font-size:0; min-height:150px;}
 .ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1}
-.ordtop p{ padding-top:2%; font-size:1.4rem}
-.ordtop p span{ float:right}
+img.ordpro{min-height:120px;}
+.ordyf{padding-top: 2%; font-size:1.4rem;}
 .ordye{ position:absolute; right:3%; bottom:3%; color:#ed5a02; font-size:1.4rem}
-.dnsli2{ padding:2%;border-top:1px solid #909090}
+.ordyf > span, .ordye > span{margin:0 10px;}
+.dnsli2{padding: 2%; border-top:1px solid #909090; margin-left:auto; margin-right:auto; width: 96%;}
 .dnpro{ }
 .dnpro li{ line-height:1.2; border-bottom:1px dashed #a8a8a9}
 .dnpro li p{ padding-top:8%}
@@ -165,6 +167,12 @@ a.tjord{ margin:auto; display:block; font-size:1.6rem; line-height:1.8; color:#f
 button.tjord{ margin:auto; display:block; font-size:1.6rem; line-height:1.8; color:#fff; background:#ed5a02}
 .khpro{ margin-left:3%; font-size:1.2rem; color:#ccc}
 
+.product_list .orddp{padding: 2% 3%; position:relative; border-bottom: 1px dotted grey}
+.spp{display:inline-block; vertical-align: top; margin-top:20px;}
+.spp1{width:30%; padding-left:2%;}
+.spp2{width:15%;}
+.spp3{width:20%; visibility: hidden;}
+
 /**********************修改订单-多个品种*/
 .ordxg{ padding-top:4%; clear:both; font-size:1.2rem}
 .qssj2{ padding-left:0; vertical-align:middle}
@@ -173,7 +181,7 @@ button.tjord2{ width:65%}
 .psrq{ padding-top:2%}
 #calendar table thead tr td:hover{cursor:pointer;background-color: burlywood}
 #calendar table thead tr td.selected{cursor:pointer;background-color: burlywood}
-
+.xiugai_link{ color: white; display: inline-block; padding: 5px 8px; font-size: 1.2rem; border: 1px solid #c4c4c4; -moz-border-radius: 6px; border-radius: 6px; background-color: chocolate; margin: 0 5px;}
 
 /**********************修改订单-单日加减2*/
 .ordall{ font-size:1.4rem; color:#ed5a02; text-align:center; background:#d3d3d3}
@@ -185,7 +193,7 @@ a.tjord3{ width:55%; background:#00a040}
 button.tjord3{ width:55%; background:#00a040}
 
 /**********************订单日计划修改*/
-.ordjl{border-top:1px solid #b7b7b7; max-height:200px; overflow:auto;}
+.ordjl{border-top:1px solid #b7b7b7; max-height:600px; overflow:auto;}
 .ordjl dt{ font-size:1.4rem; font-weight:bold; line-height:2.2}
 .ordjl dd{ font-size:1.2rem; border-bottom:1px solid #d6d6d6; line-height:2.1}
 .ordjl dd span{ padding-right:6%}
@@ -194,6 +202,8 @@ button.tjord3{ width:55%; background:#00a040}
 .ordsl{margin-bottom: 60px;}
 .ordnum{ padding:2% 3% 1% 3%; font-size:1.3rem; border-bottom:1px solid #c4c4c4}
 .ordnum span{ float:right}
+.ordyg{padding:2%; font-size:1.3rem; color:#ed5a02;}
+.ordyg > span {margin: 0 10px;}
 .ordlr{ position:absolute; right:3%; top:0;  font-size:1.2rem}
 .ordlr button.edit_order_product{background-color:#ed5a02;border-radius:2px; color: white;border-style:none;padding: 5px 10px;}
 
@@ -240,6 +250,7 @@ button.tjord3{ width:55%; background:#00a040}
 .ordrs{ font-size:1.2rem}
 .ordnum2{ font-size:1.2rem}
 .ordnum2 .tgl+.tgl-btn{ margin-top:-3px; margin-left:2px; width:30px; height:18px}
+.shsp-r{float:right;}
 
 
 /**********************订单列表-已完成订单*/

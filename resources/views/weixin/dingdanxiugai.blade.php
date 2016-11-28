@@ -1,231 +1,184 @@
 @extends('weixin.layout.master')
 @section('title','订单修改')
 @section('css')
-
+    <link href='css/fullcalendar.min.css' rel='stylesheet' />
 @endsection
 @section('content')
+
     <header>
-        <a class="headl fanh" href="javascript:history.back()"></a>
-        <h1>修改订单</h1>
+        <a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
+        {{--<a class="headl fanh" href="javascript:history.back();"></a>--}}
+        <h1>订单修改</h1>
     </header>
+    @if(isset($order))
+        <div class="ordsl">
+            <div class="ordnum">
+                <span>{{$order->ordered_at}}</span>
+                订单号 : {{$order->number}} &emsp; 状态 : {{$order->status_name}}
+            </div>
+            <div class="addrli2">
+                <div class="adrtop pa2t">
+                    <p>{{$order->customer_name}} {{$order->phone}}<br>{{$order->address}}</p>
+                </div>
+            </div>
+            <div class="ordnum lastcd">
+                奶站: {{$order->station_name}} &emsp; 配送员: {{$order->milkman->name}} {{$order->milkman->phone}}
+            </div>
+            <div class="ordyg">
+                <span>订单金额: {{ $order->total_amount }}</span>
+                <span>现在剩金额: {{ $order_remain_amount }}</span>
+                <span>更改后金额: {{$after_changed_amount}}</span>
+                <span>差额: {{$left_amount}}</span>
+            </div>
+            <div>
+                <a class="xiugai_link col-lg-2 text-center" style="float:none; margin-left: 4%;" href="{{url('/weixin/shangpinliebiao')."?order_id=".$order->id}}"><i class="fa fa-plus-circle"></i> 附加</a>
+            </div>
 
-    <div class="ordtop pa2t clearfix">
-        <img class="ordpro" src="<?=asset('img/product/logo/' . $order_product->product->photo_url1)?>">
-        <p>{{$order_product->product_name}} <span>剩余数量：{{$order_product->remain_count}}</span></p>
-        <div class="ordye">金额：{{$order_product->remain_amount}}元</div>
-    </div>
+            @forelse($show_products as $index => $sp)
+                <div class="ordtop clearfix">
+                    <img class="ordpro" src="<?=asset('img/product/logo/' . $sp[2])?>">
+                    <span class="ordlr">
+                        <a class="xiugai_link xiugai_product" href="{{url('/weixin/naipinxiugai?index=').$index.'&order_id='.$order->id.'&left_amount='.$left_amount}}">修改</a>
+                        <button class="xiugai_link remove_product" data-index="{{$index}}" data-order-id="{{$order->id}}">删除</button>
+                    </span>
+                    <div class="ord-r">
+                        {{$sp[1]}}
+                        <br>
+                        单价：{{$sp[4]}}元
+                        <br>
+                        订单数量：{{$sp[3]}}
+                    </div>
+                    <div class="ordye">金额：{{$sp[5]}}元</div>
+                </div>
+            @empty
+                没有项目
+            @endforelse
 
-    <input type="hidden" id="opid" value = "{{$order_product->id}}"/>
-    <input type="hidden" id="order_id" value = "{{$order_product->order_id}}"/>
+            <h3 class="dnh3">我的订奶计划</h3>
+            <div id='calendar'></div>
+            <div class="ordbot">
+                <textarea class="btxt" name="" cols="" rows="" placeholder="备注" >{{$comment}}</textarea>
+            </div>
 
-    <div class="dnsli clearfix dnsli2">
-        <div class="dnsti">更改奶品：</div>
-        <select class="dnsel" name="" id="product_list">
-            @foreach($products as $product)
-                @if($product->id == $order_product->product_id)
-                    <option selected value="{{$product->id}}">{{$product->name}}</option>
-                @else
-                    <option value="{{$product->id}}">{{$product->name}}</option>
-                @endif
-            @endforeach
-        </select>
-    </div>
+            <div class="dnsbt change_order clearfix">
+                <button id="change_order" data-order-id="{{$order->id}}" class="dnsb1"><i class="fa fa-check-circle"></i> 确认更改</button>
+                <button id="cancel_change_order" data-order-id="{{$order->id}}" class="dnsb2"><i class="fa fa-times-circle"></i> 取消更改</button>
+            </div>
 
-    <div class="dnsli clearfix">
-        <div class="dnsti">配送规则：</div>
-        <select class="dnsel" id="delivery_type" onChange="javascript:dnsel_changed(this.value)">
-            <option value="dnsel_item0"
-                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送
-            </option>
-            <option value="dnsel_item1"
-                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送
-            </option>
-            <option value="dnsel_item2"
-                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送
-            </option>
-            <option value="dnsel_item3"
-                    data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送
-            </option>
-        </select>
-        <div class="clear"></div>
-    </div>
+        </div>
+    @else
+        <p>没有数据</p>
+    @endif
 
-    <!-- combo box change -->
-    <!-- 天天送 -->
-    <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
-        <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
-                <a class="subtract" href="javascript:;">-</a>
-                <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
-            </span>（瓶）
-    </div>
-
-    <!--隔日送 -->
-    <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
-        <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
-                <a class="subtract" href="javascript:;">-</a>
-                <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
-            </span>（瓶）
-    </div>
-
-    <!-- 按周规则 -->
-    <div class="dnsli clearfix dnsel_item" id="dnsel_item2">
-        <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
-        </table>
-    </div>
-
-    <!-- 随心送 -->
-    <div class="dnsel_item" id="dnsel_item3">
-        <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
-        </table>
-    </div>
-
-    <div class="he50"></div>
-    <div class="dnsbt clearfix">
-        <button class="tjord tjord2" id="change_order_product">提交</button>
-    </div>
+    @include('weixin.layout.footer')
 @endsection
 @section('script')
-    <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
-    <script src="<?=asset('weixin/js/showmyweek.js')?>"></script>
-
+    <script src='js/fullcalendar.min.js'></script>
     <script type="text/javascript">
-
-        var calen, week;
-        $(function () {
-            calen = new showfullcalendar("calendar");
-            week = new showmyweek("week");
-            dnsel_changed("dnsel_item0");
-
-            init_wechat_order_product();
-        });
-
-        function dnsel_changed(id) {
-            $(".dnsel_item").css("display", "none");
-            $("#" + id).css("display", "block");
-        }
-
-        function init_wechat_order_product() {
-            var delivery_type = parseInt("{{$order_product->delivery_type}}");
-
-            $('#delivery_type').find('option[data-value="'+delivery_type+'"]').prop('selected', true);
-
-            $('#delivery_type').trigger('change');
-
-
-            if(delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}"))
-            {
-                var count_per = parseInt("{{$order_product->count_per_day}}");
-                $('#dnsel_item0 input').val(count_per);
-
-            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}"))
-            {
-                var count_per = parseInt("{{$order_product->count_per_day}}");
-                $('#dnsel_item1 input').val(count_per);
-
-            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}"))
-            {
-                //show custom bottle count on week
-                week.custom_dates = "{{$order_product->custom_order_dates}}";
-                week.set_custom_date();
-
-            } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
-
-                calen.custom_dates = "{{$order_product->custom_order_dates}}";
-                calen.set_custom_date();
-
-            } else {
-                return;
-            }
-
-        }
-
-        $('#change_order_product').click(function(){
-
-            var order_id = $('#order_id').val();
-
-            var send_data = new FormData();
-
-            var order_product_id = $('#opid').val();
-            send_data.append('order_product_id', order_product_id);
-
-            var product_id = $('#product_list').val();
-            send_data.append('product_id', product_id);
-
-            var delivery_type = $('#delivery_type option:selected').data('value');
-            send_data.append('delivery_type', delivery_type);
-
-            var count = 0;
-            var custom_date = "";
-            if (($('#dnsel_item0')).css('display') != "none") {
-                count = $('#dnsel_item0 input').val();
-                if (!count) {
-                    show_warning_msg('请填写产品的所有字段')
-                    return;
-                }
-                send_data.append('count_per', count);
-
-            }
-            else if (($('#dnsel_item1')).css('display') != "none") {
-                count = $('#dnsel_item1 input').val();
-                if (!count) {
-                    show_warning_msg('请填写产品的所有字段')
-                    return;
-                }
-                send_data.append('count_per', count);
-
-            }
-            else if (($('#dnsel_item2')).css('display') != "none") {
-                //week dates
-                custom_date = week.get_submit_value();
-                if (!custom_date) {
-                    show_warning_msg('请填写产品的所有字段')
-                    return;
-                }
-                send_data.append('custom_date', custom_date);
-
-            }
-            else {
-                //month dates
-                custom_date = calen.get_submit_value();
-                if (!custom_date) {
-                    show_warning_msg('请填写产品的所有字段')
-                    return;
-                }
-                send_data.append('custom_date', custom_date);
-            }
-
-            console.log(send_data);
-
-            $.ajax({
-                type: "POST",
-                url: SITE_URL + "weixin/api/change_order_product",
-                data: send_data,
-                processData: false,
-                contentType: false,
-                success: function (data) {
-                    if (data.status == "success") {
-                        show_success_msg("更改奶品成功");
-                        //go to dingdan xiangqing
-                        window.location.href = SITE_URL + "weixin/dingdanxiangqing?order="+order_id;
-                    } else
-                    {
-                        if(data.message)
-                        {
-                            show_warning_msg(data.message);
-                        }
-                    }
+        $(function() {
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev',
+                    center: 'title',
+                    right: 'next'
                 },
-                error: function (data) {
-                    console.log(data);
-                    show_warning_msg("附加产品失败");
-                }
+                firstDay:0,
+                editable: false,
+
+                events: [
+                        @foreach($plans as $p)
+                    {
+                        title: "{{$p->product_name}} {{$p->changed_plan_count}}",
+                        start: '{{$p->deliver_at}}',
+                        className:'ypsrl',
+                        textColor: '#00cc00'
+
+                    },
+                    @endforeach
+                ],
             });
 
-        });
 
+            $('button.remove_product').click(function(){
+
+                var index = $(this).data('index');
+                var order_id = $(this).data('order-id');
+
+                $.ajax({
+                    type: "POST",
+                    url: SITE_URL + "weixin/api/remove_product_from_order",
+                    data: {
+                        'index':index,
+                        'order_id':order_id
+                    },
+                    success: function (data) {
+                        if (data.status == "success") {
+                            show_success_msg("删除奶品成功");
+                            //go to dingdan xiangqing
+                            //window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
+                            location.reload();
+                        } else {
+                            if (data.message) {
+                                show_warning_msg(data.message);
+                            }
+                        }
+                    },
+                    error: function (data) {
+                        console.log(data);
+                        show_warning_msg("删除产品失败");
+                    }
+                });
+            });
+
+            $('button#cancel_change_order').click(function(){
+
+                var order_id = $(this).data('order-id');
+
+                $.ajax({
+                    type: "POST",
+                    url: SITE_URL + "weixin/api/cancel_change_order",
+                    data: {
+                        'order_id':order_id
+                    },
+                    success: function (data) {
+                        if (data.status == "success") {
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao";
+                        } else {
+                            if (data.message) {
+                                show_warning_msg(data.message);
+                            }
+                        }
+                    },
+                    error: function (data) {
+                        console.log(data);
+                    }
+                });
+            });
+
+            $('button#change_order').click(function(){
+                var order_id = $(this).data('order-id');
+
+                $.ajax({
+                    type: "POST",
+                    url: SITE_URL + "weixin/api/change_order",
+                    data: {
+                        'order_id':order_id
+                    },
+                    success: function (data) {
+                        if (data.status == "success") {
+                            show_success_msg('订单修改成功');
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao";
+                        } else {
+                            if (data.message) {
+                                show_warning_msg(data.message);
+                            }
+                        }
+                    },
+                    error: function (data) {
+                        console.log(data);
+                    }
+                });
+            });
+        });
     </script>
 @endsection

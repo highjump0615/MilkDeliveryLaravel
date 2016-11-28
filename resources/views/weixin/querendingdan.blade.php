@@ -23,7 +23,7 @@
             @endif
         </div>
 
-        @forelse($wechat_order_products as $wop)
+        @foreach($wechat_order_products as $wop)
             <div class="ordtop clearfix">
                 <img class="ordpro" src="<?=asset('img/product/logo/' . $wop->product->photo_url1)?>">
                 <span class="ordlr"><button data-pid="{{$wop->id}}" class="edit_order_product">编辑</button></span>
@@ -44,12 +44,11 @@
                         {{$wop->total_amount}}
                     @else
                         ??
-                    @endif元</div>
+                    @endif
+                    元</div>
                 <input type="hidden" id="total_amount" val="{{$wop->total_amount}}">
             </div>
-        @empty
-
-        @endforelse
+        @endforeach
 
         <div class="ordbot">
             <textarea class="btxt" name="comment" id="comment" cols="" rows="" placeholder="备注"></textarea>
@@ -117,7 +116,7 @@
         $('button.edit_order_product').click(function () {
             var wechat_order_product_id = $(this).data('pid');
             var group_id = $('#group_id').val();
-            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id;
+            window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+'&&from=queren';
         })
 
     </script>

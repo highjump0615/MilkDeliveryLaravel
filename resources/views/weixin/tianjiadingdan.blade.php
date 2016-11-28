@@ -11,7 +11,11 @@
 @section('content')
 
     <header>
+        @if($previous == "0")
         <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
+        @else
+            <a class="headl fanh" href="javascript:history.back();"></a>
+        @endif
         <h1>产品详情</h1>
 
     </header>
@@ -57,6 +61,7 @@
     <div class="dnsl pa2t">
         <input type="hidden" id="product_id" value="{{$product->id}}">
 
+        @if($previous == "0")
         <div class="dnsli clearfix">
             <div class="dnsti">订单类型：</div>
             <select class="dnsel" id="order_type">
@@ -100,7 +105,7 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
@@ -110,7 +115,7 @@
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
@@ -136,6 +141,7 @@
                 <span><i class="fa fa-calendar"></i></span>
             </div>
         </div>
+        @endif
 
         <div class="dnsall">
             <div class="dnsli clearfix">
@@ -188,10 +194,17 @@
 
     <div class="he50"></div>
 
+    @if($previous == "0" && !isset($order_id))
     <div class="dnsbt clearfix">
         <button id="make_order" class="dnsb1"><i class="fa fa-check-circle"></i> 立即订购</button>
         <button id="submit_order" class="dnsb2"><i class="fa fa-cart-plus"></i> 加入购物车</button>
     </div>
+    @elseif (isset($order_id))
+        <div class="dnsbt clearfix">
+            <button id="add_order" data-order-id="{{$order_id}}" class="dnsb2"><i class="fa fa-plus-circle"></i> 加入订单</button>
+        </div>
+    @endif
+
 @endsection
 @section('script')
 
@@ -481,6 +494,102 @@
                 }
             });
         })
+
+        $('button#add_order').click(function () {
+
+            if (check_bottle_count()) {
+                show_info_msg('请正确设置订奶数量');
+                return;
+            }
+
+            var send_data = new FormData();
+
+            //product_id
+            var product_id = $('#product_id').val();
+            send_data.append('product_id', product_id);
+
+            //order_type
+            var order_type = $('#order_type').val();
+            send_data.append('order_type', order_type);
+            //total_count
+            var total_count = $('#total_count').val();
+            send_data.append('total_count', total_count);
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+            send_data.append('delivery_type', delivery_type);
+
+            var count = 0;
+            var custom_date = "";
+            if (($('#dnsel_item0')).css('display') != "none") {
+                count = $('#dnsel_item0 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item1')).css('display') != "none") {
+                count = $('#dnsel_item1 input').val();
+                if (!count) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('count_per', count);
+
+            }
+            else if (($('#dnsel_item2')).css('display') != "none") {
+                //week dates
+                custom_date = week.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+
+            }
+            else {
+                //month dates
+                custom_date = calen.get_submit_value();
+                if (!custom_date) {
+                    show_warning_msg('请填写产品的所有字段')
+                    return;
+                }
+                send_data.append('custom_date', custom_date);
+            }
+
+            var start_at = $('#start_at').val();
+            if (!start_at) {
+                show_warning_msg("请选择起送时间");
+                return;
+            }
+            send_data.append('start_at', start_at);
+
+            var order_id = $(this).data('order-id');
+            send_data.append('order_id', order_id);
+
+            console.log(send_data);
+
+            $.ajax({
+                type: "POST",
+                url: SITE_URL + "weixin/api/add_product_to_order_for_xiugai",
+                data: send_data,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        window.location.href = SITE_URL + "weixin/dingdanxiugai?order="+order_id;
+                    } else {
+                        show_warning_msg("附加产品失败");
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    show_warning_msg("附加产品失败");
+                }
+            });
+
+        });
     </script>
 
 @endsection

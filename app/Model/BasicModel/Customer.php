@@ -177,10 +177,20 @@ class Customer extends Model
     }
 
 
-    public function get_wechat_plans_for_date($date)
+    public function get_plans_for_date($date)
     {
         $customer_id = $this->id;
+        /*
+         * //show all delivery plan including admin
         $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->where(function ($query) {
+                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+            })
+            ->orderBy('id', 'desc')
+            ->get()->all();*/
+
+        $orders = Order::where('customer_id', $customer_id)
             ->where(function ($query) {
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
                 $query->orwhere('status', Order::ORDER_PASSED_STATUS);

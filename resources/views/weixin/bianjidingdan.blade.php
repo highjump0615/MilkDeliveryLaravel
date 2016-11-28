@@ -57,7 +57,9 @@
     <div class="dnsl pa2t">
         <input type="hidden" id="wechat_order_product_id" value="{{$wop->id}}">
         <input type="hidden" id="product_id" value="{{$product->id}}">
-        <input type="hidden" id="group_id" value="{{$group_id}}"/>
+        @if(isset($group_id))
+            <input type="hidden" id="group_id" value="{{$group_id}}"/>
+        @endif
 
         <div class="dnsli clearfix">
             <div class="dnsti">订单类型：</div>
@@ -105,7 +107,7 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
@@ -115,7 +117,7 @@
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract">
+            <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
@@ -230,6 +232,8 @@
             dnsel_changed("dnsel_item0");
         });
 
+        var previous = "{{$previous}}";
+
         function dnsel_changed(id) {
             $(".dnsel_item").css("display", "none");
             $("#" + id).css("display", "block");
@@ -278,8 +282,13 @@
         });
 
         $('button#cancel').click(function(){
-            var group_id = $('#group_id').val();
-            window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
+            if(previous == "queren")
+            {
+                var group_id = $('#group_id').val();
+                window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
+            } else {
+                window.location.href = SITE_URL + "weixin/qouwuche";
+            }
         });
 
 
@@ -386,7 +395,10 @@
             send_data.append('start_at', start_at);
             console.log(send_data);
 
-            var group_id = $('#group_id').val();
+            if (previous == "queren")
+            {
+                var group_id = $('#group_id').val();
+            }
 
             $.ajax({
                 type: "POST",
@@ -397,8 +409,15 @@
                 success: function (data) {
                     if (data.status == "success") {
                         show_success_msg("变化产品成功");
-                        //go to shanpin qurendingdan
-                        window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
+
+                        if(previous == "queren")
+                        {
+                            //go to shanpin qurendingdan
+                            window.location.href = SITE_URL + "weixin/querendingdan?group_id="+group_id;
+                        } else {
+                            window.location.href = SITE_URL + "weixin/gouwuche";
+                        }
+
                     } else
                     {
                         if(data.message)
