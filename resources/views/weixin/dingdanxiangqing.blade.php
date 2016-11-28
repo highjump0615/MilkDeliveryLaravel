@@ -8,6 +8,11 @@
 	<header>
 		<a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
 		<h1>订单详情</h1>
+		@if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                    $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                    $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+			<a class="headr" href="{{url('/weixin/dingdanxiugai?order='.$order->id)}}">修改</a>
+		@endif
 	</header>
 	@if(isset($order))
 	<div class="ordsl">
@@ -18,20 +23,16 @@
 		<div class="addrli2">
 			<div class="adrtop pa2t">
 				<p>{{$order->customer_name}} {{$order->phone}}<br>{{$order->address}}</p>
-
 			</div>
 		</div>
 		<div class="ordnum lastcd">
-
+			<span>订单金额: {{ $order->total_amount }}</span>
+			奶站: {{$order->station_name}} &emsp; 配送员: {{$order->milkman->name}} {{$order->milkman->phone}}
 		</div>
 
 		@forelse($order->order_products as $op)
 		<div class="ordtop clearfix">
 			<img class="ordpro" src="<?=asset('img/product/logo/' . $op->product->photo_url1)?>">
-			@if($order->status == App\Model\OrderModel\Order::ORDER_PASSED_STATUS  ||
-			$order->status == App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-				<span class="ordlr"><a href="{{url('/weixin/dingdanxiugai?order-item=').$op->id}}">修改</a></span>
-			@endif
 			<div class="ord-r">
 				{{$op->product_name}}
 				<br>

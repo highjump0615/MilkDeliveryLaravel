@@ -44,7 +44,26 @@ class OrderProduct extends Model
         'last_deliver_plan',
         'finished_money_amount',
         'delivery_plans_sent_to_production_plan',
+        'start_at_after_delivered'
     ];
+
+    public function getStartAtAfterDeliveredAttribute()
+    {
+        //get deliverd date at last
+        $last_delivered_plan = MilkManDeliveryPlan::where('order_id', $this->order_id)
+            ->where('order_product_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->orderBy('deliver_at', 'desc')
+            ->get()->first();
+        if($last_delivered_plan) {
+            $date = $last_delivered_plan->deliver_at;
+            //get next deliver date
+            $next_date = $this->getNextDeliverDate($date);
+        } else {
+            $next_date = $this->start_at;
+        }
+        return $next_date;
+    }
 
     public function getDeliveryPlansSentToProductionPlanAttribute()
     {

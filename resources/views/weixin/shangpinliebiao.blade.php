@@ -56,9 +56,13 @@
 
 @section('content')
 
-    <div class="top">
+    <header>
+        @if(isset($order_id))
+            <a class="headl fanh" href="{{url('/weixin/dingdanxiugai?order='.$order_id)}}"></a>
+        @endif
+
         <h1>商品列表</h1>
-    </div>
+    </header>
 
     <div class="bann">
         <div class="swiper-container">
@@ -84,9 +88,15 @@
             @if($p[0]->category == $category)
                 <dl class="pr_dl">
                     <div class="pr_img">
-                        <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
-                            <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
-                        </a>
+                        @if(isset($order_id))
+                            <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id.'&&order_id='.$order_id)}}">
+                                <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
+                            </a>
+                        @else
+                            <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
+                                <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
+                            </a>
+                        @endif
                     </div>
                     <div class="pr_ds">
                         <dt>{{$p[0]->name}}</dt>

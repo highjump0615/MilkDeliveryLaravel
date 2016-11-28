@@ -11,6 +11,7 @@ use App\Model\DeliveryModel\DeliveryType;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\Factory;
 use App\Model\OrderModel\Order;
+use App\Http\Controllers\OrderCtrl;
 use App\Model\OrderModel\OrderCheckers;
 use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\OrderProperty;
@@ -24,6 +25,7 @@ use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
 use App\Model\WechatModel\WechatOrderProduct;
 use App\Model\WechatModel\WechatUser;
+use App\Model\NotificationModel\DSNotification;
 use Auth;
 use DateTime;
 use DateTimeZone;
@@ -71,6 +73,14 @@ class WeChatCtrl extends Controller
         } else {
             $wechat_user_id = session('wechat_user_id');
         }
+
+//        $factory_id = 1;
+//        $wechat_user_id = 113;
+//        $factory = Factory::find($factory_id);
+//
+//        session(['wechat_user_id' => $wechat_user_id]);
+//        session(['factory_id' => $factory_id]);
+//        session(['address' => '北京 北京市']);
 
 
         //add verified flag
@@ -156,10 +166,9 @@ class WeChatCtrl extends Controller
             ->get();
 
         $product_list = [];
-        foreach($products as $product)
-        {
+        foreach ($products as $product) {
             $pid = $product->id;
-            $product_list[$pid][0]= $product;
+            $product_list[$pid][0] = $product;
             $product_list[$pid][1] = $this->get_retail_price_of_product($pid);
         }
 
@@ -268,7 +277,7 @@ class WeChatCtrl extends Controller
         if ($factory == null)
             abort(403);
 
-        if(!session('wechat_user_id') && isset($_GET['code'])) {
+        if (!session('wechat_user_id') && isset($_GET['code'])) {
             $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
             $codees = $wechatObj->codes($_GET['code']);
 
@@ -299,7 +308,7 @@ class WeChatCtrl extends Controller
 
         $wechat_user = WechatUser::find($wechat_user_id);
 
-        if($wechat_user == null)
+        if ($wechat_user == null)
             abort(403);
 
         $carts = WechatCart::where('wxuser_id', $wechat_user_id)->get();
@@ -386,29 +395,390 @@ class WeChatCtrl extends Controller
         return strcmp($a->deliver_at, $b->deliver_at);
     }
 
+    /*
+     * session('change_order_product'):
+     * this info is for order change, has order_id and array for product info that is included in this order
+     * one product info : array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date);
+     *
+     *   0: product_id
+     *   1: product_name
+     *   2: photo_url
+     *   3: product_count
+     *   4: product_price
+     *   5: product_amount
+     *   6: delivery_type
+     *   7: count_per
+     *   8: custom_date
+     * */
 
     //show order product change page
     public function dingdanxiugai(Request $request)
     {
-        $order_product_id = $request->input('order-item');
+        $order_id = $request->input('order');
+        $order = Order::find($order_id);
+        if (!$order) {
+            abort(403);
+        }
+        $comment = $order->comment;
+        $delivery_plans = $order->grouped_delivery_plans;
 
-        $order_product = OrderProduct::find($order_product_id);
+        $wechat_user_id = session('wechat_user_id');
+        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
-        $factory_id = session('factory_id');
-        $factory = Factory::find($factory_id);
+        //after_changed_amount
+        $after_changed_amount = 0;
 
-        if ($factory) {
-            $products = $factory->active_products;
-            $factory_order_types = $factory->factory_order_types;
+        //products to show : order_products and products_in_session
+        //product info: photo_url, product_name, price, product_count, product_amount  -> order_product_id
+
+        $show_products = [];
+
+        if (!session('change_order_product')) {
+            //make change_order_product data in session
+            $cop = [];
+            $show_products = [];
+            foreach ($order->order_products as $op) {
+                $product = $op->product;
+
+                $product_id = $product->id;
+                $photo_url = $product->photo_url1;
+                $product_name = $product->name;
+                $product_count = $op->remain_count;
+                $product_price = $op->product_price;
+                $product_amount = $op->remain_amount;
+                $delivery_type = $op->delivery_type;
+                $count_per = $op->count_per_day;
+                $custom_date = $op->custom_order_dates;
+
+                $start_at = $op->start_at_after_delivered;
+                $order_type = $op->order_type;
+
+                //add to after_changed_amount
+                $after_changed_amount += $product_amount;
+
+                $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
+            }
+
+            $cop[$order_id] = $show_products;
+            session(['change_order_product' => $cop]);
+
         } else {
+            //exist,  check whether data exist for this order
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                $show_products = $cop[$order_id];
+
+                foreach ($show_products as $cop_one_product) {
+                    //add to after_changed_amount
+                    $after_changed_amount += $cop_one_product[5];
+                }
+
+            } else {
+                //create data for this order
+                $cop = session('change_order_product');
+                $show_products = [];
+                foreach ($order->order_products as $op) {
+                    $product = $op->product;
+
+                    $product_id = $product->id;
+                    $photo_url = $product->photo_url1;
+                    $product_name = $product->name;
+                    $product_count = $op->remain_count;
+                    $product_price = $op->product_price;
+                    $product_amount = $op->remain_amount;
+                    $delivery_type = $op->delivery_type;
+                    $count_per = $op->count_per_day;
+                    $custom_date = $op->custom_order_dates;
+
+                    $start_at = $op->start_at_after_delivered;
+                    $order_type = $op->order_type;
+
+                    //add to after_changed_amount
+                    $after_changed_amount += $product_amount;
+
+                    $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
+                }
+
+                $cop[$order_id] = $show_products;
+                session(['change_order_product' => $cop]);
+            }
+        }
+
+        //Show remaining amount of order and order products for change
+        $order_remain_amount = $order->remaining_amount;
+
+        //left_amount
+        $left_amount = $order_remain_amount - $after_changed_amount;
+        $left_amount = round($left_amount, 2);
+
+        return view('weixin.dingdanxiugai', [
+            'order' => $order,
+            'plans' => $delivery_plans,
+            'comment' => $comment,
+            'cartn' => $cartn,
+            'show_products' => $show_products,
+            'after_changed_amount' => $after_changed_amount,
+            'order_remain_amount' => $order_remain_amount,
+            'left_amount' => $left_amount,
+        ]);
+    }
+
+
+    //show order product change page
+    public function naipinxiugai(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        $index = $request->input('index');
+        //current left amount for this order
+        $current_order_remain_amount = $request->input('left_amount');
+
+        $exist = false;
+
+        if (session('change_order_product')) {
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                $cop_order = $cop[$order_id];
+
+                if (array_key_exists($index, $cop_order)) {
+
+                    /*
+                    *   0: product_id
+                    *   1: product_name
+                    *   2: photo_url
+                    *   3: product_count
+                    *   4: product_price
+                    *   5: product_amount
+                    *   6: delivery_type
+                    *   7: count_per
+                    *   8: custom_date
+                    *   9: start_at
+                    *   10: order_type
+                    */
+
+                    $cop_order_product = $cop_order[$index];
+
+                    $product_id = $cop_order_product[0];
+                    $product = Product::find($product_id);
+
+                    //current product to show above
+                    $current_product = $product;
+                    $current_pid = $cop_order_product[0];
+                    $current_product_amount = $cop_order_product[5];
+                    $current_product_count = $cop_order_product[3];
+                    $current_product_price = $cop_order_product[4];
+                    $current_product_name = $product->name;
+                    $current_product_photo_url = $product->photo_url1;
+                    $current_delivery_type = $cop_order_product[6];
+                    $current_count_per_day = $cop_order_product[7];
+                    $current_custom_order_dates = $cop_order_product[8];
+
+                    $current_start_at = $cop_order_product[9];
+                    $current_order_type = $cop_order_product[10];
+
+
+                    //address
+                    $address = session('address');
+
+                    if ($current_product_count < 90) {
+                        $order_type = OrderType::ORDER_TYPE_MONTH;
+                    } else if ($current_product_count >= 90) {
+                        $order_type = OrderType::ORDER_TYPE_SEASON;
+                    } else if ($current_product_count >= 180) {
+                        $order_type = OrderType::ORDER_TYPE_HALF_YEAR;
+                    }
+
+                    //get all active product of this factory (product, price, count by remain amount)
+                    $factory_id = session('factory_id');
+                    $factory = Factory::find($factory_id);
+                    $products = [];
+                    if ($factory) {
+                        $fproducts = $factory->active_products;
+                        foreach ($fproducts as $fp) {
+                            $pid = $fp->id;
+                            $price = $this->get_product_price_by_order_type($order_type, $pid, $address);
+                            $count = floor(($current_product_amount + $current_order_remain_amount) / $price);
+                            $products[$pid] = array($fp->id, $fp->name, $fp->photo_url1, $price, $count);
+                        }
+
+                    } else {
+                        abort(403);
+                    }
+
+                    $exist = true;
+                }
+            }
+        }
+
+        if (!$exist) {
             abort(403);
         }
 
-        return view('weixin.dingdanxiugai', [
-            'order_product' => $order_product,
+        return view('weixin.naipinxiugai', [
+            'order_id' => $order_id,
+            'current_order_remain_amount' => $current_order_remain_amount,
+            'index' => $index,
             'products' => $products,
-            'factory_order_types' => $factory_order_types,
+            'current_product' => $current_product,
+            'current_product_id' => $current_pid,
+            'current_product_amount' => $current_product_amount,
+            'current_product_count' => $current_product_count,
+            'current_product_price' => $current_product_price,
+            'current_product_name' => $current_product_name,
+            'current_product_photo_url' => $current_product_photo_url,
+            'current_delivery_type' => $current_delivery_type,
+            'current_count_per_day' => $current_count_per_day,
+            'current_custom_order_dates' => $current_custom_order_dates,
         ]);
+    }
+
+    //change order product temporally
+    public function change_temp_order_product(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        $index = $request->input('index');
+        $current_product_id = $request->input('current_product_id');
+        $new_product_id = $request->input('new_product_id');
+        $product = Product::find($new_product_id);
+        $product_name = $product->name;
+        $photo_url = $product->photo_url1;
+
+        $delivery_type = $request->input('delivery_type');
+        $count_per = $request->input('count_per');
+        $custom_date = $request->input('custom_date');
+        $product_count = $request->input('product_count');
+        $product_price = $request->input('product_price');
+        $product_amount = $request->input('product_amount');
+
+        /*
+        *   0: product_id
+        *   1: product_name
+        *   2: photo_url
+        *   3: product_count
+        *   4: product_price
+        *   5: product_amount
+        *   6: delivery_type
+        *   7: count_per
+        *   8: custom_date
+        *   9: start_at
+        *   10: order_type
+        */
+
+        $cop = session('change_order_product');
+        $origin_pinfo = $cop[$order_id][$index];
+
+        //save changed product info in session
+        $changed_product_info = array($new_product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $origin_pinfo[9], $origin_pinfo[10]);
+
+        $cop[$order_id][$index] = $changed_product_info;
+        session(['change_order_product' => $cop]);
+
+        return response()->json(['status' => 'success']);
+
+    }
+
+    //remove product from order
+    public function remove_product_from_order(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        $index = $request->input('index');
+        $exist = false;
+
+        if (session('change_order_product')) {
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                $cop_order = $cop[$order_id];
+
+                if (array_key_exists($index, $cop_order)) {
+
+                    unset($cop_order[$index]);
+                    $cop_order = array_values($cop_order);
+                    $cop[$order_id] = $cop_order;
+                    session(['change_order_product' => $cop]);
+                    $exist = true;
+                }
+            }
+        }
+
+        if (!$exist) {
+            abort(403);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
+
+    //add product to order
+    public function add_product_to_order_for_xiugai(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        $product_id = $request->input('product_id');
+        $order_type = $request->input('order_type');
+        $total_count = $request->input('total_count');
+
+        $product = Product::find($product_id);
+        if (!$product) {
+            return response()->json(['status' => 'fail']);
+        }
+
+        $product_name = $product->name;
+        $photo_url = $product->photo_url1;
+
+        $delivery_type = $request->input('delivery_type');
+
+        $count_per = $custom_date = null;
+        if ($delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+            $count_per = $request->input('count_per');
+        } else {
+            $custom_date = $request->input('custom_date');
+            $custom_date = rtrim($custom_date, ',');
+        }
+
+        $address = session('address');
+        $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
+
+        $total_amount = $total_count * $product_price;
+
+        $start_at = $request->input('start_at');
+        $start_at = new DateTime($start_at);
+        $start_at = $start_at->format('Y-m-d');
+
+        /*if ($order_type == OrderType::ORDER_TYPE_MONTH)
+            $avg = round($total_count / 30, 1);
+        else if ($order_type == OrderType::ORDER_TYPE_SEASON)
+            $avg = round($total_count / 90, 1);
+        else
+            $avg = round($total_count / 180, 1);
+        */
+        $order_type = $request->input('order_type');
+
+        $add_product_info = array($product_id, $product_name, $photo_url, $total_count, $product_price, $total_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
+
+        if (session('change_order_product')) {
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                $cop_order = $cop[$order_id];
+                array_push($cop_order, $add_product_info);
+                $cop[$order_id] = $cop_order;
+                session(['change_order_product' => $cop]);
+            }
+        }
+
+        return response()->json(['status' => 'success']);
+
+    }
+
+    //cancel change order
+    public function cancel_change_order(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        if (session('change_order_product')) {
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                unset($cop[$order_id]);
+                $cop = array_values($cop);
+                session(['change_order_product' => $cop]);
+            }
+        }
+        return response()->json(['status' => 'success']);
     }
 
     //pubic function change order product
@@ -484,6 +854,130 @@ class WeChatCtrl extends Controller
         return response()->json(['status' => 'success']);
     }
 
+    /*
+     * change order
+     * apply Saved session data for changed order to database
+    */
+    public function change_order(Request $request)
+    {
+        $order_id = $request->input('order_id');
+        $order = Order::find($order_id);
+        if (!$order) {
+            return resoponse()->json(['status' => 'fail', 'message' => '没有订单']);
+        }
+
+        /*
+        *   0: product_id
+        *   1: product_name
+        *   2: photo_url
+        *   3: product_count
+        *   4: product_price
+        *   5: product_amount
+        *   6: delivery_type
+        *   7: count_per
+        *   8: custom_date
+        *   9: start_at
+        *   10: order_type
+        */
+
+        if (session('change_order_product')) {
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+
+                $factory_id = $order->factory_id;
+                $delivery_station_id = $order->delivery_station_id;
+                $milkman_id = $order->milkman_id;
+
+                $order_total_amount = $order->total_amount;
+                $order_remaining_amount = $order->remaining_amount;
+                $previous_done_amount = $order_total_amount-$order_remaining_amount;
+
+                $order_ctrl = new OrderCtrl;
+
+                $cop_orders = $cop[$order_id];
+
+                //first remove all order products and delivery plans except of delivered
+                // from order in db
+                $order_ctrl->delete_all_order_products_and_delivery_plans_for_update_order($order);
+
+                $changed_product_total_amount = 0;
+
+                foreach ($cop_orders as $index => $cop_order) {
+
+                    $pid = $cop_order[0];
+                    $order_type = $cop_order[10];
+                    $total_count = $cop_order[3];
+                    $one_amount = $cop_order[5];
+                    $product_price = $cop_order[4];
+                    $delivery_type = $cop_order[6];
+
+                    $changed_product_total_amount += $one_amount;
+
+                    if ($order_type == OrderType::ORDER_TYPE_MONTH)
+                        $avg = round($total_count / 30, 1);
+                    else if ($order_type == OrderType::ORDER_TYPE_SEASON)
+                        $avg = round($total_count / 90, 1);
+                    else
+                        $avg = round($total_count / 180, 1);
+
+                    $product_start_at = $cop_order[9];
+
+                    $op = new OrderProduct;
+                    $op->order_id = $order_id;
+                    $op->product_id = $pid;
+                    $op->order_type = $order_type;
+                    $op->delivery_type = $delivery_type;
+                    $op->product_price = $product_price;
+                    $op->total_count = $total_count;
+                    $op->total_amount = $one_amount;
+                    $op->avg = $avg;
+                    $op->start_at = $product_start_at;
+
+                    $op->count_per_day = $cop_order[7];
+
+                    if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
+//                    $op->count_per_day = $request->input('order_product_count_per')[$i];
+                    } else {
+                        $custom_dates = $cop_order[8];
+                        $result = rtrim($custom_dates, ',');
+                        $op->custom_order_dates = $result;
+                    }
+
+                    $op->save();
+
+                    //establish plan
+                    $order_ctrl->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
+                }
+
+                //set flag on first order delivery plan
+                $plans = $order->first_delivery_plans;
+                if ($plans) {
+                    foreach ($plans as $plan) {
+                        $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
+                        $plan->save();
+                    }
+                }
+
+                $order->remaining_amount = $changed_product_total_amount;
+                $order->status = Order::ORDER_WAITING_STATUS;
+                $order->save();
+
+                //notification
+                $station_id = $order->station_id;
+                $customer = $order->customer;
+                $customer_name = $customer->name;
+
+                $notification = new DSNotification();
+                $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单奶品！！");
+
+                return response()->json(['status'=>'success']);
+            }
+        } else {
+            return resoponse()->json(['status' => 'fail']);
+        }
+
+
+    }
 
     //show change delivery plan on one date
     public function danrixiugai(Request $request)
@@ -555,8 +1049,6 @@ class WeChatCtrl extends Controller
         $type = $request->input('type');
 
         $wechat_user_id = session('wechat_user_id');
-        if (!$wechat_user_id)
-            $wechat_user_id = 10;
         $wechat_user = WechatUser::find($wechat_user_id);
 
         if (!$wechat_user)
@@ -652,7 +1144,7 @@ class WeChatCtrl extends Controller
         return view('weixin.toushu', [
             "phone1" => $phone1,
             "phone2" => $phone2,
-            'cartn'=>$cartn,
+            'cartn' => $cartn,
         ]);
     }
 
@@ -705,7 +1197,7 @@ class WeChatCtrl extends Controller
         if ($factory == null)
             abort(403);
 
-        if(!session('wechat_user_id') && isset($_GET['code'])) {
+        if (!session('wechat_user_id') && isset($_GET['code'])) {
             $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
             $codees = $wechatObj->codes($_GET['code']);
 
@@ -787,6 +1279,18 @@ class WeChatCtrl extends Controller
                 'cartn' => $cartn,
             ]);
 
+        } else if ($request->has('order_id')) {
+
+            $order_id = $request->input('order_id');
+            //from dingdanxiugai
+            return view('weixin.shangpinliebiao', [
+                'categories' => $categories,
+                'products' => $product_list,
+                'category' => $category_id,
+                'cartn' => $cartn,
+                'order_id' => $order_id,
+            ]);
+
         } else {
 
             return view('weixin.shangpinliebiao', [
@@ -828,8 +1332,8 @@ class WeChatCtrl extends Controller
             $reviews = [];
             $reviews[] = $review;
             return view('weixin.wodepingjia', [
-                'reviews'=>$reviews,
-                'cartn'=>$cartn,
+                'reviews' => $reviews,
+                'cartn' => $cartn,
             ]);
 
         } else {
@@ -838,8 +1342,8 @@ class WeChatCtrl extends Controller
             $customer_id = $wechat_user->customer_id;
             $reviews = Review::where('customer_id', $customer_id)->get()->all();
             return view('weixin.wodepingjia', [
-                'reviews'=>$reviews,
-                'cartn'=>$cartn,
+                'reviews' => $reviews,
+                'cartn' => $cartn,
             ]);
         }
     }
@@ -888,7 +1392,7 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
         return view('weixin.xinxizhongxin', [
-            'cartn'=>$cartn,
+            'cartn' => $cartn,
         ]);
     }
 
@@ -1046,6 +1550,12 @@ class WeChatCtrl extends Controller
         $product_id = $request->input("product");
         $product = Product::find($product_id);
 
+        if ($request->has('previous')) {
+            $previous = 1;
+        } else {
+            $previous = 0;
+        }
+
         //Product image
         $dest_dir = url('/img/product/logo/');
 
@@ -1078,6 +1588,7 @@ class WeChatCtrl extends Controller
 
         $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
 
+
         if ($pp) {
             $month_price = $pp->month_price;
             $season_price = $pp->season_price;
@@ -1089,6 +1600,7 @@ class WeChatCtrl extends Controller
             $half_year_price = $pp->half_year_price;
         }
 
+
         //gap day
         $gap_day = $factory->gap_day;
         $factory_order_types = $factory->factory_order_types;
@@ -1098,35 +1610,59 @@ class WeChatCtrl extends Controller
 
         $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
 
-        foreach ($all_review as $review) {
-            $order_id = $review->order_id;
-            $order = Order::find($order_id);
-            foreach ($order->order_products as $op) {
-                if ($op->product_id == $product_id) {
-                    array_push($reviews, $review);
-                    break;
+        if ($all_review) {
+            foreach ($all_review as $review) {
+                $order_id = $review->order_id;
+                $order = Order::find($order_id);
+                foreach ($order->order_products as $op) {
+                    if ($op->product_id == $product_id) {
+                        array_push($reviews, $review);
+                        break;
+                    }
                 }
             }
-
         }
 
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
-        return view('weixin.tianjiadingdan', [
-            "product" => $product,
-            'file1' => $file1_path,
-            'file2' => $file2_path,
-            'file3' => $file3_path,
-            'file4' => $file4_path,
-            'month_price' => $month_price,
-            'season_price' => $season_price,
-            'half_year_price' => $half_year_price,
-            'gap_day' => $gap_day,
-            'factory_order_types' => $factory_order_types,
-            'reviews' => $reviews,
-            'today' => $today,
-        ]);
+        if ($request->has('order_id')) {
+            $order_id = $request->input('order_id');
+            return view('weixin.tianjiadingdan', [
+                "product" => $product,
+                'file1' => $file1_path,
+                'file2' => $file2_path,
+                'file3' => $file3_path,
+                'file4' => $file4_path,
+                'month_price' => $month_price,
+                'season_price' => $season_price,
+                'half_year_price' => $half_year_price,
+                'gap_day' => $gap_day,
+                'factory_order_types' => $factory_order_types,
+                'reviews' => $reviews,
+                'today' => $today,
+                'previous' => $previous,
+                'order_id' => $order_id,
+            ]);
+
+        } else {
+            return view('weixin.tianjiadingdan', [
+                "product" => $product,
+                'file1' => $file1_path,
+                'file2' => $file2_path,
+                'file3' => $file3_path,
+                'file4' => $file4_path,
+                'month_price' => $month_price,
+                'season_price' => $season_price,
+                'half_year_price' => $half_year_price,
+                'gap_day' => $gap_day,
+                'factory_order_types' => $factory_order_types,
+                'reviews' => $reviews,
+                'today' => $today,
+                'previous' => $previous,
+            ]);
+        }
+
     }
 
     /*
@@ -1159,22 +1695,7 @@ class WeChatCtrl extends Controller
 
         $address = session('address');
 
-        $product_price_template = ProductPrice::priceTemplateFromAddress($product_id, $address);
-
-        if (!$product_price_template) {
-            //give temp product price
-            $product_price_template = ProductPrice::where('product_id', $product_id)->get()->first();
-        }
-
-
-        if ($order_type == OrderType::ORDER_TYPE_MONTH) {
-            $product_price = $product_price_template->month_price;
-        } else if ($order_type == OrderType::ORDER_TYPE_SEASON) {
-            $product_price = $product_price_template->season_price;
-        } else {
-            //half year price
-            $product_price = $product_price_template->half_year_price;
-        }
+        $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
 
         $total_amount = $total_count * $product_price;
 
@@ -1251,19 +1772,7 @@ class WeChatCtrl extends Controller
 
             $address = session('address');
 
-            $product_price_template = ProductPrice::priceTemplateFromAddress($product_id, $address);
-
-            if (!$product_price_template) {
-                $product_price_template = ProductPrice::where('product_id', $product_id)->get()->first();
-            }
-
-            if ($order_type == OrderType::ORDER_TYPE_MONTH) {
-                $product_price = $product_price_template->month_price;
-            } else if ($order_type == OrderType::ORDER_TYPE_SEASON) {
-                $product_price = $product_price_template->season_price;
-            } else {
-                $product_price = $product_price_template->half_year_price;
-            }
+            $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
 
             $total_amount = $total_count * $product_price;
 
@@ -1538,14 +2047,11 @@ class WeChatCtrl extends Controller
 
         $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
 
-        foreach($all_review as $review)
-        {
+        foreach ($all_review as $review) {
             $order_id = $review->order_id;
             $order = Order::find($order_id);
-            foreach( $order->order_products as $op)
-            {
-                if($op->product_id == $product_id)
-                {
+            foreach ($order->order_products as $op) {
+                if ($op->product_id == $product_id) {
                     array_push($reviews, $review);
                     break;
                 }
@@ -1600,16 +2106,8 @@ class WeChatCtrl extends Controller
             $factory = Factory::find($factory_id);
 
             $address = session('address');
-            $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
 
-            if ($order_type == OrderType::ORDER_TYPE_MONTH) {
-                $product_price = $pp->month_price;
-            } else if ($order_type == OrderType::ORDER_TYPE_SEASON) {
-                $product_price = $pp->season_price;
-            } else {
-                //half year price
-                $product_price = $pp->half_year_price;
-            }
+            $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
 
             $total_amount = $total_count * $product_price;
 
@@ -1989,22 +2487,21 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
 
-        if(!$wechat_user)
+        if (!$wechat_user)
             abort(403);
 
-        $primary_addr_obj = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary',1)->get()->first();
+        $primary_addr_obj = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
 
         $group_id = session('group_id');
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
 
 
-        $openid= $wechat_user->openid;
+        $openid = $wechat_user->openid;
 
         //set new product price on primary address for the wechat order product
         $total_amount = 0;
-        if($primary_addr_obj)
-        {
+        if ($primary_addr_obj) {
             $primary_address = $primary_addr_obj->address;
 
             if ($wechat_order_products) {
@@ -2110,7 +2607,7 @@ class WeChatCtrl extends Controller
         $order_id = $request->input('order_id');
         $marks = $request->input('marks');
         $content = $request->input('contents');
-        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $current_datetime = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
 
         $order = Order::find($order_id);
@@ -2118,18 +2615,18 @@ class WeChatCtrl extends Controller
 
 //        foreach($order->order_products as $op)
 //        {
-            $review = new Review;
-            $review->mark = $marks;
-            $review->content = $content;
-            $review->order_id = $order_id;
-            $review->customer_id = $customer_id;
+        $review = new Review;
+        $review->mark = $marks;
+        $review->content = $content;
+        $review->order_id = $order_id;
+        $review->customer_id = $customer_id;
 //            $review->product_id = $op->product_id;
-            $review->created_at = $current_datetime_str;
-            $review->status = Review::REVIEW_STATUS_WAITTING;
-            $review->save();
+        $review->created_at = $current_datetime_str;
+        $review->status = Review::REVIEW_STATUS_WAITTING;
+        $review->save();
 //        }
 
-        return response()->json(['status'=>'success', 'order_id'=>$order_id]);
+        return response()->json(['status' => 'success', 'order_id' => $order_id]);
 
     }
 
@@ -2181,6 +2678,32 @@ class WeChatCtrl extends Controller
             return response()->json(['status' => 'success']);
         } else
             return response()->json(['status' => 'fail']);
+    }
+
+    public function get_product_price_by_order_type($order_type, $product_id, $address)
+    {
+        $product_price_template = ProductPrice::priceTemplateFromAddress($product_id, $address);
+
+        if (!$product_price_template) {
+            //give temp product price
+            $product_price_template = ProductPrice::where('product_id', $product_id)->get()->first();
+        }
+
+        if ($order_type == OrderType::ORDER_TYPE_MONTH) {
+            $product_price = $product_price_template->month_price;
+        } else if ($order_type == OrderType::ORDER_TYPE_SEASON) {
+            $product_price = $product_price_template->season_price;
+        } else {
+            //half year price
+            $product_price = $product_price_template->half_year_price;
+        }
+
+        return $product_price;
+    }
+
+    public function show_session()
+    {
+        var_dump(session('change_order_product'));
     }
 
 }

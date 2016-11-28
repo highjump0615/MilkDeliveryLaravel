@@ -921,7 +921,8 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::post('api/insert_order_item_to_cart', 'WeChatCtrl@insert_order_item_to_cart');
     //make order directly
     Route::post('api/make_order_directly', 'WeChatCtrl@make_order_directly');
-
+    //add product to order for xiugai
+    Route::post('api/add_product_to_order_for_xiugai', 'WeChatCtrl@add_product_to_order_for_xiugai');
 
     /* shopping cart */
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
@@ -988,7 +989,12 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* change order */
     Route::get('/dingdanxiugai', 'WeChatCtrl@dingdanxiugai');
-    Route::post('api/change_order_product', 'WeChatCtrl@change_order_product');
+    Route::get('/naipinxiugai', 'WeChatCtrl@naipinxiugai');
+    //change order product temporally based on session
+    Route::post('api/change_temp_order_product', 'WeChatCtrl@change_temp_order_product');
+    Route::post('api/remove_product_from_order', 'WeChatCtrl@remove_product_from_order');
+    Route::post('api/cancel_change_order', 'WeChatCtrl@cancel_change_order');
+    Route::post('api/change_order', 'WeChatCtrl@change_order');
 
     /* change order per day */
     Route::get('/danrixiugai', 'WeChatCtrl@danrixiugai');
@@ -1000,6 +1006,8 @@ Route::group(['prefix'=>'/weixin'], function(){
     //send verify code to phone
     Route::post('/api/send_verify_code_to_phone', 'WeChatCtrl@send_verify_code_to_phone');
     Route::post('/api/check_verify_code', 'WeChatCtrl@check_verify_code');
+
+    Route::get('/show_session', 'WeChatCtrl@show_session');
 
 });
 //
