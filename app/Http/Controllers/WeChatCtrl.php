@@ -356,7 +356,18 @@ class WeChatCtrl extends Controller
         } else {
             $plans = array();
 
-            $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            //show wechat only
+//            $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//                ->where(function ($query) {
+////                    $query->where('status', Order::ORDER_FINISHED_STATUS);
+//                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+////                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+//                })
+//                ->orderBy('id', 'desc')
+//                ->get()->all();
+
+            //show all order including admin order
+            $orders = Order::where('customer_id', $customer_id)
                 ->where(function ($query) {
 //                    $query->where('status', Order::ORDER_FINISHED_STATUS);
                     $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
@@ -1056,13 +1067,16 @@ class WeChatCtrl extends Controller
 
         $customer_id = $wechat_user->customer_id;
 
-        $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-            ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
+        //show only wechat order
+//        $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//            ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
+
+        $orders = Order::where('is_deleted', 0)->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
         if ($type == 'waiting') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_WAITING_STATUS)
-                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
@@ -1070,14 +1084,14 @@ class WeChatCtrl extends Controller
         } else if ($type == 'finished') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_FINISHED_STATUS)
-                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
         } else if ($type == 'stopped') {
             $orders = Order::where('is_deleted', 0)
                 ->where('status', Order::ORDER_STOPPED_STATUS)
-                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('customer_id', $customer_id)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
@@ -1088,7 +1102,7 @@ class WeChatCtrl extends Controller
                     $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
                 })
                 ->where('customer_id', $customer_id)
-                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->orderBy('ordered_at', 'desc')
                 ->get();
         }
