@@ -1,0 +1,10 @@
+
+.calendar_show {
+    width: 0px;
+    margin: 0;
+    top: -30px;
+    left: 70px;
+    position: relative;
+    visibility: hidden;
+    height: 0;
+}

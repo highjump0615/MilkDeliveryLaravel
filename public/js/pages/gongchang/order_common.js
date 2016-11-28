@@ -293,7 +293,7 @@ function get_order_statics() {
     else {
         fRemainCost = $('#remaining').val();
         var acceptable_amount = gos - fRemainCost;
-        $('#acceptable_amount').val(acceptable_amount);
+        $('#acceptable_amount').val(acceptable_amount.toFixed(1));
     }
 }
 
@@ -559,9 +559,9 @@ function initBottleNumCalendar(tr) {
                 showNum: true,
                 bottleNum: nBottleNum,
                 initValue: initNum,
-                startDate: firstday,
-                endDate: lastday,
-                class:'week_calendar'
+                startDate: '2016-11-13',
+                endDate: '2016-11-19',
+                class:'week_calendar',
             });
         }
         else {

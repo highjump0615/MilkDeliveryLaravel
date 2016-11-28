@@ -1,11 +1,11 @@
 @extends('gongchang.layout.master')
 @section('css')
     <link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
+    <link href="<?=asset('css/pages/order_detail_product.css')?>" rel="stylesheet">
     <style>
         #save_sub_addr {
             display: none;
         }
-
     </style>
 @endsection
 @section('content')
@@ -109,7 +109,7 @@
             </div>
             <div class="col-md-12">
                 <div class="ibox-content">
-                    <table class="table table-bordered">
+                    <table id="product_table" class="table table-bordered">
                         <thead>
                         <tr>
                             <th data-sort-ignore="true">序号</th>
@@ -136,7 +136,25 @@
                                     <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td>{{$order_products[$i]->count_per_day}}</td>
-                                    <td>{{$order_products[$i]->delivery_type_name}}</td>
+                                    <td>
+                                        <button class="btn btn-outline show_delivery_date" data-type="{{$order_products[$i]->delivery_type}}">
+                                            {{$order_products[$i]->delivery_type_name}}
+                                        </button>
+
+                                        <!-- 日期 -->
+                                        @if ($order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY &&
+                                            $order_products[$i]->delivery_type != \App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY)
+                                            <div class="calendar_show show_only">
+                                                <div class="input-group date picker">
+                                                    <input type="text" class="form-control delivery_dates" name="delivery_dates[]"
+                                                           value="{{$order_products[$i]->custom_order_dates}}" />
+                                                    <span class="input-group-addon">
+                                                    <i class="fa fa-calendar"></i>
+                                                </span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td>{{$order_products[$i]->total_amount}}</td>
                                 </tr>
                             @endfor
@@ -230,6 +248,12 @@
 
 @section('script')
     <script type="text/javascript">
+
+        // 解析当前服务器的时间 (2014-08-12 09:25:24)
+        var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
+        time = time.split(':');
+        var gDateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
+
         $('#pass_order').click(function () {
             var pass_bt = $(this);
             var no_pass_bt = $('#no_pass_order')
@@ -334,6 +358,8 @@
             }
         });
 
-
     </script>
+
+    <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
+
 @endsection

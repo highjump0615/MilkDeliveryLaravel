@@ -1,5 +1,7 @@
 @extends('gongchang.layout.master')
 @section('css')
+    <link href="<?=asset('css/pages/order_detail_product.css')?>" rel="stylesheet">
+
     <style>
         .plan_count {
             display: inline-block;
@@ -11,18 +13,10 @@
         .btn {
             margin: 0 8px;
         }
-        .calendar_show {
-            width: 0px;
-            margin: 0;
-            top: -30px;
-            left: 70px;
-            position: relative;
-            visibility: hidden;
-            height: 0;
-        }
-
     </style>
+
 @endsection
+
 @section('content')
 
 <!-- 奶站需要奶站的菜单 -->
@@ -293,8 +287,7 @@
                                     @if ($order->isAvailable())
                                     <td>
                                         @if($gpp['can_edit'])
-                                            <button type="button" class="btn btn-success xiugai_plan_bt"
-                                                    disabled="disabled">修改
+                                            <button type="button" class="btn btn-success xiugai_plan_bt" disabled>修改
                                             </button>
                                         @endif
                                     </td>
@@ -367,7 +360,6 @@
 @endsection
 
 @section('script')
-    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js') ?>"></script>
 
     <script type="text/javascript">
 
@@ -378,18 +370,10 @@
         @endif
 
 
-        //set calendar start date limit for various status
-
-        var firstday = startofweek();
-        var lastday = endofweek();
-
         // 解析当前服务器的时间 (2014-08-12 09:25:24)
         var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
         time = time.split(':');
-        dateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
-
-        var firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
-        var lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
+        var gDateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
 
 
         var today = new Date();
@@ -451,11 +435,10 @@
             });
         }
 
-
-        $('#product_table').find('tbody > tr').each(function() {
-            initBottleNumCalendar($(this));
-        })
     </script>
+
+    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js') ?>"></script>
+    <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
 
 
 @endsection

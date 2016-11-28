@@ -103,14 +103,14 @@ class MilkManDeliveryPlan extends Model
     //
 
     public function order(){
-        if($this->type == 1)
+        if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             return $this->belongsTo('App\Model\OrderModel\Order', 'order_id', 'id');
         else
             return $this->belongsTo('App\Model\OrderModel\SelfOrder', 'order_id', 'id');
     }
 
     public function order_product(){
-        if($this->type == 1)
+        if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id', 'id')->withTrashed();
         else
             return $this->belongsTo('App\Model\OrderModel\SelfOrderProduct', 'order_product_id', 'id');
@@ -193,6 +193,11 @@ class MilkManDeliveryPlan extends Model
      * 根据生产日期，决定配送明细的状态
      */
     public function determineStatus() {
+        // 待审核状态就直接退出
+        if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING) {
+            return;
+        }
+
         $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $nProductId = $this->getProductId();
 
@@ -247,6 +252,7 @@ class MilkManDeliveryPlan extends Model
             // 把待审核状态设成通过
             if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING) {
                 $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
+                $this->determineStatus();
                 $this->save();
             }
         }

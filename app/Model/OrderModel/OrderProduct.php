@@ -292,7 +292,7 @@ class OrderProduct extends Model
             $nIndex = $aryDate[2];
         }
 
-        return $nIndex;
+        return (int)$nIndex;
     }
 
     /**
@@ -308,7 +308,7 @@ class OrderProduct extends Model
      * @param $dateDeliver
      * @return int|mixed
      */
-    private function getDeliveryTypeCount($dateDeliver) {
+    public function getDeliveryTypeCount($dateDeliver) {
         $nTypeCount = 0;
 
         // 天天送、隔日送直接返回每次数量
@@ -330,39 +330,77 @@ class OrderProduct extends Model
             }
         }
 
-        return $nTypeCount;
+        // 单日数量不能超过全部数量
+        return min($nTypeCount, $this->total_count);
     }
 
     /**
-     * 计算下个月同一天的配送日期，日子超过该月的日数，就返回最后日子
+     * 如果不是配送日期, 计算出最近的配送日期
      * @param $date
-     * @param $dateOfMonth
-     * @return Datetime
+     * @return mixed
      */
-    private function getNextMonthDeliverDate($date, $dateOfMonth) {
+    public function getClosestDeliverDate($date) {
+        $dateDeliverNew = $date;
+
+        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY ||
+            $this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+            return $dateDeliverNew;
+        }
+
         // 获取年月日
-        $aryDate = explode('-', $date);
+        $aryDateTemp = explode('-', $date);
 
         // 计算本月天数
-        $nMaxDay = date('t', strtotime($aryDate[0] . '-' . $aryDate[1] . '-01'));
-
-        // 计算年月日
-        $nYear = (int)$aryDate[0];
-        $nMonth = (int)$aryDate[1];
-
-        // 如果当前日期是12月
-        if ($nMonth + 1 > 12) {
-            $nYear++;
-            $nMonth = 1;
-        }
-        else {
-            $nMonth++;
+        $nMaxDay = date('t', strtotime($aryDateTemp[0] . '-' . $aryDateTemp[1] . '-01'));
+        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
+            $nMaxDay = 7;
         }
 
-        $nDay = min($dateOfMonth, $nMaxDay);
+        $aryDate = $this->getCustomDateIndexArray();
 
-        // 返回新的日期
-        return date('Y-m-d', strtotime($nYear . '-' . $nMonth . '-' . $nDay));
+        // 到下个配送日的间隔
+        $nIntervalDay = 0;
+
+        // 当前索引
+        $nIndex = $this->getCustomDateIndexFromDate($date);
+        $nIntervalDay = $nMaxDay - $nIndex + $aryDate[0];
+
+        // 获取下一个索引
+        $nResultIndex = $aryDate[0];
+        for ($i = 0; $i < count($aryDate); $i++) {
+            // 超过最大范围，查看下一个索引
+            if ($nIndex > $nMaxDay) {
+                continue;
+            }
+
+            if ($aryDate[$i] >= $nIndex) {
+                $nIntervalDay = $aryDate[$i] - $nIndex;
+                break;
+            }
+        }
+
+        // 算出配送日期
+        $dateDeliverNew = date('Y-m-d', strtotime($date . "+" . $nIntervalDay . " days"));
+
+        return $dateDeliverNew;
+    }
+
+    /**
+     * 获取按周送、随心送索引数组
+     * @return array
+     */
+    private function getCustomDateIndexArray() {
+        $strCustom = rtrim($this->custom_order_dates, ',');
+        $aryStrCustom = explode(',', $strCustom);
+
+        // 规则日期需要重新排列
+        $aryDate = array();
+        foreach ($aryStrCustom as $strCustom) {
+            array_push($aryDate, $this->getCustomDateIndex($strCustom));
+        }
+        sort($aryDate);
+
+        return $aryDate;
     }
 
     /**
@@ -371,63 +409,17 @@ class OrderProduct extends Model
      * @return $date
      */
     private function getNextDeliverDate($date) {
-        // 到下个配送日的间隔
-        $nIntervalDay = 0;
-
         // 天天送
         if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
-            $nIntervalDay = 1;
+            $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
         }
         // 隔日送
         else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
-            $nIntervalDay = 2;
+            $dateDeliverNew = date('Y-m-d', strtotime($date . "+2 days"));
         }
         else {
-            $strCustom = rtrim($this->custom_order_dates, ',');
-            $aryStrCustom = explode(',', $strCustom);
-
-            // 规则日期需要重新排列
-            $aryDate = array();
-            foreach ($aryStrCustom as $strCustom) {
-                array_push($aryDate, $this->getCustomDateIndex($strCustom));
-            }
-            sort($aryDate);
-
-            // 当前索引
-            $nIndex = $this->getCustomDateIndexFromDate($date);
-
-            for ($i = 0; $i < count($aryDate); $i++) {
-                if ($aryDate[$i] == $nIndex) {
-                    if ($i == count($aryDate) - 1) {
-                        // 按周送
-                        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
-                            $nIntervalDay = 7 - $aryDate[$i] + $aryDate[0];
-                        }
-                        // 随心选
-                        else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {
-                            // 直接计算下个月的配送日期
-                            $dateDeliverNew = $this->getNextMonthDeliverDate($date, $aryDate[0]);
-                        }
-                    }
-                    else {
-                        // 按周送
-                        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
-                            $nIntervalDay = $aryDate[$i+1] - $aryDate[$i];
-                        }
-                        // 随心选
-                        else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {
-                            // 直接计算下个月的配送日期
-                            $dateDeliverNew = $this->getNextMonthDeliverDate($date, $aryDate[$i+1]);
-                        }
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        if ($nIntervalDay > 0) {
-            $dateDeliverNew = date('Y-m-d', strtotime($date . "+" . $nIntervalDay . " days"));
+            $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
+            $dateDeliverNew = $this->getClosestDeliverDate($dateDeliverNew);
         }
 
         return $dateDeliverNew;
@@ -438,7 +430,7 @@ class OrderProduct extends Model
      * @param $dateDeliver
      * @return string
      */
-    private function getProductionDate($dateDeliver) {
+    public function getProductionDate($dateDeliver) {
         $nProductionPeriod = $this->product->production_period / 24;;
         $nDateRes = date('Y-m-d',strtotime($dateDeliver . "-" . $nProductionPeriod . " days"));
 
@@ -447,51 +439,86 @@ class OrderProduct extends Model
 
     /**
      * 出现了多余量 生成或删除配送计划
+     * @param $planSrc - 导致这多余量的配送明细
      * @param $extra - 多余数量，正数或负数
      */
-    public function processExtraCount($extra) {
+    public function processExtraCount($planSrc, $extra) {
 
         $nCountExtra = $extra;
+        $lastDeliverPlan = null;
 
-        // 获取最后一条配送任务
-        $lastDeliverPlan = MilkManDeliveryPlan::where('order_product_id',$this->id)
-            ->orderby('deliver_at','desc')
-            ->get()
-            ->first();
+        while ($nCountExtra != 0) {
 
-        while ($nCountExtra > 0) {
-            // 获取最后那任务的配送规则数量
-            $nNormalCount = $this->getDeliveryTypeCount($lastDeliverPlan->deliver_at);
-
-            $nIncrease = min($nNormalCount - $lastDeliverPlan->changed_plan_count, $nCountExtra);
-
-            // 如果最后那条是单日修改过，要新添加配送任务
-            if ($lastDeliverPlan->changed_plan_count != $lastDeliverPlan->plan_count) {
-                $nIncrease = 0;
+            if (!$lastDeliverPlan) {
+                // 获取最后一条配送任务
+                $lastDeliverPlan = MilkManDeliveryPlan::where('order_product_id', $this->id)
+                    ->orderby('deliver_at', 'desc')
+                    ->get()
+                    ->first();
             }
 
-            // 最后那条没有多余空间，要新创建一个配送任务
-            if ($nIncrease == 0) {
-                $deliveryPlan = $lastDeliverPlan->replicate();
+            //
+            // 多余量是正数，添加配送明细
+            //
+            if ($nCountExtra > 0) {
 
-                $deliveryPlan->status = $deliveryPlan->determineStatus();
-                $deliveryPlan->delivered_count = 0;
+                // 获取最后那任务的配送规则数量
+                $nNormalCount = $this->getDeliveryTypeCount($lastDeliverPlan->deliver_at);
 
-                $deliveryPlan->deliver_at = $this->getNextDeliverDate($lastDeliverPlan->deliver_at);
-                $deliveryPlan->produce_at = $this->getProductionDate($deliveryPlan->deliver_at);
+                $nIncrease = min($nNormalCount - $lastDeliverPlan->changed_plan_count, $nCountExtra);
 
-                // 获取下一个配送规则数量
-                $nNormalCount = $this->getDeliveryTypeCount($deliveryPlan->deliver_at);
+                // 如果最后那条是单日修改过，要新添加配送明细
+                if ($lastDeliverPlan->changed_plan_count != $lastDeliverPlan->plan_count) {
+                    $nIncrease = 0;
+                }
 
-                $deliveryPlan->setCount(min($nNormalCount, $nCountExtra));
-                $nCountExtra -= $deliveryPlan->changed_plan_count;
+                // 如果导致这次多余量的配送明细是最后的，也要新添加配送明细
+                if ($lastDeliverPlan->id == $planSrc->id) {
+                    $nIncrease = 0;
+                }
+
+                // 最后那条没有多余空间，要新创建一个配送任务
+                if ($nIncrease == 0) {
+                    $deliveryPlan = $lastDeliverPlan->replicate();
+
+                    $deliveryPlan->determineStatus();
+                    $deliveryPlan->delivered_count = 0;
+
+                    $deliveryPlan->deliver_at = $this->getNextDeliverDate($lastDeliverPlan->deliver_at);
+                    $deliveryPlan->produce_at = $this->getProductionDate($deliveryPlan->deliver_at);
+
+                    // 获取下一个配送规则数量
+                    $nNormalCount = $this->getDeliveryTypeCount($deliveryPlan->deliver_at);
+
+                    $deliveryPlan->setCount(min($nNormalCount, $nCountExtra));
+                    $nCountExtra -= $deliveryPlan->changed_plan_count;
+                }
+                else {
+                    $deliveryPlan = $lastDeliverPlan;
+
+                    $deliveryPlan->setCount($lastDeliverPlan->changed_plan_count + $nIncrease);
+
+                    $nCountExtra -= $nIncrease;
+                }
             }
+            //
+            // 多余量是负数，删除配送明细
+            //
             else {
-                $deliveryPlan = $lastDeliverPlan;
+                // 计算减少量
+                $nDecrease = min($lastDeliverPlan->changed_plan_count, -$nCountExtra);
+                $nCount = $lastDeliverPlan->changed_plan_count - $nDecrease;
 
-                $deliveryPlan->setCount($lastDeliverPlan->changed_plan_count + $nCountExtra);
+                if ($nCount > 0) {
+                    $lastDeliverPlan->setCount($nCount);
+                    $deliveryPlan = $lastDeliverPlan;
+                }
+                else {
+                    $lastDeliverPlan->delete();
+                    $deliveryPlan = null;
+                }
 
-                $nCountExtra -= $nCountExtra;
+                $nCountExtra += $nDecrease;
             }
 
             $lastDeliverPlan = $deliveryPlan;

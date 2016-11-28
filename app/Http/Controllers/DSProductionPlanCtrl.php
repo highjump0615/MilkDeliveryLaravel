@@ -699,8 +699,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                     $ps->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
                     $ps->cancel_reason = "生产取消";
                     $ps->save();
+
                     $orders_change = new DSDeliveryPlanCtrl;
-                    $orders_change->undelivered_process($ps->order_product_id,0,$ps->deliver_at);
+                    $orders_change->undelivered_process($ps);
                 }
             }
         }
@@ -773,8 +774,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $mp->cancel_reason = "生产取消";
             $mp->delivered_count = 0;
             $mp->save();
+
             $order_changes = new DSDeliveryPlanCtrl;
-            $order_changes->undelivered_process($mp->order_product_id,0,$mp->deliver_at);
+            $order_changes->undelivered_process($mp);
         }
 
         return Response::json(['status'=>"successfully_called!"]);

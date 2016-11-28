@@ -1072,322 +1072,325 @@ class OrderCtrl extends Controller
 
             // 更新数量
             $plan->setCount($changed);
+            
+            // 处理多余量
+            $plan->order_product->processExtraCount($plan, -$diff);
 
-            //get each delivery plans from last delivery day and delete or create plans
-            //enable to change the plan
-            if ($diff > 0) {
-
-                //decrease plans
-                $count = 0;
-                //check from last delivery plans
-                $ldps = $order->getLastDeliveryPlans($plan_id);
-                //decrease the plans
-                foreach ($ldps as $ldp) {
-                    if ($ldp->delivery_count > $diff) {
-                        $ldp->delivery_count = $ldp->delivery_count - $diff;
-                        $ldp->changed_plan_count = $ldp->delivery_count;
-                        $ldp->save();
-                        $count = 1;
-                        break;
-                    } else {
-                        $diff = $diff - ($ldp->delivery_count);
-                        $ldp->delete();
-                        $count++;
-                    }
-                    if ($diff == 0)
-                        break;
-                }
-            } else {
-                //Increase Plans: create additional plans
-
-                $diff = -$diff;//this is the total count that can be used to make new delivery plan
-
-                //increase the plans
-                //make new delivery plans
-                $order_product_id = $plan->order_product_id;
-                $op = OrderProduct::find($order_product_id);
-                $product_price = $op->product_price;
-                $product_id = $op->product_id;
-
-                //get product production_period and order at-production_period
-                $product = Product::find($product_id);
-                $production_period = ($product->production_period) / 24;
-
-                //get factory gap day before start delivery of new order
-
-
-                //Even though this was on delivery, they should be sent to the check waiting status
-                //$status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING; //suggested
-                //set status of origin status
-                $status = $plan->status;
-
-                $milkman_id = $plan->milkman_id;
-                $station_id = $plan->station_id;
-
-                $delivered_count = 0;
-
-                $delivery_type = $op->delivery_type;
-
-                $last_deliver_plan = $op->last_deliver_plan;//last deliver plan's start at
-                if ($last_deliver_plan) {
-                    //get total count and delivery type
-                    if ($last_deliver_plan->id == $plan_id) {
-                        $total_count = $diff;
-                        $deliver_at = $last_deliver_plan->deliver_at;
-
-                        $deliver_at = $this->get_next_delivery_day($delivery_type, $op, $deliver_at);
-                    } else {
-                        $total_count = $diff + $last_deliver_plan->delivery_count;//$total_count = $diff+last_deliver's deliver count
-                        $last_deliver_plan->delete();
-                        $deliver_at = $last_deliver_plan->deliver_at;
-                    }
-
-                    $stop_checked = false;
-                    if ($exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                        $deliver_at = $restart_at;
-                        $stop_checked = true;
-                    }
-
-                    //check deliver_at exist in stop_at and restart_at
-
-                    if ($delivery_type == 1) {
-
-                        //every day send
-                        $plan_count = $op->count_per_day;
-                        //changed plan count = plan acount
-                        $changed_plan_count = $plan_count;
-                        $interval = 1;
-
-                        do {
-                            $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                            if ($total_count < $plan_count)
-                                $plan_count = $total_count;
-
-                            $changed_plan_count = $plan_count;
-                            $delivery_count = $plan_count;
-
-                            $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                            $total_count -= $plan_count;
-                            $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                            if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                $deliver_at = $restart_at;
-                                $stop_checked = true;
-                            }
-
-                        } while ($total_count > 0);
-                    } else if ($delivery_type == 2) {
-                        //each 2 days send
-                        $plan_count = $op->count_per_day;
-                        //changed plan count = plan acount
-                        $changed_plan_count = $plan_count;
-                        $interval = 2;
-
-                        do {
-                            $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                            if ($total_count < $plan_count)
-                                $plan_count = $total_count;
-                            $changed_plan_count = $plan_count;
-                            $delivery_count = $plan_count;
-
-                            $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                            $total_count -= $plan_count;
-                            $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                            if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                $deliver_at = $restart_at;
-                                $stop_checked = true;
-                            }
-
-                        } while ($total_count > 0);
-                    } else if ($delivery_type == 3) {
-                        //week day
-                        $cod = $op->custom_order_dates;
-
-                        $cod = explode(',', $cod);
-                        $custom = [];
-                        foreach ($cod as $code) {
-                            $code = explode(':', $code);
-                            $key = $code[0];
-                            $value = $code[1];
-                            $custom[$key] = $value;
-                        }
-                        //custom week days
-                        do {
-                            //get key from day
-                            $key = date('N', strtotime($deliver_at));
-
-                            if (array_key_exists($key, $custom)) {
-                                $plan_count = $custom[$key];
-                                //changed plan count = plan acount
-                                $changed_plan_count = $plan_count;
-
-                                $next_key = $this->get_next_key($custom, $key);
-
-                                if ($next_key < $key) {
-                                    $interval = $next_key + 7 - $key;
-                                } else {
-                                    $interval = $next_key - $key;
-                                }
-
-                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                                if ($total_count < $plan_count)
-                                    $plan_count = $total_count;
-
-                                $changed_plan_count = $plan_count;
-                                $delivery_count = $plan_count;
-
-                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                                $total_count -= $plan_count;
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                    $deliver_at = $restart_at;
-                                    $stop_checked = true;
-                                }
-                            } else {
-                                //get avaiable key value > current_key
-                                $old_key = $key;
-
-                                $key = $this->getClosestKey($key, $custom);
-
-                                if ($key < $old_key)
-                                    $first_interval = $key + 7 - $old_key;
-                                else
-                                    $first_interval = $key - $old_key;
-
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
-
-                                $plan_count = $custom[$key];
-                                //changed plan count = plan acount
-                                $changed_plan_count = $plan_count;
-
-                                $next_key = $this->get_next_key($custom, $key);
-                                if ($next_key < $key) {
-                                    $interval = $next_key + 7 - $key;
-                                } else {
-                                    $interval = $next_key - $key;
-                                }
-
-                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                                if ($total_count < $plan_count)
-                                    $plan_count = $total_count;
-
-                                $changed_plan_count = $plan_count;
-                                $delivery_count = $plan_count;
-
-                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                                $total_count -= $plan_count;
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                    $deliver_at = $restart_at;
-                                    $stop_checked = true;
-                                }
-                            }
-                        } while ($total_count > 0);
-                    } else {
-                        //month day
-                        $cod = $op->custom_order_dates;
-                        $daynums = $this->days_in_month($deliver_at);
-
-                        $cod = explode(',', $cod);
-                        $custom = [];
-                        foreach ($cod as $code) {
-                            $code = explode(':', $code);
-                            $key = $code[0];
-                            $value = $code[1];
-                            $custom[$key] = $value;
-                        }
-                        //custom week days
-                        do {
-                            //get key from day
-                            $key = (new DateTime($deliver_at))->format('d');
-
-                            if (array_key_exists($key, $custom)) {
-                                $plan_count = $custom[$key];
-                                //changed plan count = plan acount
-                                $changed_plan_count = $plan_count;
-
-                                $next_key = $this->get_next_key($custom, $key);
-
-                                if ($next_key < $key) {
-                                    $interval = $next_key + $daynums - $key;
-                                } else {
-                                    $interval = $next_key - $key;
-                                }
-
-                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                                if ($total_count < $plan_count)
-                                    $plan_count = $total_count;
-
-                                $changed_plan_count = $plan_count;
-                                $delivery_count = $plan_count;
-
-                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                                $total_count -= $plan_count;
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                                $daynums = $this->days_in_month($deliver_at);
-
-                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                    $deliver_at = $restart_at;
-                                    $daynums = $this->days_in_month($deliver_at);
-                                    $stop_checked = true;
-                                }
-                            } else {
-                                //get avaiable key value > current_key
-                                $old_key = $key;
-
-                                $key = $this->getClosestKey($key, $custom);
-
-                                if ($key < $old_key)
-                                    $first_interval = $key + $daynums - $old_key;
-                                else
-                                    $first_interval = $key - $old_key;
-
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
-                                $daynums = $this->days_in_month($deliver_at);
-
-                                $plan_count = $custom[$key];
-                                //changed plan count = plan acount
-                                $changed_plan_count = $plan_count;
-
-                                $next_key = $this->get_next_key($custom, $key);
-                                if ($next_key < $key) {
-                                    $interval = $next_key + $daynums - $key;
-                                } else {
-                                    $interval = $next_key - $key;
-                                }
-
-                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
-                                if ($total_count < $plan_count)
-                                    $plan_count = $total_count;
-
-                                $changed_plan_count = $plan_count;
-                                $delivery_count = $plan_count;
-
-                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
-                                $total_count -= $plan_count;
-                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
-                                $daynums = $this->days_in_month($deliver_at);
-
-                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
-                                    $deliver_at = $restart_at;
-                                    $daynums = $this->days_in_month($deliver_at);
-                                    $stop_checked = true;
-                                }
-                            }
-                        } while ($total_count > 0);
-                    }
-
-                } else {
-                    $plan->setCount($origin);
-
-                    return ['status' => 'fail', 'message' => '同时改变了计划，发生错误.'];
-                }
-
-            }
-
-            if ($changed == 0) {
-                // 如果数量变成0，要把自己的flag转给下个配送明细
-                $plan->transferFlag();
-            }
+//            //get each delivery plans from last delivery day and delete or create plans
+//            //enable to change the plan
+//            if ($diff > 0) {
+//
+//                //decrease plans
+//                $count = 0;
+//                //check from last delivery plans
+//                $ldps = $order->getLastDeliveryPlans($plan_id);
+//                //decrease the plans
+//                foreach ($ldps as $ldp) {
+//                    if ($ldp->delivery_count > $diff) {
+//                        $ldp->delivery_count = $ldp->delivery_count - $diff;
+//                        $ldp->changed_plan_count = $ldp->delivery_count;
+//                        $ldp->save();
+//                        $count = 1;
+//                        break;
+//                    } else {
+//                        $diff = $diff - ($ldp->delivery_count);
+//                        $ldp->delete();
+//                        $count++;
+//                    }
+//                    if ($diff == 0)
+//                        break;
+//                }
+//            } else {
+//                //Increase Plans: create additional plans
+//
+//                $diff = -$diff;//this is the total count that can be used to make new delivery plan
+//
+//                //increase the plans
+//                //make new delivery plans
+//                $order_product_id = $plan->order_product_id;
+//                $op = OrderProduct::find($order_product_id);
+//                $product_price = $op->product_price;
+//                $product_id = $op->product_id;
+//
+//                //get product production_period and order at-production_period
+//                $product = Product::find($product_id);
+//                $production_period = ($product->production_period) / 24;
+//
+//                //get factory gap day before start delivery of new order
+//
+//
+//                //Even though this was on delivery, they should be sent to the check waiting status
+//                //$status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING; //suggested
+//                //set status of origin status
+//                $status = $plan->status;
+//
+//                $milkman_id = $plan->milkman_id;
+//                $station_id = $plan->station_id;
+//
+//                $delivered_count = 0;
+//
+//                $delivery_type = $op->delivery_type;
+//
+//                $last_deliver_plan = $op->last_deliver_plan;//last deliver plan's start at
+//                if ($last_deliver_plan) {
+//                    //get total count and delivery type
+//                    if ($last_deliver_plan->id == $plan_id) {
+//                        $total_count = $diff;
+//                        $deliver_at = $last_deliver_plan->deliver_at;
+//
+//                        $deliver_at = $this->get_next_delivery_day($delivery_type, $op, $deliver_at);
+//                    } else {
+//                        $total_count = $diff + $last_deliver_plan->delivery_count;//$total_count = $diff+last_deliver's deliver count
+//                        $last_deliver_plan->delete();
+//                        $deliver_at = $last_deliver_plan->deliver_at;
+//                    }
+//
+//                    $stop_checked = false;
+//                    if ($exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                        $deliver_at = $restart_at;
+//                        $stop_checked = true;
+//                    }
+//
+//                    //check deliver_at exist in stop_at and restart_at
+//
+//                    if ($delivery_type == 1) {
+//
+//                        //every day send
+//                        $plan_count = $op->count_per_day;
+//                        //changed plan count = plan acount
+//                        $changed_plan_count = $plan_count;
+//                        $interval = 1;
+//
+//                        do {
+//                            $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                            if ($total_count < $plan_count)
+//                                $plan_count = $total_count;
+//
+//                            $changed_plan_count = $plan_count;
+//                            $delivery_count = $plan_count;
+//
+//                            $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                            $total_count -= $plan_count;
+//                            $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                            if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                $deliver_at = $restart_at;
+//                                $stop_checked = true;
+//                            }
+//
+//                        } while ($total_count > 0);
+//                    } else if ($delivery_type == 2) {
+//                        //each 2 days send
+//                        $plan_count = $op->count_per_day;
+//                        //changed plan count = plan acount
+//                        $changed_plan_count = $plan_count;
+//                        $interval = 2;
+//
+//                        do {
+//                            $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                            if ($total_count < $plan_count)
+//                                $plan_count = $total_count;
+//                            $changed_plan_count = $plan_count;
+//                            $delivery_count = $plan_count;
+//
+//                            $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                            $total_count -= $plan_count;
+//                            $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                            if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                $deliver_at = $restart_at;
+//                                $stop_checked = true;
+//                            }
+//
+//                        } while ($total_count > 0);
+//                    } else if ($delivery_type == 3) {
+//                        //week day
+//                        $cod = $op->custom_order_dates;
+//
+//                        $cod = explode(',', $cod);
+//                        $custom = [];
+//                        foreach ($cod as $code) {
+//                            $code = explode(':', $code);
+//                            $key = $code[0];
+//                            $value = $code[1];
+//                            $custom[$key] = $value;
+//                        }
+//                        //custom week days
+//                        do {
+//                            //get key from day
+//                            $key = date('N', strtotime($deliver_at));
+//
+//                            if (array_key_exists($key, $custom)) {
+//                                $plan_count = $custom[$key];
+//                                //changed plan count = plan acount
+//                                $changed_plan_count = $plan_count;
+//
+//                                $next_key = $this->get_next_key($custom, $key);
+//
+//                                if ($next_key < $key) {
+//                                    $interval = $next_key + 7 - $key;
+//                                } else {
+//                                    $interval = $next_key - $key;
+//                                }
+//
+//                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                                if ($total_count < $plan_count)
+//                                    $plan_count = $total_count;
+//
+//                                $changed_plan_count = $plan_count;
+//                                $delivery_count = $plan_count;
+//
+//                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                                $total_count -= $plan_count;
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                    $deliver_at = $restart_at;
+//                                    $stop_checked = true;
+//                                }
+//                            } else {
+//                                //get avaiable key value > current_key
+//                                $old_key = $key;
+//
+//                                $key = $this->getClosestKey($key, $custom);
+//
+//                                if ($key < $old_key)
+//                                    $first_interval = $key + 7 - $old_key;
+//                                else
+//                                    $first_interval = $key - $old_key;
+//
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
+//
+//                                $plan_count = $custom[$key];
+//                                //changed plan count = plan acount
+//                                $changed_plan_count = $plan_count;
+//
+//                                $next_key = $this->get_next_key($custom, $key);
+//                                if ($next_key < $key) {
+//                                    $interval = $next_key + 7 - $key;
+//                                } else {
+//                                    $interval = $next_key - $key;
+//                                }
+//
+//                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                                if ($total_count < $plan_count)
+//                                    $plan_count = $total_count;
+//
+//                                $changed_plan_count = $plan_count;
+//                                $delivery_count = $plan_count;
+//
+//                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                                $total_count -= $plan_count;
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                    $deliver_at = $restart_at;
+//                                    $stop_checked = true;
+//                                }
+//                            }
+//                        } while ($total_count > 0);
+//                    } else {
+//                        //month day
+//                        $cod = $op->custom_order_dates;
+//                        $daynums = $this->days_in_month($deliver_at);
+//
+//                        $cod = explode(',', $cod);
+//                        $custom = [];
+//                        foreach ($cod as $code) {
+//                            $code = explode(':', $code);
+//                            $key = $code[0];
+//                            $value = $code[1];
+//                            $custom[$key] = $value;
+//                        }
+//                        //custom week days
+//                        do {
+//                            //get key from day
+//                            $key = (new DateTime($deliver_at))->format('d');
+//
+//                            if (array_key_exists($key, $custom)) {
+//                                $plan_count = $custom[$key];
+//                                //changed plan count = plan acount
+//                                $changed_plan_count = $plan_count;
+//
+//                                $next_key = $this->get_next_key($custom, $key);
+//
+//                                if ($next_key < $key) {
+//                                    $interval = $next_key + $daynums - $key;
+//                                } else {
+//                                    $interval = $next_key - $key;
+//                                }
+//
+//                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                                if ($total_count < $plan_count)
+//                                    $plan_count = $total_count;
+//
+//                                $changed_plan_count = $plan_count;
+//                                $delivery_count = $plan_count;
+//
+//                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                                $total_count -= $plan_count;
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                                $daynums = $this->days_in_month($deliver_at);
+//
+//                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                    $deliver_at = $restart_at;
+//                                    $daynums = $this->days_in_month($deliver_at);
+//                                    $stop_checked = true;
+//                                }
+//                            } else {
+//                                //get avaiable key value > current_key
+//                                $old_key = $key;
+//
+//                                $key = $this->getClosestKey($key, $custom);
+//
+//                                if ($key < $old_key)
+//                                    $first_interval = $key + $daynums - $old_key;
+//                                else
+//                                    $first_interval = $key - $old_key;
+//
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $first_interval);
+//                                $daynums = $this->days_in_month($deliver_at);
+//
+//                                $plan_count = $custom[$key];
+//                                //changed plan count = plan acount
+//                                $changed_plan_count = $plan_count;
+//
+//                                $next_key = $this->get_next_key($custom, $key);
+//                                if ($next_key < $key) {
+//                                    $interval = $next_key + $daynums - $key;
+//                                } else {
+//                                    $interval = $next_key - $key;
+//                                }
+//
+//                                $produce_at = $this->get_produce_at_day($deliver_at, $production_period);
+//                                if ($total_count < $plan_count)
+//                                    $plan_count = $total_count;
+//
+//                                $changed_plan_count = $plan_count;
+//                                $delivery_count = $plan_count;
+//
+//                                $this->make_each_delivery_plan_for_changed_order($milkman_id, $station_id, $order_id, $product_id, $order_product_id, $produce_at, $deliver_at, $status, $plan_count, $changed_plan_count, $delivery_count, $delivered_count, $product_price);
+//                                $total_count -= $plan_count;
+//                                $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
+//                                $daynums = $this->days_in_month($deliver_at);
+//
+//                                if (!$stop_checked && $exist_stop && (strtotime($deliver_at) >= $stop_at) && strtotime($deliver_at) < $restart_at) {
+//                                    $deliver_at = $restart_at;
+//                                    $daynums = $this->days_in_month($deliver_at);
+//                                    $stop_checked = true;
+//                                }
+//                            }
+//                        } while ($total_count > 0);
+//                    }
+//
+//                } else {
+//                    $plan->setCount($origin);
+//
+//                    return ['status' => 'fail', 'message' => '同时改变了计划，发生错误.'];
+//                }
+//
+//            }
+//
+//            if ($changed == 0) {
+//                // 如果数量变成0，要把自己的flag转给下个配送明细
+//                $plan->transferFlag();
+//            }
 
             return ['status' => 'success', 'message' => '交付变更成功.'];
         } else {
@@ -3657,6 +3660,9 @@ class OrderCtrl extends Controller
             $avg = $request->input('avg')[$i];
             $product_start_at = $request->input('start_at')[$i];
 
+            //
+            // 创建OderProduct
+            //
             $op = new OrderProduct;
             $op->order_id = $order->id;
             $op->product_id = $pid;
@@ -3670,39 +3676,52 @@ class OrderCtrl extends Controller
 
             $op->count_per_day = $request->input('order_product_count_per')[$i];
 
-            if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
-//                    $op->count_per_day = $request->input('order_product_count_per')[$i];
-            }
-            else {
+            if ($delivery_type == DeliveryType::DELIVERY_TYPE_WEEK || $delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {   // 按周送、随心送
+
                 $custom_dates = $request->input('delivery_dates')[$i];
-//                    if ($delivery_type == "3") {
-//                        //Week Delivery
-//                        $result = $this->get_week_delivery_info($custom_dates);
-//
-//                    } else {
-//                        //Month Delivery
-//                        $result = $this->get_month_delivery_info($custom_dates);
-//                    }
                 $result = rtrim($custom_dates, ',');
+
                 $op->custom_order_dates = $result;
             }
 
             $op->save();
 
-            //establish plan
-            $this->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
+            //
+            // 创建一个MilkmanDeliveryPlan, 之后自动生成
+            //
+            $dp = new MilkManDeliveryPlan;
+
+            $dp->milkman_id = $milkman_id;
+            $dp->station_id = $station_id;
+            $dp->order_id = $order->id;
+            $dp->order_product_id = $op->id;
+            $dp->deliver_at = $op->getClosestDeliverDate($product_start_at);
+            $dp->produce_at = $op->getProductionDate($dp->deliver_at);
+            $dp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING;
+            $dp->setCount($op->getDeliveryTypeCount($dp->deliver_at));
+            $dp->product_price = $product_price;
+            $dp->delivered_count = 0;
+            $dp->type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
+            $dp->save();
+
+            // 自动生成配送明细
+            $op->processExtraCount($dp, $op->total_count - $dp->changed_plan_count);
+
+            // 设置配送第一天的标志
+            $dp->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
+            $dp->save();
         }
 
-        //set flag on first order delivery plan
-        $plans = $order->first_delivery_plans;
-        if($plans)
-        {
-            foreach($plans as $plan)
-            {
-                $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-                $plan->save();
-            }
-        }
+//        //set flag on first order delivery plan
+//        $plans = $order->first_delivery_plans;
+//        if($plans)
+//        {
+//            foreach($plans as $plan)
+//            {
+//                $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
+//                $plan->save();
+//            }
+//        }
 
         // save customer
         $customer = Customer::find($customer_id);
@@ -5033,7 +5052,6 @@ class OrderCtrl extends Controller
                 $order->station->calculation_balance += $remain_amount;
                 $order->station->delivery_credit_balance += $remain_amount;
                 $order->station->save();
-
 
                 //add order's remain amount to customer account's remain amount
 //                if ($remain_amount > 0) {

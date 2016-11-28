@@ -947,19 +947,11 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
 
-    public function undelivered_process($order_product_id, $delivered_count, $deliver_at)
+    public function undelivered_process($mkdp)
     {
-        $plan = MilkManDeliveryPlan::where('order_product_id', $order_product_id)
-            ->where('deliver_at', $deliver_at)
-            ->get()
-            ->first();
+        $undelivered_count = $mkdp->delivery_count - $mkdp->delivered_count;
 
-        $delivery_count = $plan->delivery_count;
-
-        $undelivered_count = $delivery_count - $delivered_count;
-
-        $delivery_type = OrderProduct::find($order_product_id);
-        $delivery_type->processExtraCount($undelivered_count);
+        $mkdp->order_product->processExtraCount($mkdp, $undelivered_count);
     }
 
 
@@ -1173,7 +1165,7 @@ class DSDeliveryPlanCtrl extends Controller
 
             $milkmandeliverys->delivered_count = $delivered_count;
 
-            // 配送数量0是怎么处理，按照正常留长处理
+            // 配送数量0是怎么处理，按照正常流程处理
 //            if($delivered_count == 0){
 //                $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
 //                $milkmandeliverys->cancel_reason = "配送取消";
@@ -1228,7 +1220,7 @@ class DSDeliveryPlanCtrl extends Controller
 
                 // 如果当天没有配送完，顺延处理
                 if($milkmandeliverys->delivered_count != $milkmandeliverys->changed_plan_count){
-                    $this->undelivered_process($milkmandeliverys->order_product_id,$milkmandeliverys->delivered_count,$milkmandeliverys->deliver_at);
+                    $this->undelivered_process($milkmandeliverys);
                 }
             }
         }
