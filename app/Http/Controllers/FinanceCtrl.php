@@ -2392,6 +2392,7 @@ class FinanceCtrl extends Controller
             'fac_sta'=>$result,
         ]);
     }
+
     //Z6: Show one factory
     public function show_one_factory($fid){
 
@@ -2400,8 +2401,10 @@ class FinanceCtrl extends Controller
         $factory = Factory::find($fid);
 
         $yesterday = date('Y-m-d', strtotime('yesterday'));
-        $yesterday_orders =Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)->where('ordered_at', $yesterday)
-            ->where('factory_id', $fid)->get();
+        $yesterday_orders =Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->where('ordered_at', $yesterday)
+            ->where('factory_id', $fid)
+            ->get();
 
         $yo_count = count($yesterday_orders);
 
@@ -2434,11 +2437,13 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'zhanghugaikuang';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
+
         return view('zongpingtai.caiwu.zhanghuguanli.zhanghugaikuang', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
+
             'factory_info' => $factory_info,
             'stations' => $stations,
             'today_total_wechat_count'=>$today_total_wechat_count,

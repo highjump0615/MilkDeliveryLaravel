@@ -187,7 +187,7 @@
                                         <td>{{$station->bottle_count_done_this_term}}</td>
                                         <td>{{$station->order_amount_done_this_term}}</td>
                                         <td>{{$station->bottle_count_before_this_term + $station->bottle_count_increased_this_term - $station->bottle_count_done_this_term}}</td>
-                                        <td>{{$station->term_start_amount + $station->order_amount_done_this_term}}</td>
+                                        <td>{{$station->term_start_amount + $station->order_amount_increased_this_term - $station->order_amount_done_this_term}}</td>
                                     </tr>
                                     </tbody>
                                 </table>

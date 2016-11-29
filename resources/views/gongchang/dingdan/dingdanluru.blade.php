@@ -444,7 +444,9 @@
                                                 <div>
                                                     <input required name="one_product_total_count[]"
                                                            class="one_product_total_count form-control"
-                                                           type="number" min="1" value="{{$op->remain_count}}"
+                                                           type="number"
+                                                           min="1"
+                                                           value="@if (!$is_edit && isset($order)){{$op->total_count}}@else{{$op->remain_count}}@endif"
                                                            style="padding-left: 2px;"/>
                                                     <select class="one_product_total_count_select control hidden form-control">
                                                         @if(isset($products_count_on_fot))

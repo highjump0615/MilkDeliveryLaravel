@@ -151,7 +151,7 @@ class DeliveryStation extends Authenticatable
     public function getBottleCountIncreasedThisTermAttribute()
     {
         $total = $this->getBottleCountOfOrders($this->money_orders) + $this->getBottleCountOfOrders($this->wechat_orders) +
-                    $this->getBottleCountOfOrders($this->card_orders) + $this->getBottleCountOfOrders($this->other_orders);
+                    $this->getBottleCountOfOrders($this->card_orders)/* + $this->getBottleCountOfOrders($this->other_orders)*/;
 
         return $total;
     }
@@ -159,7 +159,7 @@ class DeliveryStation extends Authenticatable
     public  function getBottleCountDoneThisTermAttribute()
     {
         $total = $this->getBottleCountOfOrders($this->money_orders_really_got) + $this->getBottleCountOfOrders($this->wechat_orders_really_got) +
-                    $this->getBottleCountOfOrders($this->card_orders_really_got) + $this->getBottleCountOfOrders($this->other_orders_really_got);
+                    $this->getBottleCountOfOrders($this->card_orders_really_got)/* + $this->getBottleCountOfOrders($this->other_orders_really_got)*/;
         return $total;
     }
 
@@ -179,7 +179,9 @@ class DeliveryStation extends Authenticatable
         $total2 = $this->getSumOfOrders($this->wechat_orders_really_got);
         $total3 = $this->getSumOfOrders($this->card_orders_really_got);
         $total4 = $this->getSumOfOrders($this->other_orders_really_got);
+
         $total = round($total1+$total2+$total3+$total4, 2);
+
         return $total;
     }
 
@@ -201,7 +203,8 @@ class DeliveryStation extends Authenticatable
         $card_orders_amount = $this->getSumOfOrders($this->card_orders);
         $orders_from_other_amount = $this->getSumOfOrders($this->other_orders);
 
-        $total_this_amount = $money_orders_amount+$wechat_orders_amount+$card_orders_amount+$orders_from_other_amount;
+        $total_this_amount = $money_orders_amount+$wechat_orders_amount+$card_orders_amount/*+$orders_from_other_amount*/;
+
         return $total_this_amount;
     }
 
@@ -266,8 +269,11 @@ class DeliveryStation extends Authenticatable
             ->get();
         $order_total = $this->getSumOfOrders($orders);
 
-        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)->where('time', '<', $first_m)
-            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)->get();
+        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('time', '<', $first_m)
+            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)
+            ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
+            ->get();
 
         $received_total = $this->getSumOfHistoreis($calc_histories);
 
@@ -490,14 +496,18 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
+
+        $orders = Order::where('delivery_station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)->get();
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
+            ->get();
+
         return $orders;
     }
 
@@ -506,7 +516,8 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)
+
+        $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where(function($query){
@@ -514,7 +525,9 @@ class DeliveryStation extends Authenticatable
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)->get();
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->get();
+
         return $orders;
     }
 
@@ -524,14 +537,18 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
+
+        $orders = Order::where('delivery_station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
-            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)->get();
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
+            ->get();
+
         return $orders;
     }
 
@@ -540,7 +557,8 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)
+
+        $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where(function($query){
@@ -549,13 +567,15 @@ class DeliveryStation extends Authenticatable
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)->get();
+
         return $orders;
     }
 
 
     public function getTodayWechatOrdersAttribute()
     {
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
+        $today = getCurDateString();
+
         $orders = Order::where('station_id', $this->id)
             ->where('ordered_at', $today)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
@@ -565,6 +585,7 @@ class DeliveryStation extends Authenticatable
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
+
         return $orders;
     }
 
@@ -587,14 +608,18 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+
+        $orders = Order::where('station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('delivery_station_id', '=', $this->id)->get();
+
         return $orders;
     }
 
@@ -603,17 +628,20 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+
+        $orders = Order::where('station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->where('delivery_station_id', '!=', $this->id)->get();
+
         return $orders;
     }
-
 
     //get money orders that has received money from station
     public function getMoneyOrdersReallyGotAttribute()
@@ -621,7 +649,7 @@ class DeliveryStation extends Authenticatable
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
 
-        $orders = Order::where('station_id', $this->id)
+        $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
@@ -637,7 +665,8 @@ class DeliveryStation extends Authenticatable
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
 
-        $res = DSCalcBalanceHistory::where('station_id', $this->id)->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
+        $res = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
             ->whereBetween('time', array($first_m, $last_m))
             ->selectRaw('sum(amount) as sum')
             ->get()->first();
@@ -653,6 +682,26 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+
+        $orders = Order::where('delivery_station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->where(function($query){
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+            })
+            ->get();
+
+        return $orders;
+    }
+
+    public function getMoneyOrdersInput()
+    {
+        $first_m = date('Y-m-01');
+        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+
         $orders = Order::where('station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
             ->where('ordered_at', '<=', $last_m)
@@ -663,6 +712,7 @@ class DeliveryStation extends Authenticatable
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
+
         return $orders;
     }
 
@@ -683,6 +733,7 @@ class DeliveryStation extends Authenticatable
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
             ->get();
+
         return $orders;
     }
 
@@ -767,13 +818,13 @@ class DeliveryStation extends Authenticatable
 
     public function getReceivableOrderMoneyAttribute()
     {
-
-        $money_orders = $this->money_orders;
+        $money_orders = $this->getMoneyOrdersInput();
         $money_orders_sum = $this->getSumOfOrders($money_orders);
 
         $money_orders_really_got_sum = $this->money_orders_really_got_sum;
 
         $receivable = $money_orders_sum - $money_orders_really_got_sum + $this->money_not_received_start_of_month;
+
         return $receivable;
     }
 
