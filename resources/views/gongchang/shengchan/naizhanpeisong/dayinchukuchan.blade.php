@@ -1,8 +1,10 @@
 @extends('gongchang.layout.master')
+
 @section('css')
 	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
 	<link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 @endsection
+
 @section('content')
 	@include('gongchang.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -85,11 +87,11 @@
 											</div>
 											<div class="col-md-4">
 												<label>发货人：</label>
-												<input type="text" id="" class="bottle_input">
+												<input type="text" id="input_name">
 											</div>
 											<div class="col-md-4">
 												<label>车牌号：</label>
-												<input type="text" id="" class="bottle_input">
+												<input type="text" id="input_carnum">
 											</div>
 										</td>
 									</tr>
@@ -120,7 +122,7 @@
                     </div>
 					@endforeach
                 </div>
-				<div class="col-md-offset-5 col-md-2">
+				<div class="col-md-offset-5 col-md-2" style="padding:15px">
 					<button id="return" class="btn btn-success" style="width: 70%"><i class="fa fa-reply"></i></button>
 				</div>
 			</div>
@@ -138,7 +140,7 @@
 		$(document).ready(function(){
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
+                radioClass: 'iradio_square-green'
             });
         });
 		$('.footable').footable();
@@ -157,20 +159,17 @@
 			var address = $('#address').val();
 			var date = $('#date').val();
 			window.location.href = SITE_URL+"milk/public/gongchang/shengchan/naizhanpeisong/dayinchukuchan/?station_name="+station_name+"&date="+date+"&station_number="+station_number+"&address="+address+"";
-		})
+		});
 
 		$('button[data-action = "print"]').click(function () {
 			var sendData = [];
 
-			var printContents;
+			// 填写里面的文字输入框
+			$('#table1 input[type=text]').each(function () {
+				$(this).prop('outerHTML', $(this).val());
+			});
 
-			printContents = document.getElementById("table1").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
+			printContent('table1');
 		});
 
 		$('#return').click(function () {

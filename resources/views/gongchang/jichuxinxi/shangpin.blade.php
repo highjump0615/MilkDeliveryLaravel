@@ -34,7 +34,7 @@
                         <input type="text" id="sel_product_series_no">
                     </div>
                     <div class="col-md-4">
-                        <label class="col-md-2 text-right">分类:</label>
+                        <label class="col-md-4 text-right">分类:</label>
                         <div class="col-md-7">
                             <select name="product-category" id="sel_product_category" style="width: 100%; height: 30px;">
                                 @if (isset($categories))

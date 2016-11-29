@@ -226,14 +226,24 @@ class BottleAdminCtrl extends Controller
         return FactoryBoxType::find($box_id)->name;
     }
 
+    /**
+     * 配送员瓶框回收记录
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanPeisonguanpingkuang(Request $request){
+
         $milkman_id = $request->input('milkman_id');
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
+        $current_station_id = $this->getCurrentStationId();
+
+        // 页面信息
         $child = 'peisongyuanpingkuang';
         $parent = 'pingkuang';
         $current_page = 'peisongyuanpingkuang';
+        $pages = Page::where('backend_type', Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
+
+        // 配送员
         if($milkman_id == ''){
             $milkman = MilkMan::where('station_id',$current_station_id)->get()->first();
             if($milkman != null){
@@ -241,20 +251,28 @@ class BottleAdminCtrl extends Controller
             }
         }
 
+        // 日期范围
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $current_date_str = $currentDate->format('Y-m-d');
         $first_day_of_current_month = $currentDate->format('Y-m-01');
 
-        if($start_date == ''){
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        if ($start_date == ''){
             $start_date = $first_day_of_current_month;
         }
-        if($end_date == ''){
+        if ($end_date == ''){
             $end_date = $current_date_str;
         }
 
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+        // 配送数量
         $milkmans = MilkMan::where('station_id',$current_station_id)->get();
-        $milkman_delivered_counts = MilkManDeliveryPlan::where('milkman_id',$milkman_id)->where('delivered_count','<>','')->orderby('deliver_at','spec')->get();
+        $milkman_delivered_counts = MilkManDeliveryPlan::where('milkman_id',$milkman_id)
+            ->where('delivered_count','<>','')
+            ->orderby('deliver_at','spec')
+            ->get();
+
         $delivered_info = array();
         $i = 0;
 
@@ -303,6 +321,8 @@ class BottleAdminCtrl extends Controller
 //                }
 //            }
 //        }
+
+        // 回收量
         $refund_info = array();
         $j = 0;
         $milkmanbottlerefunds = MilkmanBottleRefund::where('milkman_id',$milkman_id)->orderby('time','bottle_type')->get();
@@ -324,31 +344,46 @@ class BottleAdminCtrl extends Controller
             $total_info[$ri['refund_date']][$ri['bottle_type']]['refund'] = $ri['refund_count'];
             $total_info[$ri['refund_date']][$ri['bottle_type']]['delivered'] = '';
         }
+
         return view('naizhan.pingkuang.peisongyuanpingkuang', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'milkmans'=>$milkmans,
-            'milkmanbottlerefunds'=>$total_info,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
-            'milkman_id'=>$milkman_id,
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            'milkmans'              =>$milkmans,
+            'milkmanbottlerefunds'  =>$total_info,
+            'start_date'            =>$start_date,
+            'end_date'              =>$end_date,
+            'milkman_id'            =>$milkman_id,
         ]);
     }
 
+    /**
+     * 打开瓶框收回记录
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanPingkuangshouhui(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
+
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
+
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
+
+        // 页面信息
         $child = 'pingkuangshouhui';
         $parent = 'pingkuang';
         $current_page = 'pingkuangshouhui';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
+        //
+        // 计算日期范围
+        //
         $current_date_str = $currentDate->format('Y-m-d');
         $first_day_of_current_month = $currentDate->format('Y-m-01');
         $currentDate->add(\DateInterval::createFromDateString('yesterday'));
@@ -361,6 +396,9 @@ class BottleAdminCtrl extends Controller
             $end_date = $current_date_str;
         }
 
+        //
+        // 根据奶站地址信息、获取该奶站的产品信息
+        //
         $station_addr = DeliveryStation::find($current_station_id)->address;
         $station_addr = explode(' ',$station_addr);
         $station_addr = $station_addr[0]." ".$station_addr[1]." ".$station_addr[2];
@@ -371,119 +409,264 @@ class BottleAdminCtrl extends Controller
         $box_types = DB::select(DB::raw("select DISTINCT p.basket_spec from products p, productprice pp
                     where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
 
+        //
+        // 今日奶瓶状态
+        //
         $today_bottle_info = array();
         foreach ($bottle_types as $bt){
             $today_bottle_info[$bt->bottle_type]['name'] = FactoryBottleType::find($bt->bottle_type)->name;
 
-            if(DSBottleRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->get()->first()!=null){
-                $today_bottle_info[$bt->bottle_type]['init_count'] = DSBottleRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->get()->first()->init_store;;
-            }else{
-                if(DSBottleRefund::where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->orderBy('time','desc')->first() != null)
-                    $today_bottle_info[$bt->bottle_type]['init_count'] = DSBottleRefund::where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->orderBy('time','desc')->first()->end_store;
-                else
+            //
+            // 期初库存
+            //
+            if (DSBottleRefund::where('time',$current_date_str)
+                    ->where('station_id',$current_station_id)
+                    ->where('bottle_type',$bt->bottle_type)
+                    ->get()
+                    ->first() != null) {
+
+                $today_bottle_info[$bt->bottle_type]['init_count'] = (int)DSBottleRefund::where('time',$current_date_str)
+                        ->where('station_id',$current_station_id)
+                        ->where('bottle_type',$bt->bottle_type)
+                        ->get()
+                        ->first()
+                        ->init_store;
+            }
+            else{
+                if (DSBottleRefund::where('station_id',$current_station_id)
+                        ->where('bottle_type',$bt->bottle_type)
+                        ->orderBy('time','desc')
+                        ->first() != null) {
+
+                    $today_bottle_info[$bt->bottle_type]['init_count'] = (int)DSBottleRefund::where('station_id', $current_station_id)
+                        ->where('bottle_type', $bt->bottle_type)
+                        ->orderBy('time', 'desc')
+                        ->first()
+                        ->end_store;
+                }
+                else {
                     $today_bottle_info[$bt->bottle_type]['init_count'] = 0;
+                }
             }
+
+            //
+            // 配送员回收量
+            //
             $milkman_refund_count = 0;
-            $milkman_refund = DB::select(DB::raw("select sum(mf.count) as total from dsmilkmanbottlerefunds mf,milkman mm where mm.station_id = :station_id and mm.id = mf.milkman_id and mf.time =:refund_time and mf.bottle_type = :bottle_type"),
-                array('station_id'=>$current_station_id,'refund_time'=>$current_date_str,'bottle_type'=>$bt->bottle_type));
+
+            $milkman_refund = DB::select(DB::raw(
+                    "select sum(mf.count) as total from dsmilkmanbottlerefunds mf,milkman mm " .
+                    "where mm.station_id = :station_id and mm.id = mf.milkman_id and mf.time =:refund_time and mf.bottle_type = :bottle_type"
+                ),
+                array('station_id'=>$current_station_id,'refund_time'=>$current_date_str,'bottle_type'=>$bt->bottle_type)
+            );
+
             foreach ($milkman_refund as $mr){
-                $milkman_refund_count += $mr->total;
+                $milkman_refund_count += (int)$mr->total;
             }
+
             $today_bottle_info[$bt->bottle_type]['milkman_refund'] = $milkman_refund_count;
-            $current_return_to_factory = DSBottleRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->get()->first();
+
+            //
+            // 返厂数量
+            //
+            $current_return_to_factory = DSBottleRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('bottle_type',$bt->bottle_type)
+                ->get()
+                ->first();
+
             if($current_return_to_factory != null){
-                $today_bottle_info[$bt->bottle_type]['return_to_factory'] = $current_return_to_factory->return_to_factory;
+                $today_bottle_info[$bt->bottle_type]['return_to_factory'] = (int)$current_return_to_factory->return_to_factory;
             }
             else{
                 $today_bottle_info[$bt->bottle_type]['return_to_factory'] = 0;
             }
 
-            $damaged = DSBottleRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('bottle_type',$bt->bottle_type)->get()->first();
+            //
+            // 站内破损
+            //
+            $damaged = DSBottleRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('bottle_type',$bt->bottle_type)
+                ->get()
+                ->first();
+
             if($damaged != null){
-                $today_bottle_info[$bt->bottle_type]['damaged'] = $damaged->station_damaged;
+                $today_bottle_info[$bt->bottle_type]['damaged'] = (int)$damaged->station_damaged;
             }
             else{
-                $today_bottle_info[$bt->bottle_type]['damaged'] = '';
+                $today_bottle_info[$bt->bottle_type]['damaged'] = 0;
             }
 
+            //
+            // 收货数量
+            //
             $today_received_count = 0;
-            $today_received = DB::select(DB::raw("select sum(confirm_count) as total_received from dsproductionplan dp, products p where dp.station_id = :station_id and 
-dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id and p.bottle_type = :bottle_type"),array('station_id'=>$current_station_id,'produce_end_date'=>$produce_date_str,'bottle_type'=>$bt->bottle_type));
+
+            $today_received = DB::select(DB::raw(
+                    "select sum(confirm_count) as total_received from dsproductionplan dp, products p " .
+                    "where dp.station_id = :station_id and dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id and p.bottle_type = :bottle_type"
+                ),
+                array('station_id'=>$current_station_id,'produce_end_date'=>$produce_date_str,'bottle_type'=>$bt->bottle_type)
+            );
+
             foreach ($today_received as $tr){
-                $today_received_count += $tr->total_received;
+                $today_received_count += (int)$tr->total_received;
             }
+
             $today_bottle_info[$bt->bottle_type]['received'] = $today_received_count;
         }
 
+        //
+        // 今日奶框状态
+        //
         $today_box_info = array();
         foreach ($box_types as $bx){
             $today_box_info[$bx->basket_spec]['name'] = FactoryBoxType::find($bx->basket_spec)->name;
 
-            if(DSBoxRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->get()->first()!=null){
-                $today_box_info[$bx->basket_spec]['init_count'] = DSBoxRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->get()->first()->init_store;
-            }else{
-                if(DSBoxRefund::where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->orderBy('time','desc')->first() != null)
-                    $today_box_info[$bx->basket_spec]['init_count'] = DSBoxRefund::where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->orderBy('time','desc')->first()->end_store;
-                else
+            //
+            // 期初库存
+            //
+            if (DSBoxRefund::where('time',$current_date_str)
+                    ->where('station_id',$current_station_id)
+                    ->where('box_type',$bx->basket_spec)
+                    ->get()
+                    ->first() != null) {
+
+                $today_box_info[$bx->basket_spec]['init_count'] = (int)DSBoxRefund::where('time',$current_date_str)
+                    ->where('station_id',$current_station_id)
+                    ->where('box_type',$bx->basket_spec)
+                    ->get()
+                    ->first()->init_store;
+            }
+            else {
+                if (DSBoxRefund::where('station_id',$current_station_id)
+                        ->where('box_type',$bx->basket_spec)
+                        ->orderBy('time','desc')
+                        ->first() != null) {
+
+                    $today_box_info[$bx->basket_spec]['init_count'] = (int)DSBoxRefund::where('station_id', $current_station_id)
+                        ->where('box_type', $bx->basket_spec)
+                        ->orderBy('time', 'desc')
+                        ->first()->end_store;
+                }
+                else {
                     $today_box_info[$bx->basket_spec]['init_count'] = 0;
+                }
             }
 
-            $current_return_to_factory = DSBoxRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->get()->first();
-            if($current_return_to_factory != null){
-                $today_box_info[$bx->basket_spec]['return_to_factory'] = $current_return_to_factory->return_to_factory;
+            //
+            // 返厂数量
+            //
+            $current_return_to_factory = DSBoxRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('box_type',$bx->basket_spec)
+                ->get()
+                ->first();
+
+            if ($current_return_to_factory != null){
+                $today_box_info[$bx->basket_spec]['return_to_factory'] = (int)$current_return_to_factory->return_to_factory;
             }
-            else{
+            else {
                 $today_box_info[$bx->basket_spec]['return_to_factory'] = 0;
             }
 
-            $damaged = DSBoxRefund::where('time',$current_date_str)->where('station_id',$current_station_id)->where('box_type',$bx->basket_spec)->get()->first();
+            //
+            // 站内破损
+            //
+            $damaged = DSBoxRefund::where('time',$current_date_str)
+                ->where('station_id',$current_station_id)
+                ->where('box_type',$bx->basket_spec)
+                ->get()
+                ->first();
+
             if($damaged != null){
-                $today_box_info[$bx->basket_spec]['damaged'] = $damaged->station_damaged;
+                $today_box_info[$bx->basket_spec]['damaged'] = (int)$damaged->station_damaged;
             }
             else{
-                $today_box_info[$bx->basket_spec]['damaged'] = '';
+                $today_box_info[$bx->basket_spec]['damaged'] = 0;
             }
         }
 
+        //
+        // 今日状态
+        //
         $today_status = 0;
         $todaybottlerefunds = DSBottleRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->get();
         if($todaybottlerefunds->first() != null){
             if($todaybottlerefunds->first()->end_store != null)
                 $today_status = 1;
         }
+
         $todayboxrefunds = DSBoxRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->get();
         if($todayboxrefunds->first() != null){
             if($todayboxrefunds->first()->end_store != null)
                 $today_status = 1;
         }
+
+        //
+        // 日期范围
+        //
         $bottles = array();
         $dsbottlerefunds = DSBottleRefund::where('station_id',$current_station_id)->get();
+
         $i = 0;
         foreach ($dsbottlerefunds as $bottle){
             if($start_date <= $bottle->time && $end_date >= $bottle->time){
+
                 $bottles[$i]['time'] = $bottle->time;
                 $bottles[$i]['type'] = $this->getBottleType($bottle->bottle_type);
-                $bottles[$i]['init_store'] = $bottle->init_store;
-                $bottles[$i]['milkman_return'] = $bottle->milkman_return;
-                $bottles[$i]['return_to_factory'] = $bottle->return_to_factory;
-                $bottles[$i]['station_damaged'] = $bottle->station_damaged;
-                $bottles[$i]['end_store'] = $bottle->end_store;
-                $bottles[$i]['received'] = $bottle->received;
+
+                // 今日的数据是直接使用上面的，没保存也能查看
+                if ($bottle->time == $current_date_str) {
+                    $bottles[$i]['init_store'] = $today_bottle_info[$bottle->bottle_type]['init_count'];
+                    $bottles[$i]['milkman_return'] = $today_bottle_info[$bottle->bottle_type]['milkman_refund'];
+                    $bottles[$i]['return_to_factory'] = $today_bottle_info[$bottle->bottle_type]['return_to_factory'];
+                    $bottles[$i]['station_damaged'] = $today_bottle_info[$bottle->bottle_type]['damaged'];
+                    $bottles[$i]['received'] = $today_bottle_info[$bottle->bottle_type]['received'];
+                }
+                else {
+                    $bottles[$i]['init_store'] = $bottle->init_store;
+                    $bottles[$i]['milkman_return'] = $bottle->milkman_return;
+                    $bottles[$i]['return_to_factory'] = $bottle->return_to_factory;
+                    $bottles[$i]['station_damaged'] = $bottle->station_damaged;
+                    $bottles[$i]['received'] = $bottle->received;
+                }
+
+                // 期末库存
+                $bottles[$i]['end_store'] = $bottles[$i]['init_store'] + $bottles[$i]['milkman_return'] - $bottles[$i]['return_to_factory'] - $bottles[$i]['station_damaged'];
+
                 $i++;
             }
         }
+
         $boxes = array();
         $dsboxrefunds = DSBoxRefund::where('station_id',$current_station_id)->get();
+
         $j = 0;
         foreach ($dsboxrefunds as $box){
-            if($start_date <= $box->time && $end_date >= $box->time){
+            if ($start_date <= $box->time && $end_date >= $box->time){
+
                 $boxes[$j]['time'] = $box->time;
                 $boxes[$j]['type'] = $this->getBoxType($box->box_type);
-                $boxes[$j]['init_store'] = $box->init_store;
-                $boxes[$j]['return_to_factory'] = $box->return_to_factory;
-                $boxes[$j]['station_damaged'] = $box->station_damaged;
-                $boxes[$j]['end_store'] = $box->end_store;
                 $boxes[$j]['received'] = $box->received;
+
+                // 今日的数据是直接使用上面的，没保存也能查看
+                if ($box->time == $current_date_str) {
+                    $boxes[$j]['init_store'] = $today_box_info[$box->box_type]['init_count'];
+                    $boxes[$j]['return_to_factory'] = $today_box_info[$box->box_type]['return_to_factory'];
+                    $boxes[$j]['station_damaged'] = $today_box_info[$box->box_type]['damaged'];
+                }
+                else {
+                    $boxes[$j]['init_store'] = $box->init_store;
+                    $boxes[$j]['return_to_factory'] = $box->return_to_factory;
+                    $boxes[$j]['station_damaged'] = $box->station_damaged;
+                }
+
+                // 期末库存
+                $boxes[$j]['end_store'] = $boxes[$j]['init_store'] - $boxes[$j]['return_to_factory'] - $boxes[$j]['station_damaged'];
+
                 $j++;
             }
         }
@@ -507,16 +690,17 @@ dp.status = 7 and dp.produce_end_at = :produce_end_date and dp.product_id = p.id
         }
 
         return view('naizhan.pingkuang.pingkuangshouhui', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'today_status'=>$today_status,
-            'todaybottlerefunds'=>$today_bottle_info,
-            'todayboxrefunds'=>$today_box_info,
-            'refund_info' => $total_info,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            'today_status'          =>$today_status,
+            'todaybottlerefunds'    =>$today_bottle_info,
+            'todayboxrefunds'       =>$today_box_info,
+            'refund_info'           => $total_info,
+            'start_date'            =>$start_date,
+            'end_date'              =>$end_date,
         ]);
     }
 

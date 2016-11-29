@@ -37,7 +37,7 @@ function savebottlebox() {
             var form_data = {
                 milkman_id: milkman_id,
                 bottle_type: bottle_type,
-                count: count,
+                count: count
             };
 
             var type = "POST";

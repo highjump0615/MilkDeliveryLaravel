@@ -76,3 +76,19 @@ function startofmonth() {
         + firstday.getDate();
     return result;
 }
+
+/**
+ * 打印
+ * @param strId
+ */
+function printContent(strId) {
+    var printContents;
+
+    printContents = document.getElementById(strId).outerHTML;
+
+    var originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+
+    window.print();
+    document.body.innerHTML = originalContents;
+}

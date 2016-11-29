@@ -43,7 +43,7 @@
 				 <div class="col-lg-12">
 					 <div class="col-lg-10" id="data_range_select">
 						 <div class="col-md-2">
-							 <label class="control-label" style="padding-top: 5px;">下单日期:</label>
+							 <label class="control-label" style="padding-top: 5px;">发送日期:</label>
 						 </div>
 						 <div class="col-md-4 input-daterange input-group" id="datepicker" style="padding-left: 45px;">
 							 <input type="text" class="input-sm form-control" id="start_date" name="start" />

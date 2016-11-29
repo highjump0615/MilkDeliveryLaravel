@@ -29,17 +29,6 @@
 							</select>
 						</div>
 					</div>
-					{{--<div class="col-md-4">	--}}
-						{{--<label class="col-lg-3" style="padding-top:5px;">配送工 </label>--}}
-						{{--<div class="col-lg-9">--}}
-							{{--<select data-placeholder="" class="chosen-select" style="height:34px; width:100%;" tabindex="2">--}}
-								{{--<option value="项目一">项目一</option>--}}
-								{{--<option value="项目二">项目二</option>--}}
-								{{--<option value="项目三">项目三</option>--}}
-								{{--<option value="项目四">项目四</option>--}}
-							{{--</select>--}}
-						{{--</div>--}}
-					{{--</div>--}}
 					<div class="form-group col-md-5" id="data_range_select">
 						<label class="col-sm-2 control-label" style="padding-top:5px;">日期:</label>
 						<div class="input-daterange input-group col-md-8" id="datepicker">
@@ -57,35 +46,6 @@
 					</div>
 				</div>
 
-				{{--<div class="feed-element">--}}
-					{{--<div class="col-md-4">--}}
-						{{--<label class="col-lg-3" style="padding-top:5px;">配送员 </label>--}}
-						{{--<div class="col-lg-9">--}}
-							{{--<select data-placeholder="" class="chosen-select" style="height:34px; width:100%;" tabindex="2">--}}
-								{{--@foreach($milkmans as $mm)--}}
-								{{--<option value="{{$mm->id}}">{{$mm->name}}</option>--}}
-								{{--@endforeach--}}
-							{{--</select>--}}
-						{{--</div>--}}
-					{{--</div>--}}
-				{{--</div>--}}
-				{{--<div class="feed-element text-center">--}}
-					{{--<div class="col-md-2 col-md-offset-1">--}}
-						{{--<button class="btn btn-success btn-outline" type="" style="width:100%;">配送员1</button>--}}
-					{{--</div>--}}
-					{{--<div class="col-md-2">--}}
-						{{--<button class="btn btn-success btn-outline" type="" style="width:100%;">配送员1</button>--}}
-					{{--</div>--}}
-					{{--<div class="col-md-2">--}}
-						{{--<button class="btn btn-success btn-outline" type="" style="width:100%;">配送员1</button>--}}
-					{{--</div>--}}
-					{{--<div class="col-md-2">--}}
-						{{--<button class="btn btn-success btn-outline" type="" style="width:100%;">配送员1</button>--}}
-					{{--</div>--}}
-					{{--<div class="col-md-2">--}}
-						{{--<button class="btn btn-success btn-outline" type="" style="width:100%;">配送员1</button>--}}
-					{{--</div>--}}
-				{{--</div>--}}
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 

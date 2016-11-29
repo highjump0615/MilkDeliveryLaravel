@@ -17,22 +17,6 @@ use App\Http\Controllers\Controller;
 
 class NotificationsAdmin extends Controller
 {
-    /**
-     * 获取本奶站id
-     * @return mixed
-     */
-    private function getCurrentStationId() {
-        return Auth::guard('naizhan')->user()->station_id;
-    }
-
-    /**
-     * 获取本奶厂id
-     * @return mixed
-     */
-    private function getCurrentFactoryId() {
-        return Auth::guard('gongchang')->user()->factory_id;
-    }
-
     public function showGongchangZhongxin(Request $request){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
         $child = 'zhongxin';
@@ -132,7 +116,7 @@ class NotificationsAdmin extends Controller
      * @return int
      */
     public function getUnreadCountFactory() {
-        $current_factory_id = $this->getCurrentFactoryId();
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $unreadCount = count(DSNotification::where('read',0)
             ->where('factory_id', $current_factory_id)

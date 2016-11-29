@@ -32,10 +32,6 @@ use App\Http\Controllers\Controller;
 
 class DSDeliveryPlanCtrl extends Controller
 {
-    private function getCurrentStationId() {
-        return Auth::guard('naizhan')->user()->station_id;
-    }
-
     /**
      * 显示配送管理页面
      * @param Request $request
@@ -387,7 +383,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $delivery_type = $dp->type;
 
                 if ($dp->isBoxInstall()) {
-                    $box_install_count++;
+                    $box_install_count = 1;
                 }
 
                 $comment = $dp->comment;
@@ -879,7 +875,7 @@ class DSDeliveryPlanCtrl extends Controller
                             $flag = $dp->flag;
 
                             if ($dp->isBoxInstall()) {
-                                $box_install_count++;
+                                $box_install_count = 1;
                             }
 
                             $comment = $dp->comment;
@@ -1116,6 +1112,10 @@ class DSDeliveryPlanCtrl extends Controller
         ]);
     }
 
+    /**
+     * 配送员回收平框
+     * @param Request $request
+     */
     public function savebottleboxPeisongfanru(Request $request){
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $deliver_date_str = $currentDate->format('Y-m-d');
