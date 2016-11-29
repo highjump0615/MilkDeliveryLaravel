@@ -54,7 +54,7 @@
 
 				<div class="ibox float-e-margins">
 
-					@if($deliver_date == $current_date && $is_todayrefund != 0)
+					@if($is_todayrefund != 0)
 					<label style="color: red; font-size: 18px;">你已经完成了反录</label>
 					@endif
 
@@ -109,7 +109,7 @@
 										{{$pro['name']}}*{{$pro['count']}}
 									</td>
 									<td @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
-										@if($deliver_date == $current_date && $is_todayrefund!=0) {{$pro['delivered_count']}} @endif
+										@if($is_todayrefund!=0) {{$pro['delivered_count']}} @endif
 									</td>
 									<td class="report"
 										@if($deliver_date == $current_date && $is_todayrefund==0)

@@ -7,7 +7,7 @@ $(document).on('click','.confirm_values',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     $('#confrim_arrived_product tr:not(:first)').each(function(){
         var id = $(this).attr('id');
@@ -15,8 +15,8 @@ $(document).on('click','.confirm_values',function(e){
         var formData = {
             confirm_count: $('#product'+id+'').val(),
             product_id: id,
-            station_id: station_id,
-        }
+            station_id: station_id
+        };
         console.log(formData);
 
         var type = "PUT";
@@ -41,7 +41,7 @@ $(document).on('click','.confirm_values',function(e){
                 console.log('Error:', data);
             }
         });
-    })
+    });
 
     var store_url = API_URL + 'naizhan/shengchan/qianshoujihua/refund_bb';
     $('#refund_table tr:not(:first) td:not(:first)').each(function(){
@@ -51,7 +51,7 @@ $(document).on('click','.confirm_values',function(e){
             types: types,
             object_type: object_type,
             return_to_factory: $('#'+types+''+object_type+'').val(),
-        }
+        };
         console.log(formData);
 
         var type = "POST";
@@ -75,4 +75,4 @@ $(document).on('click','.confirm_values',function(e){
             }
         });
     })
-})
+});

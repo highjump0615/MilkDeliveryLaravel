@@ -173,7 +173,7 @@
 		});
 
 		$('#return').click(function () {
-			window.location = SITE_URL + "gongchang/shengchan/naizhanpeisong";
+			window.location.href = SITE_URL + "gongchang/shengchan/naizhanpeisong";
 		})
     </script>
 @endsection
