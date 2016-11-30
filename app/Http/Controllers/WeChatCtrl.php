@@ -2229,8 +2229,9 @@ class WeChatCtrl extends Controller
 
             $primary_address = $primary_address_obj->address;
 
+            $station = null;
             //get station and milkman from factory and primary_address
-            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $primary_address);
+            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $primary_address, $station);
 
             if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
                 return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
