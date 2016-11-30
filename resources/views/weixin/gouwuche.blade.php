@@ -172,7 +172,7 @@
 
                         if (data.redirect_path == "phone_verify")
                         {
-                            window.location  = SITE_URL+"weixin/dengji";
+                            window.location  = SITE_URL+"weixin/dengji?to=queren";
                         }
                     }
 

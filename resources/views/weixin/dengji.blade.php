@@ -77,7 +77,12 @@
                     console.log(data);
                     if(data.status == "success")
                     {
-                        window.location = SITE_URL+"weixin/querendingdan";
+                        @if(isset($to))
+                                window.location = SITE_URL+"weixin/querendingdan";
+                        @else
+                                window.location = SITE_URL+"weixin/qianye";
+                        @endif
+
                     } else {
                         show_warning_msg('验证代码不正确，请重试.');
                     }

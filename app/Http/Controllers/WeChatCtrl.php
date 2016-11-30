@@ -1071,57 +1071,90 @@ class WeChatCtrl extends Controller
 //        $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
 //            ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
-        $orders = Order::where('is_deleted', 0)->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
+//        $orders = Order::where('is_deleted', 0)->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
 
-        if ($type == 'waiting') {
-            $orders = Order::where('is_deleted', 0)
-                ->where('status', Order::ORDER_WAITING_STATUS)
-//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                ->where('customer_id', $customer_id)
-                ->orderBy('ordered_at', 'desc')
-                ->get();
+        $customer = Customer::find($customer_id);
 
-        } else if ($type == 'finished') {
+        if($customer)
+        {
+            //show orders that has same customer_id and telephone
             $orders = Order::where('is_deleted', 0)
-                ->where('status', Order::ORDER_FINISHED_STATUS)
+                ->where(function ($query)
+                    use ($customer_id, $customer)
+                {
+                    $query->where('customer_id', $customer_id);
+                    $query->orWhere('phone', $customer->phone);
+                })->orderBy('ordered_at', 'desc')->get();
+
+            if ($type == 'waiting') {
+                $orders = Order::where('is_deleted', 0)
+                    ->where('status', Order::ORDER_WAITING_STATUS)
 //                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                ->where('customer_id', $customer_id)
-                ->orderBy('ordered_at', 'desc')
-                ->get();
-        } else if ($type == 'stopped') {
-            $orders = Order::where('is_deleted', 0)
-                ->where('status', Order::ORDER_STOPPED_STATUS)
+                    ->where(function ($query)
+                    use ($customer_id, $customer)
+                    {
+                        $query->where('customer_id', $customer_id);
+                        $query->orWhere('phone', $customer->phone);
+                    })
+                    ->orderBy('ordered_at', 'desc')
+                    ->get();
+
+            } else if ($type == 'finished') {
+                $orders = Order::where('is_deleted', 0)
+                    ->where('status', Order::ORDER_FINISHED_STATUS)
 //                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                ->where('customer_id', $customer_id)
-                ->orderBy('ordered_at', 'desc')
-                ->get();
-        } else if ($type == 'on_delivery') {
-            $orders = Order::where('is_deleted', 0)
-                ->where(function ($query) {
-                    $query->where('status', Order::ORDER_PASSED_STATUS);
-                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                })
-                ->where('customer_id', $customer_id)
+                    ->where(function ($query)
+                    use ($customer_id, $customer)
+                    {
+                        $query->where('customer_id', $customer_id);
+                        $query->orWhere('phone', $customer->phone);
+                    })
+                    ->orderBy('ordered_at', 'desc')
+                    ->get();
+            } else if ($type == 'stopped') {
+                $orders = Order::where('is_deleted', 0)
+                    ->where('status', Order::ORDER_STOPPED_STATUS)
 //                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                ->orderBy('ordered_at', 'desc')
-                ->get();
+                    ->where(function ($query)
+                    use ($customer_id, $customer)
+                    {
+                        $query->where('customer_id', $customer_id);
+                        $query->orWhere('phone', $customer->phone);
+                    })
+                    ->orderBy('ordered_at', 'desc')
+                    ->get();
+            } else if ($type == 'on_delivery') {
+                $orders = Order::where('is_deleted', 0)
+                    ->where(function ($query) {
+                        $query->where('status', Order::ORDER_PASSED_STATUS);
+                        $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                    })
+                    ->where(function ($query)
+                    use ($customer_id, $customer)
+                    {
+                        $query->where('customer_id', $customer_id);
+                        $query->orWhere('phone', $customer->phone);
+                    })
+//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+                    ->orderBy('ordered_at', 'desc')
+                    ->get();
+            }
+
+            $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
+            if ($type) {
+                return view('weixin.dingdanliebiao', [
+                    'set_type' => true,
+                    'orders' => $orders,
+                    'cartn' => $cartn,
+                ]);
+            } else {
+                return view('weixin.dingdanliebiao', [
+                    'orders' => $orders,
+                    'cartn' => $cartn,
+                ]);
+            }
         }
-
-        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
-
-        if ($type) {
-            return view('weixin.dingdanliebiao', [
-                'set_type' => true,
-                'orders' => $orders,
-                'cartn' => $cartn,
-            ]);
-        } else {
-            return view('weixin.dingdanliebiao', [
-                'orders' => $orders,
-                'cartn' => $cartn,
-            ]);
-        }
-
     }
 
     public function dingdanxiangqing(Request $request)
@@ -1278,8 +1311,9 @@ class WeChatCtrl extends Controller
         if ($request->has('search_product')) {
             $search_pname = $request->input('search_product');
 
-            foreach ($product as $product) {
-                if (contains($product->name, $search_pname)) {
+            $search_product_list = [];
+            foreach ($products as $product) {
+                if (strpos($product->name, $search_pname) !== false) {
                     $pid = $product->id;
                     $search_product_list[$pid][0] = $product;
                     $search_product_list[$pid][1] = $this->get_retail_price_of_product($pid);
@@ -2715,8 +2749,17 @@ class WeChatCtrl extends Controller
     //show check telephone number page
     public function dengji(Request $request)
     {
-        return view('weixin.dengji', [
-        ]);
+        if($request->has('to'))
+        {
+            $to = $request->input('to');
+            return view('weixin.dengji', [
+                'to'=>$to,
+            ]);
+        } else {
+            return view('weixin.dengji', [
+            ]);
+        }
+
     }
 
     public function dengchu(Request $request)
