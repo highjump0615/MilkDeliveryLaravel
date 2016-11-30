@@ -2078,27 +2078,56 @@ class WeChatCtrl extends Controller
         $from = $request->input('from');
         if ($from == "queren") {
             $group_id = session('group_id');
-            return view('weixin.bianjidingdan', [
-                "product" => $product,
-                'file1' => $file1_path,
-                'file2' => $file2_path,
-                'file3' => $file3_path,
-                'file4' => $file4_path,
-                'month_price' => $month_price,
-                'season_price' => $season_price,
-                'half_year_price' => $half_year_price,
-                'gap_day' => $gap_day,
-                'factory_order_types' => $factory_order_types,
-                'wop' => $wop,
-                'group_id' => $group_id,
-                'order_day_num' => $order_day_num,
-                'reviews' => $reviews,
-                'today' => $today,
-                'previous'=>'queren',
-            ]);
+
+            if($request->has('for'))
+            {
+                //from xuedan
+                return view('weixin.bianjidingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'wop' => $wop,
+                    'group_id' => $group_id,
+                    'order_day_num' => $order_day_num,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous'=>'queren',
+                    'for'=>"xuedan",
+                ]);
+            } else {
+                //from queren dingdan
+
+                return view('weixin.bianjidingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'wop' => $wop,
+                    'group_id' => $group_id,
+                    'order_day_num' => $order_day_num,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous'=>'queren',
+                ]);
+            }
+
 
         } else if ($from == "gouwuche") {
 
+            //from gouwuche
             return view('weixin.bianjidingdan', [
                 "product" => $product,
                 'file1' => $file1_path,
@@ -2481,6 +2510,7 @@ class WeChatCtrl extends Controller
 
         //as this is xuedan, that means before, this has passed
         $passed = true;
+        session(['group_id'=>$group_id]);
 
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
@@ -2489,6 +2519,7 @@ class WeChatCtrl extends Controller
             'group_id' => $group_id,
             'wxuser_id' => $wxuser_id,
             'passed' => $passed,
+            'for'=>'xuedan',
         ]);
     }
 
