@@ -700,7 +700,17 @@ class FinanceCtrl extends Controller
                     $total = $total_amount + $pre_remain;
                     $sid = $trs->station_id;
                     $did = $trs->delivery_station_id;
-                    $trs_info[] = [$trs->station_name, $trs->delivery_station_name, $same_trs_count, $total_amount, $trs->pre_remain, $total, $same_trs_ids, $sid, $did];
+                    $trs_info[] = [
+                        $trs->station_name,
+                        $trs->delivery_station_name,
+                        $same_trs_count,
+                        $total_amount,
+                        $trs->pre_remain,
+                        $total,
+                        $same_trs_ids,
+                        $sid,
+                        $did
+                    ];
                 }
 
             }
@@ -751,23 +761,23 @@ class FinanceCtrl extends Controller
                 $stmoneytrans->payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
                 $stmoneytrans->save();
 
-                //Step3: Add Calc History to Station1 about Money Out to Station2
+                // 添加转出历史记录
                 $dscalc_history_for_station1 = new DSCalcBalanceHistory;
                 $dscalc_history_for_station1->station_id = $station_id;
                 $dscalc_history_for_station1->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER;
                 $dscalc_history_for_station1->amount = $real_amount;
-                $dscalc_history_for_station1->time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+                $dscalc_history_for_station1->time = getCurDateString();
                 $dscalc_history_for_station1->receipt_number = $receipt_number;//id from bank
                 $dscalc_history_for_station1->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station1->comment = $comment;
                 $dscalc_history_for_station1->save();
 
-                //Step4: Add Calc History to Station1 about Money In to Station1
+                // 添加转入历史记录
                 $dscalc_history_for_station2 = new DSCalcBalanceHistory;
-                $dscalc_history_for_station2->station_id = $station_id;
+                $dscalc_history_for_station2->station_id = $delivery_station_id;
                 $dscalc_history_for_station2->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION;
                 $dscalc_history_for_station2->amount = $real_amount;
-                $dscalc_history_for_station2->time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+                $dscalc_history_for_station2->time = getCurDateString();
                 $dscalc_history_for_station2->receipt_number = $receipt_number;//id from bank
                 $dscalc_history_for_station2->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station2->comment = $comment;
