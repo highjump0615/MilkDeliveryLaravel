@@ -137,11 +137,12 @@
         </div>
 
         <div class="dnsli clearfix">
-            <div class="dnsti">起送时间：</div>
-            <div classs="input-group">
-                <input class="qssj single_date" name="start_at" id="start_at" value="">
-                <span><i class="fa fa-calendar"></i></span>
-            </div>
+            {{--<div class="dnsti">起送时间：</div>--}}
+            {{--<div classs="input-group">--}}
+                {{--<input class="qssj single_date" name="start_at" id="start_at" value="">--}}
+                {{--<span><i class="fa fa-calendar"></i></span>--}}
+            {{--</div>--}}
+            <div class="ordrq">起送时间：<input class="qssj" id="start_at" name="start_at" type="date" value=""/></div>
         </div>
 
         <div class="dnsall">
@@ -239,6 +240,16 @@
             $("#" + id).css("display", "block");
         }
 
+        function pad(number){
+            var r= String(number);
+            if(r.length === 1){
+                r= '0'+r;
+            }
+            return r;
+        }
+
+        var able_date, default_start_date;
+
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
                 pagination: '.swiper-pagination',
@@ -251,28 +262,37 @@
                     @endif
 
             var today = new Date("{{$today}}");
-            var able_date = today;
+            able_date = today;
             if (gap_day)
                 able_date.setDate(today.getDate() + gap_day);
             else {
                 able_date.setDate(today.getDate() + 3);
             }
 
-            var default_start_date = able_date.toLocaleDateString();
+            Date.prototype.toISOString = function(){
+                return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+            };
 
-            //Single and Multiple Datepicker
-            $('#start_at').datepicker({
-                todayBtn: false,
-                keyboardNavigation: false,
-                forceParse: false,
-                calendarWeeks: false,
-                autoclose: true,
-                minDate: default_start_date,
-            });
+            default_start_date = able_date.toISOString();
+            $('#start_at').attr('min', default_start_date);
+
+//            var default_start_date = able_date.toLocaleDateString();
+
+//            //Single and Multiple Datepicker
+//            $('#start_at').datepicker({
+//                todayBtn: false,
+//                keyboardNavigation: false,
+//                forceParse: false,
+//                calendarWeeks: false,
+//                autoclose: true,
+//                minDate: default_start_date,
+//            });
 
             var current_start = '{{$wop->start_at}}';
             var current_start_date = new Date(current_start);
-            current_start_date = current_start_date.toLocaleDateString();
+//            current_start_date = current_start_date.toLocaleDateString();
+            current_start_date = current_start_date.toISOString();
+
             $('#start_at').val(current_start_date);
 
             $('select#order_type').trigger('change');
@@ -392,6 +412,13 @@
                 show_warning_msg('请选择起送时间');
                 return;
             }
+            var start_time = new Date(start_at);
+            if(start_time < able_date)
+            {
+                show_warning_msg("选择"+default_start_date+"之后的日期.");
+                return;
+            }
+
             send_data.append('start_at', start_at);
             console.log(send_data);
 

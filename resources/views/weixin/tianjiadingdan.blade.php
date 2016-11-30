@@ -135,11 +135,12 @@
         </div>
 
         <div class="dnsli clearfix">
-            <div class="dnsti">起送时间：</div>
-            <div class="input-group datepicker">
-                <input type="text" required class="" name="start_at" id="start_at">
-                <span><i class="fa fa-calendar"></i></span>
-            </div>
+            {{--<div class="dnsti">起送时间：</div>--}}
+            {{--<div class="input-group datepicker">--}}
+                {{--<input type="text" required class="" name="start_at" id="start_at">--}}
+                {{--<span><i class="fa fa-calendar"></i></span>--}}
+            {{--</div>--}}
+            <div class="ordrq">起送时间：<input class="qssj" id="start_at" name="start_at" type="date" value=""/></div>
         </div>
         @endif
 
@@ -262,6 +263,8 @@
         }
 
 
+        var able_date, default_start_date;
+
         $(document).ready(function () {
             var swiper = new Swiper('.swiper-container', {
                 pagination: '.swiper-pagination',
@@ -274,7 +277,7 @@
                     @endif
 
             var today = new Date("{{$today}}");
-            var able_date = today;
+            able_date = today;
             if (gap_day)
                 able_date.setDate(today.getDate() + gap_day);
             else {
@@ -286,18 +289,19 @@
             };
 
             //set default day for start at
-//            var default_start_date = able_date.toISOString();
-            var default_start_date = able_date.toLocaleDateString();
+            default_start_date = able_date.toISOString();
             $('#start_at').val(default_start_date);
 
-            $('#start_at').datepicker({
-                todayBtn: false,
-                keyboardNavigation: false,
-                forceParse: false,
-                calendarWeeks: false,
-                autoclose: true,
-                minDate: able_date,
-            });
+            $('#start_at').attr('min', default_start_date);
+
+//            $('#start_at').datepicker({
+//                todayBtn: false,
+//                keyboardNavigation: false,
+//                forceParse: false,
+//                calendarWeeks: false,
+//                autoclose: true,
+//                minDate: able_date,
+//            });
 
             $('select#order_type').trigger('change');
         });
@@ -380,6 +384,14 @@
                 show_warning_msg("请选择起送时间");
                 return;
             }
+
+            var start_time = new Date(start_at);
+            if(start_time < able_date)
+            {
+                show_warning_msg("选择"+default_start_date+"之后的日期.");
+                return;
+            }
+
             send_data.append('start_at', start_at);
 
             console.log(send_data);
@@ -471,6 +483,14 @@
                 show_warning_msg("请选择起送时间");
                 return;
             }
+
+            var start_time = new Date(start_at);
+            if(start_time < able_date)
+            {
+                show_warning_msg("选择"+default_start_date+"之后的日期.");
+                return;
+            }
+
             send_data.append('start_at', start_at);
 
             console.log(send_data);
@@ -563,6 +583,14 @@
                 show_warning_msg("请选择起送时间");
                 return;
             }
+
+            var start_time = new Date(start_at);
+            if(start_time < able_date)
+            {
+                show_warning_msg("选择"+default_start_date+"之后的日期.");
+                return;
+            }
+
             send_data.append('start_at', start_at);
 
             var order_id = $(this).data('order-id');
