@@ -24,7 +24,7 @@
 
         <div class="row white-bg">
             <div class="ibox float-e-margins">
-                <label style="padding:10px; font-size:15px; width:100%;">&emsp;本站订单金额统计：</label>
+                <label style="padding:10px; font-size:15px; width:100%;">&emsp;奶站订单金额统计：{{$station->name}}</label>
                 <div class="ibox-content">
                     <table class="table table-bordered">
                         <thead>
