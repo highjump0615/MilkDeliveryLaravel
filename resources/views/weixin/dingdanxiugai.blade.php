@@ -25,10 +25,10 @@
                 奶站: {{$order->station_name}} &emsp; 配送员: {{$order->milkman->name}} {{$order->milkman->phone}}
             </div>
             <div class="ordyg">
-                <span>订单金额: {{ $order->total_amount }}</span>
-                <span>现在剩金额: {{ $order_remain_amount }}</span>
-                <span>更改后金额: {{$after_changed_amount}}</span>
-                <span>差额: {{$left_amount}}</span>
+                订单金额: <span>{{ $order->total_amount }}</span>
+                现在剩金额: <span>{{ $order_remain_amount }}</span>
+                更改后金额: <span>{{$after_changed_amount}}</span>
+                差额: <span id="left_amount">{{$left_amount}}</span>
             </div>
             <div>
                 <a class="xiugai_link col-lg-2 text-center" style="float:none; margin-left: 4%;" href="{{url('/weixin/shangpinliebiao')."?order_id=".$order->id}}"><i class="fa fa-plus-circle"></i> 附加</a>
@@ -158,6 +158,12 @@
             $('button#change_order').click(function(){
                 var order_id = $(this).data('order-id');
 
+                //left amount check
+                if(parseFloat($('#left_amount').html())<0)
+                {
+                    show_err_msg('更改后金额不能超过订单余额');
+                    return;
+                }
                 $.ajax({
                     type: "POST",
                     url: SITE_URL + "weixin/api/change_order",

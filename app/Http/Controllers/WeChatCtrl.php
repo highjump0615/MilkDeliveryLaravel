@@ -24,6 +24,7 @@ use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
 use App\Model\WechatModel\WechatOrderProduct;
+use App\Model\WechatModel\WechatReview;
 use App\Model\WechatModel\WechatUser;
 use Auth;
 use DateTime;
@@ -1403,8 +1404,11 @@ class WeChatCtrl extends Controller
     public function xinxizhongxin(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
+        $customer_id = WechatUser::find($wechat_user_id)->customer_id;
+        $reviews = WechatReview::where('customer_id',$customer_id)->orderby('created_at','desc')->get();
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
         return view('weixin.xinxizhongxin', [
+            'reviews'=>$reviews,
             'cartn' => $cartn,
         ]);
     }
@@ -2078,27 +2082,56 @@ class WeChatCtrl extends Controller
         $from = $request->input('from');
         if ($from == "queren") {
             $group_id = session('group_id');
-            return view('weixin.bianjidingdan', [
-                "product" => $product,
-                'file1' => $file1_path,
-                'file2' => $file2_path,
-                'file3' => $file3_path,
-                'file4' => $file4_path,
-                'month_price' => $month_price,
-                'season_price' => $season_price,
-                'half_year_price' => $half_year_price,
-                'gap_day' => $gap_day,
-                'factory_order_types' => $factory_order_types,
-                'wop' => $wop,
-                'group_id' => $group_id,
-                'order_day_num' => $order_day_num,
-                'reviews' => $reviews,
-                'today' => $today,
-                'previous'=>'queren',
-            ]);
+
+            if($request->has('for'))
+            {
+                //from xuedan
+                return view('weixin.bianjidingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'wop' => $wop,
+                    'group_id' => $group_id,
+                    'order_day_num' => $order_day_num,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous'=>'queren',
+                    'for'=>"xuedan",
+                ]);
+            } else {
+                //from queren dingdan
+
+                return view('weixin.bianjidingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'wop' => $wop,
+                    'group_id' => $group_id,
+                    'order_day_num' => $order_day_num,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous'=>'queren',
+                ]);
+            }
+
 
         } else if ($from == "gouwuche") {
 
+            //from gouwuche
             return view('weixin.bianjidingdan', [
                 "product" => $product,
                 'file1' => $file1_path,
@@ -2196,8 +2229,9 @@ class WeChatCtrl extends Controller
 
             $primary_address = $primary_address_obj->address;
 
+            $station = null;
             //get station and milkman from factory and primary_address
-            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $primary_address);
+            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $primary_address, $station);
 
             if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
                 return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
@@ -2481,6 +2515,7 @@ class WeChatCtrl extends Controller
 
         //as this is xuedan, that means before, this has passed
         $passed = true;
+        session(['group_id'=>$group_id]);
 
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
@@ -2489,6 +2524,7 @@ class WeChatCtrl extends Controller
             'group_id' => $group_id,
             'wxuser_id' => $wxuser_id,
             'passed' => $passed,
+            'for'=>'xuedan',
         ]);
     }
 
