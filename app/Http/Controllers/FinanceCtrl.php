@@ -125,7 +125,7 @@ class FinanceCtrl extends Controller
 
         //Money Orders
         //current station's orders
-        $money_orders = $station->money_orders;
+        $money_orders = $station->getMoneyOrdersInput();
         $money_orders_count = count($money_orders);
         $money_orders_sum = $this->getSumOfOrders($money_orders);
 
@@ -1289,7 +1289,7 @@ class FinanceCtrl extends Controller
 
         //Money Orders
         //current station's orders
-        $money_orders = $station->money_orders;
+        $money_orders = $station->getMoneyOrdersInput();
         $money_orders_count = count($money_orders);
         $money_orders_sum = $this->getSumOfOrders($money_orders);
 

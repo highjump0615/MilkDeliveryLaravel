@@ -681,7 +681,7 @@ class DeliveryStation extends Authenticatable
     public function getMoneyOrdersAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
@@ -700,7 +700,7 @@ class DeliveryStation extends Authenticatable
     public function getMoneyOrdersInput()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $orders = Order::where('station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
