@@ -24,6 +24,7 @@ use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
 use App\Model\WechatModel\WechatOrderProduct;
+use App\Model\WechatModel\WechatReview;
 use App\Model\WechatModel\WechatUser;
 use Auth;
 use DateTime;
@@ -1403,8 +1404,11 @@ class WeChatCtrl extends Controller
     public function xinxizhongxin(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
+        $customer_id = WechatUser::find($wechat_user_id)->customer_id;
+        $reviews = WechatReview::where('customer_id',$customer_id)->orderby('created_at','desc')->get();
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
         return view('weixin.xinxizhongxin', [
+            'reviews'=>$reviews,
             'cartn' => $cartn,
         ]);
     }

@@ -11,24 +11,9 @@
       </div>
 
       <ul class="tsjy_ul">
-            <li><span>2016-02-10</span><a href="#">您的订单修改成功</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您的订单修改成功</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
-            <li><span>2016-02-10</span><a href="#">您订购的牛奶已经配送</a></li>
+            @foreach($review as $rw)
+                  <li><span>{{$rw->created_at}}</span><a href="#">{{$rw->content}}</a></li>
+            @endforeach
       </ul>
 
 
