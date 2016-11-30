@@ -128,9 +128,7 @@
                                 style="width:100%; height:30px;">
                             <option value="none"></option>
                             <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_TYPE_IN}}">收款</option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER}}">
-                                转出
-                            </option>
+                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER}}">转出</option>
                         </select>
                     </div>
                 </div>
@@ -282,7 +280,10 @@
                     else
                         tr.attr("data-show-2", "0");
                 } else if (f_io == "{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_TYPE_IN}}") {
-                    tr.attr("data-show-1", "1");
+                    // 只显示收款记录
+                    if (o_kind < "{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER}}") {
+                        tr.attr("data-show-1", "1");
+                    }
 
                     if (f_kind == "none") {
                         tr.attr("data-show-2", "1");

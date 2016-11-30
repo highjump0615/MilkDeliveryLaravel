@@ -184,9 +184,10 @@ class FinanceCtrl extends Controller
         $other_orders_really_got_sum = $this->getSumOfOrders($other_orders_really_got);
 
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
-        $calc_histories = DSCalcBalanceHistory::where('station_id', $station_id)->where('time', '>=', $first_m)
+        $calc_histories = DSCalcBalanceHistory::where('station_id', $station_id)
+            ->where('time', '>=', $first_m)
             ->where('time', '<=', $last_m)
             ->where(function($query) {
                 $query->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION);
@@ -194,7 +195,8 @@ class FinanceCtrl extends Controller
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD);
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT);
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER);
-            })->get();
+            })
+            ->get();
 
         $child = 'taizhang';
         $parent = 'caiwu';
