@@ -219,14 +219,14 @@
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <td>{{$station->bottle_count_before_this_term}}</td>
-                                        <td>{{$station->term_start_amount}}</td>
-                                        <td>{{$station->bottle_count_increased_this_term}}</td>
-                                        <td>{{$station->order_amount_increased_this_term}}</td>
-                                        <td>{{$station->bottle_count_done_this_term}}</td>
-                                        <td>{{$station->order_amount_done_this_term}}</td>
-                                        <td>{{$station->bottle_count_before_this_term + $station->bottle_count_increased_this_term - $station->bottle_count_done_this_term}}</td>
-                                        <td>{{$station->term_start_amount + $station->order_amount_increased_this_term - $station->order_amount_done_this_term}}</td>
+                                        <td>{{$station->fin_before_count}}</td>
+                                        <td>{{$station->fin_before_cost}}</td>
+                                        <td>{{$station->fin_added_count}}</td>
+                                        <td>{{$station->fin_added_cost}}</td>
+                                        <td>{{$station->fin_done_count}}</td>
+                                        <td>{{$station->fin_done_cost}}</td>
+                                        <td>{{$station->fin_after_count}}</td>
+                                        <td>{{$station->fin_after_cost}}</td>
                                     </tr>
                                     </tbody>
                                 </table>

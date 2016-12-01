@@ -58,7 +58,6 @@ class DeliveryStation extends Authenticatable
         'payment_calc_type_str',
 
         //Money
-        'money_orders',
         'money_orders_really_got',
         'money_orders_really_got_sum',
         'money_orders_of_others',
@@ -112,18 +111,6 @@ class DeliveryStation extends Authenticatable
 
         //get milkman of this stations
         'milkmans',
-
-        //TOTAL
-        'order_count_increased_this_term',
-        'order_amount_increased_this_term',
-        'order_count_done_this_term',
-        'order_amount_done_this_term',
-//        'order_amount_current',
-
-        'bottle_count_increased_this_term',
-        'bottle_count_done_this_term',
-//        'bottle_count_current',
-        'bottle_count_before_this_term',
     ];
 
     const DELIVERY_STATION_TYPE_STATION_NORMAL = 1;
@@ -133,94 +120,119 @@ class DeliveryStation extends Authenticatable
     const DELIVERY_STATION_STATUS_ACTIVE = 1;
     const DELIVERY_STATION_STATUS_INACTIVE = 0;
 
-    public function getBottleCountBeforeThisTermAttribute()
-    {
-        $first_m = date('Y-m-01');
-
-        $orders_before = Order::where('station_id', $this->id)
-            ->where('ordered_at', '<', $first_m)
-            ->get();
-        $bottle_before = $this->getBottleCountOfOrders($orders_before);
-
-        $orders_done_before = Order::where('station_id', $this->id)
-            ->where('ordered_at', '<', $first_m)
-            ->where('status', Order::ORDER_FINISHED_STATUS)
-            ->get();
-        $bottle_done_before = $this->getBottleCountOfOrders($orders_done_before);
-
-        $bottle_count_before_this_term = $bottle_before - $bottle_done_before;
-
-        return $bottle_count_before_this_term;
-    }
-
     /**
      * 期初余额数量
      * @param $count 数量
      * @param $cost 金额
      */
     public function getBottleCountBeforeThisTerm(&$count, &$cost) {
+        $count = 0;
+        $cost = 0;
+        $aryOrderId = array();
+
+        // 本期日期范围
+        $last_m = date('Y-m-01');
+
+        // 订单
+        $aryOrder = Order::where('delivery_station_id', $this->id)
+            ->where('ordered_at', '<', $last_m)
+            ->where(function($query){
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+            })
+            ->get();
+
+        // 获取订单id
+        foreach ($aryOrder as $o) {
+            array_push($aryOrderId, $o->id);
+        }
+
+        // 查询配送明细，条件为前期完成的相反
+        $plans = MilkManDeliveryPlan::whereIn('order_id', $aryOrderId)
+            ->where(function ($query) use ($last_m) {
+                $query->where('deliver_at', '>=', $last_m);
+                $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED);
+            })
+            ->get();
+
+        foreach ($plans as $p) {
+            $count += $p->changed_plan_count;
+            $cost += $p->changed_plan_count * $p->product_price;
+        }
     }
 
-    public function getBottleCountIncreasedThisTermAttribute()
-    {
-        $total = $this->getBottleCountOfOrders($this->money_orders) + $this->getBottleCountOfOrders($this->wechat_orders) +
-                    $this->getBottleCountOfOrders($this->card_orders)/* + $this->getBottleCountOfOrders($this->other_orders)*/;
+    /**
+     * 获取本期订单信息
+     * @return mixed
+     */
+    public function getOrdersThisTerm() {
+        // 本期日期范围
+        $first_m = date('Y-m-01');
+        $last_m = getCurDateString();
 
-        return $total;
+        // 订单
+        $aryOrder = Order::where('delivery_station_id', $this->id)
+            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '<=', $last_m)
+            ->where(function($query){
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+            })
+            ->get();
+
+        return $aryOrder;
     }
 
-    public  function getBottleCountDoneThisTermAttribute()
-    {
-        $total = $this->getBottleCountOfOrders($this->money_orders_really_got) + $this->getBottleCountOfOrders($this->wechat_orders_really_got) +
-                    $this->getBottleCountOfOrders($this->card_orders_really_got)/* + $this->getBottleCountOfOrders($this->other_orders_really_got)*/;
-        return $total;
+    /**
+     * 本期订单金额增加
+     * @param $count
+     * @param $cost
+     */
+    public function getBottleCountIncreasedThisTerm(&$count, &$cost) {
+        $count = 0;
+        $cost = 0;
+        $aryOrderId = array();
+
+        // 获取订单id
+        $aryOrder = $this->getOrdersThisTerm();
+        foreach ($aryOrder as $o) {
+            array_push($aryOrderId, $o->id);
+        }
+
+        $plans = MilkManDeliveryPlan::whereIn('order_id', $aryOrderId)->get();
+        foreach ($plans as $p) {
+            $count += $p->changed_plan_count;
+            $cost += $p->changed_plan_count * $p->product_price;
+        }
     }
 
+    /**
+     * 本期完成订单余额
+     * @param $count
+     * @param $cost
+     */
+    public function getBottleDoneThisTerm(&$count, &$cost) {
+        $count = 0;
+        $cost = 0;
 
+        // 本期日期范围
+        $first_m = date('Y-m-01');
+        $last_m = getCurDateString();
 
-    public function getOrderCountDoneThisTermAttribute()
-    {
-        //money_orders, wechat_orders, card_orders, other_orders
-        $total_count= count($this->money_orders_really_got)+count($this->wechat_orders_really_got)+count($this->card_orders_really_got)+count($this->other_orders_really_got);
-        return $total_count;
-        
+        // 查询配送明细
+        $plans = MilkManDeliveryPlan::where('station_id', $this->id)
+            ->where('deliver_at', '>=', $first_m)
+            ->where('deliver_at', '<=', $last_m)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->get();
+
+        foreach ($plans as $p) {
+            $count += $p->changed_plan_count;
+            $cost += $p->changed_plan_count * $p->product_price;
+        }
     }
-
-    public function getOrderAmountDoneThisTermAttribute()
-    {
-        $total1 = $this->getSumOfOrders($this->money_orders_really_got);
-        $total2 = $this->getSumOfOrders($this->wechat_orders_really_got);
-        $total3 = $this->getSumOfOrders($this->card_orders_really_got);
-        $total4 = $this->getSumOfOrders($this->other_orders_really_got);
-
-        $total = round($total1+$total2+$total3+$total4, 2);
-
-        return $total;
-    }
-
-    public function getOrderCountIncreasedThisTermAttribute()
-    {
-        $money_orders_count = count($this->money_orders);
-        $wechat_orders_count = count($this->wechat_orders);
-        $card_orders_count = count($this->card_orders);
-        $orders_from_other_count = count($this->other_orders);
-
-        $total_this_term = $money_orders_count+$wechat_orders_count+$card_orders_count+$orders_from_other_count;
-        return $total_this_term;
-    }
-
-    public function getOrderAmountIncreasedThisTermAttribute()
-    {
-        $money_orders_amount = $this->getSumOfOrders($this->money_orders);
-        $wechat_orders_amount = $this->getSumOfOrders($this->wechat_orders);
-        $card_orders_amount = $this->getSumOfOrders($this->card_orders);
-        $orders_from_other_amount = $this->getSumOfOrders($this->other_orders);
-
-        $total_this_amount = $money_orders_amount+$wechat_orders_amount+$card_orders_amount/*+$orders_from_other_amount*/;
-
-        return $total_this_amount;
-    }
-
 
     public function getMilkmansAttribute()
     {

@@ -62,6 +62,11 @@ class FinanceCtrl extends Controller
 
         $stations = $factory->active_stations;
 
+        // 计算财务信息
+        foreach ($stations as $s) {
+            $this->getSummary($s);
+        }
+
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'taizhang';
@@ -112,6 +117,34 @@ class FinanceCtrl extends Controller
             $notification->sendToStationNotification($station_id,7,"奶厂已给您的结算账户","奶厂已给您的结算账户，转入".$amount."元，本期余额15元。请您查收核对");
             return response()->json(['status' => 'success', 'station_id' => $station_id, 'amount' => $amount]);
         }
+    }
+
+    /**
+     * 计算台账财务数据
+     * @param $station
+     */
+    private function getSummary(&$station) {
+        $nCount = 0;
+        $nCost = 0;
+
+        // 期初余额
+        $station->getBottleCountBeforeThisTerm($nCount, $nCost);
+        $station['fin_before_count'] = $nCount;
+        $station['fin_before_cost'] = $nCost;
+
+        // 本期订单金额增加
+        $station->getBottleCountIncreasedThisTerm($nCount, $nCost);
+        $station['fin_added_count'] = $nCount;
+        $station['fin_added_cost'] = $nCost;
+
+        // 本期完成订单余额
+        $station->getBottleDoneThisTerm($nCount, $nCost);
+        $station['fin_done_count'] = $nCount;
+        $station['fin_done_cost'] = $nCost;
+
+        // 期末金额
+        $station['fin_after_count'] = $station['fin_before_count'] + $station['fin_added_count'] - $station['fin_done_count'];
+        $station['fin_after_cost'] = $station['fin_before_cost'] + $station['fin_added_cost'] - $station['fin_done_cost'];
     }
 
     /**
@@ -1319,6 +1352,10 @@ class FinanceCtrl extends Controller
         $station = DeliveryStation::find($station_id);
 
         $stations[0] = $station;
+        // 计算财务信息
+        foreach ($stations as $s) {
+            $this->getSummary($s);
+        }
 
         $child = 'taizhang';
         $parent = 'caiwu';
