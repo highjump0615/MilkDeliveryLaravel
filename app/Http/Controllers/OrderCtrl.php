@@ -5063,7 +5063,7 @@ class OrderCtrl extends Controller
                 //Delete Delivery Plans for cancelled order
                 $udps = $order->unfinished_delivery_plans;
                 foreach ($udps as $udp) {
-                    $udp->delete();
+                    $udp->forceDelete();
                 }
                 return response()->json(['status' => 'success', 'message' => '退订成功.']);
             } else {
