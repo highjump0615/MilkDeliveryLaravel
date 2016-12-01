@@ -161,6 +161,7 @@ class Order extends Model
     public function getAddrStreet() {
         return $this->mStrStreet;
     }
+
     public function getAddrVillage() {
         return $this->mStrVillage;
     }
@@ -242,13 +243,23 @@ class Order extends Model
         $this->attributes['status_changed_at'] = $now->format('Y-m-d');
     }
 
-
+    /**
+     * 是否暂停订单
+     * @return bool
+     */
     public function getHasStoppedAttribute()
     {
-        if($this->stop_at || $this->restart_at)
-            return true;
-        else
+        // 只考虑没过期的
+        if (strtotime('today') > strtotime($this->restart_at)) {
             return false;
+        }
+
+        if($this->stop_at && $this->restart_at) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public function getStatusNameAttribute()
@@ -281,6 +292,11 @@ class Order extends Model
             default:
                 $status_name="待审核";
                 break;
+        }
+
+        // 暂停，这不是根据状态字段判断出来的
+        if ($this->isStopped()) {
+            $status_name="暂停";
         }
 
         return $status_name;
@@ -319,7 +335,22 @@ class Order extends Model
         }
     }
 
+    /**
+     * 是否正在暂停状态
+     * @return bool
+     */
+    public function isStopped() {
 
+        if (!$this->stop_at || !$this->restart_at) {
+            return false;
+        }
+
+        if (strtotime($this->stop_at) <= strtotime('today')  && strtotime('today') <= strtotime($this->restart_at)) {
+            return true;
+        }
+
+        return false;
+    }
 
     public function getDeliveryPlansSentToProductionPlanAttribute()
     {

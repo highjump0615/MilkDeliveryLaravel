@@ -3,6 +3,8 @@
 namespace App\Model\DeliveryModel;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\Order;
 use DateTime;
@@ -10,7 +12,7 @@ use DateTimeZone;
 
 class MilkManDeliveryPlan extends Model
 {
-    public $timestamps = false;
+    use SoftDeletes;
 
     protected $table = "milkmandeliveryplan";
 

@@ -1856,70 +1856,10 @@ class OrderCtrl extends Controller
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
 
-            //Step1: First delete all delivery plans waiting or passed.
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)
-                ->where(function ($query) {
-                    $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
-                    $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
-                })->get();
+            // 开启订单，相当于从今天到开启日期
+            $result = $this->pauseOrder(getCurDateString(), $start_at, $order, true);
 
-            foreach ($plans as $plan) {
-                $plan->delete();
-            }
-
-            //Step2: for the plans that has submitted to the production plans
-            //change the changed_plan_count -> 0
-            $plans = $order->delivery_plans_sent_to_production_plan;
-            foreach ($plans as $plan) {
-                $plan->changed_plan_count = 0;
-                $plan->save();
-            }
-
-            //Step 3: Insert new record for stopped orders
-            //These are plans after the stop end date
-
-            $restart = new DateTime($start_at);
-            $restart_date = $restart->format('Y-m-d');
-
-            $order_products = $order->order_products;
-
-            $result = true;
-            foreach ($order_products as $op) {
-                //make new delivery plans for each order product
-
-                //Step a: get total counts of not delivered at
-                //Total_count - finished_count
-                $total = $op->total_count;
-
-                $remain_for_stop_count = 0;
-                $dps = MilkManDeliveryPlan::where('order_product_id', $op->id)->get();
-                foreach ($dps as $dp) {
-                    $remain_for_stop_count += $dp->changed_plan_count;
-                }
-
-                $todo = $total - $remain_for_stop_count;
-
-                $rest = $this->make_new_delivery_plans($order_id, $op, $restart_date, $todo);
-                if (!$rest) {
-                    $result = false;
-                    break;
-                }
-            }
-
-            $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $today = $today_date->format('Y-m-d');
-
-            $order->restart_at = $restart_date;
-            if($restart_date == $today)
-                $order->status = Order::ORDER_ON_DELIVERY_STATUS;
-            $order->save();
-
-            if ($result) {
-                return response()->json(['status' => 'success', 'restart_at' => $restart_date]);
-            } else {
-                return response()->json(['status' => 'fail', 'message' => '']);
-            }
-
+            return $result;
         }
     }
 
@@ -1943,95 +1883,100 @@ class OrderCtrl extends Controller
             $start_date = $request->input('start');
             $end_date = $request->input('end');
             $order_id = $request->input('order_id');
-
-            $start = new DateTime($start_date);
-            $start_date = $start->format('Y-m-d');
-
-            $end = new DateTime($end_date);
-            $end_date = $end->format('Y-m-d');
-
             $order = Order::find($order_id);
-            $station_id = $order->station_id;
 
+            $result = $this->pauseOrder($start_date, $end_date, $order, false);
+
+            // 状态设置
             if (strtotime($start_date) <= strtotime('today') && strtotime('today') <= strtotime($end_date)) {
                 $order->status = Order::ORDER_STOPPED_STATUS;
-                $order->save();
             }
 
-            //Step1: First delete all delivery plans waiting or passed.
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)
-                ->where(function ($query) {
-                    $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
-                    $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
-                })->where('deliver_at', '>=', $start_date)->get();
+//            //Notification
+//            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
+//            $notification = new DSNotification();
+//            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单暂停！！");
 
-            foreach ($plans as $plan) {
-                $plan->delete();
-            }
-
-            //Step2: for the plans that has submitted to the production plans
-            //change the changed_plan_count -> 0
-            $plans = $order->delivery_plans_sent_to_production_plan;
-            foreach ($plans as $plan) {
-                $plan->changed_plan_count = 0;
-                $plan->delivery_count = 0;
-
-                // 改成取消状态
-                $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-                $plan->cancel_reason = '暂停';
-
-                $plan->save();
-            }
-
-            //Step 3: Insert new record for stopped orders
-            //These are plans after the stop end date
-
-            $last = new DateTime($end_date);
-            $last_date = $last->modify('+1 day');
-            $restart_date = $last_date->format('Y-m-d');
-
-            $order_products = $order->order_products;
-
-            $result = true;
-            foreach ($order_products as $op) {
-                //make new delivery plans for each order product
-
-                //Step a: get total counts of not delivered at
-                //Total_count - finished_count
-                $total = $op->total_count;
-
-                $remain_for_stop_count = 0;
-                $dps = MilkManDeliveryPlan::where('order_product_id', $op->id)->get();
-                foreach ($dps as $dp) {
-                    $remain_for_stop_count += $dp->changed_plan_count;
-                }
-
-                $todo = $total - $remain_for_stop_count;
-
-                $rest = $this->make_new_delivery_plans($order_id, $op, $restart_date, $todo);
-                if (!$rest) {
-                    $result = false;
-                    break;
-                }
-            }
-
-            $order->stop_at = $start_date;
-            $order->restart_at = $restart_date;
-
-            $order->save();
-
-            //Notification
-            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单暂停！！");
-
-            if ($result)
-                return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
-            else
-                return response()->json(['status' => 'fail']);
+            return $result;
         }
     }
 
+    /**
+     * 暂停订单
+     * @param $start_date
+     * @param $end_date
+     * @param $order_id
+     * @param $includeEnd 是否包括结束那天
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function pauseOrder($start_date, $end_date, $order, $forRestart) {
+        $start = new DateTime($start_date);
+        $end = new DateTime($end_date);
+
+        if ($start > $end) {
+            return response()->json(['status' => 'fail']);
+        }
+
+        $order_products = $order->order_products;
+
+        foreach ($order_products as $op) {
+            //
+            // 处理上次暂停的配送明细
+            //
+            $nCountPlus = 0;
+            if ($order->has_stopped) {
+                $dateStopStart = $order->stop_at;
+
+                // 开始订单时，日期范围是不同的
+                if ($forRestart) {
+                    $dateStopStart = $start_date;
+                }
+
+                $qb = MilkManDeliveryPlan::onlyTrashed()
+                    ->where('order_product_id', $op->id)
+                    ->where('deliver_at', '>=', $dateStopStart)
+                    ->where('deliver_at', '<=', $order->restart_at);
+
+                // 计算多余量
+                $nCountPlus = $qb->sum('changed_plan_count');
+
+                // 恢复这期间的配送明细
+                $qb->restore();
+            }
+
+            //
+            // 重新规划配送明细
+            //
+            if ($forRestart) {
+                $end_date = $end->modify('-1 day');
+                $end_date = $end_date->format('Y-m-d');
+            }
+
+            $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
+                ->where('deliver_at', '>=', $start_date)
+                ->where('deliver_at', '<=', $end_date);
+
+            // 计算多余量
+            $nCountExtra = $qb->sum('changed_plan_count');
+
+            // 软删除这期间的配送明细
+            $qb->delete();
+
+            // 调整配送明细
+            $op->processExtraCount(null, $nCountExtra - $nCountPlus);
+        }
+
+        // 暂停时间设置
+        $last = new DateTime($end_date);
+        $last_date = $last->modify('+1 day');
+        $restart_date = $last_date->format('Y-m-d');
+
+        $order->stop_at = $start_date;
+        $order->restart_at = $restart_date;
+        $order->save();
+
+        return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
+    }
 
     //make new delivery plan after restart_date
     function make_new_delivery_plans($order_id, $op, $restart_date, $todo)
@@ -2337,9 +2282,6 @@ class OrderCtrl extends Controller
         ]);
     }
 
-    private $factory;
-    private $mFactoryId;
-
     private $order_property;
     private $province;
     private $products;
@@ -2347,9 +2289,6 @@ class OrderCtrl extends Controller
     private $order_delivery_types;
     private $product_count_on_fot;
     private $delivery_stations;
-    
-    private $station;
-    private $mStationId;
 
     /**
      * 初始化奶厂订单参数
@@ -3891,9 +3830,7 @@ class OrderCtrl extends Controller
     //show detail of order in naizhan
     function show_detail_order_in_naizhan($order_id)
     {
-        $this->initStationIdFromUser();
-
-        $station = DeliveryStation::find($this->mStationId);
+        $station = DeliveryStation::find($this->getCurrentStationId());
 
         //check this order is current factory's order
         $order = Order::find($order_id);
@@ -4209,13 +4146,15 @@ class OrderCtrl extends Controller
     public
     function show_not_passed_dingdan_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $station_id = $this->getCurrentStationId();
+        $factory = Factory::find($factory_id);
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         $orders = Order::where('is_deleted', "0")
-            ->where('delivery_station_id', $this->mStationId)
+            ->where('delivery_station_id', $station_id)
             ->where(function($query) {
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -4234,26 +4173,27 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $this->factory,
+            'factory' => $factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
     }
 
 
-//show stopped dingdan in gongchang
+    //show stopped dingdan in gongchang
     public
     function show_stopped_dingdan_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
+
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->where('status', Order::ORDER_STOPPED_STATUS)
+            ->where('stop_at', '<=', getCurDateString())
+            ->where('restart_at', '>', getCurDateString())
             ->orderBy('id', 'desc')->get();
 
         $child = 'zantingdingdan';
@@ -4278,14 +4218,16 @@ class OrderCtrl extends Controller
     public
     function show_stopped_dingdan_list_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $factory = Factory::find($factory_id);
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         $orders = Order::where('is_deleted', "0")
-            ->where('delivery_station_id', $this->mStationId)
-            ->where('status', Order::ORDER_STOPPED_STATUS)
+            ->where('delivery_station_id', $this->getCurrentStationId())
+            ->where('stop_at', '<=', getCurDateString())
+            ->where('restart_at', '>', getCurDateString())
             ->orderBy('id', 'desc')
             ->get();
 
@@ -4300,7 +4242,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $this->factory,
+            'factory' => $factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4343,12 +4285,15 @@ class OrderCtrl extends Controller
     public
     function show_on_delivery_dingdan_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $station_id = $this->getCurrentStationId();
+        $factory = Factory::find($factory_id);
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")->where('delivery_station_id', $this->mStationId)
+        $orders = Order::where('is_deleted', "0")
+            ->where('delivery_station_id', $station_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
             ->orderBy('id', 'desc')
             ->get();
@@ -4364,7 +4309,7 @@ class OrderCtrl extends Controller
             'parent'            => $parent,
             'current_page'      => $current_page,
             'orders'            => $orders,
-            'factory'           => $this->factory,
+            'factory'           => $factory,
             'order_properties'  => $order_properties,
             'payment_types'     => $payment_types,
         ]);
@@ -4538,14 +4483,16 @@ class OrderCtrl extends Controller
     public
     function show_xudan_dingdan_liebiao_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $station_id = $this->getCurrentStationId();
+        $factory = Factory::find($factory_id);
 
         $orders = Order::where('is_deleted', "0")
             ->where(function($query) {
                 $query->where('status', Order::ORDER_FINISHED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
-            ->where('delivery_station_id', $this->mStationId)
+            ->where('delivery_station_id', $station_id)
             ->orderBy('id', 'desc')
             ->get();
 
@@ -4563,7 +4510,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $this->factory,
+            'factory' => $factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4803,14 +4750,16 @@ class OrderCtrl extends Controller
     public
     function show_check_waiting_dingdan_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $station_id = $this->getCurrentStationId();
+        $factory = Factory::find($factory_id);
 
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
         // 只显示本站录入的订单
         $orders = Order::where('is_deleted', "0")
-            ->where('station_id', $this->mStationId)
+            ->where('station_id', $station_id)
             ->where(function($query) {
                 $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
@@ -4829,7 +4778,7 @@ class OrderCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'orders' => $orders,
-            'factory' => $this->factory,
+            'factory' => $factory,
             'order_properties' => $order_properties,
             'payment_types' => $payment_types,
         ]);
@@ -4893,29 +4842,22 @@ class OrderCtrl extends Controller
         ]);
     }
 
-    /**
-     * 初始化基础信息
-     */
-    private function initStationIdFromUser() {
-        $suser = Auth::guard('naizhan')->user();
-
-        $this->mStationId = $suser->station_id;
-        $this->mFactoryId = $suser->factory_id;
-
-        $this->factory = Factory::find($this->mFactoryId);
-    }
-
     //Show All dingdan in Naizhan : Only it's orders
     public
     function show_all_dingdan_in_naizhan()
     {
-        $this->initStationIdFromUser();
+        $factory_id = $this->getCurrentFactoryId(false);
+        $station_id = $this->getCurrentStationId();
+        $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->where('factory_id', $this->mFactoryId)
-            ->where(function ($query) {
-                $query->where('station_id', $this->mStationId);
-                $query->orWhere('delivery_station_id', $this->mStationId);
-            })->orderBy('id', 'desc')->get();
+        $orders = Order::where('is_deleted', "0")
+            ->where('factory_id', $factory_id)
+            ->where(function ($query) use ($station_id) {
+                $query->where('station_id', $station_id);
+                $query->orWhere('delivery_station_id', $station_id);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -4934,7 +4876,7 @@ class OrderCtrl extends Controller
             'parent'            => $parent,
             'current_page'      => $current_page,
             'orders'            => $orders,
-            'factory'           => $this->factory,
+            'factory'           => $factory,
             'order_properties'  => $order_properties,
             'payment_types'     => $payment_types,
         ]);
@@ -5742,7 +5684,7 @@ class OrderCtrl extends Controller
         MilkManDeliveryPlan::where('order_id', $order->id)->where(function ($query) {
             $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
             $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
-        })->delete();
+        })->forceDelete();
 
         $plans = $order->delivery_plans_sent_to_production_plan;
         foreach ($plans as $plan) {
