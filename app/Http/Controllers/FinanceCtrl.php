@@ -255,9 +255,8 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'naizhanzhanghuyue';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         $station = DeliveryStation::find($station_id);
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $today =$today_date->format('Y-m-d');
 
         //show only current months history
         $calc_histories_out = $station->calc_histories_out;
@@ -268,7 +267,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'station' => $station,
             'calc_histories_out' => $calc_histories_out,
-            'today' => $today,
+            'today' => getCurDateString(),
         ]);
     }
 
@@ -819,20 +818,19 @@ class FinanceCtrl extends Controller
     //G5-3: Show transaction and pay history of transactions to other station
     public function show_money_transaction_record_to_others_in_gongchang()
     {
-
         //Get TransactionPays during first month to today
         $first_m = date('Y-m-01 H:i');
         $last_m = date('Y-m-d H:i');
 
-        $transaction_pays = DSTransactionPay::where('paid_at', '>=', $first_m)
-            ->where('paid_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)->get();
-
-        $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)->where('time', '>=', $first_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)->get();
+        $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)
+            ->where('time', '>=', $first_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->get();
 
         //get transactions
         $trs_count = 0;
         $result = array();
+
         foreach ($stmoneytransfers as $stm) {
             $trspay_id = $stm->transaction_pay_id;
             $trs = DSTransaction::where('transaction_pay_id', $trspay_id)->get();
@@ -842,6 +840,7 @@ class FinanceCtrl extends Controller
             $result[$trspay_id] [0] = $stm;
             $result[$trspay_id] [1] = $trs;//save transaction list
         }
+
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1290,11 +1289,11 @@ class FinanceCtrl extends Controller
             'station' => $station,
         ]);
     }
+
     //N2: Show Station's Order Money Status
     public function show_station_order_money_in_naizhan()
     {
-
-        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station_id = $this->getCurrentStationId();
         $station = DeliveryStation::find($station_id);
 
         //all orders in month
@@ -1362,9 +1361,17 @@ class FinanceCtrl extends Controller
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
 
-        $delivery_histories = DSDeliveryCreditBalanceHistory::where('station_id', $station_id)->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)->where('type', '>=', DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY)
-            ->where('type', '<=', DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION)->get();
+        $delivery_histories = DSCalcBalanceHistory::where('station_id', $station_id)
+            ->where('time', '>=', $first_m)
+            ->where('time', '<=', $last_m)
+            ->where(function($query) {
+                $query->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION);
+                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION);
+                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD);
+                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT);
+                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER);
+            })
+            ->get();
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1400,7 +1407,6 @@ class FinanceCtrl extends Controller
             'card_orders_sum' => $card_orders_sum,
             'card_orders_really_got_count' => $card_orders_really_got_count,
             'card_orders_really_got_sum' => $card_orders_really_got_sum,
-
 
             //Received Orders From Others
             'other_orders_count' => $other_orders_count,

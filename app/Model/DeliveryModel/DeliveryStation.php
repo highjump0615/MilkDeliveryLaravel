@@ -137,15 +137,28 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
 
-        $orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->get();
+        $orders_before = Order::where('station_id', $this->id)
+            ->where('ordered_at', '<', $first_m)
+            ->get();
         $bottle_before = $this->getBottleCountOfOrders($orders_before);
 
-        $orders_done_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)
-            ->where('status', Order::ORDER_FINISHED_STATUS)->get();
+        $orders_done_before = Order::where('station_id', $this->id)
+            ->where('ordered_at', '<', $first_m)
+            ->where('status', Order::ORDER_FINISHED_STATUS)
+            ->get();
         $bottle_done_before = $this->getBottleCountOfOrders($orders_done_before);
 
-        $bottle_count_before_this_term =$bottle_before - $bottle_done_before;
+        $bottle_count_before_this_term = $bottle_before - $bottle_done_before;
+
         return $bottle_count_before_this_term;
+    }
+
+    /**
+     * 期初余额数量
+     * @param $count 数量
+     * @param $cost 金额
+     */
+    public function getBottleCountBeforeThisTerm(&$count, &$cost) {
     }
 
     public function getBottleCountIncreasedThisTermAttribute()
@@ -351,8 +364,10 @@ class DeliveryStation extends Authenticatable
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
 
-        $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_IN)
+        $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
+            ->where('time', '>=', $first_m)
+            ->where('time', '<=', $last_m)
+            ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_IN)
             ->get();
 
         $total = 0;
@@ -392,9 +407,14 @@ class DeliveryStation extends Authenticatable
     public function getCalcHistoriesOutAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
-        $histories = DSCalcBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)->where('time', '<=', $last_m)->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_OUT)->get();
+        $histories = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('time', '>=', $first_m)
+            ->where('time', '<=', $last_m)
+            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_OUT)
+            ->get();
+
         return $histories;
     }
 

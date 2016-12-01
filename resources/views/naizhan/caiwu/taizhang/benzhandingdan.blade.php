@@ -88,7 +88,7 @@
                                 <td>{{$money_orders_really_got_sum + $wechat_orders_really_got_sum + $card_orders_really_got_sum + $other_orders_really_got_sum}}</td>
                             </tr>
                             <tr>
-                                <td>本站实收订单款余额</td>
+                                <td>本站应收订单款余额</td>
                                 <td></td>
                                 <td>{{$receivable_order_money}}</td>
                                 <td></td>

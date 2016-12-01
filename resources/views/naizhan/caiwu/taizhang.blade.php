@@ -73,7 +73,7 @@
                                 </div>
                                 <div class="col-sm-2">
                                     <input readonly class="gray-bg text-center delivery_credit_balance"
-                                           value="{{$station->delivery_credit_balance}}"/>
+                                           value="{{$station->init_delivery_credit_amount+$station->delivery_credit_balance}}"/>
                                 </div>
                                 <div class="col-sm-2 col-sm-offset-2">
                                     <a href="{{URL::to('/naizhan/caiwu/taizhang/benzhandingdan/')}}"
