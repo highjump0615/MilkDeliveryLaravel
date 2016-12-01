@@ -112,7 +112,7 @@
 										<td></td>
 										<td></td>
 										<td></td>
-										<td>{{$si->business_credit_balance}}</td>
+										<td>{{$si->business_credit_balance + $si->init_business_credit_amount}}</td>
 										<td></td>
 										<td></td>
 									</tr>
@@ -150,7 +150,7 @@
 										</td>
 										@if ($j == 1)
 										<td rowspan="{{count($si->station_plan)}}">
-											{{$si->business_credit_balance}}
+											{{$si->business_credit_balance + $si->init_business_credit_amount}}
 										</td>
 										<td rowspan="{{count($si->station_plan)}}">
 											@if($ss->status == 2)
