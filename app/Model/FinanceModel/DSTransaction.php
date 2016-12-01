@@ -38,6 +38,9 @@ class DSTransaction extends Model
     const DSTRANSACTION_CREATED =0;
     const DSTRANSACTION_COMPLETED =1;
 
+    public function transactionPay() {
+        return $this->belongsTo('App\Model\FinanceModel\DSTransactionPay', 'transaction_pay_id', 'id');
+    }
 
     public function getCheckedTimeAttribute()
     {

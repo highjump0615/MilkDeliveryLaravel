@@ -181,7 +181,9 @@ class FinanceCtrl extends Controller
         //Really orders received wechat
         $other_orders_really_got = $station->other_orders_really_got;
         $other_orders_really_got_count = count($other_orders_really_got);
-        $other_orders_really_got_sum = $this->getSumOfOrders($other_orders_really_got);
+
+        // 其他奶站订单转入实收金额
+        $other_orders_really_got_sum = $this->calcOrderTransferAmount($other_orders_really_got);
 
         $first_m = date('Y-m-01');
         $last_m = getCurDateString();
@@ -245,7 +247,33 @@ class FinanceCtrl extends Controller
             // Calculation Histories
             'calc_histories' => $calc_histories,
         ]);
+    }
 
+    /**
+     * 计算实际转账金额
+     * @param $orders
+     * @return int
+     */
+    private function calcOrderTransferAmount($orders) {
+        $nAmount = 0;
+
+        foreach ($orders as $transOrder) {
+            $transaction = $transOrder->transaction;
+
+            // 订单没有账单信息，下一个
+            if (!$transaction) {
+                continue;
+            }
+
+            // 账单没有转账信息，下一个
+            if (!$transaction->transactionPay) {
+                continue;
+            }
+
+            $nAmount += $transaction->transactionPay->amount;
+        }
+
+        return $nAmount;
     }
 
     //G3: Show station calc account balance
@@ -1356,7 +1384,9 @@ class FinanceCtrl extends Controller
         //Really orders received wechat
         $other_orders_really_got = $station->other_orders_really_got;
         $other_orders_really_got_count = count($other_orders_really_got);
-        $other_orders_really_got_sum = $this->getSumOfOrders($other_orders_really_got);
+
+        // 其他奶站订单转入实收金额
+        $other_orders_really_got_sum = $this->calcOrderTransferAmount($other_orders_really_got);
 
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');

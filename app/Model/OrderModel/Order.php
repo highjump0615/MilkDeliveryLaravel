@@ -887,6 +887,14 @@ class Order extends Model
     }
 
     /**
+     * 获取账单
+     * @return DSTransaction
+     */
+    public function transaction() {
+        return $this->belongsTo('App\Model\FinanceModel\DSTransaction', 'transaction_id', 'id');
+    }
+
+    /**
      * 获取奶卡
      * @return MilkCard
      */

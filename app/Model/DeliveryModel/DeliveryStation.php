@@ -484,7 +484,8 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', '!=', $this->id)->where('ordered_at', '>=', $first_m)
+        $orders = Order::where('station_id', '!=', $this->id)
+            ->where('ordered_at', '>=', $first_m)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -492,6 +493,7 @@ class DeliveryStation extends Authenticatable
             })
             ->where('ordered_at', '<=', $last_m)->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
             ->where('delivery_station_id', '=', $this->id)->get();
+
         return $orders;
     }
 
