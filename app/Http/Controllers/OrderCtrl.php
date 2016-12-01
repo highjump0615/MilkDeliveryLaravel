@@ -2290,6 +2290,9 @@ class OrderCtrl extends Controller
     private $product_count_on_fot;
     private $delivery_stations;
 
+    private $factory;
+    private $station;
+
     /**
      * 初始化奶厂订单参数
      */
@@ -3831,6 +3834,7 @@ class OrderCtrl extends Controller
     function show_detail_order_in_naizhan($order_id)
     {
         $station = DeliveryStation::find($this->getCurrentStationId());
+        $factory = Factory::find($this->getCurrentFactoryId(false));
 
         //check this order is current factory's order
         $order = Order::find($order_id);
@@ -3854,7 +3858,7 @@ class OrderCtrl extends Controller
             'order'                     => $order,
             'order_products'            => $order_products,
             'grouped_plans_per_product' => $grouped_plans_per_product,
-            'gap_day'                   => $this->factory->gap_day,
+            'gap_day'                   => $factory->gap_day,
             
             // 奶站信息
             'station'                   => $station
