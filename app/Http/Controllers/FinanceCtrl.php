@@ -57,9 +57,7 @@ class FinanceCtrl extends Controller
     //G1: First page
     public function show_finance_page_in_gongchang()
     {
-
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         $stations = $factory->active_stations;
@@ -75,6 +73,7 @@ class FinanceCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'stations' => $stations,
+            'is_station' => false
         ]);
     }
 
@@ -115,9 +114,12 @@ class FinanceCtrl extends Controller
         }
     }
 
-    //G2: Show Selected Station's Order Money Status
-    public function show_station_order_money_in_gongchang($station_id)
-    {
+    /**
+     * 获取奶站订单金额统计所需的数据
+     * @param $station_id
+     * @return array
+     */
+    private function getOrderMoneyStatistics($station_id) {
         $station = DeliveryStation::find($station_id);
 
         //all orders in month
@@ -200,18 +202,7 @@ class FinanceCtrl extends Controller
             })
             ->get();
 
-        $child = 'taizhang';
-        $parent = 'caiwu';
-        $current_page = 'naizhandingdanjinetongji';
-        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-
-
-        return view('gongchang.caiwu.taizhang.naizhandingdanjinetongji', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-
+        return array(
             'station' => $station,
             'orders' => $orders,
 
@@ -246,7 +237,28 @@ class FinanceCtrl extends Controller
 
             // Calculation Histories
             'calc_histories' => $calc_histories,
-        ]);
+        );
+    }
+
+    //G2: Show Selected Station's Order Money Status
+    public function show_station_order_money_in_gongchang($station_id)
+    {
+        $aryData = $this->getOrderMoneyStatistics($station_id);
+
+        $child = 'taizhang';
+        $parent = 'caiwu';
+        $current_page = 'naizhandingdanjinetongji';
+        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
+        $aryPage = array(
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page,
+            'is_station' => false
+        );
+
+        return view('gongchang.caiwu.taizhang.naizhandingdanjinetongji', array_merge($aryData, $aryPage));
     }
 
     /**
@@ -296,6 +308,7 @@ class FinanceCtrl extends Controller
             'station' => $station,
             'calc_histories_out' => $calc_histories_out,
             'today' => getCurDateString(),
+            'is_station' => false
         ]);
     }
 
@@ -350,6 +363,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'station' => $station,
             'self_business_history' => $self_business_history,
+            'is_station' => false
         ]);
     }
 
@@ -1301,8 +1315,10 @@ class FinanceCtrl extends Controller
     //N1: Naizhan First page
     public function show_finance_page_in_naizhan()
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
+        $station_id = $this->getCurrentStationId();
         $station = DeliveryStation::find($station_id);
+
+        $stations[0] = $station;
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1314,7 +1330,8 @@ class FinanceCtrl extends Controller
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'station' => $station,
+            'stations' => $stations,
+            'is_station' => true
         ]);
     }
 
@@ -1322,132 +1339,25 @@ class FinanceCtrl extends Controller
     public function show_station_order_money_in_naizhan()
     {
         $station_id = $this->getCurrentStationId();
-        $station = DeliveryStation::find($station_id);
 
-        //all orders in month
-        $orders = $station->orders_in_month;
-
-        //Money Orders
-        //current station's orders
-        $money_orders = $station->getMoneyOrdersInput();
-        $money_orders_count = count($money_orders);
-        $money_orders_sum = $this->getSumOfOrders($money_orders);
-
-        //Really orders received money
-        $money_orders_really_got_sum = $station->money_orders_really_got_sum;
-        
-        //The money : not received at the start of month
-        //receivable amount
-        $receivable_order_money = $station->receivable_order_money;
-
-        //My Money Orders: to others
-        $money_orders_of_others = $station->money_orders_of_others;
-        $money_orders_of_others_count = count($money_orders_of_others);
-        $money_orders_of_others_sum = $this->getSumOfOrders($money_orders_of_others);
-
-        //My Money Orders of mine
-        $money_orders_of_mine = $station->money_orders_of_mine;
-        $money_orders_of_mine_count = count($money_orders_of_mine);
-        $money_orders_of_mine_sum = $this->getSumOfOrders($money_orders_of_mine);
-
-
-        //Wechat Orders
-        //current station's orders
-        $wechat_orders = $station->wechat_orders;
-        $wechat_orders_count = count($wechat_orders);
-        $wechat_orders_sum = $this->getSumOfOrders($wechat_orders);
-
-        //Really orders received wechat
-        $wechat_orders_really_got = $station->wechat_orders_really_got;
-        $wechat_orders_really_got_count = count($wechat_orders_really_got);
-        $wechat_orders_really_got_sum = $this->getSumOfOrders($wechat_orders_really_got);
-
-
-        //CARD ORDERS
-        //current station's orders
-        $card_orders = $station->card_orders;
-        $card_orders_count = count($card_orders);
-        $card_orders_sum = $this->getSumOfOrders($card_orders);
-
-        //Really orders received card
-        $card_orders_really_got = $station->card_orders_really_got;
-        $card_orders_really_got_count = count($card_orders_really_got);
-        $card_orders_really_got_sum = $this->getSumOfOrders($card_orders_really_got);
-
-
-        //OTHER ORDERS
-        //current station's orders
-        $other_orders = $station->other_orders;
-        $other_orders_count = count($other_orders);
-        $other_orders_sum = $this->getSumOfOrders($other_orders);
-
-        //Really orders received wechat
-        $other_orders_really_got = $station->other_orders_really_got;
-        $other_orders_really_got_count = count($other_orders_really_got);
-
-        // 其他奶站订单转入实收金额
-        $other_orders_really_got_sum = $this->calcOrderTransferAmount($other_orders_really_got);
-
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $delivery_histories = DSCalcBalanceHistory::where('station_id', $station_id)
-            ->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)
-            ->where(function($query) {
-                $query->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION);
-                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION);
-                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD);
-                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT);
-                $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER);
-            })
-            ->get();
+        $aryData = $this->getOrderMoneyStatistics($station_id);
 
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'benzhandingdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.caiwu.taizhang.benzhandingdan', [
+        $aryPage = array(
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'station' => $station,
-            'orders' => $orders,
+            'is_station' => true
+        );
 
-            //Money Orders
-            'money_orders_count' => $money_orders_count,
-            'money_orders_sum' => $money_orders_sum,
-            'money_orders_really_got_sum' => $money_orders_really_got_sum,
-            'money_orders_of_others_count' => $money_orders_of_others_count,
-            'money_orders_of_others_sum' => $money_orders_of_others_sum,
-            'money_orders_of_mine_count' => $money_orders_of_mine_count,
-            'money_orders_of_mine_sum' => $money_orders_of_mine_sum,
-            'receivable_order_money' => $receivable_order_money,
-
-            //Wechat Orders
-            'wechat_orders_count' => $wechat_orders_count,
-            'wechat_orders_sum' => $wechat_orders_sum,
-            'wechat_orders_really_got_count' => $wechat_orders_really_got_count,
-            'wechat_orders_really_got_sum' => $wechat_orders_really_got_sum,
-
-            //Card Orders
-            'card_orders_count' => $card_orders_count,
-            'card_orders_sum' => $card_orders_sum,
-            'card_orders_really_got_count' => $card_orders_really_got_count,
-            'card_orders_really_got_sum' => $card_orders_really_got_sum,
-
-            //Received Orders From Others
-            'other_orders_count' => $other_orders_count,
-            'other_orders_sum' => $other_orders_sum,
-            'other_orders_really_got_count' => $other_orders_really_got_count,
-            'other_orders_really_got_sum' => $other_orders_really_got_sum,
-
-            // Calculation Histories
-            'delivery_histories' => $delivery_histories,
-        ]);
+        return view('naizhan.caiwu.taizhang.benzhandingdan', array_merge($aryData, $aryPage));
     }
+
     //N3: Show Station's Calc Balance Status
     public function show_station_calc_account_balance_in_naizhan()
     {
@@ -1459,8 +1369,6 @@ class FinanceCtrl extends Controller
         $current_page = 'zhanghuyue';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
-
         //show only current months history
         $calc_histories_out = $station->calc_histories_out;
         return view('naizhan.caiwu.taizhang.zhanghuyue', [
@@ -1470,14 +1378,14 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'station' => $station,
             'calc_histories_out' => $calc_histories_out,
-            'today' => $today,
+            'today' => getCurDateString(),
+            'is_station' => true
         ]);
     }
     //N4: Show Self Business account balance
     public function show_self_account_in_naizhan()
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
+        $station = DeliveryStation::find($this->getCurrentStationId());
         $self_business_history = $station->self_business_history;
 
         $child = 'ziyingzhanghujiru';
@@ -1492,6 +1400,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'station' => $station,
             'self_business_history' => $self_business_history,
+            'is_station' => true
         ]);
     }
     //N5: Show transaction between other stations

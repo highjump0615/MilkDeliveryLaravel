@@ -30,10 +30,26 @@
 
     </style>
 @endsection
+
 @section('content')
+
+<!-- 奶站需要奶站的菜单 -->
+@if ($is_station)
+    @include('naizhan.theme.sidebar')
+@else
     @include('gongchang.theme.sidebar')
+@endif
+
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if ($is_station)
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
+        <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
@@ -46,6 +62,9 @@
         </div>
 
         <div class="row">
+
+            <!-- 奶厂操作 -->
+            @if (!$is_station)
             <div class="ibox-content col-md-12">
                 <div class="col-md-2">
                     <a data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button"
@@ -62,7 +81,11 @@
                        class="btn btn-lg btn-success" type="button" style="width:100%;">奶卡款转账</a>
                 </div>
             </div>
+            @endif
+
             <div class="ibox-content col-md-12">
+                <!-- 奶厂操作 -->
+                @if (!$is_station)
                 <div class="feed-element">
                     <label class="col-md-1 text-right" style="padding-top: 5px;">奶站名称:</label>
                     <div class=" col-md-2">
@@ -83,8 +106,9 @@
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
                     </div>
                 </div>
-
+                @endif
             </div>
+
             <div class="col-md-12" id="station_list">
                 @if (isset($stations))
                     @foreach($stations as $station)
@@ -114,8 +138,13 @@
                                                value="{{$station->init_delivery_credit_amount+$station->delivery_credit_balance}}"/>
                                     </div>
                                     <div class="col-sm-2 col-sm-offset-2">
-                                        <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$station->id)}}"
-                                           class="btn btn-success">查看订单金额统计</a>
+                                        @if ($is_station)
+                                            <a href="{{URL::to('/naizhan/caiwu/taizhang/benzhandingdan/')}}"
+                                               class="btn btn-success">查看订单金额统计</a>
+                                        @else
+                                            <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$station->id)}}"
+                                               class="btn btn-success">查看订单金额统计</a>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -132,8 +161,13 @@
                                     <div class="col-sm-2">
                                     </div>
                                     <div class="col-sm-2 col-sm-offset-2">
-                                        <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$station->id)}}"
-                                           class="btn btn-success">查看详情</a>
+                                        @if ($is_station)
+                                            <a href="{{URL::to('/naizhan/caiwu/taizhang/zhanghuyue/')}}"
+                                               class="btn btn-success">查看详情</a>
+                                        @else
+                                            <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$station->id)}}"
+                                               class="btn btn-success">查看详情</a>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -153,8 +187,13 @@
                                                value="{{$station->business_credit_balance+$station->init_business_credit_amount}}"/>
                                     </div>
                                     <div class="col-sm-2 col-sm-offset-2">
-                                        <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$station->id)}}"
-                                           class="btn btn-success">查看自营账户</a>
+                                        @if ($is_station)
+                                            <a href="{{URL::to('/naizhan/caiwu/ziyingzhanghujiru/')}}"
+                                               class="btn btn-success">查看自营账户</a>
+                                        @else
+                                            <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$station->id)}}"
+                                               class="btn btn-success">查看自营账户</a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
