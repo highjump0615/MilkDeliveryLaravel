@@ -2,13 +2,13 @@ $(document).ready(function() {
     //
     // 初始化暂停和开始日期选取日历
     //
-    var stop_start_able_date = new Date();
+    var stop_start_able_date = s_timeCurrent;
 
     if (order_start_date > stop_start_able_date) {
         stop_start_able_date = order_start_date;
     }
 
-    var restart_able_date = new Date();
+    var restart_able_date = s_timeCurrent;
     if (order_start_date > restart_able_date) {
         restart_able_date = order_start_date;
     }
@@ -47,11 +47,19 @@ $(document).ready(function() {
     }
 
     if (stop_from != "Invalid Date" && stop_to != "Invalid Date") {
+
+        if (stop_from < stop_start_able_date) {
+            stop_from = stop_start_able_date;
+        }
+
         // 显示modal事件
         $('#stop_order_modal').on('shown.bs.modal', function () {
             $(this).find('.input-daterange #stop_start').datepicker('setDate', stop_from);
             $(this).find('.input-daterange #stop_end').datepicker('setDate', stop_to);
         });
+
+        // 设置开启选择范围
+        $('#restart_order_modal').find('.single_date').datepicker('setEndDate', stop_to);
     }
 
     // 隐藏modal事件

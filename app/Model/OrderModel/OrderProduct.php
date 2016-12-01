@@ -428,18 +428,36 @@ class OrderProduct extends Model
      * @return $date
      */
     private function getNextDeliverDate($date) {
-        // 天天送
-        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
-            $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
-        }
-        // 隔日送
-        else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
-            $dateDeliverNew = date('Y-m-d', strtotime($date . "+2 days"));
-        }
-        else {
-            $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
-            $dateDeliverNew = $this->getClosestDeliverDate($dateDeliverNew);
-        }
+
+        do {
+            $bRestart = false;
+
+            // 天天送
+            if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
+                $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
+            }
+            // 隔日送
+            else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+                $dateDeliverNew = date('Y-m-d', strtotime($date . "+2 days"));
+            }
+            else {
+                $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
+                $dateDeliverNew = $this->getClosestDeliverDate($dateDeliverNew);
+            }
+
+            // 如果算出来的日期属于暂停期间, 重新计算
+            if ($this->order->has_stopped) {
+                $dateStop = $this->order->stop_at;
+                $dateRestart = $this->order->restart_at;
+
+                if ($dateStop < $dateDeliverNew && $dateDeliverNew < $dateRestart) {
+                    $bRestart = true;
+                }
+            }
+
+            $date = $dateDeliverNew;
+
+        } while ($bRestart);
 
         return $dateDeliverNew;
     }
@@ -450,7 +468,7 @@ class OrderProduct extends Model
      * @return string
      */
     public function getProductionDate($dateDeliver) {
-        $nProductionPeriod = $this->product->production_period / 24;;
+        $nProductionPeriod = $this->product->production_period / 24;
         $nDateRes = date('Y-m-d',strtotime($dateDeliver . "-" . $nProductionPeriod . " days"));
 
         return $nDateRes;
@@ -492,8 +510,10 @@ class OrderProduct extends Model
                 }
 
                 // 如果导致这次多余量的配送明细是最后的，也要新添加配送明细
-                if ($lastDeliverPlan->id == $planSrc->id) {
-                    $nIncrease = 0;
+                if ($planSrc) {
+                    if ($lastDeliverPlan->id == $planSrc->id) {
+                        $nIncrease = 0;
+                    }
                 }
 
                 // 最后那条没有多余空间，要新创建一个配送任务
@@ -533,7 +553,7 @@ class OrderProduct extends Model
                     $deliveryPlan = $lastDeliverPlan;
                 }
                 else {
-                    $lastDeliverPlan->delete();
+                    $lastDeliverPlan->forceDelete();
                     $deliveryPlan = null;
                 }
 

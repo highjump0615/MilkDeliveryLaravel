@@ -77,15 +77,7 @@
                         @endif
                     @endif
 
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <button class="btn btn-success btn-outline btn-md  col-md-3"
-                                data-orderid="{{$order->id}}" data-toggle="modal"
-                                data-target="#stop_order_modal"
-                                id="stop_order_bt">暂停订单
-                        </button>
-                    @endif
-
-                    @if($order->status == \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS)
+                    @if ($order->isStopped())
                         <button class="btn btn-success btn-outline btn-md  col-md-3"
                                 data-orderid="{{$order->id}}"
                                 data-stop-at="{{$order->stop_at}}"
@@ -93,6 +85,12 @@
                                 data-target="#restart_order_modal"
                                 data-toggle="modal"
                                 id="restart_order_bt">开始订单
+                        </button>
+                    @elseif ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                        <button class="btn btn-success btn-outline btn-md  col-md-3"
+                                data-orderid="{{$order->id}}" data-toggle="modal"
+                                data-target="#stop_order_modal"
+                                id="stop_order_bt">暂停订单
                         </button>
                     @endif
 
@@ -267,34 +265,32 @@
                     @if(isset($grouped_plans_per_product))
                         <?php $i = 0;?>
                         @foreach($grouped_plans_per_product as $gpp)
-                            @if(! ( date($gpp['time']) >= date($order->stop_at)  &&  date($gpp['time'])<=date($order->order_stop_end_date)) )
-                                <tr data-planid="{{$gpp['plan_id']}}">
-                                    <td>{{$i+1}}</td>
-                                    <td>{{$gpp['time']}}</td>
-                                    <td>{{$gpp['product_name']}}</td>
-                                    @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
-                                        <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
-                                    @else
-                                        <td>
-                                            <input type="number" min="0" class="plan_count"
-                                                   origin_plan_count="{{$gpp['count']}}"
-                                                   value="{{$gpp['count']}}"/>(余{{$gpp['remain']}})
-                                        </td>
-                                    @endif
-                                    <td>{{$gpp['status_name']}}</td>
-
-                                    <!-- 正常状态才允许单日修改 -->
-                                    @if ($order->isAvailable())
+                            <tr data-planid="{{$gpp['plan_id']}}">
+                                <td>{{$i+1}}</td>
+                                <td>{{$gpp['time']}}</td>
+                                <td>{{$gpp['product_name']}}</td>
+                                @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
+                                    <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
+                                @else
                                     <td>
-                                        @if($gpp['can_edit'])
-                                            <button type="button" class="btn btn-success xiugai_plan_bt" disabled>修改
-                                            </button>
-                                        @endif
+                                        <input type="number" min="0" class="plan_count"
+                                               origin_plan_count="{{$gpp['count']}}"
+                                               value="{{$gpp['count']}}"/>(余{{$gpp['remain']}})
                                     </td>
+                                @endif
+                                <td>{{$gpp['status_name']}}</td>
+
+                                <!-- 正常状态才允许单日修改 -->
+                                @if ($order->isAvailable())
+                                <td>
+                                    @if($gpp['can_edit'])
+                                        <button type="button" class="btn btn-success xiugai_plan_bt" disabled>修改
+                                        </button>
                                     @endif
-                                </tr>
-                                <?php $i++; ?>
-                            @endif
+                                </td>
+                                @endif
+                            </tr>
+                            <?php $i++; ?>
                         @endforeach
                     @endif
                     </tbody>
@@ -385,7 +381,7 @@
         var order_end_date = new Date("{{$order->order_end_date}}");
 
         var stop_from = new Date("{{$order->stop_at}}");
-        var stop_to = new Date("{{$order->restart_at}}");
+        var stop_to = new Date("{{$order->order_stop_end_date}}");
 
     </script>
 

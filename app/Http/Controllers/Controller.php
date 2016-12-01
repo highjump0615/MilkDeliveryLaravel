@@ -29,7 +29,7 @@ class Controller extends BaseController
     protected function getCurrentFactoryId($factoryUser) {
 
         if ($factoryUser) {
-            $nId = Auth::guard('factory')->user()->factory_id;
+            $nId = Auth::guard('gongchang')->user()->factory_id;
         }
         else {
             $nId = Auth::guard('naizhan')->user()->factory_id;
