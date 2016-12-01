@@ -4,17 +4,37 @@
     <!-- FooTable -->
     <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
+
 @section('content')
+
+<!-- 奶站需要奶站的菜单 -->
+@if ($is_station)
+    @include('naizhan.theme.sidebar')
+@else
     @include('gongchang.theme.sidebar')
+@endif
+
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if ($is_station)
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
+        <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
                     <a href="">财务管理</a>
                 </li>
                 <li>
+                    @if ($is_station)
+                    <a href={{URL::to('/naizhan/caiwu/taizhang')}}>奶站账户台账</a>
+                    @else
                     <a href={{URL::to('/gongchang/caiwu/taizhang')}}>奶站账户台账</a>
+                    @endif
                 </li>
                 <li>
                     <a href=""><strong>奶站订单金额统计</strong></a>
@@ -24,7 +44,29 @@
 
         <div class="row white-bg">
             <div class="ibox float-e-margins">
-                <label style="padding:10px; font-size:15px; width:100%;">&emsp;奶站订单金额统计：{{$station->name}}</label>
+                <div class="col-md-6"> 
+                    <label style="padding:10px; font-size:15px; width:100%;">&emsp;奶站订单金额统计：{{$station->name}}</label>
+                </div>
+
+                @if ($is_station)
+                <div class="col-md-6"> 
+                    <div class="col-lg-6" style="margin-right: -5px"> 
+                        <a class="btn btn-success" 
+                           href="{{ url('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/xianjinzhuanzhangjiru') }}" 
+                           type="type" style="width:100%;">
+                            查看其他奶站现金转账记录
+                        </a> 
+                    </div> 
+                    <div class="col-md-6"> 
+                        <a class="btn btn-success" 
+                           href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanjiru') }}" 
+                           type="type" style="width:100%; ">
+                            查看奶卡订单转账记录
+                        </a> 
+                    </div> 
+                </div> 
+                @endif
+
                 <div class="ibox-content">
                     <table class="table table-bordered">
                         <thead>

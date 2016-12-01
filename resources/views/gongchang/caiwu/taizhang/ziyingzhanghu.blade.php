@@ -12,10 +12,25 @@
         }
     </style>
 @endsection
+
 @section('content')
-    @include('gongchang.theme.sidebar')
+
+    <!-- 奶站需要奶站的菜单 -->
+    @if ($is_station)
+        @include('naizhan.theme.sidebar')
+    @else
+        @include('gongchang.theme.sidebar')
+    @endif
+
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if ($is_station)
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
@@ -27,6 +42,7 @@
             </ol>
         </div>
 
+        <!-- 面包屑导航 -->
         <div class="row white-bg">
             <!--Table-->
             <div class="ibox-content white-bg business_header">
@@ -64,11 +80,15 @@
                 </div>
                 <div class="col-md-4"></div>
                 <div class="col-md-8"></div>
+
+                @if (!$is_station)
                 <div class="col-md-4">
                     <button class="btn btn-md btn-success" data-toggle="modal" href="#self_business_modal" type="button"
                             style="position: absolute; bottom:5px;"><i class="fa fa-plus"></i> 添加收款记录
                     </button>
                 </div>
+                @endif
+
             </div>
 
 
