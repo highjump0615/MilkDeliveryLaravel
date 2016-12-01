@@ -1001,7 +1001,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::post('api/change_delivery_plan_for_one_date', 'WeChatCtrl@change_delivery_plan_for_one_date');
 
     /*dengji*/
-    Route::get('dengji', 'WeChatCtrl@dengji');
+    Route::get('dengji', 'WeChatCtrl@dengji')->name('dengji');
     Route::get('dengchu', 'WeChatCtrl@dengchu');
     //send verify code to phone
     Route::post('/api/send_verify_code_to_phone', 'WeChatCtrl@send_verify_code_to_phone');

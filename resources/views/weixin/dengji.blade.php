@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="javascript:history.back()"></a>
         <h1>注册</h1>
 
     </header>
@@ -49,8 +49,9 @@
                     if(data.status == "success")
                     {
                         show_info_msg('验证码发送，请输入正确的验证码.');
+                    } else {
+                        show_warning_msg('客户不存在');
                     }
-                    console.log(data);
                 },
                 error: function(data)
                 {
