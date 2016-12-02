@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        <a class="headl fanh" href="javascript:history.back()"></a>
         <h1>注册</h1>
 
     </header>
@@ -17,7 +17,7 @@
             <div class="pa2">
                 <div class="lgli">
                     <span class="lg-l">手机号码：</span>
-                    <input class="lgin1" name="phone_number" type="text" placeholder="请输入订奶人的手机号码">
+                    <input class="lgin1" name="phone_number" id="phone_number" type="text" placeholder="请输入订奶人的手机号码">
                 </div>
                 <div class="lgli">
                     <span class="lg-l">验 证 码：</span>
@@ -39,7 +39,7 @@
         {
             var phone_number = $('#phone_number').val();
             $.ajax({
-                type:"post",
+                type:"POST",
                 url: SITE_URL + "weixin/api/send_verify_code_to_phone",
                 data: {
                     "phone_number": phone_number
@@ -49,8 +49,9 @@
                     if(data.status == "success")
                     {
                         show_info_msg('验证码发送，请输入正确的验证码.');
+                    } else {
+                        show_warning_msg('客户不存在');
                     }
-                    console.log(data);
                 },
                 error: function(data)
                 {

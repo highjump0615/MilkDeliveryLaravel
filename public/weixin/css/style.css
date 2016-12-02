@@ -151,6 +151,8 @@ header h1{ font-size:1.6rem; display: inline-block;}
 
 /**********************修改订单-单个品种*/
 .ordtop{ padding:2% 3%; position:relative; font-size:0; min-height:150px;}
+.ordtop p{font-size:15px;}
+.ordsl .ordtop.nocart{border-bottom: none;}
 .ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1}
 img.ordpro{min-height:120px;}
 .ordyf{padding-top: 2%; font-size:1.4rem;}

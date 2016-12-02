@@ -387,6 +387,12 @@ class WeChatCtrl extends Controller
         usort($plans, array($this, "cmp"));
 
         if ($request->has('from')) {
+
+            if(session('verified') != "yes")
+            {
+                return redirect()->route('dengji');
+            }
+
             return view('weixin.dingdanrijihua', [
                 'plans' => $plans,
                 'today' => $today,
@@ -1067,16 +1073,9 @@ class WeChatCtrl extends Controller
 
         $customer_id = $wechat_user->customer_id;
 
-        //show only wechat order
-//        $orders = Order::where('is_deleted', 0)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-//            ->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
-
-//        $orders = Order::where('is_deleted', 0)->where('customer_id', $customer_id)->orderBy('ordered_at', 'desc')->get();
-
-        $customer = Customer::find($customer_id);
-
-        if($customer)
+        if($customer_id)
         {
+            $customer = Customer::find($customer_id);
             //show orders that has same customer_id and telephone
             $orders = Order::where('is_deleted', 0)
                 ->where(function ($query)
@@ -1085,6 +1084,15 @@ class WeChatCtrl extends Controller
                     $query->where('customer_id', $customer_id);
                     $query->orWhere('phone', $customer->phone);
                 })->orderBy('ordered_at', 'desc')->get();
+
+            if($type)
+            {
+                $verified = session('verified');
+                if($verified != "yes")
+                {
+                    return redirect()->route('dengji');
+                }
+            }
 
             if ($type == 'waiting') {
                 $orders = Order::where('is_deleted', 0)
@@ -1154,6 +1162,13 @@ class WeChatCtrl extends Controller
                     'cartn' => $cartn,
                 ]);
             }
+        }
+        else {
+            $orders= [];
+            return view('weixin.dingdanliebiao', [
+                'orders' => $orders,
+                'cartn' => 0,
+            ]);
         }
     }
 
@@ -1784,12 +1799,13 @@ class WeChatCtrl extends Controller
         //save group id for this direct order
         session(['group_id' => $group_id]);
 
-        $verified = session('verified');
-
-        if ($verified == "no") {
-            //this user needs to be phone number verified
-            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
-        }
+        //without login, enable make order
+//        $verified = session('verified');
+//
+//        if ($verified == "no") {
+//            //this user needs to be phone number verified
+//            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
+//        }
 
         return response()->json(['status' => 'success']);
     }
@@ -1991,11 +2007,12 @@ class WeChatCtrl extends Controller
         //store this group id for cart to session
         session(['group_id' => $group_id]);
 
-        //here check verified
-        $verified = session('verified');
-        if ($verified == "no") {
-            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
-        }
+        //without login, enable make order
+//        //here check verified
+//        $verified = session('verified');
+//        if ($verified == "no") {
+//            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
+//        }
 
         return response()->json(['status' => 'success']);
 
@@ -2254,13 +2271,18 @@ class WeChatCtrl extends Controller
         $comment = $request->input('comment');
         $group_id = $request->input('group_id');
 
+
+
+        $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
+
+        if(!$primary_address_obj)
+            return response()->json(['status'=>'fail', 'message'=>'地址和电话号码不存在']);
+
+        $customer = Customer::where('phone', $primary_address_obj->phone)->get()->first();
+
         $orderctrl = new OrderCtrl();
-
-        $customer_id = $wechat_user->customer_id;
-        if (!$customer_id) {
-            //get wechat primary addresss
-            $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
-
+        if(!$customer)
+        {
             $primary_address = $primary_address_obj->address;
 
             $station = null;
@@ -2275,6 +2297,7 @@ class WeChatCtrl extends Controller
                 return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
             }
 
+            $customer = null;
             foreach ($station_milkman as $delivery_station_id => $milkman_id) {
                 //make new customer and change product price
                 $customer = new Customer;
@@ -2286,15 +2309,14 @@ class WeChatCtrl extends Controller
                 $customer->milkman_id = $milkman_id;
                 break;
             }
-            $customer->save();
+            if($customer)
+            {
+                $customer->save();
 
-            $customer_id = $customer->id;
-            $wechat_user->customer_id = $customer_id;
-            $wechat_user->save();
-
-
-        } else {
-            $customer = Customer::find($customer_id);
+                $customer_id = $customer->id;
+                $wechat_user->customer_id = $customer_id;
+                $wechat_user->save();
+            }
         }
 
         $customer_id = $customer->id;
@@ -2319,8 +2341,8 @@ class WeChatCtrl extends Controller
         $order = new Order;
         $order->factory_id = $factory_id;
         $order->customer_id = $customer_id;
-        $order->phone = $customer->phone;
-        $order->address = $customer->address;
+        $order->phone = $primary_address_obj->phone;
+        $order->address = $primary_address_obj->address.' '.$primary_address_obj->sub_address;
         $order->order_property_id = OrderProperty::ORDER_PROPERTY_NEW_ORDER;
         $order->station_id = $station_id;
         $order->order_checker_id = $order_checker->id;
@@ -2350,9 +2372,19 @@ class WeChatCtrl extends Controller
         //delete cart and order item
         $this->remove_cart_by_group($group_id);
 
-        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        //now payment here:
 
+        //if payment fails, delete order
+        //$payment_result = true;
+        $payment_result = true;
+        if(!$payment_result)
+        {
+            $orderctrl->delete_order($order_id);
+            return response()->json(['status' => 'fail']);
 
+        } else {
+            return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        }
     }
 
     //make order based on crated wechat order products
@@ -2432,6 +2464,7 @@ class WeChatCtrl extends Controller
 
     }
 
+
     //make order products for wxuser
     public function make_order_products_and_delivery_plan($order_id, $group_id, $orderctrl)
     {
@@ -2459,6 +2492,8 @@ class WeChatCtrl extends Controller
             $op->start_at = $wop->start_at;
             $op->save();
 
+            //$milkmanId, $stationId, $startAt, $orderProduct, $status, $count
+            
             //establish plan
             $orderctrl->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
         }
@@ -2778,10 +2813,20 @@ class WeChatCtrl extends Controller
 
         $wxuser_id = session('wechat_user_id');
         $wxuser = WechatUser::find($wxuser_id);
-        $wxuser->phone_verify_code = $code;
-        $wxuser->save();
+        //if customer not exist for this wxuser, fail
 
-        return response()->json(['status' => 'success']);
+        $customer = Customer::where('phone', $phone)->get()->first();
+        if($customer)
+        {
+            $customer_id = $customer->id;
+            $wxuser->phone_verify_code = $code;
+            $wxuser->customer_id = $customer_id;
+            $wxuser->save();
+
+            return response()->json(['status' => 'success']);
+        } else {
+            return response()->json(['status' => 'fail', 'xid'=>$wxuser_id, 'phone'=>$phone]);
+        }
 
     }
 
