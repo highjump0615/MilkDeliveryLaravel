@@ -775,18 +775,10 @@ Route::group(['middleware' => ['zongpingtai']], function () {
             'current_page' => $current_page
         ]);
     });
-    Route::get('/zongpingtai/xitong/xinxijiekou', function (Request $request) {
-        $child = 'xinxijiekou';
-        $parent = 'xitong';
-        $current_page = 'xinxijiekou';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.xinxijiekou', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-    });
+
+    Route::get('/zongpingtai/xitong/xinxijiekou','YimeiSmsCtrl@showYimei');
+    Route::post('/zongpingtai/xitong/xinxijiekou','YimeiSmsCtrl@showPost');
+
     Route::get('/zongpingtai/xitong/zhandiansheding', function (Request $request) {
         $child = 'zhandiansheding';
         $parent = 'xitong';

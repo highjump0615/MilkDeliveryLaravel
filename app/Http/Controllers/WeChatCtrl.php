@@ -2823,8 +2823,13 @@ class WeChatCtrl extends Controller
             $wxuser->customer_id = $customer_id;
             $wxuser->save();
 
+            // 发送验证码
+            $smsCtrl = new YimeiSmsCtrl();
+            $smsCtrl->sendSMS($phone, $code);
+
             return response()->json(['status' => 'success']);
-        } else {
+        }
+        else {
             return response()->json(['status' => 'fail', 'xid'=>$wxuser_id, 'phone'=>$phone]);
         }
 
