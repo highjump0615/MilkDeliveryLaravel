@@ -18,7 +18,7 @@
 		<div class="row wrapper">
 			<div class="wrapper-content">
 				@if ($is_received == 0)
-					<label style="color: red; font-size: 18px;">今日还没收货, 无法生成配送列表</label>
+					<label style="color: red; font-size: 18px;">今日还没签收, 无法生成配送列表</label>
 				@endif
 
 				<div class="ibox float-e-margins">

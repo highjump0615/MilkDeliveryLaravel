@@ -2832,13 +2832,11 @@ class WeChatCtrl extends Controller
         else {
             return response()->json(['status' => 'fail', 'xid'=>$wxuser_id, 'phone'=>$phone]);
         }
-
     }
 
     public function generate_verify_code()
     {
         $code = rand(10000, 99999); // random 4 digit code
-        $code = 1111;
         return $code;
     }
 
