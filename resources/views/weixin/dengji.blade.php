@@ -17,7 +17,7 @@
             <div class="pa2">
                 <div class="lgli">
                     <span class="lg-l">手机号码：</span>
-                    <input class="lgin1" name="phone_number" type="text" placeholder="请输入订奶人的手机号码">
+                    <input class="lgin1" name="phone_number" id="phone_number" type="text" placeholder="请输入订奶人的手机号码">
                 </div>
                 <div class="lgli">
                     <span class="lg-l">验 证 码：</span>
@@ -39,7 +39,7 @@
         {
             var phone_number = $('#phone_number').val();
             $.ajax({
-                type:"post",
+                type:"POST",
                 url: SITE_URL + "weixin/api/send_verify_code_to_phone",
                 data: {
                     "phone_number": phone_number

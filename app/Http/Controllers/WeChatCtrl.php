@@ -2805,7 +2805,7 @@ class WeChatCtrl extends Controller
         $wxuser = WechatUser::find($wxuser_id);
         //if customer not exist for this wxuser, fail
 
-        $customer = Customer::find('phone', $phone)->get()->first();
+        $customer = Customer::where('phone', $phone)->get()->first();
         if($customer)
         {
             $customer_id = $customer->id;
@@ -2815,7 +2815,7 @@ class WeChatCtrl extends Controller
 
             return response()->json(['status' => 'success']);
         } else {
-            return response()->json(['status' => 'fail']);
+            return response()->json(['status' => 'fail', 'xid'=>$wxuser_id, 'phone'=>$phone]);
         }
 
     }
