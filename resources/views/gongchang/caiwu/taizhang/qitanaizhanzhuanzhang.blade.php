@@ -1,22 +1,42 @@
 @extends('gongchang.layout.master')
 
 @section('content')
-    @include('gongchang.theme.sidebar')
+
+    <!-- 奶站需要奶站的菜单 -->
+    @if ($is_station)
+        @include('naizhan.theme.sidebar')
+    @else
+        @include('gongchang.theme.sidebar')
+    @endif
+
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if ($is_station)
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
+        <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
                     <a href="">财务管理</a>
                 </li>
                 <li>
-                    <a href={{URL::to('/gongchang/caiwu/taizhang')}}>奶站账户台账</a>
+                    @if ($is_station)
+                        <a href={{URL::to('/naizhan/caiwu/taizhang')}}>奶站账户台账</a>
+                    @else
+                        <a href={{URL::to('/gongchang/caiwu/taizhang')}}>奶站账户台账</a>
+                    @endif
                 </li>
                 <li>
                     <a href=""><strong>其他奶站转账</strong></a>
                 </li>
             </ol>
         </div>
+
         <div class="row border-bottom">
             <div class="col-md-4">
                 <div style="background-color:#5badd7;">
@@ -44,13 +64,16 @@
                 </div>
                 <div class="col-md-5">
                     <div class="col-md-6">
-                        <a href="{{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu')}}" class="btn
-                           btn-outline btn-success" type="button" style="width:100%;">查看已转账记录</a>
+                        <a href="@if ($is_station) {{URL::to('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu')}}@else {{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu')}}@endif"
+                           class="btn btn-outline btn-success"
+                           type="button"
+                           style="width:100%;">查看已转账记录</a>
                     </div>
                     <div class="col-md-6">
-                        <a href="{{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan')}}"
-                           class="btn
-                           btn-outline btn-success" type="button" style="width:100%;">查看未转账单</a>
+                        <a href="@if ($is_station) {{URL::to('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangdan')}}@else {{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan')}}@endif"
+                           class="btn btn-outline btn-success"
+                           type="button"
+                           style="width:100%;">查看未转账单</a>
                     </div>
                 </div>
 
@@ -85,6 +108,7 @@
                     </div>
                 </div>
 
+                @if (!$is_station)
                 <div class="ibox-content">
                     <form action="qitanaizhanzhuanzhang/create_transaction" method="POST">
                         <div class="form-group col-md-6 col-md-offset-3 data_range_select">
@@ -101,6 +125,7 @@
                         </div>
                     </form>
                 </div>
+                @endif
 
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
@@ -151,7 +176,7 @@
                                style="display:none;">
                             <thead>
                             <tr>
-                                <<th data-sort-ignore="true">序号</th>
+                                <th data-sort-ignore="true">序号</th>
                                 <th data-sort-ignore="true">下单时间</th>
                                 <th data-sort-ignore="true">录入奶站</th>
                                 <th data-sort-ignore="true">用户</th>

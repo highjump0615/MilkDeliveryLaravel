@@ -270,11 +270,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan/get_trans_data', 'FinanceCtrl@get_trans_data_for_other_station');
     Route::post('api/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan/complete_trans', 'FinanceCtrl@complete_trans_for_other_station');
 
-    //show delivery record to other stations
-    Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu', 'FinanceCtrl@show_money_transaction_record_to_others_in_gongchang');
-    //show delivery bill detail
-    Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhangdanmingxi/{tid}', 'FinanceCtrl@show_transaction_detail_to_others_in_gongchang');
-
 
     //show milk card delivery status
     Route::get('/gongchang/caiwu/taizhang/naikakuanzhuanzhang', 'FinanceCtrl@show_orders_for_card_transaction_in_gongchang');
@@ -284,6 +279,12 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     Route::post('api/gongchang/caiwu/taizhang/naikazhuanzhangzhangchan/get_trans_data', 'FinanceCtrl@get_trans_data_for_card');
     Route::post('api/gongchang/caiwu/taizhang/naikazhuanzhangzhangchan/complete_trans', 'FinanceCtrl@complete_trans_for_card');
+
+    //show delivery record to other stations
+    Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu', 'FinanceCtrl@show_money_transaction_record_to_others_in_gongchang');
+    //show delivery bill detail
+    Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhangdanmingxi/{tid}', 'FinanceCtrl@show_transaction_detail_to_others_in_gongchang');
+
     //show milk card delivery record
     Route::get('/gongchang/caiwu/taizhang/naikazhuanzhangjilu', 'FinanceCtrl@show_card_transaction_record_in_gongchang');
     //show milk card delivery detail
@@ -562,17 +563,20 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('naizhan/caiwu/taizhang/zhanghuyue', 'FinanceCtrl@show_station_calc_account_balance_in_naizhan');
     //show self account balance
     Route::get('/naizhan/caiwu/ziyingzhanghujiru', 'FinanceCtrl@show_self_account_in_naizhan');
+
     //show transaction status between other stations
     Route::get('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/xianjinzhuanzhangjiru', 'FinanceCtrl@show_transaction_between_other_station_in_naizhan');
     //Show transaction list not checked
     Route::get('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangdan', 'FinanceCtrl@show_transaction_list_not_checked_in_naizhan');
+
     //Show transaction record completed
-    Route::get('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjiru', 'FinanceCtrl@show_transaction_record_completed_for_other_money_in_naizhan');
+    Route::get('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu', 'FinanceCtrl@show_transaction_record_completed_for_other_money_in_naizhan');
     //Show detail transaction
     Route::get('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhangdanmingxi/{tid}', 'FinanceCtrl@show_transaction_detail_to_others_in_naizhan');
     //show milk card delivery status
     Route::get('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanjiru', 'FinanceCtrl@show_orders_for_card_transaction_in_naizhan');
     Route::get('/naizhan/caiwu/taizhang/naica', 'FinanceCtrl@show_orders_for_card_transaction_in_naizhan');
+
     //show milk card delivery list
     Route::get('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangzhangdan', 'FinanceCtrl@show_transaction_list_not_checked_for_card_in_naizhan');
     //show milk card delivery record

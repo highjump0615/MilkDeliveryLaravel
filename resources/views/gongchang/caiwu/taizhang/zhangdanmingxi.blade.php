@@ -3,19 +3,42 @@
 @endsection
 
 @section('content')
-    @include('gongchang.theme.sidebar')
+
+    <!-- 奶站需要奶站的菜单 -->
+    @if ($is_station)
+        @include('naizhan.theme.sidebar')
+    @else
+        @include('gongchang.theme.sidebar')
+    @endif
+
     <div id="page-wrapper" class="gray-bg dashbard-1">
-        @include('gongchang.theme.header')
+
+        <!-- 头部 -->
+        @if ($is_station)
+            @include('naizhan.theme.header')
+        @else
+            @include('gongchang.theme.header')
+        @endif
+
+        <!-- 面包屑导航 -->
         <div class="row border-bottom">
             <ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
                 <li>
                     <a href="">财务管理</a>
                 </li>
                 <li>
-                    <a href={{URL::to('/gongchang/caiwu/taizhang')}}>奶站账户台账</a>
+                    @if ($is_station)
+                        <a href={{URL::to('/naizhan/caiwu/taizhang')}}>奶站账户台账</a>
+                    @else
+                        <a href={{URL::to('/gongchang/caiwu/taizhang')}}>奶站账户台账</a>
+                    @endif
                 </li>
                 <li>
-                    <a href={{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang')}}>其他奶站转账</a>
+                    @if ($is_station)
+                        <a href={{URL::to('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/xianjinzhuanzhangjiru')}}>其他奶站转账</a>
+                    @else
+                        <a href={{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang')}}>其他奶站转账</a>
+                    @endif
                 </li>
                 <li>
                     <a href=""><strong>账单明细</strong></a>

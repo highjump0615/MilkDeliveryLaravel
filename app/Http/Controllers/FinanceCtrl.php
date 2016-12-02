@@ -452,8 +452,7 @@ class FinanceCtrl extends Controller
     //G5-1: Show transactions status
     public function show_transaction_between_other_station_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         $other_orders_not_checked = $factory->get_other_orders_not_checked_for_transaction();
@@ -470,15 +469,16 @@ class FinanceCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.caiwu.taizhang.qitanaizhanzhuanzhang', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'other_orders_total_money' => $oo_total_money,
-            'other_orders_checked_money' => $oo_checked_money,
-            'other_orders_unchecked_money' => $oo_unchecked_money,
-            'stations' => $stations,
-            'other_orders_nc' => $other_orders_not_checked,
+            'pages'                         => $pages,
+            'child'                         => $child,
+            'parent'                        => $parent,
+            'current_page'                  => $current_page,
+            'other_orders_total_money'      => $oo_total_money,
+            'other_orders_checked_money'    => $oo_checked_money,
+            'other_orders_unchecked_money'  => $oo_unchecked_money,
+            'stations'                      => $stations,
+            'other_orders_nc'               => $other_orders_not_checked,
+            'is_station'                    => false
         ]);
     }
 
@@ -894,8 +894,8 @@ class FinanceCtrl extends Controller
     public function show_money_transaction_record_to_others_in_gongchang()
     {
         //Get TransactionPays during first month to today
-        $first_m = date('Y-m-01 H:i');
-        $last_m = date('Y-m-d H:i');
+        $first_m = date('Y-m-01 00:00');
+        $last_m = date('Y-m-d 23:59');
 
         $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)
             ->where('time', '>=', $first_m)
@@ -928,6 +928,7 @@ class FinanceCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'result' => $result,
+            'is_station' => false
         ]);
     }
 
@@ -950,6 +951,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'trans' => $trans,
             'orders' => $orders,
+            'is_station' => false
         ]);
     }
 
@@ -1329,6 +1331,7 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'naikazhangdanmingxi';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         return view('gongchang.caiwu.taizhang.naikazhangdanmingxi', [
             'pages' => $pages,
             'child' => $child,
@@ -1446,41 +1449,65 @@ class FinanceCtrl extends Controller
     //N6: show transaction status between this and other stations
     public function show_transaction_between_other_station_in_naizhan()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
+        $station = DeliveryStation::find($this->getCurrentStationId());
+        $factory = $station->factory;
 
-        $stations = DeliveryStation::where('factory_id', $factory_id)->where('id', '!=', $station_id)->get();
+        $other_orders_not_checked = $factory->get_other_orders_not_checked_for_transaction();
 
-        $other_orders_not_checked = $station->get_other_orders_not_checked();
-        $oo_total_money = $station->get_other_orders_money_total();
-        $oo_checked_money = $station->get_other_orders_checked_money_total();
-        $oo_unchecked_money = $station->get_other_orders_unchecked_money_total();
+        $oo_total_money = $factory->get_other_orders_money_total();
+        $oo_checked_money = $factory->get_other_orders_checked_money_total();
+        $oo_unchecked_money = $factory->get_other_orders_unchecked_money_total();
+
+        $stations[0] = $station;
 
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'xianjinzhuanzhangjiru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         return view('naizhan.caiwu.taizhang.qitanaizhanzhuanzhang.xianjinzhuanzhangjiru', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'other_orders_total_money' => $oo_total_money,
-            'other_orders_checked_money' => $oo_checked_money,
-            'other_orders_unchecked_money' => $oo_unchecked_money,
-            'stations' => $stations,
-            'other_orders_nc' => $other_orders_not_checked,
+            'pages'                         => $pages,
+            'child'                         => $child,
+            'parent'                        => $parent,
+            'current_page'                  => $current_page,
+
+            'other_orders_total_money'      => $oo_total_money,
+            'other_orders_checked_money'    => $oo_checked_money,
+            'other_orders_unchecked_money'  => $oo_unchecked_money,
+            'stations'                      => $stations,
+            'other_orders_nc'               => $other_orders_not_checked,
+
+            'is_station'                    => true
         ]);
+//
+//        $fuser = Auth::guard('gongchang')->user();
+//        $factory_id = $fuser->factory_id;
+//
+//
+//        $stations = DeliveryStation::where('factory_id', $factory_id)->where('id', '!=', $station_id)->get();
+//
+//        $other_orders_not_checked = $station->get_other_orders_not_checked();
+//        $oo_total_money = $station->get_other_orders_money_total();
+//        $oo_checked_money = $station->get_other_orders_checked_money_total();
+//        $oo_unchecked_money = $station->get_other_orders_unchecked_money_total();
+//
+//
+//        return view('naizhan.caiwu.taizhang.qitanaizhanzhuanzhang.xianjinzhuanzhangjiru', [
+//            'pages' => $pages,
+//            'child' => $child,
+//            'parent' => $parent,
+//            'current_page' => $current_page,
+//            'other_orders_total_money' => $oo_total_money,
+//            'other_orders_checked_money' => $oo_checked_money,
+//            'other_orders_unchecked_money' => $oo_unchecked_money,
+//            'stations' => $stations,
+//            'other_orders_nc' => $other_orders_not_checked,
+//        ]);
     }
     //N7: Show transaction list not checked for other's money order
     public function show_transaction_list_not_checked_in_naizhan()
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $station_id = $this->getCurrentStationId();
 
         $first_m = date('Y-m-01');
         $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
@@ -1516,36 +1543,20 @@ class FinanceCtrl extends Controller
     //N8: Show Transaction record completed for other's money order
     public function show_transaction_record_completed_for_other_money_in_naizhan()
     {
-        $station = Auth::guard('naizhan')->user();
-        $station_id = $station->id;
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $station_id = $this->getCurrentStationId();
 
         $first_m = date('Y-m-01 00:00');
-        $last_m = date('Y-m-d 00:00');
-
-
-        //Get DSTransactions who has the transaction pay id
-        $transactions = DSTransaction::where('station_id', $station_id)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('created_at', '>=', $first_m)
-            ->where('created_at', '<=', $last_m)
-            ->where('status', DSTransaction::DSTRANSACTION_COMPLETED)->get();
-
-        //Get transaction pays
-        $transaction_pays = array();
-        foreach ($transactions as $trs) {
-            $pay_id = $trs->transaction_pay_id;
-            $transaction_pay = DSTransactionPay::find($pay_id);
-            if ($transaction_pay)
-                $transaction_pays[] = $transaction_pay;
-        }
+        $last_m = date('Y-m-d 23:59');
 
         //Get Station Money Transfers
         $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)
             ->where('time', '>=', $first_m)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('station1_id', $station_id)->get();
+            ->where(function($query) use($station_id) {
+                $query->where('station1_id', $station_id);
+                $query->orWhere('station2_id', $station_id);
+            })
+            ->get();
 
         //get transactions
         $result = array();
@@ -1569,6 +1580,7 @@ class FinanceCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'result' => $result,
+            'is_station' => true
         ]);
 
     }
@@ -1578,7 +1590,7 @@ class FinanceCtrl extends Controller
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhangdanmingxi';
-        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+        $pages = Page::where('backend_type', '3')->where('parent_page', '0')->get();
 
         $trans = DSTransaction::find($tid);
 
@@ -1591,6 +1603,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'trans' => $trans,
             'orders' => $orders,
+            'is_station' => true
         ]);
     }
 
@@ -1715,11 +1728,13 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'zhangdanmingxi';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.zhangdanmingxi', [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
+
             'trans' => $transaction,
             'orders' => $orders,
         ]);

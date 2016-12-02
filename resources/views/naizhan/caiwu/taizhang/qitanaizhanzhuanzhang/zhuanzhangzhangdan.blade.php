@@ -22,7 +22,7 @@
             <div class="wrapper-content">
                 <div class="ibox-content">
                     <div class="col-md-2">
-                        <a href="{{ url('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjiru') }}"
+                        <a href="{{ url('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu') }}"
                            class="btn btn-success btn-outline" type="button" style="width:100%">查看转账记录</a>
                     </div>
                     <div class="col-md-8"></div>
