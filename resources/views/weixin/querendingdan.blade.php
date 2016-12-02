@@ -98,12 +98,16 @@
                         if(data.message)
                         {
                             show_err_msg(data.message);
-                            $(order_bt).prop('disabled', false);
                         }
+
+                        $(order_bt).prop('disabled', false);
+                        window.location = SITE_URL+"weixin/zhifushibai";
                     }
                 },
                 error: function (data) {
                     console.log(data);
+                    $(order_bt).prop('disabled', false);
+                    show_warning_msg("操作失败");
                 },
             })
         });

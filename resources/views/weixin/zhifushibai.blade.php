@@ -4,18 +4,17 @@
 
 @endsection
 @section('content')
-    <div class="top">
+
+    <header>
+        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         <h1>支付失败</h1>
-        <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-        <a class="topa2" href="jvascript:void(0)"></a>
-    </div>
+    </header>
 
     <div class="zfjg">
         <p align="center"><img src="images/sb.png"></p>
         <p align="center"><b>支付失败</b></p>
         <p align="center"><input type="submit" name="Submit" value="继续支付" class="jxzf"></p>
     </div>
-
     @include('weixin.layout.footer');
 @endsection
 @section('script')

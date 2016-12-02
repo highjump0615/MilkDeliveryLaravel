@@ -4,10 +4,12 @@
 
 @endsection
 @section('content')
-    <div class="top">
+
+    <header>
+        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         <h1>支付成功</h1>
-        <a class="topa1" href="jvascript:void(0)">&nbsp;</a>
-        <a class="topa2" href="jvascript:void(0)"></a></div>
+    </header>
+
     <div class="zfjg">
         <p align="center"><img src="images/cg.png"></p>
         <p align="center"><b class="cg">支付成功</b></p>

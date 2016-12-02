@@ -5711,5 +5711,27 @@ class OrderCtrl extends Controller
         return;
     }
 
+    public function delete_order($order_id)
+    {
+        $order = Order::find($order_id);
+
+        //first delete milkman delivery plan
+        MilkManDeliveryPlan::where('order_id', $order_id)->forceDelete();
+
+        if($order)
+        {
+            //delete order product
+            $order_products = $order->order_products;
+            foreach($order_products as $op)
+            {
+                $op->forceDelete();
+            }
+
+            //delete order
+            $order->delete();
+        }
+
+    }
+
 }
 

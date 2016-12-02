@@ -39,48 +39,48 @@ class WeChatCtrl extends Controller
     {
         //todo: get factory_id from phone owner's address or phone number
 
-//        if (!session('factory_id') && isset($_GET['state'])) {
-//            $factory_id = $_GET['state'];
-//
-//            //save factory id in session
-//            $request->session()->put('factory_id', $factory_id);
-//        } else {
-//            $factory_id = session('factory_id');
-//        }
-//
-//        $factory = Factory::find($factory_id);
-//        if ($factory == null)
-//            abort(403);
-//
-//        if(!session('wechat_user_id') && isset($_GET['code'])) {
-//            $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
-//            $codees = $wechatObj->codes($_GET['code']);
-//
-//            //save wechat user id
-//            $open_id = $codees['openid'];
-//
-//            $wechat_user = WechatUser::where('openid', $open_id)->get()->first();
-//            if (!$wechat_user) {
-//                $wechat_user = new WechatUser;
-//                $wechat_user->openid = $open_id;
-//                $wechat_user->factory_id = $factory_id;
-//                $wechat_user->save();
-//            }
-//            $wechat_user_id = $wechat_user->id;
-//
-//            session(['wechat_user_id' => $wechat_user_id]);
-//
-//        } else {
-//            $wechat_user_id = session('wechat_user_id');
-//        }
+        if (!session('factory_id') && isset($_GET['state'])) {
+            $factory_id = $_GET['state'];
 
-        $factory_id = 1;
-        $wechat_user_id = 113;
+            //save factory id in session
+            $request->session()->put('factory_id', $factory_id);
+        } else {
+            $factory_id = session('factory_id');
+        }
+
         $factory = Factory::find($factory_id);
+        if ($factory == null)
+            abort(403);
 
-        session(['wechat_user_id' => $wechat_user_id]);
-        session(['factory_id' => $factory_id]);
-        session(['address' => '北京 北京市']);
+        if(!session('wechat_user_id') && isset($_GET['code'])) {
+            $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
+            $codees = $wechatObj->codes($_GET['code']);
+
+            //save wechat user id
+            $open_id = $codees['openid'];
+
+            $wechat_user = WechatUser::where('openid', $open_id)->get()->first();
+            if (!$wechat_user) {
+                $wechat_user = new WechatUser;
+                $wechat_user->openid = $open_id;
+                $wechat_user->factory_id = $factory_id;
+                $wechat_user->save();
+            }
+            $wechat_user_id = $wechat_user->id;
+
+            session(['wechat_user_id' => $wechat_user_id]);
+
+        } else {
+            $wechat_user_id = session('wechat_user_id');
+        }
+
+//        $factory_id = 1;
+//        $wechat_user_id = 113;
+//        $factory = Factory::find($factory_id);
+//
+//        session(['wechat_user_id' => $wechat_user_id]);
+//        session(['factory_id' => $factory_id]);
+//        session(['address' => '北京 北京市']);
 
 
         //add verified flag
@@ -2372,9 +2372,19 @@ class WeChatCtrl extends Controller
         //delete cart and order item
         $this->remove_cart_by_group($group_id);
 
-        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        //now payment here:
 
+        //if payment fails, delete order
+        //$payment_result = true;
+        $payment_result = true;
+        if(!$payment_result)
+        {
+            $orderctrl->delete_order($order_id);
+            return response()->json(['status' => 'fail']);
 
+        } else {
+            return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        }
     }
 
     //make order based on crated wechat order products
