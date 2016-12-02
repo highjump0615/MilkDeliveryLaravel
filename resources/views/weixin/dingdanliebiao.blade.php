@@ -22,127 +22,133 @@
         @endif
         <h1>订单列表</h1>
     </header>
-    @forelse($orders as $o)
-        <div class="ordsl">
-            <div class="ordnum">
-                <span>{{$o->ordered_at}}</span>
-                <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
-                &nbsp;奶站: {{$o->station_name}} &nbsp; 配送员: {{$o->milkman->name}} {{$o->milkman->phone}}
-            </div>
-            @forelse($o->order_products as $op)
-                <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">
-                    <div class="ordtop clearfix">
-                        <img class="ordpro" src="<?=asset('img/product/logo/' . $op->product->photo_url1)?>">
-                        <div class="ord-r">
-                            {{$op->product_name}}
-                            <br>
-                            单价：{{$op->product_price}}
-                            <br>
-                            订单数量：{{$op->total_count}}
 
+    @if(count($orders) == 0)
+        <p style="font-size: 15px; margin: 10px auto; width: 100%; text-align: center;">"没有订单"</p>
+    @else
+        @forelse($orders as $o)
+            <div class="ordsl">
+                <div class="ordnum">
+                    <span>{{$o->ordered_at}}</span>
+                    <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
+                    &nbsp;奶站: {{$o->station_name}} &nbsp; 配送员: {{$o->milkman->name}} {{$o->milkman->phone}}
+                </div>
+                @forelse($o->order_products as $op)
+                    <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">
+                        <div class="ordtop clearfix">
+                            <img class="ordpro" src="<?=asset('img/product/logo/' . $op->product->photo_url1)?>">
+                            <div class="ord-r">
+                                {{$op->product_name}}
+                                <br>
+                                单价：{{$op->product_price}}
+                                <br>
+                                订单数量：{{$op->total_count}}
+
+                            </div>
+                            <div class="ordye">金额：{{$op->total_amount}}元</div>
                         </div>
-                        <div class="ordye">金额：{{$op->total_amount}}元</div>
-                    </div>
-                </a>
-            @empty
-                <div>没有订单项目</div>
-            @endforelse
+                    </a>
+                @empty
+                    <div>没有订单项目</div>
+                @endforelse
 
-            <div class="ordshz">
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
-                    <span class="shsp">
+                <div class="ordshz">
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
+                        <span class="shsp">
                         <a href="{{url('/weixin/api/show_xuedan?order='.$o->id)}}">续单</a>
                     </span>
-                @endif
+                    @endif
 
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
-                    <span class="shsp">
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
+                        <span class="shsp">
                         <a href="{{url('/weixin/dingdanpingjia?order='.$o->id)}}">评价</a>
                     </span>
-                @endif
+                    @endif
 
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
-                    $o->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
-                    $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                    <span class="shsp">
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                        $o->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                        $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                        <span class="shsp">
                         <a href="{{url('/weixin/dingdanxiugai?order='.$o->id)}}">修改</a>
                     </span>
-                @endif
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
-                    <span class="shsp">
+                    @endif
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
+                        <span class="shsp">
                         <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">{{$o->status_name}}</a>
                     </span>
-                @endif
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                    <span class="shsp-r">
+                    @endif
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                        <span class="shsp-r">
                     暂停订单
                     <input type="checkbox" class="js-switch stop_order"
                            data-start-at="{{$o->start_at}}"
                            data-end-at="{{$o->order_end_at}}"
                            data-order-id="{{$o->id}}"/>
                     </span>
-                @endif
-                @if($o->status == \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS)
-                    <span class="shsp-r">
+                    @endif
+                    @if($o->status == \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS)
+                        <span class="shsp-r">
                     开启订单
                     <input type="checkbox" class="js-switch restart_order"
                            data-stop-start-at="{{$o->stop_at}}"
                            data-stop-end-at="{{$o->restart_at}}"
                            data-order-id="{{$o->id}}"/>
                     </span>
-                @endif
+                    @endif
+                </div>
             </div>
-        </div>
 
-        <div id="stop_order_modal" class="animated modal fade" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <form id="stop_order_modal_form" method="POST" style="padding:0;">
-                        <div class="modal-body">
-                            <label style="margin-bottom: 30px;">选择暂停的日期</label>
-                            <div class="input-daterange input-group col-md-12" id="datepicker">
-                                <input type="text" required class="input-sm form-control"
-                                       name="start" id="stop_start"/>
-                                <span class="input-group-addon">至</span>
-                                <input type="text" id="stop_end" required class="input-sm form-control"
-                                       name="end"/>
+            <div id="stop_order_modal" class="animated modal fade" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <form id="stop_order_modal_form" method="POST" style="padding:0;">
+                            <div class="modal-body">
+                                <label style="margin-bottom: 30px;">选择暂停的日期</label>
+                                <div class="input-daterange input-group col-md-12" id="datepicker">
+                                    <input type="text" required class="input-sm form-control"
+                                           name="start" id="stop_start"/>
+                                    <span class="input-group-addon">至</span>
+                                    <input type="text" id="stop_end" required class="input-sm form-control"
+                                           name="end"/>
+                                </div>
+                                <input type="hidden" id="stop_order_id" name="order_id" value=""/>
                             </div>
-                            <input type="hidden" id="stop_order_id" name="order_id" value=""/>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-white" id="apply_stop">确定</button>
-                            <button type="button" class="btn btn-white" id="cancel_stop">取消</button>
-                        </div>
-                    </form>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-white" id="apply_stop">确定</button>
+                                <button type="button" class="btn btn-white" id="cancel_stop">取消</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="restart_order_modal" class="animated modal fade" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <form id="restart_order_modal_form" method="POST" style="padding:0;">
-                        <div class="modal-body">
-                            <label class="align-center btn-block">暂停的日期</label>
-                            <label class="align-center  btn-block" id="stop_period"></label>
-                            <hr>
-                            <label class="align-center  btn-block" style="margin-top: 30px;">选择开启的日期</label>
-                            <div class="input-group date single_date">
-                                <input required type="text" class="form-control" id="start_at"
-                                       name="start_at"><span
-                                        class="input-group-addon"><i class="fa fa-calendar"></i></span>
+            <div id="restart_order_modal" class="animated modal fade" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <form id="restart_order_modal_form" method="POST" style="padding:0;">
+                            <div class="modal-body">
+                                <label class="align-center btn-block">暂停的日期</label>
+                                <label class="align-center  btn-block" id="stop_period"></label>
+                                <hr>
+                                <label class="align-center  btn-block" style="margin-top: 30px;">选择开启的日期</label>
+                                <div class="input-group date single_date">
+                                    <input required type="text" class="form-control" id="start_at"
+                                           name="start_at"><span
+                                            class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                </div>
+                                <input type="hidden" name="order_id" id="restart_order_id" value=""/>
                             </div>
-                            <input type="hidden" name="order_id" id="restart_order_id" value=""/>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-white" id="apply_restart">确定</button>
-                            <button type="button" class="btn btn-white" id="cancel_restart">取消</button>
-                        </div>
-                    </form>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-white" id="apply_restart">确定</button>
+                                <button type="button" class="btn btn-white" id="cancel_restart">取消</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-    @empty
-    @endforelse
+        @empty
+        @endforelse
+    @endif
+
     @include('weixin.layout.footer')
 @endsection
 @section('script')

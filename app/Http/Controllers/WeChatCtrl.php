@@ -1164,8 +1164,9 @@ class WeChatCtrl extends Controller
             }
         }
         else {
+            $orders= [];
             return view('weixin.dingdanliebiao', [
-                'orders' => null,
+                'orders' => $orders,
                 'cartn' => 0,
             ]);
         }
