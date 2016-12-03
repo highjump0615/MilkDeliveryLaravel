@@ -61,15 +61,15 @@ function increase_delivery_credit_balance(station_id, amount) {
 
 $('[data-action="show_selected"]').click(function () {
     var current_station = $('.choose_station').val();
-    if (current_station != "none") {
-        $('.station').each(function () {
-            if ($(this).data('sid') != current_station) {
-                $(this).hide();
-            } else {
-                $(this).show();
-            }
-        });
-    }
+
+    $('.station').each(function () {
+        if ($(this).data('sid') == current_station || current_station == "none") {
+            $(this).show();
+        }
+        else {
+            $(this).hide();
+        }
+    });
 });
 
 
