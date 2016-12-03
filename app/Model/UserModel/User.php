@@ -101,4 +101,14 @@ class User extends Authenticatable
 
         return $result;
     }
+
+    /**
+     * 是否超级管理员
+     * @param $type
+     * @return bool
+     */
+    public function isSuperUser($type) {
+        $role = UserRole::where('backend_type', $type)->get()->first();
+        return ($this->user_role_id == $role->id);
+    }
 }

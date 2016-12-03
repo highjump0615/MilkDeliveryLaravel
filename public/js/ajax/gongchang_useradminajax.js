@@ -252,7 +252,7 @@ $(document).on('change','.changeStatus',function (e) {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     e.preventDefault();
 
@@ -266,8 +266,8 @@ $(document).on('change','.changeStatus',function (e) {
 
     var formData = {
         id: id,
-        status: status,
-    }
+        status: status
+    };
 
     $.ajax({
         type: type,

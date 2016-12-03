@@ -26,7 +26,7 @@
 							<div class="modal-content">
 								<div class="modal-header">
 									<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-									<h4 class="modal-title">新管</h4>
+									<h4 class="modal-title">用户</h4>
 								</div>
 								<div class="modal-body">
 									<div class="row">
@@ -105,7 +105,7 @@
 					</div>
 				</div>
 				
-<!--User_Admin_Table-->				
+				<!--User_Admin_Table-->
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
@@ -121,17 +121,21 @@
 								</tr>
                             </thead>
                             <tbody>
-							<?php $i=0
-							?>
+							<?php $i=0 ?>
 							@foreach($userinfo as $uf)
 								<tr id="user{{$uf->id}}">
-									<?php $i++
-									?>
+									<?php $i++ ?>
 									<td>{{$i}}</td>
 									<td>{{$uf->name}}</td>
 									<td>{{$uf->current_role_name->name}}</td>
 									<td>{{$uf->last_used_ip}}</td>
-									<td><input type="checkbox" class="js-switch changeStatus" @if($uf->status == 1)checked @endif value="{{$uf->id}}"/></td>
+									<td>
+										<input type="checkbox"
+											   class="js-switch changeStatus"
+											   @if($uf->status == 1) checked @endif
+											   @if($uf->isSuperUser(\App\Model\UserModel\User::USER_BACKEND_STATION)) disabled @endif
+											   value="{{$uf->id}}"/>
+									</td>
 									<td>
 										<button class="btn btn-sm btn-success update-user" data-toggle="modal" href="#modal-form" value="{{$uf->id}}" user_role="{{$uf->user_role_id}}">修改</button>
 										@if($uf->user_role_id != \App\Model\UserModel\UserRole::USERROLE_NAIZHAN_TOTAL_ADMIN)

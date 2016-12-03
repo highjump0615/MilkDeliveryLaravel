@@ -160,7 +160,7 @@ Route::group(['middleware' => ['gongchang']], function () {
     /*save and update user information*/
     Route::post('api/gongchang/xitong/yonghu', 'UserCtrl@addAccount');
     Route::put('api/gongchang/xitong/yonghu/{user_id}', 'UserCtrl@updateAccount');
-    /*changg
+
     Route::post('api/gongchang/xitong/yonghu/changeStatus','UserCtrl@changeStatus');
     /*Delete user information*/
     Route::delete('api/gongchang/xitong/yonghu/{user_id}', 'UserCtrl@removeAccount');

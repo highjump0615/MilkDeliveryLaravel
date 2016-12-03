@@ -189,22 +189,30 @@ class UserCtrl extends Controller
         return Response::json($deleteZongpingGuanliyuan);
     }
 
+    /**
+     * 打开奶站用户管理
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function stationJuese(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
+
         $child = 'yonghu';
         $parent = 'xitong';
         $current_page = 'yonghu';
         $pages = Page::where('backend_type', '3')->where('parent_page', '0')->orderby('order_no')->get();
+
         $role_name = UserRole::where('backend_type', '3')->where('station_id',$current_station_id)->get();
         $userinfo = User::where('backend_type','3')->where('station_id',$current_station_id)->get();
+
         return view('naizhan.xitong.yonghu', [
-            'pages' => $pages,
-            'userinfo' => $userinfo,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'role_name' => $role_name,
-            'current_station_id'=>$current_station_id,
+            'pages'                 => $pages,
+            'userinfo'              => $userinfo,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+            'role_name'             => $role_name,
+            'current_station_id'    => $current_station_id,
         ]);
     }
 

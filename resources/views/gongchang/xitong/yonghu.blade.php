@@ -117,7 +117,7 @@
 					</div>
 				</div>
 				
-<!--User_Admin_Table-->				
+				<!--User_Admin_Table-->
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
@@ -143,7 +143,13 @@
 									<td>{{$uf->name}}</td>
 									<td>{{$uf->current_role_name->name}}</td>
 									<td>{{$uf->last_used_ip}}</td>
-									<td><input type="checkbox" class="js-switch changeStatus" @if($uf->status == 1)checked @endif value="{{$uf->id}}"/></td>
+									<td>
+										<input type="checkbox"
+											   class="js-switch changeStatus"
+											   @if($uf->status == 1)checked @endif
+											   @if($uf->isSuperUser(\App\Model\UserModel\User::USER_BACKEND_FACTORY)) disabled @endif
+											   value="{{$uf->id}}"/>
+									</td>
 									<td>
 										<button class="btn btn-sm btn-success update-user" data-toggle="modal" href="#modal-form" value="{{$uf->id}}" user_role="{{$uf->user_role_id}}">修改</button>
 										@if($uf->user_role_id != \App\Model\UserModel\UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN)
