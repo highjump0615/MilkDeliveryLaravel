@@ -51,12 +51,13 @@ $(document).ready(function () {
     });
 });
 
-$(document).on('click', '#origin_table tbody tr', function(e){
+$('#origin_table tbody tr td:not(:nth-child(6))').on('click', function(e){
     e.preventDefault();
     e.stopPropagation();
 
-    var station_id = $(this).data('sid');
-    if(station_id)
+    var tr = $(this).parent();
+    var station_id = tr.data('sid');
+    if (station_id)
     {
         var url = SITE_URL+"gongchang/xitong/naizhanzhanghao/tianjianaizhanzhanghu/zhanghuxiangqing-chakan/"+station_id;
         window.location.href = url;
@@ -173,100 +174,11 @@ $('button[data-action = "export_csv"]').click(function () {
 
     var i = 0;
     if (od != "none") {
-        //send order data
-        $('#origin_table thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#origin_table tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-
-    } else if (fd != "none") {
-        //send filter data
-        $('#filter_table thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#filter_table tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-    } else {
-        return;
+        data_export('origin_table');
     }
-
-    var send_data = {"data": sendData};
-
-    $.ajax({
-        type: 'POST',
-        url: API_URL + "export",
-        data: send_data,
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var path = data.path;
-                location.href = path;
-            }
-        },
-        error: function (data) {
-            //console.log(data);
-        }
-    })
+    else if (fd != "none") {
+        data_export('filter_table');
+    }
 });
 
 //Print
@@ -275,25 +187,14 @@ $('button[data-action = "print"]').click(function () {
     var od = $('#origin_table').css('display');
     var fd = $('#filter_table').css('display');
 
-    var sendData = [];
-
     var printContents;
     if (od != "none") {
-        //print order data
-        printContents = document.getElementById("origin_table").outerHTML;
-
-    } else if (fd != "none") {
-        //print filter data
-        printContents = document.getElementById("filter_table").outerHTML;
-    } else {
-        return;
+        printContent('origin_table');
+    }
+    else if (fd != "none") {
+        printContent('filter_table');
     }
 
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
     location.reload();
 });
 
