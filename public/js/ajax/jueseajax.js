@@ -34,14 +34,14 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
             }
-        })
+        });
 
         e.preventDefault();
 
         var formData = {
             name: $('#role').val(),
             backend_type: $('#type').val(),
-        }
+        };
 
         console.log(formData);
 
