@@ -81,73 +81,7 @@ class FactoryCtrl extends Controller
 
     public function storeTianjia(Request $request)
     {
-
-        $name = $request->input('name');
-        $number = $request->input('number');
-        $contact = $request->input('contact');
-        $phonenumber = $request->input('phonenumber');
-        $status = $request->input('status');
-
-        $end_at = $request->input('end_at');
-        $factory_id = $request->input('factory_id');
-        $factory_password = $request->input('factory_password');
-        $public_name = $request->input('public_name');
-        $public_id = $request->input('public_id');
-        $wechat_id = $request->input('wechat_id');
-        $app_id = $request->input('app_id');
-        $app_secret = $request->input('app_secret');
-        $app_url           = $request->input('app_url');
-        $app_token         = $request->input('app_token');
-        $app_encoding_key  = $request->input('app_encoding_key');
-        $app_mchid         = $request->input('app_mchid');
-        $app_paysignkey    = $request->input('app_paysignkey');
-        $wechat_type = $request->input('wechat_type');
-        $qrcode = $request->input('qrcode');
-
-        $fa = new Factory;
-        $fa->name = $name;
-        $fa->number = $number;
-        $fa->contact = $contact;
-        $fa->phone = $phonenumber;
-        $fa->status = $status;
-
-        $fa->end_at = $end_at;
-        $fa->factory_id = $factory_id;
-        $fa->factory_password = bcrypt($factory_password);
-        $fa->public_name = $public_name;
-        $fa->public_id = $public_id;
-        $fa->wechat_id = $wechat_id;
-        $fa->app_id = $app_id;
-        $fa->app_secret = $app_secret;
-        $fa->app_url           = $app_url;
-        $fa->app_token         = $app_token;
-        $fa->app_encoding_key  = $app_encoding_key;
-        $fa->wechat_type = $wechat_type;
-        $fa->qrcode = $qrcode;
-        $fa->is_deleted = 0;
-
-        if ($request->hasFile('logo')) {
-            $file = Input::file('logo');
-            $name = rand(1, 9999) . '-' . $file->getClientOriginalName();
-            $file->move(public_path() . '/uploads/images/logo', $name);
-            $path = '/uploads/images/logo/' . $name;
-            $fa->logo_url = $path;
-        }
-        $fa->save();
-        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
-            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
-            $wechatObj->createMenu();
-        }
-        $current_factory_id = $fa->id;
-
-        $factory_user = new User;
-        $factory_user->name = $factory_id;
-        $factory_user->password = bcrypt($factory_password);
-        $factory_user->status = Factory::FACTORY_STATUS_ACTIVE ;
-        $factory_user->factory_id = $current_factory_id;
-        $factory_user->user_role_id = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
-        $factory_user->backend_type = UserRole::USERROLE_BACKEND_TYPE_GONGCHANG;
-        $factory_user->save();
+        $this->saveFactory(null, $request);
 
         return redirect()->route('yonghu_page');
     }
@@ -169,70 +103,94 @@ class FactoryCtrl extends Controller
         ]);
     }
 
-    public function updateTianjia(Request $request,$user_id)
-    {
-        $fa = Factory::find($user_id);
+    private function saveFactory($factory, $request) {
 
-        $name = $request->input('name');
-        $number = $request->input('number');
-        $contact = $request->input('contact');
-        $phonenumber = $request->input('phonenumber');
-        $status = $request->input('status');
+        //
+        // 获取参数
+        //
+        $name               = $request->input('name');
+        $number             = $request->input('number');
+        $contact            = $request->input('contact');
+        $phonenumber        = $request->input('phonenumber');
+        $status             = $request->input('status');
 
-        $end_at            = $request->input('end_at');
-        $factory_id        = $request->input('factory_id');
-        $factory_password  = $request->input('factory_password');
-        $public_name       = $request->input('public_name');
-        $public_id         = $request->input('public_id');
-        $wechat_id         = $request->input('wechat_id');
-        $app_id            = $request->input('app_id');
-        $app_secret        = $request->input('app_secret');
-        $app_url           = $request->input('app_url');
-        $app_token         = $request->input('app_token');
-        $app_encoding_key  = $request->input('app_encoding_key');
-        $wechat_type = $request->input('wechat_type');
-        $qrcode = $request->input('qrcode');
+        $end_at             = $request->input('end_at');
+        $factory_id         = $request->input('factory_id');
+        $factory_password   = $request->input('factory_password');
+        $public_name        = $request->input('public_name');
+        $public_id          = $request->input('public_id');
+        $wechat_id          = $request->input('wechat_id');
+        $app_id             = $request->input('app_id');
+        $app_secret         = $request->input('app_secret');
+        $app_url            = $request->input('app_url');
+        $app_token          = $request->input('app_token');
+        $app_encoding_key   = $request->input('app_encoding_key');
+        $app_mchid          = $request->input('app_mchid');
+        $app_paysignkey     = $request->input('app_paysignkey');
+        $wechat_type        = $request->input('wechat_type');
+        $qrcode             = $request->input('qrcode');
 
-        $fa->name              = $name;
-        $fa->number            = $number;
-        $fa->contact           = $contact;
-        $fa->phone             = $phonenumber;
-        $fa->status            = $status;
-        $fa->end_at            = $end_at;
-        $fa->factory_id        = $factory_id;
-        $fa->factory_password  = bcrypt($factory_password);
-        $fa->public_name       = $public_name;
-        $fa->public_id         = $public_id;
-        $fa->wechat_id         = $wechat_id;
-        $fa->app_id            = $app_id;
-        $fa->app_secret        = $app_secret;
-        $fa->app_url           = $app_url;
-        $fa->app_token         = $app_token;
-        $fa->app_encoding_key  = $app_encoding_key;
-        $fa->app_mchid         = $app_mchid;
-        $fa->app_paysignkey    = $app_paysignkey;
-        $fa->wechat_type       = $wechat_type;
-        $fa->qrcode            = $qrcode;
-        $fa->is_deleted        = 0;
+        if (!$factory) {
+            $factory = new Factory;
+            $factory_user = new User;
+        }
+        else {
+            $factory_user = User::where('factory_id', $factory->id)->where('user_role_id',1)->get()->first();
+        }
+
+        $factory->name              = $name;
+        $factory->number            = $number;
+        $factory->contact           = $contact;
+        $factory->phone             = $phonenumber;
+        $factory->status            = $status;
+
+        $factory->end_at            = $end_at;
+        $factory->factory_id        = $factory_id;
+        $factory->factory_password  = bcrypt($factory_password);
+        $factory->public_name       = $public_name;
+        $factory->public_id         = $public_id;
+        $factory->wechat_id         = $wechat_id;
+        $factory->app_id            = $app_id;
+        $factory->app_secret        = $app_secret;
+        $factory->app_url           = $app_url;
+        $factory->app_token         = $app_token;
+        $factory->app_encoding_key  = $app_encoding_key;
+        $factory->app_paysignkey    = $app_paysignkey;
+        $factory->app_mchid         = $app_mchid;
+        $factory->wechat_type       = $wechat_type;
+        $factory->qrcode            = $qrcode;
+        $factory->is_deleted        = 0;
 
         if ($request->hasFile('logo')) {
             $file = Input::file('logo');
             $name = rand(1, 9999) . '-' . $file->getClientOriginalName();
             $file->move(public_path() . '/uploads/images/logo', $name);
             $path = '/uploads/images/logo/' . $name;
-            $fa->logo_url = $path;
+            $factory->logo_url = $path;
         }
-        $fa->save();
+        $factory->save();
+
         if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
             $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
             $wechatObj->createMenu();
         }
-        
-                
-        $user = User::where('factory_id',$user_id)->where('user_role_id',1)->get()->first();
-        $user->name = $factory_id;
-        $user->password = bcrypt($factory_password);
-        $user->save();
+
+        $current_factory_id = $factory->id;
+
+        $factory_user->name = $factory_id;
+        $factory_user->password = bcrypt($factory_password);
+        $factory_user->status = Factory::FACTORY_STATUS_ACTIVE ;
+        $factory_user->factory_id = $current_factory_id;
+        $factory_user->user_role_id = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
+        $factory_user->backend_type = UserRole::USERROLE_BACKEND_TYPE_GONGCHANG;
+        $factory_user->save();
+    }
+
+    public function updateTianjia(Request $request,$user_id)
+    {
+        $fa = Factory::find($user_id);
+
+        $this->saveFactory($fa, $request);
             
         return redirect()->route('yonghu_page');
     }

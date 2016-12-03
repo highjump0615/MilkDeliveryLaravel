@@ -33,40 +33,40 @@
 			<form action="{{url('/zongpingtai/yonghu/gongzhonghaosheding', $factory_id)}}" method="post" enctype="multipart/form-data">
 			<div class="wrapper-content">
 				<div class="wrapper-content">
-                                        <div class="feed-element col-md-12">
-                                            <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信公众号</label>
+					<div class="feed-element col-md-12">
+						<label class="col-lg-12 gray-bg" style="padding:5px;"> 微信公众号</label>
 					</div>
 					<div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-5"> AppID(公众号):</label>
-                                            <div class="col-lg-5 col-md-7">{{$factory->app_id}}</div>
+						<label class="control-label col-lg-4 col-md-5"> AppID(公众号):</label>
+						<div class="col-lg-5 col-md-7">{{$factory->app_id}}</div>
 					</div>
 					<div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-5"> AppSecret:</label>
-                                            <div class="col-lg-5 col-md-7">{{$factory->app_secret}}</div>
+						<label class="control-label col-lg-4 col-md-5"> AppSecret:</label>
+						<div class="col-lg-5 col-md-7">{{$factory->app_secret}}</div>
 					</div>
-                                        <div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-5"> 服务器接口 (URL):</label>
-                                            <div class="col-lg-5 col-md-7">{{$factory->app_url}}</div>
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-4 col-md-5"> 服务器接口 (URL):</label>
+						<div class="col-lg-5 col-md-7">{{$factory->app_url}}</div>
 					</div>
-                                        <div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-5"> 令牌 (Token)：</label>
-                                            <div class="col-lg-5 col-md-7">{{$factory->app_token}}</div>
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-4 col-md-5"> 令牌 (Token)：</label>
+						<div class="col-lg-5 col-md-7">{{$factory->app_token}}</div>
 					</div>
-                                        <div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-3"> 消息加解密密钥 (EncodingAESKey)：</label>
-                                            <div class="col-lg-5 col-md-3">{{$factory->app_encoding_key}}</div>
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-4 col-md-3"> 消息加解密密钥 (EncodingAESKey)：</label>
+						<div class="col-lg-5 col-md-3">{{$factory->app_encoding_key}}</div>
 					</div>
-                                        <div class="feed-element col-md-12">
-                                            <label class="col-lg-12 gray-bg" style="padding:5px;"> 微信商户号</label>
+					<div class="feed-element col-md-12">
+						<label class="col-lg-12 gray-bg" style="padding:5px;"> 微信商户号</label>
 					</div>
-                                        <div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-3"> 微信支付商户号(Mch Id): </label>
-                                            <div class="col-lg-5 col-md-3">{{$factory->app_mchid}}</div>
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-4 col-md-3"> 微信支付商户号(Mch Id): </label>
+						<div class="col-lg-5 col-md-3">{{$factory->app_mchid}}</div>
 					</div>
-                                    
-                                     <div class="feed-element col-md-12">
-                                            <label class="control-label col-lg-4 col-md-3"> 通信密钥/商户支付密钥 (api密钥): </label>
-                                            <div class="col-lg-5 col-md-3">{{$factory->app_paysignkey}}</div>
+
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-4 col-md-3"> 通信密钥/商户支付密钥 (api密钥): </label>
+						<div class="col-lg-5 col-md-3">{{$factory->app_paysignkey}}</div>
 					</div>				 
 				 <br />
 				<div class="col-lg-12 gray-bg">
