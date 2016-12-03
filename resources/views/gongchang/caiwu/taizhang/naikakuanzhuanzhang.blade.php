@@ -152,9 +152,9 @@
                         <tr>
                             <th data-sort-ignore="true">序号</th>
                             <th data-sort-ignore="true">下单时间</th>
-                            <th data-sort-ignore="true">录入奶站</th>
                             <th data-sort-ignore="true">用户</th>
-                            <th data-sort-ignore="true">金额</th>
+                            <th data-sort-ignore="true">奶卡金额</th>
+                            <th data-sort-ignore="true">奶卡卡号</th>
                             <th data-sort-ignore="true">收款方</th>
                             <th data-sort-ignore="true">订单号</th>
                             <th data-sort-ignore="true">状态</th>
