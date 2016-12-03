@@ -66,8 +66,7 @@
                             <div class="col-md-5">
                                 <label class="col-md-3" style="padding-top: 5px;">姓名:</label>
                                 <div class="col-md-9">
-                                    <input type="text" class="form-control" id="milkman" style="width:100%;"
-                                           onkeypress="checkname();">
+                                    <input type="text" class="form-control" id="milkman" style="width:100%;">
                                 </div>
                             </div>
                             <label id="name_alert" style="color: red; padding-top: 5px; display: none">(请输入姓名!)</label>
@@ -264,14 +263,10 @@
 
 @endsection
 @section('script')
+
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
     <script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
     <script src="<?=asset('js/global.js')?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $(".chosen-select").chosen();
-        });
-    </script>
 @endsection

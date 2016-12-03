@@ -1,12 +1,17 @@
 
 var street = [];
+
+$(document).ready(function () {
+    $(".chosen-select").chosen();
+});
+
 $(document).on('change', '#area', function () {
     street = [];
     $('#xiaoqi_table').html("");
 
     $('#area :selected').each(function (i, selected) {
         street[i] = $(selected).text();
-    })
+    });
 
     if(street.length == 0)
         return;
@@ -17,11 +22,11 @@ $(document).on('change', '#area', function () {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var form_data = {
-        street: street,
-    }
+        street: street
+    };
 
     console.log(street);
 
@@ -54,7 +59,7 @@ $(document).on('change', '#area', function () {
             console.log('Error:',data);
         }
     });
-})
+});
 
 function hide_street_alert() {
     $('#street_alert').hide();
@@ -67,21 +72,28 @@ $('#add_milkman').submit(function(e){
     var phone = $('#phone').val();
     var number = $('#number').val();
 
+    checkname();
     if(name == ''){
         $('#name_alert').show();
         return;
     }
+
+    checkphone();
     if(phone == ''){
         $('#phone_alert').show();
         return;
     }
+
+    checknumber();
     if(number == ''){
         $('#number_alert').show();
         return;
     }
+
     $('#area :selected').each(function (i, selected) {
         street[i] = $(selected).text();
-    })
+    });
+
     if(street.length <1){
         $('#street_alert').show();
         return;
