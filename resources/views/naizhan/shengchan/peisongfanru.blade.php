@@ -109,7 +109,7 @@
 										{{$pro['name']}}*{{$pro['count']}}
 									</td>
 									<td @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
-										@if($is_todayrefund!=0) {{$pro['delivered_count']}} @endif
+										@if($is_todayrefund!=0) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
 									</td>
 									<td class="report"
 										@if($deliver_date == $current_date && $is_todayrefund==0)

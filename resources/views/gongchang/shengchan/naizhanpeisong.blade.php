@@ -102,13 +102,18 @@
 									<td>{{$ds->channel_sale}}</td>
 									<td>{{$ds->subtotal_count}}</td>
 									<td>{{$ds->diff}}</td>
-									<td @if($ds->status < 6) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif class="confirm_count" id="confirm{{$i}}{{$ds->product_id}}" value="{{$ds->product_id}}">{{$ds->actual_count}}</td>
+									<td @if($ds->status < \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_SENT) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif
+										class="confirm_count"
+										id="confirm{{$i}}{{$ds->product_id}}"
+										value="{{$ds->product_id}}">
+										@if($ds->status < \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_SENT) {{$ds->subtotal_count + $ds->diff}} @else {{$ds->actual_count}} @endif
+									</td>
 									<td>{{$ds->confirm_count}}</td>
 									@if($j==1)
-									<td rowspan="{{count($di->station_plan)}}">@if($ds->status > 5) 已发货 @endif</td>
-											{{--已发货--}}
+									<td rowspan="{{count($di->station_plan)}}">@if($ds->status > \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED) 已发货 @endif</td>
+									<!-- 已发货 -->
 									<td rowspan="{{count($di->station_plan)}}">
-										@if($ds->status > 5)
+										@if($ds->status > \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
 											<button class="btn btn-success"
 													onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'"
 													id="detail{{$i}}"

@@ -26,7 +26,7 @@
                     	<div class="row">
 							<input type="hidden" id="count" value="{{count($dsproduction_plans)}}">
 							<div class="col-md-12">
-								<table id="distribute" class="table table-bordered" style="font-size: 12px;">
+								<table id="distribute" class="table table-bordered">
 									<tbody>
 									<?php $p = count($dsproduction_plans); ?>
 
@@ -269,7 +269,7 @@
 						</div>
 
 						<div class="ibox-content">
-	                        <table id="changed_distribute" class="table footable table-bordered" style="font-size: 14px;">
+	                        <table id="changed_distribute" class="table footable table-bordered" >
 	                            <thead style="background-color:#33cccc;">
 									<tr>
 										<th data-sort-ignore="true">序号</th>
