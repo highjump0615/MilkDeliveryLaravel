@@ -96,19 +96,29 @@ class WechatesCtrl extends Controller
         $result = $this->transmitText($object, $content);
         return $result;
     }
+
 	//微信用户添加(修改)数据库
 	private function WechatUser($FromUserName){
 		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
 		$jsoninfo    = $this->getFanInfo($accessToken,$FromUserName);
-		$wxusers = WechatUser::where('openid',$jsoninfo['openid'])->where('factoryid',$this->factoryid)->first();
-		if(empty($wxusers)) $wxusers = new WechatUser;
+
+		$wxusers = WechatUser::where('openid', $jsoninfo['openid'])
+            ->where('factoryid',$this->factoryid)
+            ->get()
+            ->first();
+
+		if (empty($wxusers))
+		    $wxusers = new WechatUser;
+
 		$wxusers->openid     = $jsoninfo['openid'];
 		$wxusers->name       = $jsoninfo['nickname'];
 		$wxusers->area       = $jsoninfo["province"]." ".$jsoninfo["city"];
 		$wxusers->image_url  = $jsoninfo['headimgurl'];
 		$wxusers->factoryid  = $this->factoryid;
+
 		$wxusers->save();
 	}
+
 	//消息模板
     private function transmitText($object, $content)
     {
