@@ -28,8 +28,10 @@
 						</div>
 					</div>
 				</div>
+
 				<div><hr></div>
-<!--User_Admin_Table-->				
+
+				<!--User_Admin_Table-->
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
@@ -156,7 +158,7 @@
 @endsection
 
 @section('script')
-		<!--Get API_URL-->
+	<!--Get API_URL-->
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/zongpingtai_useradminajax.js') ?>"></script>

@@ -62,7 +62,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table class="footable table table-bordered" id="by_station" data-page-size="10">
+                        <table class="footable table table-bordered" id="by_station" data-page-size="{{$page_count}}">
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>

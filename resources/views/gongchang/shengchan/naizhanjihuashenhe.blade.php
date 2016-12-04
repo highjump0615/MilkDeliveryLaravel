@@ -176,14 +176,4 @@
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/shengchan_naizhanjihuashenhe_ajax.js') ?>"></script>
-	<script type="text/javascript">
-		$(document).ready(function() {
-			$('.footable').footable();
-			$('#total_produce tr:not(:first)').each(function(){
-				var sum = parseInt($(this).find('#plan_count').text());
-				var change_amount = parseInt($(this).find("td").eq(3).html());
-				$(this).find("td").eq(4).html(sum+change_amount);
-			})
-		});
-	</script>
 @endsection

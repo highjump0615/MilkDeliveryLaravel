@@ -72,7 +72,30 @@ $(document).on('click','.validate',function(e){
 })
 
 $(document).on('click','.cancel',function(e){
-    var id = $(this).val();
+    e.preventDefault();
+
+    var butObj = $(this);
+
+    $.confirm({
+        icon: 'fa fa-warning',
+        title: '生产取消',
+        text: '您确定要取消此生产计划吗?',
+        confirmButton: "确定",
+        cancelButton: "取消",
+        confirmButtonClass: "btn-success",
+        confirm: function () {
+            cancel_product(butObj);
+        },
+        cancel: function () {
+            return;
+        }
+    });
+});
+
+
+function cancel_product(butObj) {
+
+    var id = butObj.val();
     var production_period = $('#production_period'+id+'').val()/24;
     var setted_val = $('#produce_amount'+id+'').val();
 
@@ -82,20 +105,18 @@ $(document).on('click','.cancel',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
-    e.preventDefault();
+    });
 
     var store_formData = {
         product_id: id,
         count: setted_val,
         produce_period: production_period,
-    }
+    };
     console.log(store_formData);
 
     var store_type = "POST"; //for creating new resource
 
     $.ajax({
-
         type: store_type,
         url: store_url,
         data: store_formData,
@@ -109,7 +130,7 @@ $(document).on('click','.cancel',function(e){
             console.log('Error:', data);
         }
     });
-})
+}
 
 $(document).on('click','.produce_determine',function (e) {
     var station_id = $(this).val();
@@ -153,51 +174,13 @@ $(document).on('click','.produce_determine',function (e) {
             console.log('Error:', data);
         }
     });
-})
+});
 
-$(document).on('click','.produce_cancel',function (e) {
-    var station_id = $(this).val();
-
-    var store_url = API_URL + 'gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan';
-    $('#alert_view').hide();
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-        }
+$(document).ready(function() {
+    $('.footable').footable();
+    $('#total_produce tr:not(:first)').each(function(){
+        var sum = parseInt($(this).find('#plan_count').text());
+        var change_amount = parseInt($(this).find("td").eq(3).html());
+        $(this).find("td").eq(4).html(sum+change_amount);
     })
-    e.preventDefault();
-
-    var store_formData = {
-        station_id: station_id,
-    }
-    console.log(store_formData);
-
-    var tr = $(this).closest('tr');
-
-    var store_type = "POST"; //for creating new resource
-
-    $.ajax({
-
-        type: store_type,
-        url: store_url,
-        data: store_formData,
-        dataType: 'json',
-        success: function (data) {
-            console.log(data);
-            var new_status='<td class="status'+station_id+'">生产取消</td>';
-            $('#plan_sent').find('td.status'+station_id+'').each(function () {
-                $('.status'+station_id+'').replaceWith(new_status);
-            });
-
-            tr.find('.produce_determine').hide();
-            tr.find('.produce_cancel').hide();
-            tr.find('.pendding_status').val('0');
-            location.reload();
-        },
-        error: function (data) {
-            console.log('Error:', data);
-        }
-    });
-
-    //window.location = SITE_URL
-})
+});

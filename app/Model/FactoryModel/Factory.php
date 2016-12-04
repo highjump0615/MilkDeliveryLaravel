@@ -43,6 +43,8 @@ class Factory extends Model
         'factory_id',
         'factory_password',
         'gap_day',
+        'service_phone',
+        'return_phone'
     ];
 
     protected $appends = [

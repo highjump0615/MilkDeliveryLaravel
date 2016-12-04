@@ -796,6 +796,11 @@ class DSDeliveryPlanCtrl extends Controller
         return $status;
     }
 
+    /**
+     * 打开今日配送单
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showJinripeisongdan(Request $request){
 
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
@@ -819,6 +824,8 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 只有生成了配送列表之后才显示今日配送单
         if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id)) {
+            $strAlertMsg = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
+
             return view('naizhan.shengchan.jinripeisongdan',[
                 'pages'         =>$pages,
                 'child'         =>$child,
@@ -826,6 +833,7 @@ class DSDeliveryPlanCtrl extends Controller
                 'current_page'  =>$current_page,
 
                 'milkman_info'  =>$milkman_info,
+                'alert_msg'     =>$strAlertMsg,
             ]);
         }
 

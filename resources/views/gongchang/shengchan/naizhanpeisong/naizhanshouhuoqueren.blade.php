@@ -67,7 +67,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-						<table id="table1" class="footable table table-bordered" id="by_station" data-page-size="10">
+						<table id="table1" class="table table-bordered" id="by_station">
 							<thead>
 							<tr>
 								<th data-sort-ignore="true">序号</th>
@@ -118,13 +118,6 @@
 								@endforeach
 							@endforeach
 							</tbody>
-							<tfoot>
-							<tr>
-								<td colspan="16">
-									<ul class="pagination pull-right"></ul>
-								</td>
-							</tr>
-							</tfoot>
 						</table>
                     </div>
                 </div>

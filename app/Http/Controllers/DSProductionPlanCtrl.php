@@ -782,20 +782,25 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         return Response::json(['status'=>"successfully_called!"]);
     }
 
+    /**
+     * 打开奶站配送管理
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanpeisongPage(Request $request){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $child = 'naizhanpeisong';
         $parent = 'shengchan';
         $current_page = 'naizhanpeisong';
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
-        $currentDate->add(\DateInterval::createFromDateString('yesterday'));
-        $current_date_str = $currentDate->format('Y-m-d');
+        $deliver_date_str = getCurDateString();
+        $current_date_str = getPrevDateString();
 
-        $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name']);
+        $products = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get(['id','name']);
 
         foreach ($products as $p) {
             $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)
@@ -840,6 +845,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $nPageCount = 25;
+        $nCurPageCount = 0;
 
         foreach ($stations as $si) {
             $areas = explode(" ",$si->address);
@@ -847,6 +854,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $station_plans = DSProductionPlan::where('station_id', $si->id)
                 ->where('produce_end_at', $current_date_str)
                 ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
+                ->orderby('product_id')
                 ->get();
 
             foreach($station_plans as $sp) {
@@ -876,7 +884,13 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
             $si["station_plan"] = $station_plans;
             $si["plan_status"] = (count($station_plans) > 0);
+
+            // 计算记录行数，超过制定的数量就
+            if ($nCurPageCount + count($station_plans) <= $nPageCount) {
+                $nCurPageCount += count($station_plans);
+            }
         }
+
         return view('gongchang.shengchan.naizhanpeisong',[
             // 页面信息
             'pages'                     =>$pages,
@@ -887,8 +901,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             // 奶站信息
             'DeliveryStations_info'     =>$stations,
 
-            //生产结果信息
+            // 生产结果信息
             'products'                  =>$products,
+
+            // 一个页面的记录数量, 防止一个奶站的信息被分页表示
+            'page_count'                =>$nCurPageCount
         ]);
     }
 
@@ -1078,24 +1095,29 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         ]);
     }
 
+    /**
+     * 打开奶站签收计划
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanQianshoujihua(Request $request){
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('yesterday'));
-        $current_date_str = $currentDate->format('Y-m-d');
+        $current_date_str = getPrevDateString();
 
         $child = 'qianshoujihua';
         $parent = 'shengchan';
         $current_page = 'qianshoujihua';
         $pages = Page::where('backend_type',Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
 
-        $dsplan = DSProductionPlan::where('station_id',$current_station_id)->where('produce_end_at',$current_date_str)->
-        where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)->orderby('product_id')->get();
+        $dsplan = DSProductionPlan::where('station_id',$current_station_id)
+            ->where('produce_end_at',$current_date_str)
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
+            ->orderby('product_id')
+            ->get();
 
-        $RefundDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $refund_date_str = $RefundDate->format('Y-m-d');
+        $refund_date_str = getCurDateString();
 
         $station_addr = DeliveryStation::find($current_station_id)->address;
         $station_addr = explode(' ',$station_addr);
@@ -1103,10 +1125,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $bottle_types = DB::select(DB::raw("select DISTINCT p.bottle_type from products p, productprice pp
                     where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
-
-        $station_addr = DeliveryStation::find($current_station_id)->address;
-        $station_addr = explode(' ',$station_addr);
-        $station_addr = $station_addr[0]." ".$station_addr[1]." ".$station_addr[2];
 
         $box_types = DB::select(DB::raw("select DISTINCT p.basket_spec from products p, productprice pp
                     where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
@@ -1139,14 +1157,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function confirm_Plan_count(Request $request){
 
-        $station_id = $request->input('station_id');
+        $station_id = $this->getCurrentStationId();
         $product_id = $request->input('product_id');
 
         $confirm_count = $request->input('confirm_count');
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('yesterday'));
-        $current_date_str = $currentDate->format('Y-m-d');
+        $current_date_str = getPrevDateString();
 
         $dsplan = DSProductionPlan::where('station_id',$station_id)
             ->where('produce_end_at',$current_date_str)
@@ -1166,7 +1182,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function refund_BB(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
         $types = $request->input('types');
         $object_type = $request->input('object_type');

@@ -243,11 +243,14 @@ class FactoryCtrl extends Controller
     {
         $factory = Factory::find($factory_id);
 
-
         /* banner ads */
 
         for($i=1; $i<=4; $i++) {
             $product_id = $request->input('product_banner_'.$i);
+            if (empty($product_id)) {
+                continue;
+            }
+
             $ad = WechatAd::where('factory_id', $factory_id)
                 ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
                 ->where('image_no', $i)->get()->first();
@@ -280,6 +283,10 @@ class FactoryCtrl extends Controller
         /* promo ads */
         for($i=1; $i<=4; $i++) {
             $product_id = $request->input('product_promo_'.$i);
+            if (empty($product_id)) {
+                continue;
+            }
+
             $ad = WechatAd::where('factory_id', $factory_id)
                 ->where('type', WechatAd::WECHAT_AD_TYPE_PROMOTION)
                 ->where('image_no', $i)->get()->first();
@@ -310,8 +317,10 @@ class FactoryCtrl extends Controller
             $ad->save();
         }
 
-
-
+        // 客服电话、推定电话
+        $factory->service_phone = $request->input('service_phone');
+        $factory->return_phone = $request->input('return_phone');
+        $factory->save();
 
         return redirect()->route('yonghu_page');
     }

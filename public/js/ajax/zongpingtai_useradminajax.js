@@ -53,7 +53,6 @@ $(document).ready(function(){
         //$('#modal-form').modal('show');
     });
 
-
     $('.footable').footable();
     //create new role / update existing role
     $("#btn-save").click(function (e) {
@@ -63,15 +62,11 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
             }
-        })
+        });
 
         var password = $('#pass1').val();
         var confirmpass = $('#pass2').val();
         var username = $('#username').val();
-
-
-        
-
 
         if(username == '' || password == ''|| password!=confirmpass)
         {
@@ -107,7 +102,7 @@ $(document).ready(function(){
                 status: $('#status').val(),
                 backend_type: $('#backend_type').val(),
                 user_role_id: $('#permission').val(),
-            }
+            };
 
             console.log(formData);
 
@@ -127,7 +122,6 @@ $(document).ready(function(){
             }
 
             $.ajax({
-
                 type: type,
                 url: my_url,
                 data: formData,
@@ -153,7 +147,7 @@ $(document).ready(function(){
                     else {
                         role += '<td><button type="button" data-toggle="modal" class="btn btn-success update-user" href="#modal-form" value="' + data.id + '">编辑</button>&nbsp;';
 
-                        role += '<a type="button" class="btn btn-success"  href="juese"  value="' + data.id + '">查看操作权限</a>&nbsp;';
+                        role += '<a type="button" class="btn btn-success"  href="juese/' + data.user_role_id + '"  value="' + data.id + '">查看操作权限</a>&nbsp;';
                         if (data.status == 1)
                             role += '<button type="button" class="btn btn-success stop-user" value="' + data.id + '">禁止用户</button>&nbsp;';
                         else

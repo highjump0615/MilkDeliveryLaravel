@@ -146,17 +146,19 @@ class UserCtrl extends Controller
     public function addZongpingGuanliyuan(Request $request){
         $name = $request->input('name');
         $is_exist = User::where('name',$name)->get()->first();
+
         if(empty($is_exist)){
             $user = new User;
             $user->name = $request->input('name');
             $user->password = bcrypt($request->input('password'));
-            $user->factory_id = DeliveryStation::find($request->input('station_id'))->factory_id;
-            $user->station_id = $request->input('station_id');
+            $user->factory_id = 0;
             $user->user_role_id = $request->input('user_role_id');
             $user->status = $request->input('status');
             $user->backend_type = $request->input('backend_type');
             $user->last_used_ip = $request->ip();
+            $user->description = $request->input('description');
             $user->save();
+
             return Response::json($user);
         }
         else{
@@ -172,6 +174,7 @@ class UserCtrl extends Controller
         }
         $user->status = $request->input('status');
         $user->user_role_id = $request->input('user_role_id');
+        $user->description = $request->input('description');
 
         $user->save();
         return Response::json($user);

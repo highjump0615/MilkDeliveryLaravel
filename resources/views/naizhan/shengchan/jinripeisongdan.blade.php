@@ -17,6 +17,10 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
+
+				@if(isset($alert_msg) != 0)
+					<label style="color: red; font-size: 18px;">{{$alert_msg}}</label>
+				@endif
 			
 				<div class="ibox-content">
 					<div class="feed-element">
@@ -40,6 +44,7 @@
 					</div>
 				</div>
 				<div><hr></div>
+
 				<div id="deliver_info">
 				@foreach($milkman_info as $mi)
 				<div id="{{$mi['milkman_name']}}" class="milkman_plans">
