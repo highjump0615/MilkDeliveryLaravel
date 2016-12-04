@@ -227,7 +227,7 @@
                                 <tr>
                                     <td class="o_io"
                                         data-io="{{$calc_histories[$i]->io_type}}">{{$calc_histories[$i]->io_name}}</td>
-                                    <td class="o_date">{{$calc_histories[$i]->time}}</td>
+                                    <td class="o_date">{{$calc_histories[$i]->created_at}}</td>
                                     <td class="o_kind"
                                         data-kind="{{$calc_histories[$i]->type}}">{{$calc_histories[$i]->type_name}}</td>
                                     <td>{{$calc_histories[$i]->amount}}</td>
@@ -297,8 +297,8 @@
             var f_io = $('#filter_io').val();
             var f_kind = $('#filter_kind').val();
 
-            var f_start_date = $('#filter_start_date').val();
-            var f_end_date = $('#filter_end_date').val();
+            var f_start_date = $('#filter_start_date').val() + ' 00:00';
+            var f_end_date = $('#filter_end_date').val() + ' 24:00';
 
             //show only rows in filtered table that contains the above field value
             var filter_rows = [];

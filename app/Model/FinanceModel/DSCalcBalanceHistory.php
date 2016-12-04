@@ -7,13 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class DSCalcBalanceHistory extends Model
 {
     protected $table = 'dscalcbalancehistory';
-    public $timestamps = false;
 
     protected $fillable = [
         'station_id',
         'type',
         'amount',
-        'time',
         'receipt_number',
         'io_type',
         'comment',

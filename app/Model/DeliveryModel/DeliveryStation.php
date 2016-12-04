@@ -278,32 +278,6 @@ class DeliveryStation extends Authenticatable
         }
     }
 
-    public function getMoneyNotReceivedStartOfMonthAttribute()
-    {
-        $first_m = date('Y-m-01');
-
-        $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '<', $first_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-        $order_total = $this->getSumOfOrders($orders);
-
-        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)
-            ->where('time', '<', $first_m)
-            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)
-            ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
-            ->get();
-
-        $received_total = $this->getSumOfHistoreis($calc_histories);
-
-        return $order_total - $received_total;
-    }
 
     public function getPaymentCalcTypeStrAttribute(){
         $payment_calc_type_id = $this->payment_calc_type;
@@ -409,22 +383,25 @@ class DeliveryStation extends Authenticatable
     public function getSelfBusinessHistoryAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
-        $histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)->where('time', '<=', $last_m)->get();
+        $histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
+            ->where('time', '>=', $first_m)
+            ->where('time', '<=', $last_m)
+            ->orderby('time', 'desc')
+            ->get();
+
         return $histories;
     }
 
     //get out history of calculation balance
     public function getCalcHistoriesOutAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $histories = DSCalcBalanceHistory::where('station_id', $this->id)
-            ->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)
+            ->whereMonth('created_at', '=', date('m'))
+            ->whereYear('created_at', '=', date('Y'))
             ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_OUT)
+            ->orderby('created_at', 'desc')
             ->get();
 
         return $histories;
@@ -483,10 +460,11 @@ class DeliveryStation extends Authenticatable
     //get calculation history
     public function getCalcHistoriesAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $histories = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->whereMonth('created_at', '=', date('m'))
+            ->whereYear('created_at', '=', date('Y'))
+            ->get();
 
-        $histories = DSCalcBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)->where('time', '<=', $last_m)->get();
         return $histories;
     }
 
@@ -696,14 +674,13 @@ class DeliveryStation extends Authenticatable
     //get money orders that has received money from station
     public function getMoneyOrdersReallyGotSumAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $res = DSCalcBalanceHistory::where('station_id', $this->id)
             ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
-            ->whereBetween('time', array($first_m, $last_m))
+            ->whereMonth('created_at', '=', date('m'))
+            ->whereYear('created_at', '=', date('Y'))
             ->selectRaw('sum(amount) as sum')
-            ->get()->first();
+            ->get()
+            ->first();
 
         if($res)
             return $res['sum'];

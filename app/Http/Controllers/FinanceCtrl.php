@@ -97,7 +97,6 @@ class FinanceCtrl extends Controller
             $dsbh->station_id = $station_id;
             $dsbh->type = DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION;
             $dsbh->amount = $amount;
-            $dsbh->time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
             $dsbh->receipt_number = $receipt_number;
             $dsbh->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
             $dsbh->comment = $comment;
@@ -220,12 +219,9 @@ class FinanceCtrl extends Controller
         // 其他奶站订单转入实收金额
         $other_orders_really_got_sum = $this->calcOrderTransferAmount($other_orders_really_got);
 
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $calc_histories = DSCalcBalanceHistory::where('station_id', $station_id)
-            ->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)
+            ->whereMonth('created_at', '=', date('m'))
+            ->whereYear('created_at', '=', date('Y'))
             ->where(function($query) {
                 $query->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION);
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION);
@@ -233,6 +229,7 @@ class FinanceCtrl extends Controller
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT);
                 $query->orwhere('type', DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER);
             })
+            ->orderby('created_at', 'desc')
             ->get();
 
         return array(
@@ -361,7 +358,6 @@ class FinanceCtrl extends Controller
                 return response()->json(['status' => 'fail', 'message' => '找不到奶站']);
 
             $dscbh = new DSCalcBalanceHistory;
-            $dscbh->time = $time;
             $dscbh->amount = $amount;
             $dscbh->station_id = $station_id;
             $dscbh->type = $type;
@@ -840,7 +836,6 @@ class FinanceCtrl extends Controller
                 $dscalc_history_for_station1->station_id = $station_id;
                 $dscalc_history_for_station1->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER;
                 $dscalc_history_for_station1->amount = $real_amount;
-                $dscalc_history_for_station1->time = getCurDateString();
                 $dscalc_history_for_station1->receipt_number = $receipt_number;//id from bank
                 $dscalc_history_for_station1->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station1->comment = $comment;
@@ -851,7 +846,6 @@ class FinanceCtrl extends Controller
                 $dscalc_history_for_station2->station_id = $delivery_station_id;
                 $dscalc_history_for_station2->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION;
                 $dscalc_history_for_station2->amount = $real_amount;
-                $dscalc_history_for_station2->time = getCurDateString();
                 $dscalc_history_for_station2->receipt_number = $receipt_number;//id from bank
                 $dscalc_history_for_station2->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station2->comment = $comment;
@@ -1233,7 +1227,6 @@ class FinanceCtrl extends Controller
                 $dscalc_history_for_station2_in->station_id = $delivery_station_id;
                 $dscalc_history_for_station2_in->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD;
                 $dscalc_history_for_station2_in->amount = $total_amount;
-                $dscalc_history_for_station2_in->time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
                 $dscalc_history_for_station2_in->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station2_in->comment = $comment;
                 $dscalc_history_for_station2_in->save();
@@ -1244,7 +1237,6 @@ class FinanceCtrl extends Controller
                 $dscalc_history_for_station2_out->station_id = $delivery_station_id;
                 $dscalc_history_for_station2_out->type = DSCalcBalanceHistory::DSCBH_OUT_MILK_CARD_ORDER_TRANSFER_FACTORY;
                 $dscalc_history_for_station2_out->amount = $total_amount;
-                $dscalc_history_for_station2_out->time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
                 $dscalc_history_for_station2_out->io_type = DSCalcBalanceHistory::DSCBH_TYPE_OUT;
                 $dscalc_history_for_station2_out->comment = $comment;
                 $dscalc_history_for_station2_out->save();
@@ -2235,7 +2227,6 @@ class FinanceCtrl extends Controller
                 $dscalc_history_for_station1->station_id = $delivery_station_id;
                 $dscalc_history_for_station1->type = DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT;
                 $dscalc_history_for_station1->amount = $real_amount;
-                $dscalc_history_for_station1->time = getCurDateString();
                 $dscalc_history_for_station1->receipt_number = $receipt_number;//id from bank
                 $dscalc_history_for_station1->io_type = DSCalcBalanceHistory::DSCBH_TYPE_IN;
                 $dscalc_history_for_station1->comment = $comment;

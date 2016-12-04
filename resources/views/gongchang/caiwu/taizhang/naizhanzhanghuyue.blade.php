@@ -160,7 +160,7 @@
                         @foreach($calc_histories_out as $cho)
                             <tr>
                                 <td>转出</td>
-                                <td class="o_date">{{$cho->time}}</td>
+                                <td class="o_date">{{$cho->created_at}}</td>
                                 <td class="o_type" data-type="{{$cho->type}}">{{$cho->type_name}}</td>
                                 <td>{{$cho->amount}}</td>
                                 <td>{{$cho->receipt_number}}</td>

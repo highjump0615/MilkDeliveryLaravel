@@ -500,9 +500,11 @@ class FactoryStatistics extends Controller
 
             $stations[$station_id]['new_order_amount_real'] = $real;
         }
+
         /* 11. 划转公司奶款金额 */
         $res = DSCalcBalanceHistory::where('type', DSCalcBalanceHistory::DSCBH_OUT_TRANSFER_MILK_FACTORY)
-            ->whereBetween('time', array($start_date, $end_date))
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -517,7 +519,8 @@ class FactoryStatistics extends Controller
                 $query->where('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_DELIVERY_COST);
                 $query->orWhere('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_ROBATE_ROYALTY);
             })
-            ->whereBetween('time', array($start_date, $end_date))
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -525,9 +528,11 @@ class FactoryStatistics extends Controller
         foreach($res as $o) {
             $stations[$o->station_id]['trans_for_delivery_cost_amount'] = $o->sum;
         }
+
         /* 13. 其他划转金额 */
         $res = DSCalcBalanceHistory::where('type', DSCalcBalanceHistory::DSCBH_OUT_OTHER_USES)
-            ->whereBetween('time', array($start_date, $end_date))
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();

@@ -60,8 +60,12 @@ class TotalStatisticsCtrl extends Controller
             $fa['channel'] = 0;
             foreach ($stations as $st){
 
-                $dscalcbal = DSCalcBalanceHistory::where('station_id',$st->id)->where('io_type',DSCalcBalanceHistory::DSCBH_TYPE_OUT)->
-                    wherebetween('time',[$start_date,$end_date])->get();
+                $dscalcbal = DSCalcBalanceHistory::where('station_id',$st->id)
+                    ->where('io_type',DSCalcBalanceHistory::DSCBH_TYPE_OUT)
+                    ->whereDate('created_at', '>=', $start_date)
+                    ->whereDate('created_at', '<=', $end_date)
+                    ->get();
+
                 foreach ($dscalcbal as $dc){
                     $fa['order_total'] += $dc->amount;
                 }
@@ -364,7 +368,8 @@ class TotalStatisticsCtrl extends Controller
         }
         /* 11. 划转公司奶款金额 */
         $res = DSCalcBalanceHistory::where('type', DSCalcBalanceHistory::DSCBH_OUT_TRANSFER_MILK_FACTORY)
-            ->whereBetween('time', array($start_date, $end_date))
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
@@ -379,7 +384,8 @@ class TotalStatisticsCtrl extends Controller
             $query->where('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_DELIVERY_COST);
             $query->orWhere('type', DSCalcBalanceHistory::DSCBH_OUT_SETTLEMENT_ROBATE_ROYALTY);
         })
-            ->whereBetween('time', array($start_date, $end_date))
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(amount)')
             ->get();
