@@ -314,14 +314,16 @@ class WeChatCtrl extends Controller
         $carts = WechatCart::where('wxuser_id', $wechat_user_id)->get();
         $cartn = $carts->count();
 
-
         $customer_id = $wechat_user->customer_id;
+
         $customer = Customer::find($customer_id);
+        
         if ($customer) {
             //get customer's account remain amount
             $remain_amount = $customer->remain_amount;
             //get customer's remaining bottle amount
             $remaining_bottle_count = $customer->remaining_bottle_count;
+
         } else {
             $remain_amount = 0;
             $remaining_bottle_count = 0;
@@ -1063,7 +1065,7 @@ class WeChatCtrl extends Controller
 
     public function dingdanliebiao(Request $request)
     {
-        $type = $request->input('type');
+
 
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
@@ -1085,77 +1087,57 @@ class WeChatCtrl extends Controller
                     $query->orWhere('phone', $customer->phone);
                 })->orderBy('ordered_at', 'desc')->get();
 
-            if($type)
+            $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
+            if($request->has('type'))
             {
+                $type = $request->input('type');
                 $verified = session('verified');
                 if($verified != "yes")
                 {
                     return redirect()->route('dengji');
                 }
-            }
 
-            if ($type == 'waiting') {
-                $orders = Order::where('is_deleted', 0)
-                    ->where('status', Order::ORDER_WAITING_STATUS)
-//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where(function ($query)
-                    use ($customer_id, $customer)
-                    {
-                        $query->where('customer_id', $customer_id);
-                        $query->orWhere('phone', $customer->phone);
-                    })
-                    ->orderBy('ordered_at', 'desc')
-                    ->get();
+                if ($type == 'waiting') {
+                    $orders = Order::where('is_deleted', 0)
+                        ->where(function($query){
+                                $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
+                                $query->orWhere('status', Order::ORDER_WAITING_STATUS);
+                        })
+                        ->where('phone', $customer->phone)
+                        ->orderBy('ordered_at', 'desc')
+                        ->get();
+                }
+                else if ($type == 'finished') {
+                    $orders = Order::where('is_deleted', 0)
+                        ->where('status', Order::ORDER_FINISHED_STATUS)
+                        ->Where('phone', $customer->phone)
+                        ->orderBy('ordered_at', 'desc')
+                        ->get();
+                }
+                else if ($type == 'stopped') {
+                    $orders = Order::where('is_deleted', 0)
+                        ->where('status', Order::ORDER_STOPPED_STATUS)
+                        ->Where('phone', $customer->phone)
+                        ->orderBy('ordered_at', 'desc')
+                        ->get();
+                }
+                else if ($type == 'on_delivery') {
+                    $orders = Order::where('is_deleted', 0)
+                        ->where(function ($query) {
+                            $query->where('status', Order::ORDER_PASSED_STATUS);
+                            $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                        })
+                        ->where('phone', $customer->phone)
+                        ->orderBy('ordered_at', 'desc')
+                        ->get();
+                }
 
-            } else if ($type == 'finished') {
-                $orders = Order::where('is_deleted', 0)
-                    ->where('status', Order::ORDER_FINISHED_STATUS)
-//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where(function ($query)
-                    use ($customer_id, $customer)
-                    {
-                        $query->where('customer_id', $customer_id);
-                        $query->orWhere('phone', $customer->phone);
-                    })
-                    ->orderBy('ordered_at', 'desc')
-                    ->get();
-            } else if ($type == 'stopped') {
-                $orders = Order::where('is_deleted', 0)
-                    ->where('status', Order::ORDER_STOPPED_STATUS)
-//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where(function ($query)
-                    use ($customer_id, $customer)
-                    {
-                        $query->where('customer_id', $customer_id);
-                        $query->orWhere('phone', $customer->phone);
-                    })
-                    ->orderBy('ordered_at', 'desc')
-                    ->get();
-            } else if ($type == 'on_delivery') {
-                $orders = Order::where('is_deleted', 0)
-                    ->where(function ($query) {
-                        $query->where('status', Order::ORDER_PASSED_STATUS);
-                        $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                    })
-                    ->where(function ($query)
-                    use ($customer_id, $customer)
-                    {
-                        $query->where('customer_id', $customer_id);
-                        $query->orWhere('phone', $customer->phone);
-                    })
-//                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->orderBy('ordered_at', 'desc')
-                    ->get();
-            }
-
-            $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
-
-            if ($type) {
-                return view('weixin.dingdanliebiao', [
-                    'set_type' => true,
-                    'orders' => $orders,
-                    'cartn' => $cartn,
-                ]);
+                    return view('weixin.dingdanliebiao', [
+                        'set_type' => true,
+                        'orders' => $orders,
+                        'cartn' => $cartn,
+                    ]);
             } else {
                 return view('weixin.dingdanliebiao', [
                     'orders' => $orders,
@@ -2821,6 +2803,7 @@ class WeChatCtrl extends Controller
             $customer_id = $customer->id;
             $wxuser->phone_verify_code = $code;
             $wxuser->customer_id = $customer_id;
+            $wxuser->name = $customer->name;
             $wxuser->save();
 
             // 发送验证码
@@ -2849,6 +2832,7 @@ class WeChatCtrl extends Controller
         $wxuser = WechatUser::find($wxuser_id);
         if ($wxuser->phone_verify_code == $code) {
             session(['verified' => 'yes']);
+
             return response()->json(['status' => 'success']);
         } else
             return response()->json(['status' => 'fail']);

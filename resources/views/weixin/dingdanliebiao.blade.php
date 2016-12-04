@@ -29,9 +29,8 @@
         @forelse($orders as $o)
             <div class="ordsl">
                 <div class="ordnum">
-                    <span>{{$o->ordered_at}}</span>
+                    <span>订单日期: {{$o->ordered_at}}</span>
                     <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
-                    &nbsp;奶站: {{$o->station_name}} &nbsp; 配送员: {{$o->milkman->name}} {{$o->milkman->phone}}
                 </div>
                 @forelse($o->order_products as $op)
                     <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">
@@ -45,7 +44,12 @@
                                 订单数量：{{$op->total_count}}
 
                             </div>
-                            <div class="ordye">金额：{{$op->total_amount}}元</div>
+                            <div class="ordye">
+                                @if($o->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                                    $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                                    开始日期: {{$op->start_at}}&emsp;
+                                @endif
+                                金额：{{$op->total_amount}}元</div>
                         </div>
                     </a>
                 @empty
@@ -82,7 +86,7 @@
                     暂停订单
                     <input type="checkbox" class="js-switch stop_order"
                            data-start-at="{{$o->start_at}}"
-                           data-end-at="{{$o->order_end_at}}"
+                           data-end-at="{{$o->order_end_date}}"
                            data-order-id="{{$o->id}}"/>
                     </span>
                     @endif
@@ -99,17 +103,19 @@
             </div>
 
             <div id="stop_order_modal" class="animated modal fade" role="dialog" aria-hidden="true">
-                <div class="modal-dialog modal-sm">
+                <div class="modal-dialog modal-md">
                     <div class="modal-content">
                         <form id="stop_order_modal_form" method="POST" style="padding:0;">
                             <div class="modal-body">
                                 <label style="margin-bottom: 30px;">选择暂停的日期</label>
-                                <div class="input-daterange input-group col-md-12" id="datepicker">
-                                    <input type="text" required class="input-sm form-control"
-                                           name="start" id="stop_start"/>
+                                <div class="input-group col-md-12">
+                                    {{--<input type="text" required class="input-sm form-control"--}}
+                                           {{--name="start" id="stop_start"/>--}}
+                                    <input class="input-sm form-control" id="stop_start" required name="start" type="date" value=""/>
                                     <span class="input-group-addon">至</span>
-                                    <input type="text" id="stop_end" required class="input-sm form-control"
-                                           name="end"/>
+                                    {{--<input type="text" id="stop_end" required class="input-sm form-control"--}}
+                                           {{--name="end"/>--}}
+                                    <input class="input-sm form-control" id="stop_end" required name="end" type="date" value=""/>
                                 </div>
                                 <input type="hidden" id="stop_order_id" name="order_id" value=""/>
                             </div>
@@ -130,8 +136,11 @@
                                 <label class="align-center  btn-block" id="stop_period"></label>
                                 <hr>
                                 <label class="align-center  btn-block" style="margin-top: 30px;">选择开启的日期</label>
-                                <div class="input-group date single_date">
-                                    <input required type="text" class="form-control" id="start_at"
+                                <div class="input-group">
+                                    {{--<input required type="text" class="form-control" id="start_at"--}}
+                                           {{--name="start_at"><span--}}
+                                            {{--class="input-group-addon"><i class="fa fa-calendar"></i></span>--}}
+                                    <input required type="date" class="form-control" id="start_at"
                                            name="start_at"><span
                                             class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 </div>
@@ -168,6 +177,11 @@
             }
         }
 
+        Date.prototype.toISOString = function(){
+            return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+        };
+
+
         // 解析当前服务器的时间 (2014-08-12 09:25:24)
         var time = s_timeCurrent.replace(/-/g, ':').replace(' ', ':');
         time = time.split(':');
@@ -188,6 +202,14 @@
             $('#cancel_stop').removeAttr('data-order-id');
         }
 
+        function pad(number){
+            var r= String(number);
+            if(r.length === 1){
+                r= '0'+r;
+            }
+            return r;
+        }
+
         $(document).on('change', '.stop_order', function () {
 
             var order_id = $(this).data('order-id');
@@ -198,6 +220,7 @@
 
             if (checked == true) {
                 var order_start_at = start_at;
+
                 var order_start_date = new Date(order_start_at);
                 var order_end_date = new Date(end_at);
 
@@ -208,25 +231,38 @@
                     stop_start_able_date = order_start_date;
                 }
 
-                //set the stop modal 's start stop date val as orders's start date at least.
-                $('#stop_order_modal').find('.input-daterange #stop_start').datepicker({
-                    keyboardNavigation: false,
-                    forceParse: false,
-                    autoclose: true,
-                    calendarWeeks: false,
-                    clearBtn: true,
-                    minDate: stop_start_able_date,
-                    maxDate: order_end_date,
-                });
+//                //set the stop modal 's start stop date val as orders's start date at least.
+//                $('#stop_order_modal').find('.input-daterange #stop_start').datepicker({
+//                    keyboardNavigation: false,
+//                    forceParse: false,
+//                    autoclose: true,
+//                    calendarWeeks: false,
+//                    clearBtn: true,
+//                    minDate: stop_start_able_date,
+//                    maxDate: order_end_date,
+//                });
+//
+//                $('#stop_order_modal').find('.input-daterange #stop_end').datepicker({
+//                    keyboardNavigation: false,
+//                    forceParse: false,
+//                    autoclose: true,
+//                    calendarWeeks: false,
+//                    clearBtn: true,
+//                    minDate: stop_start_able_date,
+//                });
 
-                $('#stop_order_modal').find('.input-daterange #stop_end').datepicker({
-                    keyboardNavigation: false,
-                    forceParse: false,
-                    autoclose: true,
-                    calendarWeeks: false,
-                    clearBtn: true,
-                    minDate: stop_start_able_date,
-                });
+                Date.prototype.toISOString = function(){
+                    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+                };
+
+                var min_stop_start = stop_start_able_date.toISOString();
+                var max_stop_start = order_end_date.toISOString();
+                var min_stop_end = stop_start_able_date.toISOString();
+
+                $('#stop_order_modal').find('#stop_start').attr('min', min_stop_start);
+                $('#stop_order_modal').find('#stop_start').attr('max', max_stop_start);
+
+                $('#stop_order_modal').find('#stop_end').attr('min', min_stop_end);
 
                 init_stop_order_modal();
 
@@ -342,14 +378,17 @@
                 //            restart_able_date.setDate(today.getDate()+3);
                 //        }
 
-                $('#restart_order_modal').find('#start_at').datepicker({
-                    keyboardNavigation: false,
-                    forceParse: false,
-                    autoclose: true,
-                    calendarWeeks: false,
-                    clearBtn: true,
-                    minDate: restart_able_date,
-                });
+//                $('#restart_order_modal').find('#start_at').datepicker({
+//                    keyboardNavigation: false,
+//                    forceParse: false,
+//                    autoclose: true,
+//                    calendarWeeks: false,
+//                    clearBtn: true,
+//                    minDate: restart_able_date,
+//                });
+
+                restart_able_date = restart_able_date.toISOString();
+                $('#start_at').attr('min', restart_able_date);
 
                 init_restart_order_modal();
 

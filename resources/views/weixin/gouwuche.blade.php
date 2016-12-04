@@ -32,7 +32,7 @@
             </form>
         @empty
             <div class="ordtop clearfix nocart">
-                <p>没有项目</p>
+                <p class="text-center">没有项目</p>
             </div>
         @endforelse
 

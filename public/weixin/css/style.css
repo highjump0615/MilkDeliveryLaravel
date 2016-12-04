@@ -19,6 +19,7 @@ button:active{position:relative; top:1px;}
 .pa2{ padding:3%}
 .pa2t{ padding:0 3%;}
 .plan_result{text-align:center}
+p.no_data{width: 100%; font-size: 15px; margin: 10px auto; text-align: center;}
 
 input[type='checkbox']{margin: 0;}
 /************************首页*/
@@ -399,3 +400,4 @@ img.ordxz{cursor:pointer;}
 button[disabled], a[disabled], input[disabled] {background-color: #988f89; cursor:not-allowed}
 a[disabled]{pointer-events: none;}
 button{border-style:none;}
+.sel_adr_form{cursor: pointer;}

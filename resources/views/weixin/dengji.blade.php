@@ -17,7 +17,7 @@
             <div class="pa2">
                 <div class="lgli">
                     <span class="lg-l">手机号码：</span>
-                    <input class="lgin1" name="phone_number" id="phone_number" type="text" placeholder="请输入订奶人的手机号码">
+                    <input class="lgin1" name="phone_number" pattern = "^1[345678][0-9]{9}$" id="phone_number" type="text" placeholder="请输入订奶人的手机号码">
                 </div>
                 <div class="lgli">
                     <span class="lg-l">验 证 码：</span>
@@ -38,26 +38,34 @@
         function send_verify_code_to_phone()
         {
             var phone_number = $('#phone_number').val();
-            $.ajax({
-                type:"POST",
-                url: SITE_URL + "weixin/api/send_verify_code_to_phone",
-                data: {
-                    "phone_number": phone_number
-                },
-                success:function(data)
-                {
-                    if(data.status == "success")
+            var pattern = $('#phone_number').attr('pattern');
+
+            if(pattern && phone_number.match(new RegExp(pattern)))
+            {
+                $.ajax({
+                    type:"POST",
+                    url: SITE_URL + "weixin/api/send_verify_code_to_phone",
+                    data: {
+                        "phone_number": phone_number
+                    },
+                    success:function(data)
                     {
-                        show_info_msg('验证码发送，请输入正确的验证码.');
-                    } else {
-                        show_warning_msg('客户不存在');
+                        if(data.status == "success")
+                        {
+                            show_info_msg('验证码发送，请输入正确的验证码.');
+                        } else {
+                            show_warning_msg('客户不存在');
+                        }
+                    },
+                    error: function(data)
+                    {
+                        console.log(data);
                     }
-                },
-                error: function(data)
-                {
-                    console.log(data);
-                }
-            });
+                });
+            } else {
+                show_warning_msg('请输入有效的电话号码');
+            }
+
         }
 
         function check_verify_code()
