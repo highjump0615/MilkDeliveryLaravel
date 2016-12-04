@@ -27,6 +27,8 @@ class Factory extends Model
         'number',
         'contact',
         'phone',
+        'service_phone',
+        'return_phone',
         'status',
         'last_used_ip',
         'started_at',

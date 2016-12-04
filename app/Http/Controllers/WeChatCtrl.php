@@ -1178,12 +1178,14 @@ class WeChatCtrl extends Controller
 
     public function toushu(Request $request)
     {
-        $phone1 = "12235236243";
-        $phone2 = "32123412312";
+        $factory_id = session('factory_id');
+        $factory = Factory::find($factory_id);
+
+        $phone1 =$factory->service_phone;
+        $phone2 = $factory->return_phone;
 
         $wechat_user_id = session('wechat_user_id');
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
-
 
         return view('weixin.toushu', [
             "phone1" => $phone1,
