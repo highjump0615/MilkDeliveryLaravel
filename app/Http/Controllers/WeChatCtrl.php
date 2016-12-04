@@ -2336,7 +2336,7 @@ class WeChatCtrl extends Controller
         $order->order_by_milk_card = 0;
         $order->trans_check = 0;
         $order->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-        $order->status = Order::ORDER_WAITING_STATUS;
+        $order->status = Order::ORDER_NEW_WAITING_STATUS;
         $order->ordered_at = $today;
         $order->start_at = $start_at;
         $order->delivery_time = 1;//default
@@ -2419,7 +2419,7 @@ class WeChatCtrl extends Controller
         $order->order_by_milk_card = 0;
         $order->trans_check = 0;
         $order->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-        $order->status = Order::ORDER_WAITING_STATUS;
+        $order->status = Order::ORDER_NEW_WAITING_STATUS;
         $order->ordered_at = $today;
         $order->start_at = $start_at;
         $order->delivery_time = 1;//default

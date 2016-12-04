@@ -213,7 +213,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //Show Xudan Order page
     Route::get('/gongchang/dingdan/xudanliebiao/xudan/{order_id}', 'OrderCtrl@show_xudan_dingdan_in_gongchang');
-    Route::post('api/gongchang/dingdan/dingdanluru/insert_xudan_order', 'OrderCtrl@insert_xudan_order_in_gongchang');
 
     //Show xudan orders liebiao
     Route::get('/gongchang/dingdan/xudanliebiao', 'OrderCtrl@show_xudan_dingdan_liebiao_in_gongchang');
@@ -530,8 +529,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::post('api/naizhan/dingdan/dingdanluru/insert_order', 'OrderCtrl@insert_order_in_naizhan');
     //Go to Xudan Page
     Route::get('/naizhan/dingdan/luruxudan/{order_id}', 'OrderCtrl@show_xudan_dingdan_in_naizhan');
-    //insert Xudan Order page
-    Route::post('api/naizhan/dingdan/luruxudan/insert_xudan_order', 'OrderCtrl@insert_xudan_order_in_naizhan');
+
     //Show stoppped dingdan
     Route::get('naizhan/dingdan/zanting/{order_id}', 'OrderCtrl@show_stopped_order_in_naizhan');
 
