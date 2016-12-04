@@ -33,27 +33,36 @@ class CheckerCtrl extends Controller
         ]);
     }
 
-
-
+    /**
+     * 打开征订员管理页面
+     * @param Request $request
+     * @param null $station_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showCheckerPage(Request $request, $station_id = null) {
         $child = 'zhengdingyuan';
         $parent = 'jichuxinxi';
         $current_page = 'zhengdingyuan';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        $factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $stations = DeliveryStation::where('factory_id',$factory_id)->where('is_deleted',0)->where('status',DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)->get();
-        if($station_id == null) {
+        $stations = DeliveryStation::where('factory_id',$factory_id)
+            ->where('is_deleted',0)
+            ->where('status',DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)
+            ->get();
+
+        if ($station_id == null) {
             $checkers = array();
             foreach($factory->ordercheckers as $c) {
                 array_push($checkers, $c);
             }
 
-            $stations = DeliveryStation::where('factory_id',$factory_id)->where('is_deleted',0)->where('status',DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)->get();
             foreach ($stations as $station) {
-                $orderchecker_list = OrderCheckers::where('station_id', $station->id)->where('is_active', 1)->get();
+                $orderchecker_list = OrderCheckers::where('station_id', $station->id)
+                    ->where('is_active', 1)
+                    ->get();
 
                 foreach($orderchecker_list as $c)
                 {
@@ -114,13 +123,19 @@ class CheckerCtrl extends Controller
         return Redirect::to('/gongchang/jichuxinxi/zhengdingyuan');
     }
 
+    /**
+     * 修改征订员
+     * @param Request $request
+     * @param $id
+     * @return mixed
+     */
     public function updateChecker(Request $request, $id) {
         $name = $request->input('name');
         $phone = $request->input('phone');
         $station_id = $request->input('station');
         $number = $request->input('number');
 
-        $factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
         $checker = OrderCheckers::findOrFail($id);
         $checker->name = $name;

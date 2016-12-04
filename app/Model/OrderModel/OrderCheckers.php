@@ -37,7 +37,6 @@ class OrderCheckers extends Model
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
     }
 
-
     public function getDanweiNameAttribute(){
         if($this->or_factory_id) {
             return "奶厂";

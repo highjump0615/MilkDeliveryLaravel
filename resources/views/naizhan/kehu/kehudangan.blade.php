@@ -194,17 +194,4 @@
 @section('script')
 	<script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/kehu_admin.js')?>"></script>
-
-	<script>
-		$(function () {
-			var obj = $('.pagination').twbsPagination({
-				totalPages: 35,
-				visiblePages: 5,
-				onPageClick: function (event, page) {
-					console.info(page);
-				}
-			});
-			console.info(obj.data());
-		});
-	</script>
 @endsection

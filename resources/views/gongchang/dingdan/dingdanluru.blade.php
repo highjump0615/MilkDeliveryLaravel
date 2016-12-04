@@ -131,8 +131,7 @@
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">电话:</label>
                         <div class="col-md-2">
-                            <input required type="text" pattern="\d{11}"  id="phone" name="phone" class="form-control"
-                                   oninvalid="this.setCustomValidity('手机号码得11位数')" oninput="this.setCustomValidity('')"
+                            <input required type="text" id="phone" name="phone" class="form-control"
                                    @if (isset($order)) value="{{$order->phone}}" @endif >
                         </div>
                     </div>

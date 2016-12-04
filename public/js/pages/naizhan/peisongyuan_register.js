@@ -3,6 +3,9 @@ var street = [];
 
 $(document).ready(function () {
     $(".chosen-select").chosen();
+
+    verifyPhone();
+    verifyIdNum();
 });
 
 $(document).on('change', '#area', function () {

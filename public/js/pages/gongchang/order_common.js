@@ -94,6 +94,8 @@ $(document).ready(function () {
     $('#product_table tbody tr').each(function () {
         set_avg_count(this);
     });
+
+    verifyPhone();
 });
 
 //Show Camera function

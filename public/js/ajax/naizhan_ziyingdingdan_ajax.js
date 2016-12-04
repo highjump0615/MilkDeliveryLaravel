@@ -75,6 +75,7 @@ $(document).on('click','#save',function(e){
 
 
 $(document).on('click','#add',function(){
+
     var type = $('#type option:selected').text();
     var type_val = $('#type option:selected').val();
     
@@ -88,11 +89,16 @@ $(document).on('click','#add',function(){
         return;
     }
 
+    // 手机号码验证
     var phone_number = $('#phone_number').val();
-    if(phone_number == ''){
+    var regExPhone = new RegExp('^1[345678][0-9]{9}$');
+
+    if (!regExPhone.test(phone_number)){
         $('#phone_alert').show();
         return;
     }
+
+
     var milkman_name = $('#milkman_name option:selected').text();
     var milkman_id = $('#milkman_name option:selected').val();
 
@@ -236,4 +242,32 @@ $(document).on('click','#plan_cancel',function () {
 
     // 跳转到前一页
     parent.history.back();
+});
+
+$(document).ready(function(){
+//			$('#produced_milk tr:not(:first)').each(function(){
+//				var test_drink=0;
+//				var group_sale=0;
+//				var channel_sale=0;
+//				if(!isNaN(parseInt($(this).find('td:eq(2)').text()))){
+//					test_drink = parseInt($(this).find('td:eq(2)').text());
+//				}
+//				if(!isNaN(parseInt($(this).find('td:eq(3)').text()))){
+//					group_sale = parseInt($(this).find('td:eq(3)').text());
+//				}
+//				if(!isNaN(parseInt($(this).find('td:eq(4)').text()))){
+//					channel_sale = parseInt($(this).find('td:eq(4)').text());
+//				}
+//				$(this).find('td:eq(5)').html(test_drink+group_sale+channel_sale);
+//			})
+
+    $('.i-checks').iCheck({
+        checkboxClass: 'icheckbox_square-green',
+        radioClass: 'iradio_square-green',
+    });
+
+    if ($('.street_list').val() != "none")
+        $('.street_list').trigger('change');
+
+//			$('.table').treeTable();
 });

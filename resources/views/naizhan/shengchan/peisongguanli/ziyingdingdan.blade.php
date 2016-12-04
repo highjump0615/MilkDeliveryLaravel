@@ -76,10 +76,10 @@
 						<div class="col-md-4">
 							<label class="col-lg-4" style="padding-top: 5px;">电话:</label>
 							<div class="col-lg-8">
-								<input type="text" class="form-control" id="phone_number" style="width:100%;" value="">
+								<input type="text" class="form-control" name="phone" id="phone_number" style="width:100%;" value="">
 							</div>	
 						</div>
-						<label id="phone_alert" style="color: red; padding-top: 5px; display: none;">(输入电话号码!)</label>
+						<label id="phone_alert" style="color: red; padding-top: 5px; display: none;">(手机号码不符合!)</label>
 					</div>
 					<div class="feed-element col-md-8">
 						<label class="control-label col-md-2" style="padding-top: 5px;">收货地址：</label>
@@ -157,9 +157,9 @@
 					</div>
 					<div class="col-md-1 col-md-offset-10">
 							<button id="add" class="btn btn-success" style="width:100%;">添加</button>
-					</div>	
-					
+					</div>
 				</div>
+
 				<br>
 				<div class="ibox-content">
                     <div class="col-lg-12">
@@ -232,34 +232,4 @@
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/naizhan_ziyingdingdan_ajax.js') ?>"></script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-//			$('#produced_milk tr:not(:first)').each(function(){
-//				var test_drink=0;
-//				var group_sale=0;
-//				var channel_sale=0;
-//				if(!isNaN(parseInt($(this).find('td:eq(2)').text()))){
-//					test_drink = parseInt($(this).find('td:eq(2)').text());
-//				}
-//				if(!isNaN(parseInt($(this).find('td:eq(3)').text()))){
-//					group_sale = parseInt($(this).find('td:eq(3)').text());
-//				}
-//				if(!isNaN(parseInt($(this).find('td:eq(4)').text()))){
-//					channel_sale = parseInt($(this).find('td:eq(4)').text());
-//				}
-//				$(this).find('td:eq(5)').html(test_drink+group_sale+channel_sale);
-//			})
-
-			$('.i-checks').iCheck({
-				checkboxClass: 'icheckbox_square-green',
-				radioClass: 'iradio_square-green',
-			});
-
-			if ($('.street_list').val() != "none")
-				$('.street_list').trigger('change');
-
-//			$('.table').treeTable();
-		});
-
-	</script>
 @endsection

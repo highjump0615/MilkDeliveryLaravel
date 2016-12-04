@@ -75,10 +75,7 @@
                             <div class="col-md-5">
                                 <label class="col-md-3" style="padding-top: 5px;">电话:</label>
                                 <div class="col-md-9">
-                                    <input type="text" pattern="^1[345678][0-9]{9}$" id="phone" name="phone" class="form-control"
-                                           oninvalid="this.setCustomValidity('手机号码格式不正确')"
-                                           oninput="this.setCustomValidity('')"
-                                           style="width:100%;">
+                                    <input type="text" id="phone" name="phone" class="form-control" style="width:100%;">
                                 </div>
                             </div>
                             <label id="phone_alert" style="color: red; padding-top: 5px; display: none">(请输入电话!)</label>
@@ -87,10 +84,8 @@
                             <div class="col-md-5">
                                 <label class="col-md-3" style="padding-top: 5px;">身份证号:</label>
                                 <div class="col-md-9">
-                                    <input type="text" pattern="^(\d){15}|(\d{17}(\d|x|X))$"
-                                           class="form-control" id="number" style="width:100%;"
-                                           oninput="this.setCustomValidity('')"
-                                           oninvalid="this.setCustomValidity('身份证号不符合')"/>
+                                    <input type="text"
+                                           class="form-control" id="number" style="width:100%;" name="idnumber" />
                                 </div>
                             </div>
                             <label id="number_alert"
@@ -245,7 +240,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3">身份证号</label>
                                     <div class="col-sm-9">
-                                        <input type="text" placeholder="" class="form-control" id="edit_idcard" name="number" />
+                                        <input type="text" placeholder="" class="form-control" id="edit_idcard" name="idnumber" />
                                     </div>
                                 </div>
 
