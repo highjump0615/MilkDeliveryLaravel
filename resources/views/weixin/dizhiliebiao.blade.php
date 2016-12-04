@@ -11,7 +11,7 @@
 
     @forelse($address_list as $a)
         <div class="addrbox">
-            <form id="select-form{{$a->id}}" method="post" action="{{url('/weixin/select_address')}}">
+            <form id="select-form{{$a->id}}" class="sel_adr_form" data-id = "{{$a->id}}" method="post" action="{{url('/weixin/select_address')}}">
                 <input type="hidden" name="address" value="{{$a->id}}">
                 <div class="adrtop pa2t">
                     <p>{{$a->name}} {{$a->phone}}<br>{{$a->address}}</p>
@@ -74,6 +74,10 @@
 
         $('.rqbot2').click(function () {
             $('.rqtc').hide();
+        });
+
+        $('.sel_adr_form').click(function(){
+           $(this).submit();
         });
 
         function delete_address(id) {

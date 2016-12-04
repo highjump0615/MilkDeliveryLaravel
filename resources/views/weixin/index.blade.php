@@ -118,7 +118,7 @@
             if(!address)
             {
 //                show_warning_msg('选择您的地址');
-                alert('选择您的地址')
+                alert('选择您所在的区域')
             } else {
                 var province_name = address.split(' ')[0];
                 $('#prov_title').text(province_name);

@@ -27,7 +27,10 @@
 		</div>
 		<div class="ordnum lastcd">
 			<span>订单金额: {{ $order->total_amount }}</span>
-			奶站: {{$order->station_name}} &emsp; 配送员: {{$order->milkman->name}} {{$order->milkman->phone}}
+			@if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                    $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+				奶站: {{$order->station_name}} &emsp; 配送员: {{$order->milkman->name}} {{$order->milkman->phone}}
+			@endif
 		</div>
 
 		@forelse($order->order_products as $op)
@@ -40,7 +43,12 @@
 				<br>
 				订单数量：{{$op->total_count}}
 			</div>
-			<div class="ordye">金额：{{$op->total_amount}}元</div>
+			<div class="ordye">
+				@if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                                    $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+					开始日期: {{$op->start_at}}&emsp;
+				@endif
+				金额：{{$op->total_amount}}元</div>
 		</div>
 		@empty
 			没有项目
