@@ -3527,7 +3527,7 @@ class OrderCtrl extends Controller
         $station_milkman = $this->get_station_milkman_with_address_from_factory($this->factory->id, $d_addr, $station);
 
         if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
-            return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
+            return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围']);
         }
         else if ($station_milkman == $this::NOT_EXIST_STATION) {
             return response()->json(['status' => 'fail', 'message' => '没有奶站.']);

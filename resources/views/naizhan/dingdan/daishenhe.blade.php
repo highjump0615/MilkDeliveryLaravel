@@ -163,7 +163,7 @@
                                         <td class="o_ordered">{{$orders[$i]->ordered_at}}</td>
                                         <td class="o_paytype">{{$orders[$i]->payment_type_name}}</td>
                                         <td class="o_property">{{$orders[$i]->order_property_name}}</td>
-                                        <td></td>
+                                        <td>{{$orders[$i]->comment}}</td>
                                     </tr>
                                 @endfor
                             @endif

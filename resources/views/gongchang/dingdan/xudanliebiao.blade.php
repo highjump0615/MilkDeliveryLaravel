@@ -159,7 +159,7 @@
                                                 {{$orders[$i]->milkman->name}} {{$orders[$i]->milkman->phone}}
                                             @endif
                                         </td>
-                                        <td></td>
+                                        <td>{{$orders[$i]->comment}}</td>
                                     </tr>
                                 @endfor
                             @endif

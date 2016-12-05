@@ -223,9 +223,8 @@
                                         </td>
                                         <td class="o_status" data-status="{{$orders[$i]->status}}" data-value="{{$orders[$i]->status_name}}" style="width: 70px;">
                                             {{$orders[$i]->status_name}}</td>
-                                        <td></td>
+                                        <td>{{$orders[$i]->comment}}</td>
                                     </tr>
-
                             @endfor
                             @endif
                             <tfoot>
