@@ -15,10 +15,16 @@
         <p align="center"><b class="cg">支付成功</b></p>
         <p align="center">（我们会马上安排客服进行核实！）</p>
         <p align="center">
-        <form name="form1" method="get" action="dingdanxiangqing" style="text-align:center">
-            <input type="hidden" value="{{$order_id}}" name="order"/>
-            <button type="submit" class="jxzf">查看订单</button>
-        </form>
+        @if($check == 'cpop')
+            <form name="form1" method="get" action="dingdanxiangqing" style="text-align:center">
+                <input type="hidden" value="{{$order_id}}" name="order"/>
+                <button type="submit" class="jxzf">查看订单</button>
+            </form>
+        @elseif($check == "op")
+            <button type="button" onclick="alert('请用该手机号登录查看')" class="jxzf">查看订单</button>
+        @else
+            <a  href = "{{url('weixin/dengji')}}"><button type="button" class="jxzf">查看订单</button></a>
+        @endif
     </div>
     @include('weixin.layout.footer')
 @endsection
