@@ -86,7 +86,7 @@ class WechatesCtrl extends Controller
         switch ($object->Event)
         {
             case "subscribe":   //关注事件
-				$this->WechatUser($object->FromUserName);
+				$this->WechatUsers($object->FromUserName);
                 $content = "您好，欢迎关注".$this->factoryname;
                 break;
             case "unsubscribe": //取消关注事件
@@ -98,23 +98,24 @@ class WechatesCtrl extends Controller
     }
 
 	//微信用户添加(修改)数据库
-	private function WechatUser($FromUserName){
+	private function WechatUsers($FromUserName){
 		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
 		$jsoninfo    = $this->getFanInfo($accessToken,$FromUserName);
 
 		$wxusers = WechatUser::where('openid', $jsoninfo['openid'])
-            ->where('factoryid',$this->factoryid)
+            ->where('factory_id',$this->factoryid)
             ->get()
             ->first();
 
-		if (empty($wxusers))
-		    $wxusers = new WechatUser;
+		if (empty($wxusers)) {
+            $wxusers = new WechatUser;
+        }
 
 		$wxusers->openid     = $jsoninfo['openid'];
 		$wxusers->name       = $jsoninfo['nickname'];
 		$wxusers->area       = $jsoninfo["province"]." ".$jsoninfo["city"];
 		$wxusers->image_url  = $jsoninfo['headimgurl'];
-		$wxusers->factoryid  = $this->factoryid;
+		$wxusers->factory_id  = $this->factoryid;
 
 		$wxusers->save();
 	}
