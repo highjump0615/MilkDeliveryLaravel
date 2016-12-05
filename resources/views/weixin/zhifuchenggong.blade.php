@@ -15,8 +15,9 @@
         <p align="center"><b class="cg">支付成功</b></p>
         <p align="center">（我们会马上安排客服进行核实！）</p>
         <p align="center">
+
         @if($check == 'cpop')
-            <form name="form1" method="get" action="dingdanxiangqing" style="text-align:center">
+            <form name="form1" method="get" action="{{url('weixin/dingdanxiangqing')}}" style="text-align:center">
                 <input type="hidden" value="{{$order_id}}" name="order"/>
                 <button type="submit" class="jxzf">查看订单</button>
             </form>
@@ -31,7 +32,7 @@
 
 @section('script')
 
-    <script ype="text/javascript">
+    <script type="text/javascript">
 
         var current_menu = 2;
 
