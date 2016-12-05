@@ -304,10 +304,8 @@ class WeChatCtrl extends Controller
             session(['verified' => 'no']);
         }
 
-        $verified = session('verified') == 'yes';
-
+        $verified = session('verified');
         $wechat_user = WechatUser::find($wechat_user_id);
-
         if ($wechat_user == null)
             abort(403);
 
@@ -315,10 +313,9 @@ class WeChatCtrl extends Controller
         $cartn = $carts->count();
 
         $customer_id = $wechat_user->customer_id;
-
         $customer = Customer::find($customer_id);
-        
-        if ($customer) {
+
+        if ($customer && $verified == "yes") {
             //get customer's account remain amount
             $remain_amount = $customer->remain_amount;
             //get customer's remaining bottle amount
@@ -1421,9 +1418,30 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
+        //check whether this user has been loggedin
+        //check logged in user's phone number ?= order = phone number
+
+        $check = 'nov';
+        if(session('verified') == "yes")
+        {
+            //the user has loggedin
+            $wechat_user = WechatUser::find($wechat_user_id);
+            $customer_id = $wechat_user ->customer_id;
+            $customer = Customer::find($customer_id);
+            $order = Order::find($order_id);
+
+            if($customer->phone == $order->phone)
+            {
+                $check = "cpop";
+            } else {
+                $check = 'op';
+            }
+        }
+
         return view('weixin.zhifuchenggong', [
             'order_id' => $order_id,
             'cartn' => $cartn,
+            'check' => $check,
         ]);
     }
 

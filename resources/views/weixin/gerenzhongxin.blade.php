@@ -14,7 +14,7 @@
     <div class="top">
         <h1>个人中心</h1>
 
-        @if($verified)
+        @if($verified=="yes")
         <a class="topr1" href="{{url('/weixin/dengchu')}}">登出</a>
         @else
         <a class="topr1" href="{{url('/weixin/dengji')}}">登录</a>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="cen_1">
-        金额<b>￥{{$remain_amount}}</b> 剩余数量 <b>{{$remaining_bottle_count}}</b>
+        订单余额<b>￥{{$remain_amount}}</b> 剩余数量 <b>{{$remaining_bottle_count}}</b>
     </div>
 
     <div class="cen_in">
