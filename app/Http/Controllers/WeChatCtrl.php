@@ -1418,6 +1418,10 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
+        $group_id = session('group_id');
+        //delete cart and order item
+        $this->remove_cart_by_group($group_id);
+
         //check whether this user has been loggedin
         //check logged in user's phone number ?= order = phone number
 
@@ -1438,6 +1442,7 @@ class WeChatCtrl extends Controller
             }
         }
 
+
         return view('weixin.zhifuchenggong', [
             'order_id' => $order_id,
             'cartn' => $cartn,
@@ -1447,8 +1452,13 @@ class WeChatCtrl extends Controller
 
     public function zhifushibai(Request $request)
     {
+        if($request->has('order')) {
+            $order_id = $request->input('order');
+            $orderctrl = new OrderCtrl();
+            $orderctrl->delete_order($order_id);
+        }
+        
         return view('weixin.zhifushibai', [
-
         ]);
     }
 
@@ -2371,22 +2381,11 @@ class WeChatCtrl extends Controller
         //make order products
         $this->make_order_products_and_delivery_plan($order_id, $group_id, $orderctrl);
 
-        //delete cart and order item
-        $this->remove_cart_by_group($group_id);
 
         //now payment here:
 
         //if payment fails, delete order
-        //$payment_result = true;
-        $payment_result = true;
-        if(!$payment_result)
-        {
-            $orderctrl->delete_order($order_id);
-            return response()->json(['status' => 'fail']);
-
-        } else {
-            return response()->json(['status' => 'success', 'order_id' => $order_id]);
-        }
+        return response()->json(['status' => 'success', 'order_id' => $order_id]);
     }
 
     //make order based on crated wechat order products
@@ -2548,6 +2547,7 @@ class WeChatCtrl extends Controller
         $group_id = $this->get_new_group_id();
 
         //make new wechat order products based on order products
+        $total_amount = 0;
         foreach ($order_products as $op) {
 
             //start_at decision
@@ -2576,6 +2576,8 @@ class WeChatCtrl extends Controller
                 $wopids .= $wcop->id;
 
             array_push($wechat_order_products, $wcop);
+
+            $total_amount += $wcop->total_amount;
         }
 
         $wechat_user = WechatUser::find($wxuser_id);
@@ -2588,6 +2590,11 @@ class WeChatCtrl extends Controller
         $passed = true;
         session(['group_id'=>$group_id]);
 
+        if (!$wechat_user)
+            abort(403);
+        $openid = $wechat_user->openid;
+        $total_amount = round($total_amount, 2);
+
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
             'customer' => $customer,
@@ -2596,6 +2603,8 @@ class WeChatCtrl extends Controller
             'wxuser_id' => $wxuser_id,
             'passed' => $passed,
             'for'=>'xuedan',
+            'openid'=>$openid,
+            'total_amount'=>$total_amount,
         ]);
     }
 
@@ -2646,6 +2655,7 @@ class WeChatCtrl extends Controller
         if($request->has('group_id'))
         {
             $group_id = $request->input('group_id');
+            session(['group_id'=>$group_id]);
         }
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();

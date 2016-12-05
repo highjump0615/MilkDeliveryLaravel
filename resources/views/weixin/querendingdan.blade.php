@@ -46,7 +46,7 @@
                         ??
                     @endif
                     元</div>
-                <input type="hidden" id="total_amount" val="{{$wop->total_amount}}">
+                <input type="hidden" id="total_amount" value="{{$wop->total_amount}}">
             </div>
         @endforeach
 
@@ -56,15 +56,113 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) )
+        @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && $total_amount>0 )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled >去付款</button>
         @endif
     </div>
+
+    <?php
+    ini_set('date.timezone','Asia/Shanghai');
+    //error_reporting(E_ERROR);
+    include_once app_path()."/Lib/Payweixin/WxPayConfig.php";
+    include_once app_path()."/Lib/Payweixin/WxPayApi.php";
+    include_once app_path()."/Lib/Payweixin/WxPayJsApiPay.php";
+    include_once app_path()."/Lib/Payweixin/WxPayException.php";
+    include_once app_path()."/Lib/Payweixin/WxPayData.php";
+
+
+    $tools = new JsApiPay();
+
+
+    $input = new WxPayUnifiedOrder();
+    $input->SetBody("test");
+    $input->SetAttach("test");
+    $input->SetOut_trade_no(WxPayConfig::getMCHID().date("YmdHis"));
+    $input->SetTotal_fee("".round($total_amount*100, 0));
+    $input->SetTime_start(date("YmdHis"));
+    //$input->SetTime_expire(date("YmdHis", time() + 600));
+    $input->SetGoods_tag("test");
+    $input->SetNotify_url("http://niu.vfushun.com/milk/public/Payweixin/notify.php");
+    $input->SetTrade_type("JSAPI");
+    $input->SetOpenid($openid);
+
+    $order = WxPayApi::unifiedOrder($input);
+    //function printf_info($data)
+    //{
+    //    foreach($data as $key=>$value){
+    //        echo "<font color='#00ff55;'>$key</font> : $value <br/>";
+    //    }
+    //}
+    //printf_info($order);
+
+    if($total_amount > 0)
+        $jsApiParameters = $tools->GetJsApiParameters($order);
+    else
+        $jsApiParameters = '';
+
+    $editAddress = $tools->GetEditAddressParameters();
+
+
+    ?>
 @endsection
 @section('script')
     <script type="text/javascript">
+        var order_id;
+        //调用微信JS api 支付
+        function jsApiCall()
+        {
+            WeixinJSBridge.invoke(
+                    'getBrandWCPayRequest',
+
+                    <?php
+                    if(isset($jsApiParameters) && $jsApiParameters != '')
+                        echo $jsApiParameters.',';
+                    ?>
+                    function(res){
+                        WeixinJSBridge.log(res.err_msg);
+                        if( res.err_msg == 'get_brand_wcpay_request:ok')
+                        {
+//                            alert('支付成功了');
+                            window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
+                        }
+                        else
+                        {
+//                            alert('支付失败了');
+                            window.location = SITE_URL+"weixin/zhifushibai?order="+order_id;
+                        }
+                    }
+            );
+        }
+
+        function callpay()
+        {
+            if (typeof WeixinJSBridge == "undefined"){
+                if( document.addEventListener ){
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                }else if (document.attachEvent){
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
+            }else{
+                jsApiCall();
+            }
+        }
+
+        window.onload = function(){
+            if (typeof WeixinJSBridge == "undefined"){
+                if( document.addEventListener ){
+                    document.addEventListener('WeixinJSBridgeReady', editAddress, false);
+                }else if (document.attachEvent){
+                    document.attachEvent('WeixinJSBridgeReady', editAddress);
+                    document.attachEvent('onWeixinJSBridgeReady', editAddress);
+                }
+            }else{
+                editAddress();
+            }
+        };
+
 
         $(document).ready(function(){
             @if(isset($message) && $message!="")
@@ -90,10 +188,11 @@
                     console.log(data);
                     if(data.status == 'success')
                     {
-                        $(order_bt).prop('disabled', true);
+                        $(order_bt).prop('disabled', false);
 
-                        var order_id = data.order_id;
-                        window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
+                        order_id = data.order_id;
+
+                        callpay();
                     } else {
                         if(data.message)
                         {
