@@ -938,7 +938,6 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/bianjidingdan', 'WeChatCtrl@bianjidingdan');
     Route::post('/bianjidingdan/save_changed_order_item', 'WeChatCtrl@save_changed_order_item');
 
-
     /* addresses */
     Route::get('/dizhiliebiao', 'WeChatCtrl@dizhiliebiao')->name('dizhiliebiao');
     Route::get('/dizhitianxie', 'WeChatCtrl@dizhitianxie');

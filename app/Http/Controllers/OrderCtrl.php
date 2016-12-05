@@ -3117,6 +3117,8 @@ class OrderCtrl extends Controller
                 $order->milk_card_code = $milk_card_code;
             }
 
+            $order->payment_type = $payment_type;
+
             $order->total_amount = $total_amount;
 
             /* Remain Amount
@@ -3154,7 +3156,6 @@ class OrderCtrl extends Controller
         $order->order_checker_id = $order_checker_id;
         $order->milk_box_install = $milk_box_install;
         $order->trans_check = $trans_check;
-        $order->payment_type = $payment_type;
         $order->status = $status;
         $order->start_at = $order_start_at;
         $order->delivery_time = $delivery_time;

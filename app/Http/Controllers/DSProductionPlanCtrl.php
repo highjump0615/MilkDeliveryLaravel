@@ -632,6 +632,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     
     /*Cancel produce*/
     public function StopforProduce(Request $request){
+
+        $plan_status = null;
+
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');

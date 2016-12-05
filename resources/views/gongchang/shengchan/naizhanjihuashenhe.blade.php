@@ -18,7 +18,7 @@
 		</div>
 			<div class="row">
 				<input type="hidden" id="current_factory_id" value="{{$current_factory_id}}">
-<!--Table-->
+				<!--Table-->
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 						<div id="alert_view" style="display: none">
