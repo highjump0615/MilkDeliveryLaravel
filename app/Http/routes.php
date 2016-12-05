@@ -724,19 +724,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
             'current_page' => $current_page
         ]);
     });
-    Route::get('/zongpingtai/xitong/gengxinhuankun', function (Request $request) {
-        $child = 'gengxinhuankun';
-        $parent = 'xitong';
-        $current_page = 'gengxinhuankun';
-        $pages = App\Model\UserModel\Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.xitong.gengxinhuankun', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page
-        ]);
-        return view('zongpingtai.xitong.gengxinhuankun');
-    });
+
     Route::get('/zongpingtai/xitong/jianchagongju', function (Request $request) {
         $child = 'jianchagongju';
         $parent = 'xitong';
@@ -774,8 +762,16 @@ Route::group(['middleware' => ['zongpingtai']], function () {
         ]);
     });
 
+    // 更新缓存
+    Route::get('/zongpingtai/xitong/gengxinhuankun', 'HuancunCtrl@showSystemHuan');
+    Route::post('/zongpingtai/xitong/gengxinhuankun', 'HuancunCtrl@showPost');
+
+    // 信息接口
     Route::get('/zongpingtai/xitong/xinxijiekou','YimeiSmsCtrl@showYimei');
     Route::post('/zongpingtai/xitong/xinxijiekou','YimeiSmsCtrl@showPost');
+
+    // 数据库
+    Route::get('/zongpingtai/xitong/shujuku','DatableCtrl@showDatable');
 
     Route::get('/zongpingtai/xitong/zhandiansheding', function (Request $request) {
         $child = 'zhandiansheding';
