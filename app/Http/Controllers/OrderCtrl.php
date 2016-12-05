@@ -3057,7 +3057,7 @@ class OrderCtrl extends Controller
 
                 //balance check
                 if ($milk_card->balance < $total_amount) {
-                    return response()->json(['status' => 'fail', 'message' => '卡钱比订单钱少.']);
+                    return response()->json(['status' => 'fail', 'message' => '订单金额已超过奶卡金额，不足于支付']);
                 }
                 else {
                     $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
