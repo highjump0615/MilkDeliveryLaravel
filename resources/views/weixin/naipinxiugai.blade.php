@@ -143,9 +143,7 @@
             calen = new showfullcalendar("calendar");
             week = new showmyweek("week");
             dnsel_changed("dnsel_item0");
-
             init_wechat_order_product();
-
 
         });
 

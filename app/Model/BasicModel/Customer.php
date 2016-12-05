@@ -22,6 +22,7 @@ class Customer extends Model
         'milkman_id',
         'factory_id',
         'remain_amount',
+        'remain_order_amount',
     ];
 
     protected $appends =[
@@ -34,6 +35,25 @@ class Customer extends Model
         'has_milkbox',
         'remaining_bottle_count',
     ];
+
+
+    public function getRemainOrderAmountAttribute()
+    {
+        $total_remain_order_amount= 0;
+
+        $orders = Order::where('customer_id', $this->id)
+            ->where(function ($query) {
+                $query->where('status', Order::ORDER_PASSED_STATUS);
+                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+            })->get()->all();
+
+        foreach($orders as $order)
+        {
+            $total_remain_order_amount+= $order->remaining_amount;
+        }
+
+        return $total_remain_order_amount;
+    }
 
     public function getRemainingBottleCountAttribute()
     {

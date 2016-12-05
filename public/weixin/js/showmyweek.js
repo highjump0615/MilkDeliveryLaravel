@@ -25,6 +25,12 @@ function week_set_numbers()
         var day_val = data_array[i];
         var day= day_val.split(":")[0];
         var val = day_val.split(":")[1];
+
+        if(day == 0)
+        {
+            day = 7;
+        }
+
         var td =$("#"+this.id+" tr").find('td[data-dates="'+day+'"]').eq(0);
         $(td).html("<div class='psgzb_number'>"+val+"</div><div class='psgzb_remove'><img src='images/sb.png' width='20'></div>");
 
