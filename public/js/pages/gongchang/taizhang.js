@@ -24,7 +24,7 @@ $('#insert_order_receipt_form').on('submit', function (e) {
                 if (data.station_id && data.amount)
                     increase_delivery_credit_balance(data.station_id, data.amount);
 
-                show_success_msg('插入成功');
+                show_success_msg('收款成功');
                 $('#insert_order').modal("hide");
 
             } else {

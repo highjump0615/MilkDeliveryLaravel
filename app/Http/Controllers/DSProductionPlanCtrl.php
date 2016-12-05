@@ -215,7 +215,7 @@ class DSProductionPlanCtrl extends Controller
      */
     public function storeTijiaojihuaPlan(Request $request) {
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
         $produce_start_at = getNextDateString();
         $current_date_str = getCurDateString();
@@ -909,11 +909,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         ]);
     }
 
+    /**
+     * 发货确认
+     * @param Request $request
+     * @return mixed
+     */
     public function updateNaizhanPlanTable(Request $request){
-
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('yesterday'));
-        $current_date_str = $currentDate->format('Y-m-d');
 
         $current_station_id = $request->input('station_id');
         $product_id = $request->input('product_id');
@@ -922,12 +923,15 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $dsplans = DSProductionPlan::where('station_id',$current_station_id)
             ->where('product_id',$product_id)
-            ->where('produce_end_at',$current_date_str)
+            ->where('produce_end_at', getPrevDateString())
             ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
             ->get()
             ->first();
 
-        if($dsplans != null){
+        if($dsplans != null) {
+            // 清空Whitespace
+            $actual_count = preg_replace('/\s+/', '', $actual_count);
+
             $dsplans->actual_count = $actual_count;
             $dsplans->status = DSProductionPlan::DSPRODUCTION_PRODUCE_SENT;
             $dsplans->save();

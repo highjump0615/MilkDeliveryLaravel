@@ -1061,7 +1061,6 @@ class DeliveryStation extends Authenticatable
         return $total;
     }
 
-
     public function getBottleCountOfOrders($orders)
     {
         $total= 0;
@@ -1072,4 +1071,12 @@ class DeliveryStation extends Authenticatable
         return $total;
     }
 
+    /**
+     * 添加自营账户余额
+     * @param $amount
+     */
+    public function addSelfOrderAccount($amount) {
+        $this->business_credit_balance += $amount;
+        $this->save();
+    }
 }

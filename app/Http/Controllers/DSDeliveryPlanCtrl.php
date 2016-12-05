@@ -11,6 +11,7 @@ use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\DeliveryModel\MilkMan;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
+use App\Model\FinanceModel\DSBusinessCreditBalanceHistory;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\FactoryModel\FactoryBottleType;
 use App\Model\NotificationModel\DSNotification;
@@ -1146,8 +1147,7 @@ class DSDeliveryPlanCtrl extends Controller
      */
     public function confirmdeliveryPeisongfanru(Request $request){
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
+        $deliver_date_str = getCurDateString();
 
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
@@ -1167,6 +1167,10 @@ class DSDeliveryPlanCtrl extends Controller
                 ->where('order_product_id',$order_product_id)
                 ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
                 ->get()->first();
+
+            if (!$milkmandeliverys) {
+                continue;
+            }
 
             $milkmandeliverys->delivered_count = $delivered_count;
 
@@ -1229,6 +1233,61 @@ class DSDeliveryPlanCtrl extends Controller
                 }
             }
         }
+
+        //
+        // 财务计算：返还自营账户余额调整
+        //
+        $nStationId = $this->getCurrentStationId();
+
+        // 查询已配送完的配送订单
+        $deliver_finished_plans = MilkManDeliveryPlan::where('station_id', $nStationId)
+            ->where('deliver_at',$deliver_date_str)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->get();
+
+        // 配送业务实际配送数量
+        $aryReceiveCount = array();
+        foreach ($deliver_finished_plans as $dfp){
+            $aryReceiveCount[strval($dfp->order_product->product->id)] = 0;
+        }
+        foreach ($deliver_finished_plans as $dfp){
+            $aryReceiveCount[strval($dfp->order_product->product->id)] += $dfp->delivered_count;
+        }
+
+        $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString())
+            ->where('station_id', $this->getCurrentStationId())
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED)
+            ->get();
+
+        $dCostReturnTotal = 0;
+        foreach ($plan_info as $pi) {
+            if (isset($aryReceiveCount[strval($pi->product_id)])) {
+                // 自营订单实际扣款
+                $dCostReal = ($pi->actual_count - $aryReceiveCount[strval($pi->product_id)]) * $pi->settle_product_price;
+                $dCostReturn = -$pi->getSelfOrderMoney() + $dCostReal;
+
+                $dCostReturnTotal += $dCostReturn;
+            }
+        }
+
+        // 没有返还金额，不要添加返还记录
+        if ($dCostReturnTotal == 0) {
+            // 添加返还记录
+            $balancehistory = new DSBusinessCreditBalanceHistory;
+            $balancehistory->station_id = $nStationId;
+            $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_RETURN;
+            $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
+            $balancehistory->amount = $dCostReturnTotal;
+            $balancehistory->return_amount = 0;
+            $balancehistory->time = $deliver_date_str;
+            $balancehistory->save();
+
+            // 从自营账号扣款
+            $delivery_transation = DeliveryStation::find($nStationId);
+            $delivery_transation->addSelfOrderAccount($balancehistory->amount);
+        }
+
         return Response::json(['status'=>"success"]);
     }
 

@@ -59,10 +59,11 @@ class DSProductionPlan extends Model
         'subtotal_count',
         'subtotal_money',
         'actual_count',
-        'conform_count',
+        'confirm_count',
         'status',
         'comment',
         'changed_plan_count',
+        'settle_product_price'
     ];
 
     protected $appends = [
@@ -142,4 +143,12 @@ class DSProductionPlan extends Model
         return $strStatus;
     }
 
+    /**
+     * 计算结算账户的总和
+     * @return mixed
+     */
+    public function getSelfOrderMoney() {
+        $nCount = $this->retail + $this->test_drink + $this->group_sale + $this->channel_sale;
+        return $nCount * $this->settle_product_price;
+    }
 }

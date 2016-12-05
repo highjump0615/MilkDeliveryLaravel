@@ -14,13 +14,13 @@ $(document).on('click','.determine_count',function(e){
     $('#by_station tr:not(:first,:last)').each(function(){
         var id = $(this).attr('value');
 
-        var nRemain = parseInt($('#rest'+id).html());
-        if (nRemain < 0) {
-            show_err_msg('库存不足，请重新提交');
-            return;
-        }
-
         if($(this).attr('id')=='tablerow'+order+''){
+            var nRemain = parseInt($('#rest'+id).html());
+            if (nRemain < 0) {
+                show_err_msg('库存不足，请重新提交');
+                return;
+            }
+
             var station_id = $('#station_id'+order+'').attr('value');
             var formData = {
                 actual_count: $('#confirm'+order+''+id+'').text(),

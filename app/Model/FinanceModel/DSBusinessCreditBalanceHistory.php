@@ -34,6 +34,7 @@ class DSBusinessCreditBalanceHistory extends Model
     const DSBCBH_OUT_GROUP_BUY_BUSINESS = 2; //团购业务
     const DSBCBH_OUT_CHANNEL_SALES_OPERATIONS = 3; //渠道销售业务
     const DSBCBH_OUT_TRY_TO_DRINK_OR_GIFT = 4; //试饮或赠品
+    const DSBCBH_OUT_RETURN = 5; // 实际配送后返还金额
 
     
 
@@ -48,22 +49,32 @@ class DSBusinessCreditBalanceHistory extends Model
     public function getTypeNameAttribute()
     {
         $type_name = "";
+
         switch ($this->type) {
             case $this::DSBCBH_OUT_STATION_RETAIL_BUSINESS:
                 $type_name = "站内零售业务";
                 break;
+
             case $this::DSBCBH_OUT_GROUP_BUY_BUSINESS:
                 $type_name = "团购业务";
                 break;
+
             case $this::DSBCBH_OUT_CHANNEL_SALES_OPERATIONS:
                 $type_name = "渠道销售业务";
                 break;
+
             case $this::DSBCBH_OUT_TRY_TO_DRINK_OR_GIFT:
                 $type_name = "试饮或赠品";
                 break;
+
+            case $this::DSBCBH_OUT_RETURN:
+                $type_name = "实际配送后返还";
+                break;
+
             default:
                 break;
         }
+
         return $type_name;
     }
 }

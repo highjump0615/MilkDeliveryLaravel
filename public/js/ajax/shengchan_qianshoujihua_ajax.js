@@ -1,8 +1,10 @@
 var current_row_number;
+var bSent = false;
 
 $(document).on('click','.confirm_values',function(e){
 
     var update_url = API_URL + 'naizhan/shengchan/qianshoujihua/confirm_product';
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
@@ -34,7 +36,10 @@ $(document).on('click','.confirm_values',function(e){
                     tdEdit.removeClass('editfill');
                 }
                 else {
-                    show_warning_msg("奶厂还没发货!");
+                    if (!bSent) {
+                        show_warning_msg("奶厂还没发货!");
+                        bSent = true;
+                    }
                 }
             },
             error: function (data) {

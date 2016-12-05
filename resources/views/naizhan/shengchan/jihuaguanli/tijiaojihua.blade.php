@@ -75,7 +75,7 @@
 									<td id="name{{$pl->id}}">{{$pl->name}}</td>
 									<td>瓶</td>
 									<td class="ordered_count sales_val" id="ordered_count{{$pl->id}}">{{$pl->total_count}}</td>
-									{{--<td class="input_td"><input type="text" class="inputable" value="36"/></td>--}}
+
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="retail sales_val" id="retail{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['retail']}}@endif</td>
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="test_drint sales_val" id="test_drink{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['test_drink']}}@endif</td>
 									<td contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" class="group_sale sales_val" id="group{{$pl->id}}">@if($is_sent > 0){{$pl['ds_info']['group_sale']}}@endif</td>
@@ -85,13 +85,14 @@
 									<td class="total_count_all" id="subtotal_count{{$pl->id}}"></td>
 									<!-- 隐藏字段；总金额 -->
 									<td class="total_price_all" id="subtotal_price{{$pl->id}}" style="display:none;"></td>
-									{{--<td><button class="btn btn-success btn-sm confirm" id="confirm{{$pl->id}}" value="{{$pl->id}}">确认提交</button></td>--}}
+
 									@if($i==1)
 									<td rowspan="{{$j+1}}">
 										<button class="btn btn-success btn-sm confirm_submit" id="confirm{{$pl->id}}" value="{{$pl->id}}" @if($is_sent>0)style="display: none" @endif>确认提交</button>
 										<button class="btn btn-success btn-sm modify" id="modify{{$pl->id}}" value="{{$pl->id}}" @if($is_sent==0)style="display: none" @endif>修改</button>
 									</td>
 									@endif
+
 									<input type="hidden" class="current_price" value="{{$pl->current_price}}">
 									<input type="hidden" class="ordered_price" value="{{$pl->total_money}}">
 									<input type="hidden" id="current_id{{$pl->id}}" value="{{$pl->id}}">
