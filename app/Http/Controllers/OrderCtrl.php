@@ -3096,7 +3096,7 @@ class OrderCtrl extends Controller
             $status = Order::ORDER_WAITING_STATUS;
         }
 
-        //other data
+        // 该订单是否生成了账单
         $trans_check = 0;
 
         //flatenter mode: default 2 -> call
@@ -3132,6 +3132,7 @@ class OrderCtrl extends Controller
              * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
              */
             $order->remaining_amount = $total_amount;
+            $order->trans_check = $trans_check;
         }
         else if (!$order->isNewPassed() && $order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             //
@@ -3155,7 +3156,6 @@ class OrderCtrl extends Controller
         $order->receipt_path = $receipt_path;
         $order->order_checker_id = $order_checker_id;
         $order->milk_box_install = $milk_box_install;
-        $order->trans_check = $trans_check;
         $order->status = $status;
         $order->start_at = $order_start_at;
         $order->delivery_time = $delivery_time;

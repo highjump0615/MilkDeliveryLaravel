@@ -521,10 +521,9 @@ class FinanceCtrl extends Controller
                 ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
                 ->where('transaction_id', null)
                 ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
-                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)->get();
+                ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
+                ->get();
         }
-
-
 
         if (count($orders) == 0) {
             return null;
@@ -541,28 +540,34 @@ class FinanceCtrl extends Controller
         foreach ($res as $station_from => $orders1) {
             foreach ($orders1 as $station_to => $orders2) {
                 $total_amount = 0;
+                $order_count = count($orders2);
+
+                //
+                // 计算账单订单范围
+                //
                 $order_from = "";
                 $order_to = "";
 
-                $order_count = count($orders2);
                 foreach ($orders2 as $o) {
-                    if (!$order_from)
-                        $order_from = $o->start_at;
+                    if (!$order_from) {
+                        $order_from = $o->ordered_at;
+                        $order_to = $o->ordered_at;
+                    }
                     else {
                         $of_date = date($order_from);
-                        $ff_date = date($o->start_at);
-                        if ($of_date > $ff_date)
-                            $order_from = $o->start_at;
+                        $ot_date = date($order_to);
+                        $ff_date = date($o->ordered_at);
+
+                        // 决定最小值
+                        if ($of_date > $ff_date) {
+                            $order_from = $o->ordered_at;
+                        }
+                        // 决定最大值
+                        else if ($ot_date < $ff_date) {
+                            $order_to = $o->ordered_at;
+                        }
                     }
 
-                    if (!$order_to)
-                        $order_to = $o->order_end_date;
-                    else {
-                        $of_date = date($order_to);
-                        $ff_date = date($o->order_end_date);
-                        if ($of_date < $ff_date)
-                            $order_to = $o->order_end_date;
-                    }
                     $total_amount += $o->total_amount;
                 }
 
@@ -575,8 +580,7 @@ class FinanceCtrl extends Controller
                 $t->order_from = date('Y-m-d', strtotime($order_from));
                 $t->order_to = date('Y-m-d', strtotime($order_to));
                 $t->order_count = $order_count;
-                //$t->created_at = date('Y-m-d H:i');
-                $t->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+                $t->created_at = getCurDateString();
                 $t->status = DSTransaction::DSTRANSACTION_CREATED;
 
                 $t->save();
@@ -980,6 +984,7 @@ class FinanceCtrl extends Controller
             'card_orders_unchecked_money' => $card_orders_unchecked_money,
         ]);
     }
+
     //G6-1: Create transactions for money order to others, set transaction id
     public function create_transactions_for_card_order($start_date, $end_date, $factory_id)
     {
@@ -1018,24 +1023,26 @@ class FinanceCtrl extends Controller
     //G7: show Transaction list for card order that has not been checked
     public function show_transaction_list_not_checked_for_card_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
         $stations = DeliveryStation::where('factory_id', $factory_id)->get();
 
         //show not checked list
         //Get TransactionPays during first month to today
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $not_checked_transactions = array();
         foreach ($stations as $station) {
             $station_id = $station->id;
+
             $temps = DSTransaction::where('station_id', $station_id)
                 ->where('status', DSTransaction::DSTRANSACTION_CREATED)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
                 ->where('created_at', '>=', $first_m)
-                ->where('created_at', '<=', $last_m)->get();
+                ->where('created_at', '<=', $last_m)
+                ->get();
+
             foreach ($temps as $not_checked_transaction) {
                 array_push($not_checked_transactions, $not_checked_transaction);
             }
@@ -1052,8 +1059,6 @@ class FinanceCtrl extends Controller
                 $station_name_list[$delivery_station_id] = $delivery_station_name;
         }
 
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
-
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'naikazhuanzhangzhangchan';
@@ -1066,7 +1071,7 @@ class FinanceCtrl extends Controller
             'current_page' => $current_page,
             'stations' => $stations,
             'ncts' => $res,
-            'today' => $today,
+            'today' => getCurDateString(),
             'station_name_list' => $station_name_list,
         ]);
     }
@@ -1922,6 +1927,11 @@ class FinanceCtrl extends Controller
         return response()->json(['status'=>'success', 'factory_id'=>$factory_id]);
     }
 
+    /**
+     * 生成账单
+     * @param $orders
+     * @param $type
+     */
     private function makeTransaction($orders, $type) {
         if (count($orders) == 0) {
             return;
@@ -1935,29 +1945,34 @@ class FinanceCtrl extends Controller
 
         foreach ($res as $station_to => $orders1) {
             $total_amount = 0;
+            $order_count = count($orders1);
+
+            //
+            // 计算账单订单范围
+            //
             $order_from = "";
             $order_to = "";
 
-            $order_count = count($orders1);
-
             foreach ($orders1 as $o) {
-                if (!$order_from)
-                    $order_from = $o->start_at;
+                if (!$order_from) {
+                    $order_from = $o->ordered_at;
+                    $order_to = $o->ordered_at;
+                }
                 else {
                     $of_date = date($order_from);
-                    $ff_date = date($o->start_at);
-                    if ($of_date > $ff_date)
-                        $order_from = $o->start_at;
+                    $ot_date = date($order_to);
+                    $ff_date = date($o->ordered_at);
+
+                    // 决定最小值
+                    if ($of_date > $ff_date) {
+                        $order_from = $o->ordered_at;
+                    }
+                    // 决定最大值
+                    else if ($ot_date < $ff_date) {
+                        $order_to = $o->ordered_at;
+                    }
                 }
 
-                if (!$order_to)
-                    $order_to = $o->order_end_date;
-                else {
-                    $of_date = date($order_to);
-                    $ff_date = date($o->order_end_date);
-                    if ($of_date < $ff_date)
-                        $order_to = $o->order_end_date;
-                }
                 $total_amount += $o->total_amount;
             }
 
