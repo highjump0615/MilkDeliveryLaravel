@@ -40,7 +40,6 @@ class OrderProduct extends Model
         'finished_count',
         'remain_count',
         'remain_amount',
-        'custom_order_dates_on_this_month',
         'last_deliver_plan',
         'finished_money_amount',
         'delivery_plans_sent_to_production_plan',
@@ -158,117 +157,6 @@ class OrderProduct extends Model
     public function getRemainAmountAttribute()
     {
         return $this->remain_count * $this->product_price;
-    }
-
-    public function getCustomOrderDatesOnThisMonthAttribute()
-    {
-
-        if(isset($this->custom_order_dates))
-        {
-            $ct = $this->custom_order_dates;
-
-            if($this->delivery_type == DeliveryType::DELIVERY_TYPE_MONTH)
-            {
-                //return month dates
-                $result = $this->get_month_days_from_order_info($ct);
-            } else {
-                //return week dates
-                $result = $this->get_week_days_from_order_info($ct);
-            }
-            return $result;
-        }
-    }
-
-    function get_week_days_from_order_info($string)
-    {
-        /* get weekday string from int:int
-         * data: "1:4,2:5,3:1,4:2"
-         * result: "2016-09-28:5,2016-09-27:4,2016-09-29:1,2016-09-30:2"
-         * 09-26: monday = 1, sunday = 7, by date('N', strtotime(string))
-        */
-
-        $result="";
-        $string = rtrim($string, ',');
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $day_count = $estring[$i];
-            $day_count_array = explode(':', $day_count);
-            $day = trim($day_count_array[0]);
-            $count = trim($day_count_array[1]);
-
-            $date = "";
-            switch($day)
-            {
-                case 1:
-                    $date = date('Y-m-d', strtotime('monday'));
-                    break;
-                case 2:
-                    $date = date('Y-m-d', strtotime('tuesday'));
-                    break;
-                case 3:
-                    $date = date('Y-m-d', strtotime('wednesday'));
-                    break;
-                case 4:
-                    $date = date('Y-m-d', strtotime('thursday'));
-                    break;
-                case 5:
-                    $date = date('Y-m-d', strtotime('friday'));
-                    break;
-                case 6:
-                    $date = date('Y-m-d', strtotime('saturday'));
-                    break;
-                case 7:
-                    $date = date('Y-m-d', strtotime('sunday'));
-                    break;
-
-            }
-
-
-            $ecstring[$date] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
-
-    }
-
-    function get_month_days_from_order_info($string)
-    {
-        /* get weekday string from int:int
-         * data: "13:1,15:1,23:3,27:4,28:5"
-         * result:"2016-09-28:5,2016-09-27:4,2016-09-13:1,2016-09-15:2,2016-09-23:3"
-         * 09-26: monday = 1, sunday = 7, by date('N', strtotime(string))
-        */
-
-        $result="";
-        $string = rtrim($string, ',');
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $day_count = $estring[$i];
-            $day_count_array = explode(':', $day_count);
-            $day = trim($day_count_array[0]);
-            $count = trim($day_count_array[1]);
-
-            $d = mktime(0, 0, 0, date('m'), $day, date('Y'));
-            $date = date('Y-m-d', $d);
-
-            $ecstring[$date] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
     }
 
     /**

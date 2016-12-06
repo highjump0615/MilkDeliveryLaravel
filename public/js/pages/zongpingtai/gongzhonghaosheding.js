@@ -19,6 +19,9 @@ $(".upload-banner").on('change', function(){
     console.log(this);
     var img_id = "#img_ad_banner_" + id;
     readURL(this, img_id);
+
+    // 添加url标志
+    $('#input_img_banner_url_' + id).val('url');
 });
 
 
@@ -38,8 +41,14 @@ $(".upload-promo").on('change', function(){
     var id = $(this).data('id');
     var img_id = "#img_ad_promo_" + id;
     readURL(this, img_id);
+
+    // 添加url标志
+    $('#input_img_promo_url_' + id).val('url');
 });
 
+/**
+ * 删除广告图片
+ */
 $(".delete-banner").on('click', function(e){
     var id = $(this).data('id');
 
@@ -54,41 +63,54 @@ $(".delete-banner").on('click', function(e){
         cancelButton: "不",
         confirmButtonClass: "btn-success",
         confirm: function () {
-            delete_banner(id);
+            delete_banner(id, 1);
         },
         cancel: function () {
         }
     });
 });
 
-function delete_banner(banner_id) {
+/**
+ * 删除促销图片
+ */
+$(".delete-promo").on('click', function(e){
+    var id = $(this).data('id');
 
-//			var product_id = $(button).data('target');
+    e.preventDefault();
+    e.stopPropagation();
 
-    var senddata = {'banner_id': banner_id, 'factory_id': factory_id};
-    $.ajax({
-        type: 'POST',
-        url: API_URL + 'zongpingtai/yonghu/gongzhonghaosheding/delete_banner',
-        data: senddata,
-        success: function (data) {
-            console.log(data);
-            if (data.status == "success") {
-
-                var img_id = "#img_ad_banner_" + banner_id;
-                $(img_id).attr('src', '');
-
-                show_success_msg("删除成功");
-            } else {
-                show_warning_msg(data.message);
-            }
+    $.confirm({
+        icon: 'fa fa-warning',
+        title: '删除',
+        text: '你确定要删除此图片吗？',
+        confirmButton: "确定",
+        cancelButton: "取消",
+        confirmButtonClass: "btn-success",
+        confirm: function () {
+            delete_banner(id, 2);
         },
-        error: function (data) {
-            console.log(data);
+        cancel: function () {
         }
-
     });
-}
+});
 
+function delete_banner(banner_id, type) {
+
+    // 默认是广告图
+    var img_id = '#img_ad_banner_' + banner_id;
+    var input_url_id = '#input_img_banner_url_' + banner_id;
+
+    // 促销图
+    if (type == 2) {
+        img_id = '#img_ad_promo_' + banner_id;
+        input_url_id = '#input_img_promo_url_' + banner_id;
+    }
+
+    $(img_id).attr('src', '');
+
+    // 清除url标志
+    $(input_url_id).val('');
+}
 
 function readURL(input, img_id) {
     if (input.files && input.files[0]) {

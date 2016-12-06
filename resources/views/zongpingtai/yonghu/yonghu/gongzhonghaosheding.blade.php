@@ -85,6 +85,8 @@
 									 src="<?=asset($banners[$i]->image_url)?>"
 									 @endif
 								>
+								<!-- 图片是否删除的标志 -->
+								<input type="hidden" name="img_banner_url_{{$i}}" id="input_img_banner_url_{{$i}}" value="@if(isset($banners[$i])) {{$banners[$i]->image_url}}@endif">
 							</div>
 							<div class="col-lg-2">
 								<input name="banner{{$i}}" id="upload-banner-{{$i}}" class="upload-banner" data-id="{{$i}}" type="file"/>
@@ -95,7 +97,7 @@
 							<div class="col-lg-2">
 								<select name="product_banner_{{$i}}" data-placeholder="" class="chosen-select" style="width:100%;" tabindex="2">
 									@forelse($products as $p)
-										@if(isset($banners[$i]) && $banners[$i]->product_id == $p->id)
+										@if (isset($banners[$i]) && $banners[$i]->product_id == $p->id)
 											<option value="{{$p->id}}" selected>{{$p->name}}</option>
 										@else
 											<option value="{{$p->id}}">{{$p->name}}</option>
@@ -122,6 +124,8 @@
 									 src="<?=asset($promos[$i]->image_url)?>"
 									 @endif
 								>
+								<!-- 图片是否删除的标志 -->
+								<input type="hidden" name="img_promo_url_{{$i}}" id="input_img_promo_url_{{$i}}" value="@if(isset($promos[$i])) {{$promos[$i]->image_url}}@endif">
 							</div>
 							<div class="col-lg-2">
 								<input name="promo{{$i}}" id="upload-promo-{{$i}}" class="upload-promo" data-id="{{$i}}" type="file"/>

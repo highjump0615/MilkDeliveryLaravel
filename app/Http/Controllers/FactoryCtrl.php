@@ -239,83 +239,87 @@ class FactoryCtrl extends Controller
         ]);
     }
 
+    /**
+     * 更新微信公众号首页图片
+     * @param Request $request
+     * @param $type
+     * @param $factory_id
+     */
+    private function updatePictures(Request $request, $type, $factory_id) {
+
+        for($i=1; $i<=4; $i++) {
+
+            $strIdBanner = 'product_banner_'.$i;
+            $strImgBanner = 'img_banner_url_'.$i;
+            $strFileName = 'banner';
+
+            if ($type == WechatAd::WECHAT_AD_TYPE_PROMOTION) {
+                $strIdBanner = 'product_promo_'.$i;
+                $strImgBanner = 'img_promo_url_'.$i;
+                $strFileName = 'promo';
+            }
+
+            //
+            // 保存广告图片
+            //
+            $product_id = $request->input($strIdBanner);
+            if (empty($product_id)) {
+                continue;
+            }
+
+            $ad = WechatAd::where('factory_id', $factory_id)
+                ->where('type', $type)
+                ->where('image_no', $i)
+                ->get()
+                ->first();
+
+            // 没有图片，删除
+            $strImg = $request->input($strImgBanner);
+            if (empty($strImg)) {
+                if ($ad) {
+                    $ad->delete();
+                }
+
+                continue;
+            }
+
+            // 图片没有变化，下一个
+            if (!$request->hasFile($strFileName . $i)) {
+                continue;
+            }
+
+            if ($ad == null) {
+                $ad = new WechatAd();
+
+                $ad->factory_id = $factory_id;
+                $ad->image_no = $i;
+                $ad->type = $type;
+            }
+
+            $ad->product_id = $product_id;
+
+            $fileName = 'ad_' . $strFileName . $factory_id . '_' . $i . '.' . $request->file($strFileName . $i)->getClientOriginalExtension();
+            $request->file($strFileName . $i)->move(base_path() . '/public/img/ads/', $fileName);
+
+            $url = '/img/ads/' . $fileName;
+            $ad->image_url = $url;
+
+            $ad->save();
+        }
+    }
+
+    /**
+     * 更新微信公众号方面的内容
+     * @param Request $request
+     * @param $factory_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updatePublicAccountSetting(Request $request, $factory_id)
     {
         $factory = Factory::find($factory_id);
 
-        /* banner ads */
-
-        for($i=1; $i<=4; $i++) {
-            $product_id = $request->input('product_banner_'.$i);
-            if (empty($product_id)) {
-                continue;
-            }
-
-            $ad = WechatAd::where('factory_id', $factory_id)
-                ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
-                ->where('image_no', $i)->get()->first();
-
-            if ($ad == null) {
-                $ad = new WechatAd();
-
-                $ad->factory_id = $factory_id;
-                $ad->image_no = $i;
-                $ad->type = WechatAd::WECHAT_AD_TYPE_BANNER;
-            }
-
-            if($ad->product_id!=-1)
-                $ad->product_id = $product_id;
-            else
-                continue;
-
-            if ($request->hasFile('banner'.$i)) {
-                $fileName = 'ad_banner' . $factory_id . '_' . $i . '.' . $request->file('banner'.$i)->getClientOriginalExtension();
-                $request->file('banner'.$i)->move(base_path() . '/public/img/ads/', $fileName);
-
-                $url = '/img/ads/' . $fileName;
-                $ad->image_url = $url;
-            }
-
-            $ad->save();
-
-        }
-
-        /* promo ads */
-        for($i=1; $i<=4; $i++) {
-            $product_id = $request->input('product_promo_'.$i);
-            if (empty($product_id)) {
-                continue;
-            }
-
-            $ad = WechatAd::where('factory_id', $factory_id)
-                ->where('type', WechatAd::WECHAT_AD_TYPE_PROMOTION)
-                ->where('image_no', $i)->get()->first();
-
-            if ($ad == null) {
-                $ad = new WechatAd();
-
-                $ad->factory_id = $factory_id;
-                $ad->image_no = $i;
-                $ad->type = WechatAd::WECHAT_AD_TYPE_PROMOTION;
-            }
-
-            if($ad->product_id!=-1)
-                $ad->product_id = $product_id;
-            else
-                continue;
-
-
-
-            if ($request->hasFile('promo'.$i)) {
-                $fileName = 'ad_promo' . $factory_id . '_' . $i . '.' . $request->file('promo'.$i)->getClientOriginalExtension();
-                $request->file('promo'.$i)->move(base_path() . '/public/img/ads/', $fileName);
-
-                $url = '/img/ads/' . $fileName;
-                $ad->image_url = $url;
-            }
-
-            $ad->save();
-        }
+        $this->updatePictures($request, WechatAd::WECHAT_AD_TYPE_BANNER, $factory_id);
+        $this->updatePictures($request, WechatAd::WECHAT_AD_TYPE_PROMOTION, $factory_id);
 
         // 客服电话、推定电话
         $factory->service_phone = $request->input('service_phone');
@@ -325,13 +329,21 @@ class FactoryCtrl extends Controller
         return redirect()->route('yonghu_page');
     }
 
+    /**
+     * 删除广告图片
+     * @param Request $request
+     * @return mixed
+     */
     public function delete_banner(Request $request) {
         $id = $request->input('banner_id');
         $factory_id = $request->input('factory_id');
+        $type = $request->input('type');
 
         $ad = WechatAd::where('factory_id', $factory_id)
-            ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
-            ->where('image_no', $id)->get()->first();
+            ->where('type', $type)
+            ->where('image_no', $id)
+            ->get()
+            ->first();
 
         if($ad) {
             $ad->delete();
@@ -339,6 +351,6 @@ class FactoryCtrl extends Controller
             return response()->json(['status' => 'success']);
         }
 
-        return response()->json(['status'=>'failure', 'msg'=>'没有照片']);
+        return response()->json(['status'=>'failure', 'msg'=>'没有图片']);
     }
 }
