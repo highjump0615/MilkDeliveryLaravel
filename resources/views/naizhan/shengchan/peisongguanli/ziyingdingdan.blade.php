@@ -161,6 +161,7 @@
 				</div>
 
 				<br>
+
 				<div class="ibox-content">
                     <div class="col-lg-12">
                         <table id="delivery_milk" class="table footable table-bordered">
@@ -178,54 +179,89 @@
 								</tr>
                             </thead>
                             <tbody>
-							@if($milkman_delivery_plans != null)
-							<?php $i=0; ?>
-							@foreach($milkman_delivery_plans as $mdp)
-								<?php $i++; ?>
-								<tr>
-									<td>{{$i}}</td>
-									<td>
-										@if($mdp->delivery_type==2)
-											团购订单
-										@elseif($mdp->delivery_type==3)
-											渠道订单
-										@elseif($mdp->delivery_type==4)
-											赠品订单
-										@endif
-									</td>
-									<td>{{$mdp->address}}</td>
-									<td>{{$mdp->customer_name}}</td>
-									<td>{{$mdp->product}}</td>
-									<td>{{$mdp->phone}}</td>
-									<td>{{$mdp->milkman_name}}</td>
-									<td>
-										@if($dp->delivery_time == 0)上午
-										@elseif($dp->delivery_time == 1)下午
-										@endif
-									</td>
-									<td>{{$mdp->comment_delivery}}</td>
+								<tr id="tr_add_notice">
+									<td colspan="9" rowspan="2">请添加自营出库</td>
 								</tr>
-							@endforeach
-							@endif
                             </tbody>
                         </table>
-                    </div>	
+                    </div>
+
+					<!-- 操作按钮 -->
 					<div class="col-lg-4"></div>
 					<div class="col-lg-1">
-						<button id="save" type="button" class="btn btn-success" style="width:100%;">打印</button>
+						<button id="but_print" type="button" class="btn btn-success" style="width:100%;">打印</button>
 					</div>
 					<div class="col-lg-2">
 						<button id="save" type="button" class="btn btn-success" style="width:100%;">保 存</button>
-						{{--onclick="window.location='{{URL::to('/naizhan/shengchan/peisongliebiao')}}'"--}}
 					</div>
 					<div class="col-lg-1">
 						<button class="btn btn-success btn-outline" id="plan_cancel" style="width:100%;">取消</button>
 					</div>
 				</div>
+
 				<div class="col-lg-12"><label></label></div>
+
+				<!-- 今日自营配送单 -->
+				@if (count($milkman_delivery_plans) > 0)
+
+				<div class="col-lg-12">
+					<label class="col-lg-12 gray-bg" style="padding:10px;">今日自营出库单</label>
+				</div>
+
+				<div class="col-lg-12">
+					<table class="table footable table-bordered">
+						<thead style="background-color:#33cccc;">
+						<tr>
+							<th data-sort-ignore="true">序号</th>
+							<th data-sort-ignore="true">分类</th>
+							<th data-sort-ignore="true">地址</th>
+							<th data-sort-ignore="true">收货人</th>
+							<th data-sort-ignore="true">配送内容</th>
+							<th data-sort-ignore="true">电话</th>
+							<th data-sort-ignore="true">配送员</th>
+							<th data-sort-ignore="true">配送时间</th>
+							<th data-sort-ignore="true">备注</th>
+						</tr>
+						</thead>
+						<tbody>
+						<?php $i=0; ?>
+						@foreach($milkman_delivery_plans as $mdp)
+							<?php $i++; ?>
+							<tr>
+								<td>{{$i}}</td>
+								<td>
+									@if ($mdp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
+										试饮赠品
+									@elseif ($mdp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
+										团购订单
+									@elseif ($mdp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
+										渠道订单
+									@elseif ($mdp->delivery_type == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)
+										赠品订单
+									@endif
+								</td>
+								<td>{{$mdp->address}}</td>
+								<td>{{$mdp->customer_name}}</td>
+								<td>{{$mdp->product}}</td>
+								<td>{{$mdp->phone}}</td>
+								<td>{{$mdp->milkman_name}}</td>
+								<td>
+									@if($dp->delivery_time == 0)上午
+									@elseif($dp->delivery_time == 1)下午
+									@endif
+								</td>
+								<td>{{$mdp->comment_delivery}}</td>
+							</tr>
+						@endforeach
+						</tbody>
+					</table>
+				</div>
+
+				@endif
+
 			</div>
 		</div>
-		
+
 	</div>
 @endsection
 

@@ -405,17 +405,17 @@ class DSDeliveryPlanCtrl extends Controller
         return $aryRes;
     }
 
+    /**
+     * 打开自营出库页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showZiyingdingdan(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
         // 配送日期
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
-
-        // 生产完成日期
-        $currentDate->add(\DateInterval::createFromDateString('yesterday'));
-        $production_date_str = $currentDate->format('Y-m-d');
+        $deliver_date_str = getCurDateString();
 
         $delivery_plans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->get();
 

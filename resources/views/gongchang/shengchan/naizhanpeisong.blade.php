@@ -117,21 +117,15 @@
 											<button class="btn btn-success"
 													onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'"
 													id="detail{{$i}}"
-													type="button" >
-												打印出库单
-											</button>
+													type="button" >打印出库单</button>
 										@else
 											<button type="button"
 													class="btn btn-success btn-md determine_count"
-													value="{{$i}}" id="detail{{$i}}">
-												发货确认
-											</button>
+													value="{{$i}}" id="detail{{$i}}">发货确认</button>
 											<button class="btn btn-success"
 													onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'"
 													id="f_detail{{$i}}"
-													type="button" >
-												打印出库单
-											</button>
+													type="button" >打印出库单</button>
 										@endif
 									</td>
 									@endif

@@ -2,6 +2,10 @@
 var address_message = document.getElementById('address_message');
 var message = document.getElementById('alert_message');
 
+$(document).on('click','#but_print',function(e){
+    printContent('delivery_milk');
+});
+
 $(document).on('click','#save',function(e){
     var url = API_URL + 'naizhan/shengchan/ziyingdingdan/save';
     $.ajaxSetup({
@@ -17,8 +21,17 @@ $(document).on('click','#save',function(e){
         count++;
     });
 
+    // 没有保存的数据，退出
+    if (count <= 0) {
+        return;
+    }
+
     var order_count = 0;
     var urlTo = SITE_URL + "naizhan/shengchan/jinripeisongdan";
+
+    // 反应正在保存状态
+    $(this).attr('disabled', 'disabled');
+    $(this).html('正在保存...');
 
     $('#delivery_milk #user').each(function(){
         order_count++;
@@ -54,9 +67,12 @@ $(document).on('click','#save',function(e){
             dataType: 'json',
             success: function (data) {
                 //console.log(data);
-                if(count == order_count) {
+                if (count == order_count) {
                     // 跳转到今日配送单
-                    window.location.href = urlTo;
+                    // window.location.href = urlTo;
+
+                    // 刷新
+                    location.reload();
                 }
             },
             error: function (data) {
@@ -64,13 +80,6 @@ $(document).on('click','#save',function(e){
             }
         });
     });
-    // window.location.href = SITE_URL+"naizhan/shengchan/peisongliebiao";
-    // self.location = SITE_URL+"naizhan/shengchan/peisongliebiao";
-
-    // 如果没有新添加的直接跳转到今日配送单
-    if (order_count == 0) {
-        window.location.href = urlTo;
-    }
 });
 
 
@@ -168,6 +177,10 @@ $(document).on('click','#add',function(){
         return;
     }
 
+    // 隐藏添加提示行
+    showAddNotice(false);
+
+    // 添加数据
     var role = '<tr id="user"><td>'+last_row_number+'</td><td value="'+type_val+'">'+type+'</td><td value="'+address_val+'">'+address+'</td>';
     role+='<td>'+customer_name+'</td><td value="'+product_id+'">'+product+'</td>';
     role+='<td>'+phone_number+'</td><td value="'+milkman_id+'">'+milkman_name+'</td><td value="'+time_val+'">'+time+'</td><td contenteditable="true" class="editfill"></td></tr>';
@@ -235,13 +248,15 @@ $('.street_list').on("change", function () {
 });
 
 $(document).on('click','#plan_cancel',function () {
-    // $('#delivery_milk #user').each(function () {
-    //     $(this).remove();
-    // })
+    $('#delivery_milk #user').each(function () {
+        $(this).remove();
+    });
     // $('#delivery_milk').tbody.remove();
 
     // 跳转到前一页
-    parent.history.back();
+    // parent.history.back();
+
+    showAddNotice(true);
 });
 
 $(document).ready(function(){
@@ -270,4 +285,15 @@ $(document).ready(function(){
         $('.street_list').trigger('change');
 
 //			$('.table').treeTable();
+
+    showAddNotice(true);
 });
+
+function showAddNotice(bShow) {
+    if (bShow) {
+        $('#delivery_milk #tr_add_notice').show();
+    }
+    else {
+        $('#delivery_milk #tr_add_notice').hide();
+    }
+}

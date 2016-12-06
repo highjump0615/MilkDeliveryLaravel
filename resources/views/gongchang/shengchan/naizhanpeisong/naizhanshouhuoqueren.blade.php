@@ -22,7 +22,7 @@
 			<div class="row border-bottom">
 			</div>
 			<div class="row">	
-<!--Table-->				
+				<!--Table-->
 				<div class="ibox-content">
 					<div class="ibox-content">
 						<div class="feed-element">
@@ -105,7 +105,7 @@
 										<td>{{$ds->channel_sale}}</td>
 										<td>{{$ds->actual_count}}</td>
 										<td>{{$ds->diff}}</td>
-										<td class="confirm_count" id="confirm{{$i}}{{$ds->product_id}}" value="{{$ds->product_id}}">{{$ds->confirm_count}}</td>
+										<td class="confirm_count" id="confirm{{$i}}{{$ds->product_id}}" value="{{$ds->product_id}}">{{$ds->actual_count}}</td>
 										@if($j==1)
 											{{--已发货--}}
 											{{--<td rowspan="{{count($di->station_plan)}}"><i class="fa fa-pencil"></i></td>--}}

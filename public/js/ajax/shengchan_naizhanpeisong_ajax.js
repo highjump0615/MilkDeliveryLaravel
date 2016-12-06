@@ -10,20 +10,36 @@ $(document).on('click','.determine_count',function(e){
     });
 
     var butSubmit = $(this);
+    var bSufficient = true;
+
+    // 检查库存
+    $('#by_station tr:not(:first,:last)').each(function() {
+        var id = $(this).attr('value');
+
+        if ($(this).attr('id') == 'tablerow' + order + '') {
+            var nRemain = parseInt($('#rest' + id).html());
+            if (nRemain < 0) {
+                show_err_msg('库存不足，请重新提交');
+                bSufficient = false;
+            }
+        }
+    });
+
+    // 库存不足，直接退出
+    if (!bSufficient) {
+        return;
+    }
 
     $('#by_station tr:not(:first,:last)').each(function(){
         var id = $(this).attr('value');
 
-        if($(this).attr('id')=='tablerow'+order+''){
-            var nRemain = parseInt($('#rest'+id).html());
-            if (nRemain < 0) {
-                show_err_msg('库存不足，请重新提交');
-                return;
-            }
+        if ($(this).attr('id')=='tablerow'+order+''){
+            // 清空空格
+            var strCount = $('#confirm'+order+''+id+'').text().replace(/\s+/g, '');
 
             var station_id = $('#station_id'+order+'').attr('value');
             var formData = {
-                actual_count: $('#confirm'+order+''+id+'').text(),
+                actual_count: strCount,
                 product_id: id,
                 station_id: station_id
             };
