@@ -74,7 +74,7 @@ class OrderCtrl extends Controller
             //get order day counts of week
 
             //week day
-            $cod = $wop->custom_date;
+            $cod = $wop->custom_order_dates;
 
             $cod = explode(',', $cod);
             $custom = [];
@@ -151,7 +151,7 @@ class OrderCtrl extends Controller
         else {
             //get order day counts of month
                 //month day
-                $cod = $wop->custom_date;
+                $cod = $wop->custom_order_dates;
                 $daynums = $this->days_in_month($deliver_at);
 
                 $cod = explode(',', $cod);
