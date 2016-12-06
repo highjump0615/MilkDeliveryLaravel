@@ -484,12 +484,12 @@
             } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}"))
             {
                 //show custom bottle count on week
-                week.custom_dates = "{{$wop->custom_date}}";
+                week.custom_dates = "{{$wop->custom_order_dates}}";
                 week.set_custom_date();
 
             } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
 
-                calen.custom_dates = "{{$wop->custom_date}}";
+                calen.custom_dates = "{{$wop->custom_order_dates}}";
                 calen.set_custom_date();
 
             } else {

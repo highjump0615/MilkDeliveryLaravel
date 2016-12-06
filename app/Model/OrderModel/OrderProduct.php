@@ -315,7 +315,7 @@ class OrderProduct extends Model
      * @param $date
      * @return $date
      */
-    private function getNextDeliverDate($date) {
+    public function getNextDeliverDate($date) {
 
         do {
             $bRestart = false;
@@ -334,14 +334,18 @@ class OrderProduct extends Model
             }
 
             // 如果算出来的日期属于暂停期间, 重新计算
-            if ($this->order->has_stopped) {
-                $dateStop = $this->order->stop_at;
-                $dateRestart = $this->order->restart_at;
+            if($this->order)
+            {
+                if ($this->order->has_stopped) {
+                    $dateStop = $this->order->stop_at;
+                    $dateRestart = $this->order->restart_at;
 
-                if ($dateStop < $dateDeliverNew && $dateDeliverNew < $dateRestart) {
-                    $bRestart = true;
+                    if ($dateStop < $dateDeliverNew && $dateDeliverNew < $dateRestart) {
+                        $bRestart = true;
+                    }
                 }
             }
+
 
             $date = $dateDeliverNew;
 

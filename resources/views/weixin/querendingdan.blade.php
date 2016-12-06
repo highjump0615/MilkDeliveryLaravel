@@ -1,5 +1,10 @@
 @extends('weixin.layout.master')
 @section('title','确认订单')
+@section('css')
+    <link href="<?=asset('weixin/css/fullcalendar.min.css')?>" rel="stylesheet"/>
+@endsection
+
+
 @section('content')
 
     <header>
@@ -8,7 +13,7 @@
     </header>
     <div class="ordsl">
         <input type="hidden" id="group_id" value="{{$group_id}}"/>
-        <input type ="hidden" id="wxuser_id" value="{{$wxuser_id}}">
+        <input type="hidden" id="wxuser_id" value="{{$wxuser_id}}">
         <div class="addrli addrli2" style="cursor:pointer" onclick="go_page_address_list();">
             @if(isset($primary_addr_obj) && ($primary_addr_obj != null))
                 <div class="adrtop pa2t">
@@ -45,7 +50,8 @@
                     @else
                         ??
                     @endif
-                    元</div>
+                    元
+                </div>
                 <input type="hidden" id="total_amount" value="{{$wop->total_amount}}">
             </div>
         @endforeach
@@ -54,23 +60,27 @@
             <textarea class="btxt" name="comment" id="comment" cols="" rows="" placeholder="备注"></textarea>
         </div>
     </div>
+    <div class="ordrxg">
+        <span>订奶计划预览:</span>
+        <div id='calendar'></div>
+    </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
         @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && $total_amount>0 )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
-            <button class="tjord tjord2" disabled >去付款</button>
+            <button class="tjord tjord2" disabled>去付款</button>
         @endif
     </div>
 
     <?php
-    ini_set('date.timezone','Asia/Shanghai');
+    ini_set('date.timezone', 'Asia/Shanghai');
     //error_reporting(E_ERROR);
-    include_once app_path()."/Lib/Payweixin/WxPayConfig.php";
-    include_once app_path()."/Lib/Payweixin/WxPayApi.php";
-    include_once app_path()."/Lib/Payweixin/WxPayJsApiPay.php";
-    include_once app_path()."/Lib/Payweixin/WxPayException.php";
-    include_once app_path()."/Lib/Payweixin/WxPayData.php";
+    include_once app_path() . "/Lib/Payweixin/WxPayConfig.php";
+    include_once app_path() . "/Lib/Payweixin/WxPayApi.php";
+    include_once app_path() . "/Lib/Payweixin/WxPayJsApiPay.php";
+    include_once app_path() . "/Lib/Payweixin/WxPayException.php";
+    include_once app_path() . "/Lib/Payweixin/WxPayData.php";
 
 
     $tools = new JsApiPay();
@@ -79,8 +89,8 @@
     $input = new WxPayUnifiedOrder();
     $input->SetBody("test");
     $input->SetAttach("test");
-    $input->SetOut_trade_no(WxPayConfig::getMCHID().date("YmdHis"));
-    $input->SetTotal_fee("".round($total_amount*100, 0));
+    $input->SetOut_trade_no(WxPayConfig::getMCHID() . date("YmdHis"));
+    $input->SetTotal_fee("" . round($total_amount * 100, 0));
     $input->SetTime_start(date("YmdHis"));
     //$input->SetTime_expire(date("YmdHis", time() + 600));
     $input->SetGoods_tag("test");
@@ -97,83 +107,101 @@
     //}
     //printf_info($order);
 
-    if($total_amount > 0)
+    if ($total_amount > 0)
         $jsApiParameters = $tools->GetJsApiParameters($order);
     else
         $jsApiParameters = '';
 
     $editAddress = $tools->GetEditAddressParameters();
-
-
     ?>
+
 @endsection
 @section('script')
+    <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
     <script type="text/javascript">
         var order_id;
+
         //调用微信JS api 支付
-        function jsApiCall()
-        {
+        function jsApiCall() {
             WeixinJSBridge.invoke(
                     'getBrandWCPayRequest',
 
                     <?php
-                    if(isset($jsApiParameters) && $jsApiParameters != '')
-                        echo $jsApiParameters.',';
-                    ?>
-                    function(res){
+                            if (isset($jsApiParameters) && $jsApiParameters != '')
+                                echo $jsApiParameters . ',';
+                            ?>
+                    function (res) {
                         WeixinJSBridge.log(res.err_msg);
-                        if( res.err_msg == 'get_brand_wcpay_request:ok')
-                        {
+                        if (res.err_msg == 'get_brand_wcpay_request:ok') {
 //                            alert('支付成功了');
-                            window.location = SITE_URL+"weixin/zhifuchenggong?order="+order_id;
+                            window.location = SITE_URL + "weixin/zhifuchenggong?order=" + order_id;
                         }
-                        else
-                        {
+                        else {
 //                            alert('支付失败了');
-                            window.location = SITE_URL+"weixin/zhifushibai?order="+order_id;
+                            window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
                         }
                     }
             );
         }
 
-        function callpay()
-        {
-            if (typeof WeixinJSBridge == "undefined"){
-                if( document.addEventListener ){
+        function callpay() {
+            if (typeof WeixinJSBridge == "undefined") {
+                if (document.addEventListener) {
                     document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-                }else if (document.attachEvent){
+                } else if (document.attachEvent) {
                     document.attachEvent('WeixinJSBridgeReady', jsApiCall);
                     document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
                 }
-            }else{
+            } else {
                 jsApiCall();
             }
         }
 
-        window.onload = function(){
-            if (typeof WeixinJSBridge == "undefined"){
-                if( document.addEventListener ){
+        window.onload = function () {
+            if (typeof WeixinJSBridge == "undefined") {
+                if (document.addEventListener) {
                     document.addEventListener('WeixinJSBridgeReady', editAddress, false);
-                }else if (document.attachEvent){
+                } else if (document.attachEvent) {
                     document.attachEvent('WeixinJSBridgeReady', editAddress);
                     document.attachEvent('onWeixinJSBridgeReady', editAddress);
                 }
-            }else{
+            } else {
                 editAddress();
             }
         };
 
-
-        $(document).ready(function(){
+        $(document).ready(function () {
             @if(isset($message) && $message!="")
                 var message = "{{$message}}";
                 show_info_msg(message);
             @endif
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev',
+                    center: 'title',
+                    right: 'next'
+                },
+                firstDay: 0,
+                editable: false,
+                events: [
+                        @foreach($plans as $p)
+                    {
+                        title: "{{$p->product_name}} {{$p->changed_plan_count}}",
+                        start: '{{$p->deliver_at}}',
+                        className: 'ypsrl',
+                        textColor: '#00cc00'
+
+                    },
+                    @endforeach
+                ]
+            });
         });
+
         //make order based on cart
         $('#make_order').click(function () {
             var comment = $('#comment').val();
-            var group_id =$('#group_id').val();
+            var group_id = $('#group_id').val();
 
             var order_bt = $(this);
             $(order_bt).prop('disabled', true);
@@ -183,24 +211,22 @@
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
-                data: {'comment': comment, 'group_id':group_id},
+                data: {'comment': comment, 'group_id': group_id},
                 success: function (data) {
                     console.log(data);
-                    if(data.status == 'success')
-                    {
+                    if (data.status == 'success') {
                         $(order_bt).prop('disabled', false);
 
                         order_id = data.order_id;
 
                         callpay();
                     } else {
-                        if(data.message)
-                        {
+                        if (data.message) {
                             show_err_msg(data.message);
                         }
 
                         $(order_bt).prop('disabled', false);
-                        window.location = SITE_URL+"weixin/zhifushibai";
+                        window.location = SITE_URL + "weixin/zhifushibai";
                     }
                 },
                 error: function (data) {
@@ -221,9 +247,9 @@
             var group_id = $('#group_id').val();
 
             @if(isset($for))
-                window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+'&&from=queren&&for=xuedan';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren&&for=xuedan';
             @else
-                window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id+'&&from=queren';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren';
             @endif
         })
 

@@ -1775,7 +1775,7 @@ class WeChatCtrl extends Controller
         if ($count_per)
             $wcop->count_per_day = $count_per;
         else
-            $wcop->custom_date = $custom_date;
+            $wcop->custom_order_dates = $custom_date;
 
         $wcop->total_amount = $total_amount;
         $wcop->start_at = $start_at;
@@ -1851,7 +1851,7 @@ class WeChatCtrl extends Controller
             if ($count_per)
                 $wcop->count_per_day = $count_per;
             else
-                $wcop->custom_date = $custom_date;
+                $wcop->custom_order_dates = $custom_date;
 
             $wcop->total_amount = $total_amount;
             $wcop->start_at = $start_at;
@@ -2237,7 +2237,7 @@ class WeChatCtrl extends Controller
             if ($count_per)
                 $wcop->count_per_day = $count_per;
             else
-                $wcop->custom_date = $custom_date;
+                $wcop->custom_order_dates = $custom_date;
 
             $wcop->total_amount = $total_amount;
             $wcop->start_at = $start_at;
@@ -2463,7 +2463,7 @@ class WeChatCtrl extends Controller
             $op->total_amount = $wop->total_amount;
             $op->avg = $wop->avg;
             $op->count_per_day = $wop->count_per_day;
-            $op->custom_order_dates = $wop->custom_date;
+            $op->custom_order_dates = $wop->custom_order_dates;
             $op->start_at = $wop->start_at;
             $op->save();
 
@@ -2538,7 +2538,7 @@ class WeChatCtrl extends Controller
             $wcop->total_count = $op->total_count;
             $wcop->product_price = $op->product_price;
             $wcop->count_per_day = $op->count_per_day;
-            $wcop->custom_date = $op->custom_order_dates;
+            $wcop->custom_order_dates = $op->custom_order_dates;
             $wcop->total_amount = $op->total_amount;
             $wcop->start_at = $start_at;
             $wcop->group_id = $group_id;
@@ -2688,7 +2688,8 @@ class WeChatCtrl extends Controller
 
             //set primary address as session address
             session(['address' => $primary_address]);
-        } else {
+        }
+        else {
             //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
             $wxuser = WechatUser::find($wechat_user_id);
             if ($wxuser) {
@@ -2725,6 +2726,20 @@ class WeChatCtrl extends Controller
 
         $total_amount = round($total_amount, 2);
 
+        //show delivery plan before real order
+        $plans = [];
+        if(count($wechat_order_products)>0)
+        {
+            foreach($wechat_order_products as $wechat_order_product)
+            {
+                $wop_plans = $wechat_order_product->get_temp_plans();
+                foreach($wop_plans as $wop_plan)
+                {
+                    $plans[]= $wop_plan;
+                }
+            }
+        }
+
 
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
@@ -2735,6 +2750,7 @@ class WeChatCtrl extends Controller
             'message' => $message,
             'total_amount' => $total_amount,
             'openid' => $openid,
+            'plans'=> $plans,
         ]);
 
     }
