@@ -231,38 +231,6 @@ class WeChatCtrl extends Controller
 
     public function gerenzhongxin(Request $request)
     {
-//        if (!session('factory_id') && isset($_GET['state'])) {
-//            $factory_id = $_GET['state'];
-//
-//            //save factory id in session
-//            $request->session()->put('factory_id', $factory_id);
-//
-//            $factory = Factory::find($factory_id);
-//            $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
-//            $codees = $wechatObj->codes($_GET['code']);
-//
-//            //save wechat user id
-//            $open_id = $codees['openid'];
-//
-//            $wechat_user = WechatUser::where('openid', $open_id)->get()->first();
-//            if (!$wechat_user) {
-//                $wechat_user = new WechatUser;
-//                $wechat_user->openid = $open_id;
-//                $wechat_user->factory_id = $factory_id;
-//                $wechat_user->save();
-//            }
-//            $wechat_user_id = $wechat_user->id;
-//
-//            session(['wechat_user_id' => $wechat_user_id]);
-//
-//        } else {
-//
-//            $factory_id = session('factory_id');
-//            $factory = Factory::find($factory_id);
-//            $wechat_user_id = session('wechat_user_id');
-//        }
-//        if ($factory == null)
-//            abort(403);
 
         if (!session('factory_id') && isset($_GET['state'])) {
             $factory_id = $_GET['state'];
@@ -277,7 +245,7 @@ class WeChatCtrl extends Controller
         if ($factory == null)
             abort(403);
 
-        if (!session('wechat_user_id') && isset($_GET['code'])) {
+        if(!session('wechat_user_id') && isset($_GET['code'])) {
             $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory_id);
             $codees = $wechatObj->codes($_GET['code']);
 
@@ -299,6 +267,7 @@ class WeChatCtrl extends Controller
             $wechat_user_id = session('wechat_user_id');
         }
 
+
         //add verified flag
         if (!session('verified')) {
             session(['verified' => 'no']);
@@ -316,22 +285,27 @@ class WeChatCtrl extends Controller
         $customer = Customer::find($customer_id);
 
         if ($customer && $verified == "yes") {
-            //get customer's account remain amount
-            $remain_amount = $customer->remain_amount;
+            //get customer's order remain amount
+            $remain_order_amount = $customer->remain_order_amount;
             //get customer's remaining bottle amount
             $remaining_bottle_count = $customer->remaining_bottle_count;
 
+            //notification
+            $unread_cnt = WechatReview::where('customer_id', $customer_id)->where('status', WechatReview::WX_REVIEW_UNREAD_STATUS)->get()->count();
+
         } else {
-            $remain_amount = 0;
+            $remain_order_amount = 0;
             $remaining_bottle_count = 0;
+            $unread_cnt = 0 ;
         }
 
         return view('weixin.gerenzhongxin', [
             'user' => $wechat_user,
-            'remain_amount' => $remain_amount,
+            'remain_amount' => $remain_order_amount,
             'remaining_bottle_count' => $remaining_bottle_count,
             'cartn' => $cartn,
             'verified' => $verified,
+            'unread_cnt'=>$unread_cnt,
         ]);
     }
 

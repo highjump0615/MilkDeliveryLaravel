@@ -2249,7 +2249,7 @@ class OrderCtrl extends Controller
         $current_page = 'xiugai';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        return view('naizhan.dingdan.xiugai', [
+        return view('naizhan.dingdan.dingdanluru.xiugai', [
             // 菜单关联信息
             'pages'                     => $pages,
             'child'                     => $child,
