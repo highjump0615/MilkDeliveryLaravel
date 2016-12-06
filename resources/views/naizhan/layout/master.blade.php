@@ -106,10 +106,11 @@
 
 <script src="<?=asset('js/plugins/added/common.js') ?>"></script>
 
+<!-- 打印插件 -->
+<script src="<?=asset('js/plugins/jQuery.print.js') ?>"></script>
+
 <!-- 导出 -->
 <script src="<?=asset('js/tableexport.js') ?>"></script>
-
-<!-- 打印 -->
 
 @yield('script')
 </body>

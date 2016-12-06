@@ -211,12 +211,15 @@
                         </table>
                     </div>	
 					<div class="col-lg-4"></div>
-					<div class="col-lg-3">
-						<button id="save" type="button" class="btn btn-success btn-outline" style="width:100%;">添加到今日配送单</button>
+					<div class="col-lg-1">
+						<button id="save" type="button" class="btn btn-success" style="width:100%;">打印</button>
+					</div>
+					<div class="col-lg-2">
+						<button id="save" type="button" class="btn btn-success" style="width:100%;">保 存</button>
 						{{--onclick="window.location='{{URL::to('/naizhan/shengchan/peisongliebiao')}}'"--}}
 					</div>
 					<div class="col-lg-1">
-						<button class="btn btn-success" id="plan_cancel" style="width:100%;">取消</button>
+						<button class="btn btn-success btn-outline" id="plan_cancel" style="width:100%;">取消</button>
 					</div>
 				</div>
 				<div class="col-lg-12"><label></label></div>
