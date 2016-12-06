@@ -43,6 +43,7 @@
 						</div>
 					</div>
 				</div>
+
 				<div><hr></div>
 
 				<div id="deliver_info">

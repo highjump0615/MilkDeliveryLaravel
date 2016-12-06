@@ -223,7 +223,6 @@
 					</div>
 				</div>
 				<div class="col-lg-12"><label></label></div>
-
 			</div>
 		</div>
 		
@@ -232,7 +231,7 @@
 
 @section('script')
 	<script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
+
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/naizhan_ziyingdingdan_ajax.js') ?>"></script>
 @endsection

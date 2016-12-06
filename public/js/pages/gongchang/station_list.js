@@ -194,8 +194,6 @@ $('button[data-action = "print"]').click(function () {
     else if (fd != "none") {
         printContent('filter_table');
     }
-
-    location.reload();
 });
 
 $('#origin_table .edit_station').on('click', function(e){
