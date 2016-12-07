@@ -2879,7 +2879,7 @@ class WeChatCtrl extends Controller
 
         $customer = Customer::where('phone', $phone_number)->get()->first();
 
-        if ($wxuser && $customer && $wxuser->phone_verify_code == $code) {
+        if ($code!='' && $wxuser && $customer && $wxuser->phone_verify_code == $code) {
 
             $customer_id = $customer->id;
             $wxuser->customer_id = $customer_id;
