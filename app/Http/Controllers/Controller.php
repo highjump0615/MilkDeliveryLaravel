@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use Auth;
+use App\Model\UserModel\User;
 
 class Controller extends BaseController
 {
@@ -36,5 +37,17 @@ class Controller extends BaseController
         }
 
         return $nId;
+    }
+
+    protected function getCurrentUser(){
+        $guard_user_id = session('guard_user_id');
+
+        if($guard_user_id) {
+            $user = User::find($guard_user_id);
+
+            return $user;
+        }
+
+        return null;
     }
 }

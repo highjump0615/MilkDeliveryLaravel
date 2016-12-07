@@ -2842,19 +2842,14 @@ class WeChatCtrl extends Controller
     {
         $phone = $request->input('phone_number');
         $code = $this->generate_verify_code();
-        //todo: save verify code to this wxuser
-
         $wxuser_id = session('wechat_user_id');
         $wxuser = WechatUser::find($wxuser_id);
         //if customer not exist for this wxuser, fail
-
         $customer = Customer::where('phone', $phone)->get()->first();
+
         if($customer)
         {
-            $customer_id = $customer->id;
             $wxuser->phone_verify_code = $code;
-            $wxuser->customer_id = $customer_id;
-            $wxuser->name = $customer->name;
             $wxuser->save();
 
             // 发送验证码
@@ -2881,7 +2876,16 @@ class WeChatCtrl extends Controller
 
         $wxuser_id = session('wechat_user_id');
         $wxuser = WechatUser::find($wxuser_id);
-        if ($wxuser->phone_verify_code == $code) {
+
+        $customer = Customer::where('phone', $phone_number)->get()->first();
+
+        if ($wxuser && $customer && $wxuser->phone_verify_code == $code) {
+
+            $customer_id = $customer->id;
+            $wxuser->customer_id = $customer_id;
+            $wxuser->name = $customer->name;
+            $wxuser->save();
+
             session(['verified' => 'yes']);
 
             return response()->json(['status' => 'success']);

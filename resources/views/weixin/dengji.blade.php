@@ -42,6 +42,9 @@
 
             if(pattern && phone_number.match(new RegExp(pattern)))
             {
+
+                $('#phone_number').prop('readonly', true);
+
                 $.ajax({
                     type:"POST",
                     url: SITE_URL + "weixin/api/send_verify_code_to_phone",
@@ -53,13 +56,16 @@
                         if(data.status == "success")
                         {
                             show_info_msg('验证码发送，请输入正确的验证码.');
+
                         } else {
                             show_warning_msg('客户不存在');
+                            $('#phone_number').prop('readonly', false);
                         }
                     },
                     error: function(data)
                     {
                         console.log(data);
+                        $('#phone_number').prop('readonly', false);
                     }
                 });
             } else {
@@ -86,6 +92,8 @@
                     console.log(data);
                     if(data.status == "success")
                     {
+                        $('#phone_number').prop('readonly', false);
+
                         @if(isset($to))
                                 window.location = SITE_URL+"weixin/querendingdan";
                         @else
@@ -94,6 +102,7 @@
 
                     } else {
                         show_warning_msg('验证代码不正确，请重试.');
+                        $('#phone_number').prop('readonly', false);
                     }
 
                 },
