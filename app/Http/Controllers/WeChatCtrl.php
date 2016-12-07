@@ -2884,6 +2884,7 @@ class WeChatCtrl extends Controller
             $customer_id = $customer->id;
             $wxuser->customer_id = $customer_id;
             $wxuser->name = $customer->name;
+            $wxuser->phone_verify_code = "";
             $wxuser->save();
 
             session(['verified' => 'yes']);
