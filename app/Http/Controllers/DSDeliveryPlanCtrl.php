@@ -209,12 +209,16 @@ class DSDeliveryPlanCtrl extends Controller
         return $is_distributed;
     }
 
+    /**
+     * 保存奶站配送信息
+     * @param Request $request
+     * @return int
+     */
     public function save_distribution(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getCurDateString();
 
         $product_id = $request->input('product_id');
         $retail = $request->input('retail');

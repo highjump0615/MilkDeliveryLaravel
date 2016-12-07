@@ -261,7 +261,7 @@
 						<div>
 							<div class="col-md-3 col-md-offset-9">
 								<div class="col-md-6 col-md-offset-6">
-									<button class="btn btn-success auto_distribute" style="width:90%;" @if($is_distributed==1) disabled @endif>
+									<button class="btn btn-success btn-outline auto_distribute" style="width:90%;" @if($is_distributed==1) disabled @endif>
 										调配
 									</button>
 								</div>
@@ -344,11 +344,11 @@
 					<div class="col-lg-10"></div>
 					<div class="col-lg-2">
 						@if($is_distributed != 1)
-							<button class="btn btn-outline btn-success shengchan-peisong" style="width: 100%;" @if ($is_received == 0) disabled @endif>
+							<button class="btn btn-success shengchan-peisong" style="width: 100%;" @if ($is_received == 0) disabled @endif>
 								生成配送列表
 							</button>
 						@else
-							<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-outline btn-success" style="width: 100%;">
+							<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-success" style="width: 100%;">
 								查看配送列表
 							</button>
 						@endif

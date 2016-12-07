@@ -411,6 +411,9 @@ $(document).on('click','.auto_distribute',function(e){
  */
 $(document).on('click','.shengchan-peisong',function(e){
 
+    // 防止二次点击，把按钮禁止
+    $(this).attr('disabled', 'disabled');
+
     save_distribute();
 
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_changed_distribution';
@@ -418,7 +421,7 @@ $(document).on('click','.shengchan-peisong',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
     var table_info = [];
     var i = 0;
@@ -437,7 +440,7 @@ $(document).on('click','.shengchan-peisong',function(e){
 
         table_info[i] = formData;
         i++;
-    })
+    });
 
     var type = "PUT";
 
