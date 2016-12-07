@@ -98,8 +98,6 @@ class Order extends Model
         'first_delivery_plans',
     ];
     
-    public $timestamps = false;
-
     const ORDER_TRANS_CHECK_TRUE = 1;
     const ORDER_TRANS_CHECK_FALSE = 0;
     
