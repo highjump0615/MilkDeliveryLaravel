@@ -1890,6 +1890,7 @@ class OrderCtrl extends Controller
             // 状态设置
             if (strtotime($start_date) <= strtotime('today') && strtotime('today') <= strtotime($end_date)) {
                 $order->status = Order::ORDER_STOPPED_STATUS;
+                $order->save();
             }
 
 //            //Notification

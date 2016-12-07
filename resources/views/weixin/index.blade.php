@@ -18,7 +18,7 @@
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 @foreach($banners as $b)
-                    <div class="swiper-slide"><img class="bimg img-responsive" src="<?=asset($b->image_url)?>"></div>
+                    <div class="swiper-slide"><img class="bimg img-responsive" onClick="go_to_product({{$b->product_id}})" src="<?=asset($b->image_url)?>"></div>
                 @endforeach
 
             </div>
@@ -58,7 +58,7 @@
             <dd>
                 @foreach($promos as $p)
                     @if($p->image_url)
-                        <img class="bimg img-responsive" src="<?=asset($p->image_url)?>"/>
+                        <img class="bimg img-responsive" onClick = "go_to_product({{$p->product_id}})" src="<?=asset($p->image_url)?>"/>
                     @endif
                 @endforeach
             </dd>
@@ -174,6 +174,11 @@
                 },
             })
         });
+
+        function go_to_product(pid)
+        {
+            location.href = SITE_URL+"weixin/tianjiadingdan?product="+pid;
+        }
 
     </script>
 @endsection

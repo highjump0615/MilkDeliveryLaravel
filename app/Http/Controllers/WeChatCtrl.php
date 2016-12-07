@@ -82,7 +82,7 @@ class WeChatCtrl extends Controller
 //        session(['factory_id' => $factory_id]);
 //        session(['address' => '北京 北京市']);
 
-
+        
         //add verified flag
         if (!session('verified')) {
             session(['verified' => 'no']);
@@ -1056,7 +1056,7 @@ class WeChatCtrl extends Controller
                 {
                     $query->where('customer_id', $customer_id);
                     $query->orWhere('phone', $customer->phone);
-                })->orderBy('ordered_at', 'desc')->get();
+                })->orderBy('id', 'desc')->get();
 
             $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
@@ -1076,21 +1076,21 @@ class WeChatCtrl extends Controller
                                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
                         })
                         ->where('phone', $customer->phone)
-                        ->orderBy('ordered_at', 'desc')
+                        ->orderBy('id', 'desc')
                         ->get();
                 }
                 else if ($type == 'finished') {
                     $orders = Order::where('is_deleted', 0)
                         ->where('status', Order::ORDER_FINISHED_STATUS)
                         ->Where('phone', $customer->phone)
-                        ->orderBy('ordered_at', 'desc')
+                        ->orderBy('id', 'desc')
                         ->get();
                 }
                 else if ($type == 'stopped') {
                     $orders = Order::where('is_deleted', 0)
                         ->where('status', Order::ORDER_STOPPED_STATUS)
                         ->Where('phone', $customer->phone)
-                        ->orderBy('ordered_at', 'desc')
+                        ->orderBy('id', 'desc')
                         ->get();
                 }
                 else if ($type == 'on_delivery') {
@@ -1100,7 +1100,7 @@ class WeChatCtrl extends Controller
                             $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
                         })
                         ->where('phone', $customer->phone)
-                        ->orderBy('ordered_at', 'desc')
+                        ->orderBy('id', 'desc')
                         ->get();
                 }
 

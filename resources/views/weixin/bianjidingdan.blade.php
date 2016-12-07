@@ -78,7 +78,7 @@
         </div>
         <div class="dnsli clearfix">
             <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract">
+                 <span class="addSubtract product_total_count">
                   <a class="subtract" href="javascript:;">-</a>
                   <input type="text" id="total_count" value="{{$wop->total_count}}" style="ime-mode: disabled;">
                   <a class="add" href="javascript:;">+</a>
@@ -105,33 +105,33 @@
 
         <!-- combo box change -->
         <!-- 天天送 -->
-        <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item0" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
             <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
-                <input type="text" value="1" style="ime-mode: disabled;">
+                <input type="text" class="deliver_count_per_day" value="1" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
         <!--隔日送 -->
-        <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item1" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
             <span class="addSubtract deliver_plan_as">
                 <a class="subtract" href="javascript:;">-</a>
-                <input type="text" value="1" style="ime-mode: disabled;">
+                <input type="text" value="1" class="deliver_count_per_day" style="ime-mode: disabled;">
                 <a class="add" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
         <!-- 按周规则 -->
-        <div class="dnsli clearfix dnsel_item" id="dnsel_item2">
+        <div class="dnsli clearfix dnsel_item" id="dnsel_item2" style="display: none;">
             <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
             </table>
         </div>
 
         <!-- 随心送 -->
-        <div class="dnsel_item" id="dnsel_item3">
+        <div class="dnsel_item" id="dnsel_item3"  style="display: none;">
             <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
             </table>
         </div>
@@ -147,7 +147,7 @@
 
         <div class="dnsall">
             <div class="dnsts">
-                订购天数：<span id="order_day_num">16</span> 天
+                订购天数：<span id="order_day_num"></span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
             <div class="dnsli clearfix">
@@ -227,11 +227,7 @@
             $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
         })
         
-        $(function () {
-            calen = new showfullcalendar("calendar");
-            week = new showmyweek("week");
-            dnsel_changed("dnsel_item0");
-        });
+
 
         var previous = "{{$previous}}";
 
@@ -296,6 +292,11 @@
             $('#start_at').val(current_start_date);
 
             $('select#order_type').trigger('change');
+
+
+            calen = new showfullcalendar("calendar",  "change_order_day_num");
+            week = new showmyweek("week", "change_order_day_num");
+            dnsel_changed("dnsel_item0");
 
             init_wechat_order_product();
 
@@ -501,6 +502,204 @@
             //get total order day numbers
             $('#order_day_num').text(order_day_num);
 
+        }
+
+
+
+        //calculate order days for this products
+        $('input#total_count').change(function(){
+
+            change_order_day_num();
+        });
+
+        $('.product_total_count .subtract').click(function(){
+            change_order_day_num();
+        });
+
+        $('.product_total_count .add').click(function(){
+            change_order_day_num();
+        });
+
+
+        $('.deliver_count_per_day').change(function(){
+
+            change_order_day_num();
+        });
+
+        $('.deliver_plan_as .subtract').click(function(){
+            change_order_day_num();
+        });
+
+        $('.deliver_plan_as .add').click(function(){
+            change_order_day_num();
+        });
+
+        $('#start_at').change(function(){
+            change_order_day_num();
+        });
+
+        $(document).on('click', '#week td', function(){
+            change_order_day_num();
+        });
+
+        $(document).on('click', '#calendar td', function(){
+            change_order_day_num();
+        });
+
+
+        function get_available_week_index(array, start)
+        {
+            if(array.hasOwnProperty(start))
+                    return start;
+            else {
+                do{
+                    start++;
+                    if(start>7)
+                    {
+                        start  = 1;
+                    }
+
+                }while(! array.hasOwnProperty(start));
+
+                return start;
+            }
+        }
+
+        function get_available_month_index(array, start)
+        {
+            if(array.hasOwnProperty(start))
+                return start;
+            else {
+                do{
+                    start++;
+                    if(start>31)
+                    {
+                        start  = 1;
+                    }
+
+                }while(! array.hasOwnProperty(start));
+
+                return start;
+            }
+        }
+
+
+        function get_order_days_from_week( total_count, custom_date){
+
+            var order_dates = 0;
+
+            custom_date = custom_date.slice(0,-1);
+            var custom_array = custom_date.split(',');
+            var value_array = [];
+            for(var i = 0 ; i <custom_array.length; i++ )
+            {
+                var one_arr = custom_array[i].split(':');
+                value_array [one_arr[0]] = one_arr[1];
+            }
+            //set start_date based on start_at day of week
+            var start_at = $('#start_at').val();
+            var start_day =  new Date(start_at).getDay();
+            if (start_day == 0)
+            {
+                start_day = 7;
+            }
+
+            i = get_available_week_index( value_array, start_day);
+
+            do
+            {
+                if(i > 7)
+                {
+                    i = 1;
+                }
+
+                i = get_available_week_index(value_array, i);
+                var value = value_array[i];
+                total_count -= value;
+                order_dates ++;
+                i++;
+
+            }while(total_count>0)
+
+            return order_dates;
+        }
+
+        function get_order_days_from_calendar( total_count, custom_date){
+
+            var order_dates = 0;
+
+            custom_date = custom_date.slice(0,-1);
+            var custom_array = custom_date.split(',');
+            var value_array = [];
+            for(var i = 0 ; i <custom_array.length; i++ )
+            {
+                var one_arr = custom_array[i].split(':');
+                value_array [one_arr[0]] = one_arr[1];
+            }
+
+            //set start_date based on start_at day of week
+            var start_at = $('#start_at').val();
+            var start_day =  new Date(start_at).getDate();
+
+
+            i = get_available_month_index( value_array, start_day);
+
+            do
+            {
+
+                var value = value_array[i];
+                total_count -= value;
+                order_dates ++;
+                i++;
+
+                if(i > 31)
+                {
+                    i = 1;
+                }
+
+                i = get_available_month_index( value_array, i);
+
+            }while(total_count>0)
+
+            return order_dates;
+        }
+
+        function change_order_day_num()
+        {
+            //get total count
+            var total_count = parseInt($('#total_count').val());
+
+            var delivery_type = $('#delivery_type option:selected').data('value');
+
+            var order_day_num=0;
+
+            if(delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}"))
+            {
+                var count_per = parseInt($('#dnsel_item0 .deliver_count_per_day').val());
+                order_day_num = Math.ceil(total_count/count_per, 1);
+
+            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}"))
+            {
+                var count_per = parseInt($('#dnsel_item1 .deliver_count_per_day').val());
+                order_day_num = Math.round(total_count/count_per, 1);
+
+            } else if ( delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}"))
+            {
+                //show custom bottle count on week
+                var custom_date = week.get_submit_value();
+                order_day_num = get_order_days_from_week(total_count, custom_date);
+
+            } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
+
+                var custom_date = calen.get_submit_value();
+                order_day_num = get_order_days_from_calendar(total_count, custom_date);
+
+            } else {
+                return;
+            }
+
+            //get total order day numbers
+            $('#order_day_num').text(order_day_num);
         }
 
     </script>
