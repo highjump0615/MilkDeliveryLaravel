@@ -947,7 +947,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     public function showNaizhanshouhuoquerenPage(Request $request){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
         $child = 'naizhanpeisong';
         $parent = 'shengchan';
         $current_page = 'naizhanshouhuoqueren';
@@ -967,20 +968,15 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
-        $current_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $current_date->format('Y-m-d');
-        $current_date->add(\DateInterval::createFromDateString('yesterday'));
-        $produced_date = $current_date->format('Y-m-d');
+        $produced_date = getPrevDateString();
 
-        if($input_date_str != null){
+        if ($input_date_str != null){
             $date = str_replace('-','/',$input_date_str);
             $produced_date = date('Y-m-d',strtotime($date."-1 days"));
         }
         else{
-            $input_date_str = $current_date_str;
+            $input_date_str = getCurDateString();
         }
-
-
 
         $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
 //        $stations = DeliveryStation::where('is_delete',0)->where('factory_id',1)->get();
@@ -993,8 +989,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             foreach($station_plans as $station_plan) {
                 $product_id = $station_plan->product_id;
                 $total_changed = 0;
-                $delivery_plans = MilkManDeliveryPlan::where('deliver_at', $input_date_str)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->
-                    where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get();
+                $delivery_plans = MilkManDeliveryPlan::where('deliver_at', $input_date_str)
+                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                    ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
+                    ->get();
+
                 foreach($delivery_plans as $dp) {
                     if($dp->order->station->id == $si->id && $dp->order_product->product->id == $product_id) {
                         //calc process
@@ -1012,6 +1011,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $si["station_plan"] = $station_plans;
             $si["plan_status"] = (count($station_plans) > 0);
         }
+
         return view('gongchang.shengchan.naizhanpeisong.naizhanshouhuoqueren',[
             'pages'=>$pages,
             'child'=>$child,
