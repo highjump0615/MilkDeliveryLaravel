@@ -345,11 +345,11 @@
 					<div class="col-lg-2">
 						@if($is_distributed != 1)
 							<button class="btn btn-success shengchan-peisong" style="width: 100%;" @if ($is_received == 0) disabled @endif>
-								生成配送列表
+								生成今日配送单
 							</button>
 						@else
-							<button onclick="window.location='{{ url('/naizhan/shengchan/peisongliebiao') }}'" class="btn btn-success" style="width: 100%;">
-								查看配送列表
+							<button onclick="window.location='{{ url('/naizhan/shengchan/jinripeisongdan') }}'" class="btn btn-success" style="width: 100%;">
+								查看今日配送单
 							</button>
 						@endif
 					</div>

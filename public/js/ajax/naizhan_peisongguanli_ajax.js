@@ -47,7 +47,7 @@ $(document).ready(function(){
     });
 
     calc_total();
-})
+});
 
 function get_product_id(){
     var $datarows = $('#distribute tr.product_id_tr');
@@ -452,7 +452,7 @@ $(document).on('click','.shengchan-peisong',function(e){
         data: JSON.stringify(table_info),
         success: function (data) {
             console.log(data);
-            window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
+            window.location = SITE_URL + "naizhan/shengchan/jinripeisongdan";
         },
         error: function (data) {
             console.log('Error:', data);
