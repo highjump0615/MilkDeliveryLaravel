@@ -45,8 +45,8 @@
 								{{--</select>--}}
 							</div>
 							<div class="col-md-3" id="date_2">
-								<label class="col-md-3 control-label" style="padding-top: 7px;">日期:</label>
-								<div class="input-group date col-md-9">
+								<label class="col-md-4 control-label" style="padding-top: 7px;">签收日期:</label>
+								<div class="input-group date col-md-8">
 									<input type="text" id="date" class="form-control" value="{{$current_date}}"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
 								</div>
 							</div>

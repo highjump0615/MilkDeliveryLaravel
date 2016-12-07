@@ -14,8 +14,12 @@ $(document).on('click','.confirm_values',function(e){
     $('#confrim_arrived_product tr:not(:first)').each(function(){
         var id = $(this).attr('id');
         var station_id = $(this).attr('value');
+
+        // 去掉空格
+        var strCount = $('#product'+id+'').val().replace(/\s+/g, '');
+
         var formData = {
-            confirm_count: $('#product'+id+'').val(),
+            confirm_count: strCount,
             product_id: id,
             station_id: station_id
         };

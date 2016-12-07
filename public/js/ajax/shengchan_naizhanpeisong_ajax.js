@@ -34,7 +34,7 @@ $(document).on('click','.determine_count',function(e){
         var id = $(this).attr('value');
 
         if ($(this).attr('id')=='tablerow'+order+''){
-            // 清空空格
+            // 去掉空格
             var strCount = $('#confirm'+order+''+id+'').text().replace(/\s+/g, '');
 
             var station_id = $('#station_id'+order+'').attr('value');
