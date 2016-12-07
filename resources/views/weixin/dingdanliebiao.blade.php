@@ -76,11 +76,6 @@
                         <a href="{{url('/weixin/dingdanxiugai?order='.$o->id)}}">修改</a>
                     </span>
                     @endif
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_WAITING_STATUS)
-                        <span class="shsp">
-                        <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">{{$o->status_name}}</a>
-                    </span>
-                    @endif
                     @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                         <span class="shsp-r">
                     暂停订单
