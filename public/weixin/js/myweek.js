@@ -21,14 +21,14 @@ function myweek(id)
     this.obj = $("#"+id);
     this.get_submit_value = week_get_numbers;
 
-    var arr = new Array("周一","周二","周三","周四","周五","周六","周日");
+    var arr = new Array("周日", "周一","周二","周三","周四","周五","周六");
 
     var header = "<tr>";
     var data = "<tr height='62px'>";
     for( var i=0; i<7; i++ )
     {
         header = header + "<th scope='col'>" + arr[i] + "</th>";
-        data = data + "<td data-dates='"+(i+1)+"'></td>";
+        data = data + "<td data-dates='"+(i)+"'></td>";
     }
     $("#"+id).append(header);
     $("#"+id).append(data);

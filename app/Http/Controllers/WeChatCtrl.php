@@ -435,8 +435,8 @@ class WeChatCtrl extends Controller
                 $photo_url = $product->photo_url1;
                 $product_name = $product->name;
                 $product_count = $op->remain_count;
-                $product_price = $op->product_price;
-                $product_amount = $op->remain_amount;
+                $product_price =  round($op->product_price, 3);
+                $product_amount = round($op->remain_amount, 3);
                 $delivery_type = $op->delivery_type;
                 $count_per = $op->count_per_day;
                 $custom_date = $op->custom_order_dates;
@@ -475,8 +475,8 @@ class WeChatCtrl extends Controller
                     $photo_url = $product->photo_url1;
                     $product_name = $product->name;
                     $product_count = $op->remain_count;
-                    $product_price = $op->product_price;
-                    $product_amount = $op->remain_amount;
+                    $product_price = round($op->product_price, 3);
+                    $product_amount = round($op->remain_amount, 3);
                     $delivery_type = $op->delivery_type;
                     $count_per = $op->count_per_day;
                     $custom_date = $op->custom_order_dates;
@@ -2463,7 +2463,7 @@ class WeChatCtrl extends Controller
         $this->make_order_products_and_delivery_plan($wxuser_id, $order_id, $orderctrl);
 
         //delete cart and order item
-        $this->remove_wechat_order_products_from_wxuser($wxuser_id, $wopids);
+        $this->remove_wechat_order_products_from_wxuser($wopids);
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
 
@@ -2600,6 +2600,20 @@ class WeChatCtrl extends Controller
         $openid = $wechat_user->openid;
         $total_amount = round($total_amount, 2);
 
+        //show delivery plan before real order
+        $plans = [];
+        if(count($wechat_order_products)>0)
+        {
+            foreach($wechat_order_products as $wechat_order_product)
+            {
+                $wop_plans = $wechat_order_product->get_temp_plans();
+                foreach($wop_plans as $wop_plan)
+                {
+                    $plans[]= $wop_plan;
+                }
+            }
+        }
+
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
             'customer' => $customer,
@@ -2610,6 +2624,7 @@ class WeChatCtrl extends Controller
             'for'=>'xuedan',
             'openid'=>$openid,
             'total_amount'=>$total_amount,
+            'plans' => $plans,
         ]);
     }
 
