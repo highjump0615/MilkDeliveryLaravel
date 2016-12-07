@@ -37,4 +37,20 @@ class Controller extends BaseController
 
         return $nId;
     }
+
+    /**
+     * 获取当前用户
+     * @return null
+     */
+    protected function getCurrentUser() {
+        $guard_user_id = session('guard_user_id');
+
+        if($guard_user_id) {
+            $user = User::find($guard_user_id);
+
+            return $user;
+        }
+
+        return null;
+    }
 }
