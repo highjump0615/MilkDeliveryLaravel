@@ -82,7 +82,7 @@ class WeChatCtrl extends Controller
 //        session(['factory_id' => $factory_id]);
 //        session(['address' => '北京 北京市']);
 
-        
+
         //add verified flag
         if (!session('verified')) {
             session(['verified' => 'no']);
@@ -242,6 +242,7 @@ class WeChatCtrl extends Controller
         }
 
         $factory = Factory::find($factory_id);
+
         if ($factory == null)
             abort(403);
 
@@ -962,7 +963,8 @@ class WeChatCtrl extends Controller
 
                 return response()->json(['status' => 'success']);
             }
-        } else {
+        }
+        else {
             return resoponse()->json(['status' => 'fail']);
         }
 
@@ -1036,8 +1038,6 @@ class WeChatCtrl extends Controller
 
     public function dingdanliebiao(Request $request)
     {
-
-
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
 
@@ -1049,15 +1049,6 @@ class WeChatCtrl extends Controller
         if($customer_id)
         {
             $customer = Customer::find($customer_id);
-            //show orders that has same customer_id and telephone
-            $orders = Order::where('is_deleted', 0)
-                ->where(function ($query)
-                    use ($customer_id, $customer)
-                {
-                    $query->where('customer_id', $customer_id);
-                    $query->orWhere('phone', $customer->phone);
-                })->orderBy('id', 'desc')->get();
-
             $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
             if($request->has('type'))
@@ -1069,54 +1060,94 @@ class WeChatCtrl extends Controller
                     return redirect()->route('dengji');
                 }
 
-                if ($type == 'waiting') {
-                    $orders = Order::where('is_deleted', 0)
-                        ->where(function($query){
-                                $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
-                                $query->orWhere('status', Order::ORDER_WAITING_STATUS);
-                        })
-                        ->where('phone', $customer->phone)
-                        ->orderBy('id', 'desc')
-                        ->get();
-                }
-                else if ($type == 'finished') {
-                    $orders = Order::where('is_deleted', 0)
-                        ->where('status', Order::ORDER_FINISHED_STATUS)
-                        ->Where('phone', $customer->phone)
-                        ->orderBy('id', 'desc')
-                        ->get();
-                }
-                else if ($type == 'stopped') {
-                    $orders = Order::where('is_deleted', 0)
-                        ->where('status', Order::ORDER_STOPPED_STATUS)
-                        ->Where('phone', $customer->phone)
-                        ->orderBy('id', 'desc')
-                        ->get();
-                }
-                else if ($type == 'on_delivery') {
-                    $orders = Order::where('is_deleted', 0)
-                        ->where(function ($query) {
+                $orders =  Order::where('is_deleted', 0)
+                    ->where('phone', $customer->phone);
+
+                switch($type)
+                {
+                    case 'waiting':
+                        $orders = $orders->where(function($query)
+                        {
+                            $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
+                            $query->orWhere('status', Order::ORDER_WAITING_STATUS);
+                        });
+                        break;
+                    case 'finished':
+                        $orders = $orders->where('status', Order::ORDER_FINISHED_STATUS);
+                        break;
+                    case 'stopped':
+                        $orders = $orders->where('status', Order::ORDER_STOPPED_STATUS);
+                        break;
+                    case 'on_delivery':
+                        $orders = $orders->where(function ($query) {
                             $query->where('status', Order::ORDER_PASSED_STATUS);
                             $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                        })
-                        ->where('phone', $customer->phone)
-                        ->orderBy('id', 'desc')
-                        ->get();
+                        });
+                        break;
+                    default:
+                        break;
                 }
 
-                    return view('weixin.dingdanliebiao', [
-                        'set_type' => true,
-                        'orders' => $orders,
-                        'cartn' => $cartn,
-                    ]);
-            } else {
+                $orders = $orders->orderBy('created_at', 'desc')->get();
+
+//                if ($type == 'waiting') {
+//                    $orders = Order::where('is_deleted', 0)
+//                        ->where(function($query){
+//                                $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
+//                                $query->orWhere('status', Order::ORDER_WAITING_STATUS);
+//                        })
+//                        ->where('phone', $customer->phone)
+//                        ->orderBy('id', 'desc')
+//                        ->get();
+//                }
+//                else if ($type == 'finished') {
+//                    $orders = Order::where('is_deleted', 0)
+//                        ->where('status', Order::ORDER_FINISHED_STATUS)
+//                        ->Where('phone', $customer->phone)
+//                        ->orderBy('id', 'desc')
+//                        ->get();
+//                }
+//                else if ($type == 'stopped') {
+//                    $orders = Order::where('is_deleted', 0)
+//                        ->where('status', Order::ORDER_STOPPED_STATUS)
+//                        ->Where('phone', $customer->phone)
+//                        ->orderBy('id', 'desc')
+//                        ->get();
+//                }
+//                else if ($type == 'on_delivery') {
+//                    $orders = Order::where('is_deleted', 0)
+//                        ->where(function ($query) {
+//                            $query->where('status', Order::ORDER_PASSED_STATUS);
+//                            $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+//                        })
+//                        ->where('phone', $customer->phone)
+//                        ->orderBy('id', 'desc')
+//                        ->get();
+//                }
+                return view('weixin.dingdanliebiao', [
+                    'set_type' => true,
+                    'orders' => $orders,
+                    'cartn' => $cartn,
+                ]);
+            }
+            else{
+
+                //show orders that has same customer_id and telephone
+                $orders = Order::where('is_deleted', 0)
+                    ->where(function ($query)
+                    use ($customer_id, $customer)
+                    {
+                        $query->where('customer_id', $customer_id);
+                        $query->orWhere('phone', $customer->phone);
+                    })->orderBy('created_at', 'desc')->get();
+
                 return view('weixin.dingdanliebiao', [
                     'orders' => $orders,
                     'cartn' => $cartn,
                 ]);
             }
-        }
-        else {
+
+        }  else {
             $orders= [];
             return view('weixin.dingdanliebiao', [
                 'orders' => $orders,
