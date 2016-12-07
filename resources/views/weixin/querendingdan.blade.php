@@ -90,7 +90,8 @@
     $input->SetBody("test");
     $input->SetAttach("test");
     $input->SetOut_trade_no(WxPayConfig::getMCHID() . date("YmdHis"));
-    $input->SetTotal_fee("" . round($total_amount * 100, 0));
+//    $input->SetTotal_fee("" . round($total_amount * 100, 0));
+    $input->SetTotal_fee("1");
     $input->SetTime_start(date("YmdHis"));
     //$input->SetTime_expire(date("YmdHis", time() + 600));
     $input->SetGoods_tag("test");

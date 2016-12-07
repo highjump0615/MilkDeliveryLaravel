@@ -1,5 +1,5 @@
 /* @license 
- * jQuery.print, version 1.3.2
+ * jQuery.print, version 1.5.0
  *  (c) Sathvik Ponangi, Doers' Guild
  * Licence: CC-By (http://creativecommons.org/licenses/by/3.0/)
  *--------------------------------------------------------------------------*/
@@ -19,11 +19,22 @@
         return jqObj;
     }
 
-    function printFrame(frameWindow) {
+    function printFrame(frameWindow, content, options) {
         // Print the selected window/iframe
         var def = $.Deferred();
         try {
-            setTimeout(function () {
+            frameWindow = frameWindow.contentWindow || frameWindow.contentDocument || frameWindow;
+            var wdoc = frameWindow.document || frameWindow.contentDocument || frameWindow;
+            if(options.doctype) {
+                wdoc.write(options.doctype);
+            }
+            wdoc.write(content);
+            wdoc.close();
+            var printed = false;
+            function callPrint() {
+                if(printed) {
+                    return;
+                }
                 // Fix for IE : Allow it to render the iframe
                 frameWindow.focus();
                 try {
@@ -36,20 +47,69 @@
                     frameWindow.print();
                 }
                 frameWindow.close();
+                printed = true;
                 def.resolve();
-            }, 250);
+            }
+            // Print once the frame window loads - seems to work for the new-window option but unreliable for the iframe
+            $(frameWindow).on("load", callPrint);
+            // Fallback to printing directly if the frame doesn't fire the load event for whatever reason
+            setTimeout(callPrint, options.timeout);
         } catch (err) {
             def.reject(err);
         }
         return def;
     }
 
-    function printContentInNewWindow(content) {
+    function printContentInIFrame(content, options) {
+        var $iframe = $(options.iframe + "");
+        var iframeCount = $iframe.length;
+        if (iframeCount === 0) {
+            // Create a new iFrame if none is given
+            $iframe = $('<iframe height="0" width="0" border="0" wmode="Opaque"/>')
+                .prependTo('body')
+                .css({
+                    "position": "absolute",
+                    "top": -999,
+                    "left": -999
+                });
+        }
+        var frameWindow = $iframe.get(0);
+        return printFrame(frameWindow, content, options)
+            .done(function () {
+                // Success
+                setTimeout(function () {
+                    // Wait for IE
+                    if (iframeCount === 0) {
+                        // Destroy the iframe if created here
+                        $iframe.remove();
+                    }
+                }, 100);
+            })
+            .fail(function (err) {
+                // Use the pop-up method if iframe fails for some reason
+                console.error("Failed to print from iframe", err);
+                printContentInNewWindow(content, options);
+            })
+            .always(function () {
+                try {
+                    options.deferred.resolve();
+                } catch (err) {
+                    console.warn('Error notifying deferred', err);
+                }
+            });
+    }
+
+    function printContentInNewWindow(content, options) {
         // Open a new window and print selected content
-        var w = window.open();
-        w.document.write(content);
-        w.document.close();
-        return printFrame(w);
+        var frameWindow = window.open();
+        return printFrame(frameWindow, content, options)
+            .always(function () {
+                try {
+                    options.deferred.resolve();
+                } catch (err) {
+                    console.warn('Error notifying deferred', err);
+                }
+            });
     }
 
     function isNode(o) {
@@ -99,14 +159,17 @@
             append: null,
             prepend: null,
             manuallyCopyFormValues: true,
-            deferred: $.Deferred()
+            deferred: $.Deferred(),
+            timeout: 750,
+            title: null,
+            doctype: '<!doctype html>'
         };
         // Merge with user-options
         options = $.extend({}, defaults, (options || {}));
         var $styles = $("");
         if (options.globalStyles) {
             // Apply the stlyes from the current sheet to the printed page
-            $styles = $("style, link, meta, title");
+            $styles = $("style, link, meta, base, title");
         } else if (options.mediaPrint) {
             // Apply the media-print stylesheet
             $styles = $("link[media=print]");
@@ -125,6 +188,15 @@
             .remove();
         // Add in the styles
         copy.append($styles.clone());
+        // Update title
+        if (options.title) {
+            var title = $("title", copy);
+            if (title.length === 0) {
+                title = $("<title />");
+                copy.append(title);                
+            }
+            title.text(options.title);            
+        }
         // Appedned content
         copy.append(getjQueryObject(options.append));
         // Prepended content
@@ -166,70 +238,15 @@
         if (options.iframe) {
             // Use an iframe for printing
             try {
-                var $iframe = $(options.iframe + "");
-                var iframeCount = $iframe.length;
-                if (iframeCount === 0) {
-                    // Create a new iFrame if none is given
-                    $iframe = $('<iframe height="0" width="0" border="0" wmode="Opaque"/>')
-                        .prependTo('body')
-                        .css({
-                            "position": "absolute",
-                            "top": -999,
-                            "left": -999
-                        });
-                }
-                var w, wdoc;
-                w = $iframe.get(0);
-                w = w.contentWindow || w.contentDocument || w;
-                wdoc = w.document || w.contentDocument || w;
-                wdoc.open();
-                wdoc.write(content);
-                wdoc.close();
-                printFrame(w)
-                    .done(function () {
-                        // Success
-                        setTimeout(function () {
-                            // Wait for IE
-                            if (iframeCount === 0) {
-                                // Destroy the iframe if created here
-                                $iframe.remove();
-                            }
-                        }, 100);
-                    })
-                    .fail(function (err) {
-                        // Use the pop-up method if iframe fails for some reason
-                        console.error("Failed to print from iframe", err);
-                        printContentInNewWindow(content);
-                    })
-                    .always(function () {
-                        try {
-                            options.deferred.resolve();
-                        } catch (err) {
-                            console.warn('Error notifying deferred', err);
-                        }
-                    });
+                printContentInIFrame(content, options);
             } catch (e) {
                 // Use the pop-up method if iframe fails for some reason
                 console.error("Failed to print from iframe", e.stack, e.message);
-                printContentInNewWindow(content)
-                    .always(function () {
-                        try {
-                            options.deferred.resolve();
-                        } catch (err) {
-                            console.warn('Error notifying deferred', err);
-                        }
-                    });
+                printContentInNewWindow(content, options);
             }
         } else {
             // Use a new window for printing
-            printContentInNewWindow(content)
-                .always(function () {
-                    try {
-                        options.deferred.resolve();
-                    } catch (err) {
-                        console.warn('Error notifying deferred', err);
-                    }
-                });
+            printContentInNewWindow(content, options);
         }
         return this;
     };
