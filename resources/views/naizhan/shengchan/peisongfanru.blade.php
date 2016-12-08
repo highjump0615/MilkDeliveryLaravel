@@ -54,7 +54,7 @@
 
 				<div class="ibox float-e-margins">
 
-					@if($is_todayrefund != 0)
+					@if($is_todayrefund)
 					<label style="color: red; font-size: 18px;">你已经完成了反录</label>
 					@endif
 
@@ -108,11 +108,11 @@
 									<td id="{{$pro['order_product_id']}}">
 										{{$pro['name']}}*{{$pro['count']}}
 									</td>
-									<td @if($deliver_date == $current_date && $is_todayrefund==0) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
-										@if($is_todayrefund!=0) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
+									<td @if($deliver_date == $current_date && !$is_todayrefund) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
+										@if($is_todayrefund) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
 									</td>
 									<td class="report"
-										@if($deliver_date == $current_date && $is_todayrefund==0)
+										@if($deliver_date == $current_date && !$is_todayrefund)
 											contenteditable="true"
 											style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"
 										@endif>{{$pro['report']}}</td>
@@ -151,7 +151,7 @@
 									</tr>
 									</thead>
 									<tbody>
-									@if($deliver_date == $current_date && $is_todayrefund==0)
+									@if($deliver_date == $current_date && !$is_todayrefund)
 										@foreach($bottle_types as $bt)
 											<tr id="{{$bt->bottle_type}}">
 												<td>{{\App\Model\FactoryModel\FactoryBottleType::find($bt->bottle_type)->name}}</td>
@@ -171,7 +171,7 @@
                         	</div>
                         </div>
 						</div>
-						@if($deliver_date == $current_date && $is_todayrefund==0)
+						@if($deliver_date == $current_date && !$is_todayrefund)
 						<div style="text-align: center;">
 							<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
 						</div>
@@ -191,33 +191,4 @@
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js') ?>"></script>
-    <script type="text/javascript">
-		$('#date_select .input-group.date').datepicker({
-			todayBtn: "linked",
-			keyboardNavigation: false,
-			forceParse: false,
-			calendarWeeks: false,
-			autoclose: true
-		});
-
-		$('button[data-action = "print"]').click(function () {
-
-			var sendData = [];
-
-			var printContents;
-
-			printContents = document.getElementById("delivered_info").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
-		});
-
-		$('#return').click(function () {
-			window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
-		})
-
-    </script>
 @endsection
