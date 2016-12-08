@@ -402,6 +402,7 @@ class WeChatCtrl extends Controller
      *   8: custom_date
      * */
 
+    /*
     //show order product change page
     public function dingdanxiugai(Request $request)
     {
@@ -513,6 +514,148 @@ class WeChatCtrl extends Controller
             'left_amount' => $left_amount,
         ]);
     }
+    */
+
+    //show order product change page
+    public function dingdanxiugai(Request $request)
+    {
+        $order_id = $request->input('order');
+        $order = Order::find($order_id);
+        if (!$order) {
+            abort(403);
+        }
+        $comment = $order->comment;
+
+
+        $wechat_user_id = session('wechat_user_id');
+        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
+        //after_changed_amount
+        $after_changed_amount = 0;
+
+        //products to show : order_products and products_in_session
+        //product info: photo_url, product_name, price, product_count, product_amount  -> order_product_id
+
+        $show_products = [];
+
+        if (!session('change_order_product')) {
+            //make change_order_product data in session
+            $cop = [];
+            $show_products = [];
+            foreach ($order->order_products as $op) {
+                $product = $op->product;
+
+                $product_id = $product->id;
+                $photo_url = $product->photo_url1;
+                $product_name = $product->name;
+                $product_count = $op->remain_count;
+                $product_price =  round($op->product_price, 3);
+                $product_amount = round($op->remain_amount, 3);
+                $delivery_type = $op->delivery_type;
+                $count_per = $op->count_per_day;
+                $custom_date = $op->custom_order_dates;
+
+                $start_at = $op->start_at_after_delivered;
+                $order_type = $op->order_type;
+
+                //add to after_changed_amount
+                $after_changed_amount += $product_amount;
+
+                $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
+
+            }
+
+            $cop[$order_id] = $show_products;
+            session(['change_order_product' => $cop]);
+
+        } else {
+            //exist,  check whether data exist for this order
+            $cop = session('change_order_product');
+            if (array_key_exists($order_id, $cop)) {
+                $show_products = $cop[$order_id];
+
+                foreach ($show_products as $cop_one_product) {
+                    //add to after_changed_amount
+                    $after_changed_amount += $cop_one_product[5];
+                }
+
+            } else {
+                //create data for this order
+                $cop = session('change_order_product');
+                $show_products = [];
+                foreach ($order->order_products as $op) {
+                    $product = $op->product;
+
+                    $product_id = $product->id;
+                    $photo_url = $product->photo_url1;
+                    $product_name = $product->name;
+                    $product_count = $op->remain_count;
+                    $product_price = round($op->product_price, 3);
+                    $product_amount = round($op->remain_amount, 3);
+                    $delivery_type = $op->delivery_type;
+                    $count_per = $op->count_per_day;
+                    $custom_date = $op->custom_order_dates;
+
+                    $start_at = $op->start_at_after_delivered;
+                    $order_type = $op->order_type;
+
+                    //add to after_changed_amount
+                    $after_changed_amount += $product_amount;
+
+                    $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
+                }
+
+                $cop[$order_id] = $show_products;
+                session(['change_order_product' => $cop]);
+            }
+        }
+
+        //Show remaining amount of order and order products for change
+        $order_remain_amount = $order->remaining_amount;
+
+        //left_amount
+        $left_amount = $order_remain_amount - $after_changed_amount;
+        $left_amount = round($left_amount, 2);
+
+
+        //show dynamic delivery plans from show_products
+//        $delivery_plans = $order->grouped_delivery_plans;
+        $delivery_plans = [];
+        foreach($show_products as $sp)
+        {
+            //create wechat order product temporally
+            $iwop = new WechatOrderProduct;
+            $iwop->total_count = $sp[3];
+            $iwop->order_type = $sp[10];
+            $iwop->delivery_type = $sp[6];
+            $iwop->count_per_day = $sp[7];
+            $iwop->custom_order_dates = $sp[8];
+//            $iwop->product_name = $sp[1];
+            $iwop->start_at = $sp[9];
+            $iwop->product_id = $sp[0];
+
+            //create plans from ideal wechat order product
+            $iplans = $iwop->get_temp_plans();
+            foreach($iplans as $iplan)
+            {
+                $delivery_plans [] = $iplan;
+            }
+
+            $iwop->delete();
+        }
+
+        return view('weixin.dingdanxiugai', [
+            'order' => $order,
+            'plans' => $delivery_plans,
+            'comment' => $comment,
+            'cartn' => $cartn,
+            'show_products' => $show_products,
+            'after_changed_amount' => $after_changed_amount,
+            'order_remain_amount' => $order_remain_amount,
+            'left_amount' => $left_amount,
+        ]);
+    }
+
 
 
     //show order product change page
