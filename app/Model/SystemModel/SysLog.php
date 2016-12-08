@@ -22,10 +22,15 @@ class SysLog extends Model
     const SYSLOG_OPERATION_ADD      = 1;
     const SYSLOG_OPERATION_REMOVE   = 2;
     const SYSLOG_OPERATION_EDIT     = 3;
-    const SYSLOG_OPERATION_IMPORT   = 4;
-    const SYSLOG_OPERATION_EXPORT   = 5;
-    const SYSLOG_OPERATION_PRINT    = 6;
-    const SYSLOG_OPERATION_CLEAR    = 7;
+    const SYSLOG_OPERATION_VIEW     = 4;
+
+    const SYSLOG_OPERATION_IMPORT   = 10;
+    const SYSLOG_OPERATION_EXPORT   = 11;
+    const SYSLOG_OPERATION_PRINT    = 12;
+
+    const SYSLOG_OPERATION_CLEAR    = 20;
+
+    const SYSLOG_OPERATION_FINANCE  = 100;
 
     /**
      * 用户
@@ -47,6 +52,9 @@ class SysLog extends Model
         else if ($this->operation == SysLog::SYSLOG_OPERATION_EDIT) {
             $strRes = '修改';
         }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_VIEW) {
+            $strRes = '查看';
+        }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_IMPORT) {
             $strRes = '导入';
         }
@@ -58,6 +66,9 @@ class SysLog extends Model
         }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_CLEAR) {
             $strRes = '清理';
+        }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_FINANCE) {
+            $strRes = '财务操作';
         }
 
         return $strRes;

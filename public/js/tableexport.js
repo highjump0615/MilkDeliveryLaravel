@@ -40,6 +40,14 @@ function data_export(tablename, usertype, pagename) {
         i++;
     });
 
+    // 没有用户类型，退出
+    if (usertype <= 0) {
+        return;
+    }
+
+    //
+    // 添加系统日志
+    //
     var send_data = {
         'data': sendData,
         'usertype': usertype,
@@ -71,6 +79,11 @@ function printContent(strId, usertype, pagename) {
 
     // 打印
     var a = $('#' + strId).print();
+
+    // 没有用户类型，退出
+    if (usertype <= 0) {
+        return;
+    }
 
     //
     // 添加系统日志
