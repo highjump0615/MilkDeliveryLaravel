@@ -21,7 +21,7 @@
                     <label>收货人：</label><input required name="name" type="text" value="{{$name}}">
                 </li>
                 <li>
-                    <label>电话：</label><input required pattern="\d{11}" name="phone" type="text" value="{{$phone}}">
+                    <label>电话：</label><input required pattern = "^1[345678][0-9]{9}$" name="phone" type="text" value="{{$phone}}">
                 </li>
                 <li>
                     <div style="position: relative;">
