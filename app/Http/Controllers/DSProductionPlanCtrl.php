@@ -700,7 +700,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 foreach($plan_status as $ps){
                     $ps->delivered_count = 0;
                     $ps->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-                    $ps->cancel_reason = "生产取消";
+                    $ps->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_PRODUCE;
                     $ps->save();
 
                     $orders_change = new DSDeliveryPlanCtrl;
@@ -774,7 +774,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $milkmandeliveryplans = MilkManDeliveryPlan::where('station_id',$station_id)->where('produce_at',$produce_date_str)->get();
         foreach ($milkmandeliveryplans as $mp){
             $mp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-            $mp->cancel_reason = "生产取消";
+            $mp->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_PRODUCE;
             $mp->delivered_count = 0;
             $mp->save();
 

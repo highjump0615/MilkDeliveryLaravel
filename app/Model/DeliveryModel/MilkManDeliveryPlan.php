@@ -62,6 +62,10 @@ class MilkManDeliveryPlan extends Model
     const MILKMAN_DELIVERY_PLAN_STATUS_SENT = 3;
     const MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED = 4;
 
+    const DP_CANCEL_PRODUCE         = 1;
+    const DP_CANCEL_POSTPONE        = 2;
+    const DP_CANCEL_CHANGEORDER     = 3;
+
 
     public function getPlanProductImageAttribute()
     {
@@ -74,12 +78,27 @@ class MilkManDeliveryPlan extends Model
     }
 
     public function getStatusNameAttribute(){
-        if($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            return "已配送";
-        elseif($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
-            return $this->cancel_reason;
-        else
-            return "未配送";
+        $strStatus = "";
+
+        if ($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {
+            $strStatus = "已配送";
+        }
+        else if ($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL) {
+            if ($this->cancel_reason == $this::DP_CANCEL_CHANGEORDER) {
+                $strStatus = "订单修改";
+            }
+            else if ($this->cancel_reason == $this::DP_CANCEL_POSTPONE) {
+                $strStatus = "已顺延";
+            }
+            else {
+                $strStatus = "生产取消";
+            }
+        }
+        else {
+            $strStatus = "未配送";
+        }
+
+        return $strStatus;
     }
 
     public function getProductNameAttribute()

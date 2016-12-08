@@ -1828,7 +1828,7 @@ class OrderCtrl extends Controller
                 $this->change_delivery_plan($order_id, $plan_id, $diff);
 
                 $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-                $plan->cancel_reason = '已顺延';
+                $plan->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_POSTPONE;
                 $plan->save();
             }
 
@@ -5247,7 +5247,7 @@ class OrderCtrl extends Controller
 
             // 改成取消状态
             $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-            $plan->cancel_reason = '修改订单';
+            $plan->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER;
 
             $plan->save();
         }

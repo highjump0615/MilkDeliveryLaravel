@@ -451,6 +451,11 @@ class Order extends Model
                     $query->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER);
                     $query->orwhere('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL);
                 })
+                // 不显示订单修改导致取消的明细
+                ->where(function($query) {
+                    $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+                    $query->orwhere('cancel_reason', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+                })
                 ->orderBy('deliver_at')
                 ->get();
 
@@ -476,7 +481,7 @@ class Order extends Model
             }
         }
 
-       $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
+        $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
 
         return $new_array;
 //        return $result_group;
