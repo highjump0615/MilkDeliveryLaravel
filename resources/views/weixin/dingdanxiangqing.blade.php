@@ -6,7 +6,8 @@
 @section('content')
 
 	<header>
-		<a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
+		<!--a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a-->
+		<a class="headl fanh" href="javascript:history.back();"></a>
 		<h1>订单详情</h1>
 		@if($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
                     $order->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
