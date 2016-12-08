@@ -59,7 +59,7 @@
 									<td>{{$dp->channel_sale}}</td>
 									<td>{{$dp->subtotal_count}}</td>
 									<td class="input_td @if($sent_status == 0) editfill @endif">
-										<input id="product{{$dp->product_id}}" type="text" class="inputable" value="@if($dp->status >6) {{$dp->confirm_count}} @else {{$dp->subtotal_count}} @endif"
+										<input id="product{{$dp->product_id}}" type="text" class="inputable" value="@if ($dp->status >6){{$dp->confirm_count}}@else{{$dp->actual_count}}@endif"
 										@if($dp->status >6) readonly @endif/></td>
 									<td></td>								
 								</tr>
