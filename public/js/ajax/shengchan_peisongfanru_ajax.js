@@ -31,30 +31,28 @@ function savebottlebox() {
     var milkman_id = $('#current_milkman_id').val();
     $('#refund_bottle tr:not(:first)').each(function () {
         var bottle_type = $(this).attr('id');
-        var count = $(this).find('td:eq(1)').text();
+        var count = parseInt($(this).find('td:eq(1)').text());
 
-        if(parseInt(count) >= 0){
-            var form_data = {
-                milkman_id: milkman_id,
-                bottle_type: bottle_type,
-                count: count
-            };
+        var form_data = {
+            milkman_id: milkman_id,
+            bottle_type: bottle_type,
+            count: count
+        };
 
-            var type = "POST";
+        var type = "POST";
 
-            $.ajax({
-                type: type,
-                url: url,
-                data: form_data,
-                dataType:'json',
-                success: function (data) {
-                    console.log(data);
-                },
-                error:function (data) {
-                    console.log('Error:',data);
-                }
-            });
-        }
+        $.ajax({
+            type: type,
+            url: url,
+            data: form_data,
+            dataType:'json',
+            success: function (data) {
+                console.log(data);
+            },
+            error:function (data) {
+                console.log('Error:',data);
+            }
+        });
     })
 }
 
@@ -107,3 +105,30 @@ function confirmdelivery() {
         }
     });
 }
+
+$('#date_select .input-group.date').datepicker({
+    todayBtn: "linked",
+    keyboardNavigation: false,
+    forceParse: false,
+    calendarWeeks: false,
+    autoclose: true
+});
+
+$('button[data-action = "print"]').click(function () {
+
+    var sendData = [];
+
+    var printContents;
+
+    printContents = document.getElementById("delivered_info").outerHTML;
+    var originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+
+    window.print();
+    document.body.innerHTML = originalContents;
+    location.reload();
+});
+
+$('#return').click(function () {
+    window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
+})

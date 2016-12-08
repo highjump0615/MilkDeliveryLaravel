@@ -923,6 +923,20 @@ class DSDeliveryPlanCtrl extends Controller
         $mkdp->order_product->processExtraCount($mkdp, $undelivered_count);
     }
 
+    /**
+     * 是否已经反录
+     * @param $milkman_id
+     * @param $strDate
+     * @return bool
+     */
+    private function isDidReport($milkman_id, $strDate) {
+
+        $nBottleReport = MilkmanBottleRefund::where('milkman_id',$milkman_id)
+            ->where('time', $strDate)
+            ->count();
+
+        return $nBottleReport > 0 ? true : false;
+    }
 
     /**
      * 打开配送反录页面
@@ -952,6 +966,16 @@ class DSDeliveryPlanCtrl extends Controller
         $milkman = MilkMan::where('is_active',1)->where('station_id',$current_station_id)->get();
         $current_milkman = $request->input('milkman_id');
 
+        //
+        // 查询瓶框数据
+        //
+        $station_addr = DeliveryStation::find($current_station_id)->address;
+        $station_addr = explode(' ',$station_addr);
+        $station_addr = $station_addr[0]." ".$station_addr[1]." ".$station_addr[2];
+
+        $bottle_types = DB::select(DB::raw("select DISTINCT p.bottle_type from products p, productprice pp
+                    where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
+
         // 查询配送明细
         $queryDeliveryPlan = MilkManDeliveryPlan::where('station_id', $current_station_id)
             ->where('deliver_at', $deliver_date_str)
@@ -965,6 +989,17 @@ class DSDeliveryPlanCtrl extends Controller
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
             ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, $deliver_date_str))) {
+
+            // 配送员信息，默认是第一个
+            if (empty($current_milkman) && count($milkman) > 0) {
+                $current_milkman = $milkman[0]->id;
+
+                // 奶瓶回收
+                $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
+                    ->where('time',$deliver_date_str)
+                    ->get(['count','bottle_type']);
+            }
+
             return view('naizhan.shengchan.peisongfanru',[
                 'pages'                     =>$pages,
                 'child'                     =>$child,
@@ -976,9 +1011,9 @@ class DSDeliveryPlanCtrl extends Controller
                 'deliver_date'              =>$deliver_date_str,
                 'current_date'              =>$current_date_str,
                 'current_milkman'           =>$current_milkman,
-                'bottle_types'              =>array(),
-                'milkman_bottle_refunds'    =>array(),
-                'is_todayrefund'            =>0,
+                'bottle_types'              =>$bottle_types,
+                'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
+                'is_todayrefund'            =>$this->isDidReport($current_milkman, $deliver_date_str)
             ]);
         }
 
@@ -987,35 +1022,13 @@ class DSDeliveryPlanCtrl extends Controller
             $current_milkman = $deliveryPlan->milkman_id;
         }
 
-        $queryDeliveryPlan->where('milkman_id',$current_milkman);
-        $milkman_delivery_plans = $queryDeliveryPlan->get();
-
-        //
-        // 查询瓶框数据
-        //
-        $station_addr = DeliveryStation::find($current_station_id)->address;
-        $station_addr = explode(' ',$station_addr);
-        $station_addr = $station_addr[0]." ".$station_addr[1]." ".$station_addr[2];
-
-        $bottle_types = DB::select(DB::raw("select DISTINCT p.bottle_type from products p, productprice pp
-                    where p.id = pp.product_id and p.factory_id = $current_factory_id and pp.sales_area LIKE '%$station_addr%'"));
-
+        // 奶瓶回收
         $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
             ->where('time',$deliver_date_str)
             ->get(['count','bottle_type']);
 
-        $todays_milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
-            ->where('time',$deliver_date_str)
-            ->get(['count','bottle_type']);
-
-        $is_todayrefund = 0;
-        foreach ($milkman_delivery_plans as $mdp){
-            $is_todayrefund += $mdp->delivered_count;
-        }
-
-        foreach ($todays_milkman_bottle_refunds as $tbr){
-            $is_todayrefund += $tbr->count;
-        }
+        $queryDeliveryPlan->where('milkman_id',$current_milkman);
+        $milkman_delivery_plans = $queryDeliveryPlan->get();
 
         //
         // 查询配送数据
@@ -1079,7 +1092,7 @@ class DSDeliveryPlanCtrl extends Controller
             'current_milkman'           =>$current_milkman,
             'bottle_types'              =>$bottle_types,
             'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
-            'is_todayrefund'            =>$is_todayrefund,
+            'is_todayrefund'            =>$this->isDidReport($current_milkman, $deliver_date_str)
         ]);
     }
 
@@ -1088,8 +1101,6 @@ class DSDeliveryPlanCtrl extends Controller
      * @param Request $request
      */
     public function savebottleboxPeisongfanru(Request $request){
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
 
         $current_milkman_id = $request->input('milkman_id');
         $bottle_type = $request->input('bottle_type');
@@ -1098,7 +1109,7 @@ class DSDeliveryPlanCtrl extends Controller
         $bottle_refunds = new MilkmanBottleRefund;
         $bottle_refunds->milkman_id = $current_milkman_id;
         $bottle_refunds->bottle_type = $bottle_type;
-        $bottle_refunds->time = $deliver_date_str;
+        $bottle_refunds->time = getCurDateString();
         $bottle_refunds->count = $count;
         $bottle_refunds->save();
 
@@ -1227,13 +1238,16 @@ class DSDeliveryPlanCtrl extends Controller
 
         $dCostReturnTotal = 0;
         foreach ($plan_info as $pi) {
-            if (isset($aryReceiveCount[strval($pi->product_id)])) {
-                // 自营订单实际扣款
-                $dCostReal = ($pi->actual_count - $aryReceiveCount[strval($pi->product_id)]) * $pi->settle_product_price;
-                $dCostReturn = -$pi->getSelfOrderMoney() + $dCostReal;
-
-                $dCostReturnTotal += $dCostReturn;
+            // 没有配送此奶品，默认配送量是0
+            if (!isset($aryReceiveCount[strval($pi->product_id)])) {
+                $aryReceiveCount[strval($pi->product_id)] = 0;
             }
+
+            // 自营订单实际扣款
+            $dCostReal = ($pi->actual_count - $aryReceiveCount[strval($pi->product_id)]) * $pi->settle_product_price;
+            $dCostReturn = -$pi->getSelfOrderMoney() + $dCostReal;
+
+            $dCostReturnTotal += $dCostReturn;
         }
 
         // 没有返还金额，不要添加返还记录
