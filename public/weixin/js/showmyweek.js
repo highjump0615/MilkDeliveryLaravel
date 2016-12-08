@@ -26,9 +26,9 @@ function week_set_numbers()
         var day= day_val.split(":")[0];
         var val = day_val.split(":")[1];
 
-        if(day == 0)
+        if(day == 7)
         {
-            day = 7;
+            day = 0;
         }
 
         var td =$("#"+this.id+" tr").find('td[data-dates="'+day+'"]').eq(0);
@@ -56,14 +56,14 @@ function showmyweek(id)
     this.get_submit_value = week_get_numbers;
     this.set_custom_date = week_set_numbers;
 
-    var arr = new Array("周一","周二","周三","周四","周五","周六","周日");
+    var arr = new Array("周日","周一","周二","周三","周四","周五","周六");
 
     var header = "<tr>";
     var data = "<tr height='62px'>";
     for( var i=0; i<7; i++ )
     {
         header = header + "<th scope='col'>" + arr[i] + "</th>";
-        data = data + "<td data-dates='"+(i+1)+"'></td>";
+        data = data + "<td data-dates='"+(i)+"'></td>";
     }
     $("#"+id).append(header);
     $("#"+id).append(data);
@@ -97,14 +97,14 @@ function showmyweek(id, change_func)
     this.set_custom_date = week_set_numbers;
     this.change_func = change_func;
 
-    var arr = new Array("周一","周二","周三","周四","周五","周六","周日");
+    var arr = new Array("周日", "周一","周二","周三","周四","周五","周六");
 
     var header = "<tr>";
     var data = "<tr height='62px'>";
     for( var i=0; i<7; i++ )
     {
         header = header + "<th scope='col'>" + arr[i] + "</th>";
-        data = data + "<td data-dates='"+(i+1)+"'></td>";
+        data = data + "<td data-dates='"+(i)+"'></td>";
     }
     $("#"+id).append(header);
     $("#"+id).append(data);
