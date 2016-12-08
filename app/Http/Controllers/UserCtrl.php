@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\SystemModel\SysLog;
 use App\Model\DeliveryModel\DeliveryStation;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
@@ -14,16 +15,6 @@ use App\Http\Controllers\Controller;
 
 class UserCtrl extends Controller
 {
-    public function store(Request $request)
-    {
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $nickname = $request->input('nickname');
-        $status = $request->input('status');
-        $permission = $request->input('permission');
-        $group = $request->input('group');
-    }
-
     public function viewPage(Request $request)
     {
         $current_factory_id = Auth::guard('gongchang')->User()->factory_id;
@@ -159,6 +150,9 @@ class UserCtrl extends Controller
             $user->description = $request->input('description');
             $user->save();
 
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_ADMIN, '管理员中心', SysLog::SYSLOG_OPERATION_ADD);
+
             return Response::json($user);
         }
         else{
@@ -177,6 +171,10 @@ class UserCtrl extends Controller
         $user->description = $request->input('description');
 
         $user->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '管理员中心', SysLog::SYSLOG_OPERATION_EDIT);
+
         return Response::json($user);
     }
 
@@ -189,6 +187,10 @@ class UserCtrl extends Controller
 
     public  function deleteZongpingGuanliyuan($user_id){
         $deleteZongpingGuanliyuan = User::destroy($user_id);
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '管理员中心', SysLog::SYSLOG_OPERATION_REMOVE);
+
         return Response::json($deleteZongpingGuanliyuan);
     }
 

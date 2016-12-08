@@ -333,7 +333,6 @@ class AddressCtrl extends Controller
 
     public function export(Request $request)
     {
-
         if ($request->ajax()) {
             $fuser = Auth::guard('gongchang')->user();
             $factory_id = $fuser->factory_id;
@@ -363,8 +362,7 @@ class AddressCtrl extends Controller
             })->store('xls', 'exports');
 
             // 添加系统日志
-            $sysMgrCtrl = new SysManagerCtrl();
-            $sysMgrCtrl->addSystemLog($fuser, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
 
             return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/addresslist.xls']);
         }

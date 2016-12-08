@@ -111,12 +111,12 @@ trait AuthenticatesUsers
             $this->clearLoginAttempts($request);
         }
 
+        // 添加
+        if(Auth::guard($this->getGuard())->user()) {
+            session(['guard_user_id' => Auth::guard($this->getGuard())->user()->id]);
+        }
+
         if (method_exists($this, 'authenticated')) {
-
-            // 添加
-            if(Auth::guard($this->getGuard())->user())
-                session(['guard_user_id'=>Auth::guard($this->getGuard())->user()->id]);
-
             return $this->authenticated($request, Auth::guard($this->getGuard())->user());
         }
 

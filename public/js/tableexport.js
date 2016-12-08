@@ -1,5 +1,5 @@
 
-function data_export(tablename) {
+function data_export(tablename, usertype, pagename) {
 
     var sendData = [];
 
@@ -40,7 +40,11 @@ function data_export(tablename) {
         i++;
     });
 
-    var send_data = {"data": sendData};
+    var send_data = {
+        'data': sendData,
+        'usertype': usertype,
+        'page': pagename
+    };
 
     $.ajax({
         type: 'POST',
@@ -63,8 +67,26 @@ function data_export(tablename) {
  * 打印
  * @param strId
  */
-function printContent(strId) {
+function printContent(strId, usertype, pagename) {
 
     // 打印
-    $('#' + strId).print();
+    var a = $('#' + strId).print();
+
+    //
+    // 添加系统日志
+    //
+    var send_data = {
+        'usertype': usertype,
+        'page': pagename
+    };
+
+    $.ajax({
+        type: 'POST',
+        url: API_URL + "printlog",
+        data: send_data,
+        success: function (data) {
+        },
+        error: function (data) {
+        }
+    });
 }

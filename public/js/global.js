@@ -7,6 +7,10 @@ var BASE_URL = location.origin + "/";
 var API_URL = BASE_URL + "milk/public/api/";
 var SITE_URL = BASE_URL + 'milk/public/';
 
+var gnUserTypeAdmin = 1;
+var gnUserTypeFactory = 2;
+var gnUserTypeStation = 3;
+
 // 验证手机号码形式
 function verifyPhone() {
     var objInput = $('input[name="phone"]');

@@ -19,11 +19,17 @@ class SysManagerCtrl extends Controller
      * @param $page
      * @param $operation
      */
-    public function addSystemLog($user, $page, $operation) {
+    public function addSystemLog($usertype, $page, $operation) {
+
+        $currentUser = $this->getCurrentUser($usertype);
+        if (!$currentUser) {
+            return;
+        }
+
         $systemLog = new SysLog();
 
-        $systemLog->user_id = $user->id;
-        $systemLog->ipaddress = $user->last_used_ip;
+        $systemLog->user_id = $currentUser->id;
+        $systemLog->ipaddress = $currentUser->last_used_ip;
         $systemLog->page = $page;
         $systemLog->operation = $operation;
 
@@ -37,7 +43,7 @@ class SysManagerCtrl extends Controller
      */
     public function showSystemLog(Request $request) {
 
-        // 页面信息lll
+        // 页面信息
         $child = 'chakanrizhi';
         $parent = 'xitong';
         $current_page = 'chakanrizhi';
@@ -71,12 +77,14 @@ class SysManagerCtrl extends Controller
 
         // 查询数据
         if ($queryLog) {
+            $queryLog->orderby('created_at', 'desc');
+
             $count = $queryLog->count();
             $aryLog = $queryLog->limit($this->mnPageCount)->offset($offset)->get($getField);
         }
         else {
             $count = SysLog::count();
-            $aryLog = SysLog::limit($this->mnPageCount)->offset($offset)->get($getField);
+            $aryLog = SysLog::orderby('created_at', 'desc')->limit($this->mnPageCount)->offset($offset)->get($getField);
         }
 
         return view('zongpingtai.xitong.chakanrizhi', [

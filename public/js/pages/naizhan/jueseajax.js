@@ -94,7 +94,7 @@ $(document).on('click','.delete-role',function(e){
     });
 });
 
-function deleteRole($role_id){
+function deleteRole(role_id){
     var url = API_URL + 'naizhan/xitong/juese';
     $.ajax({
         type: "DELETE",

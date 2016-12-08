@@ -16,7 +16,7 @@ class SysLog extends Model
         'user_id',
         'ipaddress',
         'page',
-        'operation',
+        'operation'
     ];
 
     const SYSLOG_OPERATION_ADD      = 1;
@@ -25,6 +25,7 @@ class SysLog extends Model
     const SYSLOG_OPERATION_IMPORT   = 4;
     const SYSLOG_OPERATION_EXPORT   = 5;
     const SYSLOG_OPERATION_PRINT    = 6;
+    const SYSLOG_OPERATION_CLEAR    = 7;
 
     /**
      * 用户
@@ -54,6 +55,9 @@ class SysLog extends Model
         }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_PRINT) {
             $strRes = '打印';
+        }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_CLEAR) {
+            $strRes = '清理';
         }
 
         return $strRes;

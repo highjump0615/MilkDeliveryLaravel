@@ -6,8 +6,7 @@ use App\Model\UserModel\UserPageAccess;
 use Illuminate\Http\Request;
 use App\Model\UserModel\UserRole;
 use App\Model\UserModel\Page;
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
+use App\Model\SystemModel\SysLog;
 use Auth;
 use Illuminate\Support\Facades\Response;
 
@@ -48,6 +47,10 @@ class UserRoleCtrl extends Controller
                 }
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog($role->backend_type, '角色管理', SysLog::SYSLOG_OPERATION_EDIT);
+
         if($role->backend_type == 1){
             return redirect()->route('zongpingtai_juese',['role_id'=> $roleId]);
             }
@@ -136,28 +139,42 @@ class UserRoleCtrl extends Controller
     public function addRole(Request $request) {
         $type = $request->input('backend_type');
         $name = $request->input('name');
+
         $ur = new UserRole;
         $ur->name = $name;
         $ur->backend_type = $type;
+
         if($type == UserRole::USERROLE_BACKEND_TYPE_GONGCHANG){
-            $current_factory_id = Auth::guard('gongchang')->User()->factory_id;
+            $current_factory_id = $this->getCurrentFactoryId(true);
             $ur->factory_id = $current_factory_id;
         }
         elseif($type == UserRole::USERROLE_BACKEND_TYPE_NAIZHAN){
-            $current_station_id = Auth::guard('naizhan')->user()->station_id;
-            $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
+            $current_station_id = $this->getCurrentStationId();
+            $current_factory_id = $this->getCurrentFactoryId(false);
             $ur->station_id = $current_station_id;
             $ur->factory_id = $current_factory_id;
         }
+
         $ur->save();
+
+        // 添加系统日志
+        $this->addSystemLog($type, '角色管理', SysLog::SYSLOG_OPERATION_ADD);
+
         return Response::json(['id'=>$ur->id,'name'=>$name]);
     }
 
     /*Delete role name using ajax*/
     public function deleteRole($role_id) {
-       $role = UserRole::destroy($role_id);
-       return Response::json($role);
+        $role = UserRole::find($role_id);
+
+        // 添加系统日志
+        $this->addSystemLog($role->backend_type, '角色管理', SysLog::SYSLOG_OPERATION_REMOVE);
+
+        $role = UserRole::destroy($role_id);
+
+        return Response::json($role);
     }
+
     /*return Permission Table*/
     public function index($role_id=null) {
         if($role_id == null) {
