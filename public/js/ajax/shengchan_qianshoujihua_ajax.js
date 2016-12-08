@@ -1,9 +1,9 @@
 var current_row_number;
-var bSent = false;
 
 $(document).on('click','.confirm_values',function(e){
 
     var update_url = API_URL + 'naizhan/shengchan/qianshoujihua/confirm_product';
+    var bSent = false;
 
     $.ajaxSetup({
         headers: {
@@ -51,6 +51,11 @@ $(document).on('click','.confirm_values',function(e){
             }
         });
     });
+
+    // 如果奶厂还没发货, 退出
+    if (bSent) {
+        return;
+    }
 
     var store_url = API_URL + 'naizhan/shengchan/qianshoujihua/refund_bb';
     $('#refund_table tr:not(:first) td:not(:first)').each(function(){
