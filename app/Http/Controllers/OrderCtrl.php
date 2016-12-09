@@ -2786,42 +2786,6 @@ class OrderCtrl extends Controller
             return false;
     }
 
-
-//Show stopped one order
-    public
-    function show_stopped_order_in_naizhan($order_id)
-    {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
-
-        $order = Order::find($order_id);
-        $order_products = $order->order_products;
-        $grouped_delivery_plans = $order->grouped_delivery_plans;
-
-        $mine = 0;
-        if ($order->station_id == $station_id or $order->delivery_station_id == $station_id) {
-            $mine = 1;
-        }
-
-        $child = 'zantingliebiao';
-        $parent = 'dingdan';
-        $current_page = 'zanting';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-
-        return view('naizhan.dingdan.zantingliebiao.zanting', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'order' => $order,
-            'order_products' => $order_products,
-            'grouped_delivery_plans' => $grouped_delivery_plans,
-            'mine' => $mine,
-        ]);
-    }
-
     /**
      * 录入/修改订单
      * @param Request $request
@@ -3630,8 +3594,9 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>', getCurDateString())
-            ->orderBy('id', 'desc')->get();
+            ->where('restart_at', '>=', getCurDateString())
+            ->orderBy('id', 'desc')
+            ->get();
 
         $child = 'zantingdingdan';
         $parent = 'dingdan';
@@ -3664,7 +3629,7 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $this->getCurrentStationId())
             ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>', getCurDateString())
+            ->where('restart_at', '>=', getCurDateString())
             ->orderBy('id', 'desc')
             ->get();
 
