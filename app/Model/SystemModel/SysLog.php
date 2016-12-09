@@ -36,8 +36,9 @@ class SysLog extends Model
     const SYSLOG_OPERATION_CHECK    = 200;  // 审核
 
     // 生产
-    const SYSLOG_OPERATION_PRODUCE_OK       = 100;
-    const SYSLOG_OPERATION_PRODUCE_CANCEL   = 200;
+    const SYSLOG_OPERATION_PRODUCE_OK       = 300;
+    const SYSLOG_OPERATION_PRODUCE_CANCEL   = 301;
+    const SYSLOG_OPERATION_SUBMIT_PLAN      = 302;
 
     /**
      * 用户
@@ -85,6 +86,9 @@ class SysLog extends Model
         }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_STOPUSE) {
             $strRes = '停用';
+        }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_SUBMIT_PLAN) {
+            $strRes = '提交计划';
         }
 
         return $strRes;

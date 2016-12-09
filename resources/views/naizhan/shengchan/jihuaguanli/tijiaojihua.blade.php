@@ -21,7 +21,7 @@
 
 				<div class="ibox-content">
 					<div class="feed-element">
-						<div class="col-md-2"
+						<div class="col-md-2">
 							 <label style="font-size:20px;">填报计划：</label>
 						</div>
 						<div class="col-lg-7"></div>

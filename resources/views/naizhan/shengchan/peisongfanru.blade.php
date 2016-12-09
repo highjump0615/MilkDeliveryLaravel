@@ -201,18 +201,7 @@
 		});
 
 		$('button[data-action = "print"]').click(function () {
-
-			var sendData = [];
-
-			var printContents;
-
-			printContents = document.getElementById("delivered_info").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
+            printContent('delivered_info', gnUserTypeStation, '配送反录');
 		});
 
 		$('#return').click(function () {

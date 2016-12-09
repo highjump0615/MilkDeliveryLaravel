@@ -144,12 +144,11 @@
                     <div class="feed-element">
                         <div class="vertical-align">
                             <label class="col-md-2 control-label">地址:</label>
-                            <label class="col-md-2 control-label">{{$dsinfo->province_name." ".$dsinfo->city_name." ".$dsinfo->district_name}}</label>
+                            <label class="control-label" style="float:left">{{$dsinfo->province_name." ".$dsinfo->city_name." ".$dsinfo->district_name}}</label>
                             <div class="col-md-2">
                                 <input required name="st_subaddr" id="select_street_xiaoqu" type="text"
                                        placeholder="手动填写" style="width: 80%;" class="form-control"
-                                       value="{{$dsinfo->sub_address}}" readonly
-                                />
+                                       value="{{$dsinfo->sub_address}}" readonly />
                             </div>
                         </div>
                     </div>

@@ -12,7 +12,11 @@ use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\OrderType;
 use App\Model\ProductModel\Product;
 use App\Model\StationModel\DSBottleRefund;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use Illuminate\Http\Request;
 use Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,13 +32,17 @@ class DSStatistics extends Controller
         $parent = 'tongji';
         $current_page = 'dingdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
+
         $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
         $startDate_str = $currentDate->format('Y-01-01');
+
         if($start_date == null){
             $start_date = $startDate_str;
         }
@@ -117,6 +125,10 @@ class DSStatistics extends Controller
                 $xu_property_amount += $xi->type_total_amount;
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '订单统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.tongji.dingdan', [
             'pages' => $pages,
             'child' => $child,
@@ -256,6 +268,9 @@ class DSStatistics extends Controller
             }
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '订单剩余量统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.tongji.dingdanshenyuliang', [
             'pages' => $pages,
             'child' => $child,
@@ -388,6 +403,9 @@ class DSStatistics extends Controller
             $result[$date]['orders'] = $customer_orders + $channel_orders;
             $result[$date]['bottle_refunds'] = $bottle_refunds;
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '奶品配送日统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         $products_name = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name']);
         return view('naizhan.tongji.naipinpeisongri', [
@@ -538,6 +556,10 @@ class DSStatistics extends Controller
 //        }
 
         $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '配送员业务统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.tongji.peisongyuanwei', [
             'pages' => $pages,
             'child' => $child,

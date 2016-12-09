@@ -113,33 +113,5 @@
 	</div>
 @endsection
 @section('script')
-    <script type="text/javascript">
-		$('#data_range_select .input-daterange').datepicker({
-            keyboardNavigation: false,
-            forceParse: false,
-            autoclose: true
-        });
-
-		$(document).on('click','#search',function () {
-			var order_type = $('#order_type option:selected').val();
-			var start_date = $('#start_date').val();
-			var end_date = $('#end_date').val();
-			window.location.href = SITE_URL+"milk/public/naizhan/tongji/dingdan/?order_type="+order_type+"&start_date="+start_date+"&end_date="+end_date+"";
-		})
-
-		$('button[data-action = "print"]').click(function () {
-
-			var sendData = [];
-
-			var printContents;
-
-			printContents = document.getElementById("table1").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
-		});
-    </script>
+	<script src="<?=asset('js/pages/naizhan/dingdantongji.js') ?>"></script>
 @endsection

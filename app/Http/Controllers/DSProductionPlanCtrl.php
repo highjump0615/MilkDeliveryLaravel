@@ -356,6 +356,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $notification = new DSNotification();
         $notification->sendToStationNotification($current_station_id,7,"您本次提交的订单计划","您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元！！");
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
+
         return Response::json(['business_balance'=>$business_balance]);
     }
 

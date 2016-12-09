@@ -243,10 +243,12 @@ class UserCtrl extends Controller
     }
 
     public function addNaizhanGuanliyuan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->User()->factory_id;
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
+
         $name = $request->input('name');
         $is_exist = User::where('name',$name)->get()->first();
+
         if(empty($is_exist)){
             $user = new User;
             $user->name = $request->input('name');
@@ -259,6 +261,10 @@ class UserCtrl extends Controller
             $user->description = $request->input('description');
             $user->last_used_ip = $request->ip();
             $user->save();
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_STATION, '用户管理', SysLog::SYSLOG_OPERATION_ADD);
+
             return Response::json($user);
         }
         else{
@@ -276,6 +282,10 @@ class UserCtrl extends Controller
         $user->user_role_id = $request->input('user_role_id');
 
         $user->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '用户管理', SysLog::SYSLOG_OPERATION_EDIT);
+
         return Response::json($user);
     }
 
@@ -288,6 +298,10 @@ class UserCtrl extends Controller
 
     public  function deleteNaizhanGuanliyuan($user_id){
         $deleteZongpingGuanliyuan = User::destroy($user_id);
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '用户管理', SysLog::SYSLOG_OPERATION_ADD);
+
         return Response::json($deleteZongpingGuanliyuan);
     }
 }
