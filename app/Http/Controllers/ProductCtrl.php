@@ -15,6 +15,8 @@ use App\Model\BasicModel\CityData;
 use App\Model\BasicModel\ProvinceData;
 
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
 
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductCategory;
@@ -105,30 +107,6 @@ class ProductCtrl extends Controller
             if (!file_exists($dest_dir))
                 $result = File::makeDirectory($dest_dir, 0777, true);
 
-//            $count = 0;
-//            if ($request->hasFile('file1')) {
-//                $count++;
-//            } else {
-//                $current_product->photo_url2 = "";
-//            }
-//
-//            if ($request->hasFile('file2')) {
-//                $count++;
-//            } else {
-//                $current_product->photo_url2 = "";
-//            }
-//
-//            if ($request->hasFile('file3')) {
-//                $count++;
-//            } else {
-//                $current_product->photo_url2 = "";
-//            }
-//            if ($request->hasFile('file4')) {
-//                $count++;
-//            } else {
-//                $current_product->photo_url4 = "";
-//            }
-
             for ($i = 1; $i <= 4; $i++) {
                 if ($request->hasFile('file' . $i)) {
                     $file = $request->file('file' . $i);
@@ -156,167 +134,22 @@ class ProductCtrl extends Controller
                                 $current_product->photo_url1 = $new_file_name;
                                 break;
                         }
-
                     }
                 }
-
             }
-
-//            //init product image
-//
-//            $file4_status = $request->input('status4');
-//            $file4_name = $current_product->photo_url4;
-//
-//            $file3_status = $request->input('status3');
-//            $file3_name = $current_product->photo_url3;
-//
-//            $file2_status = $request->input('status2');
-//            $file2_name = $current_product->photo_url2;
-//
-//            $file1_status = $request->input('status1');
-//            $file1_name = $current_product->photo_url1;
-//
-//
-//            if ($file4_status == "Removed") {
-//                //make value null and delete image if exist in logo
-//                $current_product->photo_url4 = null;
-//                if ($file4_name) {
-//                    if(file_exists($dest_dir . $file4_name))
-//                        unlink($dest_dir . $file4_name);
-//                }
-//            }
-//            else if ($file4_status == "Changed" || $file4_status == "Added") {
-//                //change value in db and change the image in logo
-//                if ($file4_name) {
-//                    if(file_exists($dest_dir . $file4_name))
-//                        unlink($dest_dir . $file4_name);
-//                }
-//                $current_product->photo_url4 = null;
-//
-//                if ($request->hasFile('file4')) {
-//                    $file = $request->file('file4');
-//                    if ($file->isValid()) {
-//                        $basename = $file->getClientOriginalName();
-//                        $ext = $file->getClientOriginalExtension();
-//                        $filename = basename($basename, '.' . $ext);
-//                        $new_file_name = 'pid_' . $product_id . '_' . 'img_4' . $ext;
-//                        $file->move($dest_dir, $new_file_name);
-//                        $current_product->photo_url4 = $new_file_name;
-//                    }
-//                }
-//
-//            }
-//            else {
-//                //NOT CHANGED, do nothing
-//            }
-//
-//            if ($file3_status == "Removed") {
-//                //make value null and delete image if exist in logo
-//                $current_product->photo_url3 = null;
-//                if ($file3_name) {
-//                    if(file_exists($dest_dir . $file3_name))
-//                        unlink($dest_dir . $file3_name);
-//                }
-//            }
-//            else if ($file3_status == "Changed" || $file3_status == "Added") {
-//                //change value in db and change the image in logo
-//                if ($file3_name) {
-//                    if(file_exists($dest_dir . $file3_name))
-//                        unlink($dest_dir . $file3_name);
-//                }
-//                $current_product->photo_url3 = null;
-//
-//                if ($request->hasFile('file3')) {
-//                    $file = $request->file('file3');
-//                    if ($file->isValid()) {
-//                        $basename = $file->getClientOriginalName();
-//                        $ext = $file->getClientOriginalExtension();
-//                        $filename = basename($basename, '.' . $ext);
-//                        $new_file_name = 'pid_' . $product_id . '_' . 'img_3' . $ext;
-//                        $file->move($dest_dir, $new_file_name);
-//                        $current_product->photo_url3 = $new_file_name;
-//                    }
-//                }
-//
-//            }
-//            else {
-//                //NOT CHANGED, do nothing
-//            }
-//
-//
-//            if ($file2_status == "Removed") {
-//                //make value null and delete image if exist in logo
-//                $current_product->photo_url2 = null;
-//                if ($file2_name) {
-//                    if(file_exists($dest_dir . $file2_name))
-//                        unlink($dest_dir . $file2_name);
-//                }
-//            }
-//            else if ($file2_status == "Changed" || $file2_status == "Added") {
-//                //change value in db and change the image in logo
-//                if ($file2_name) {
-//                    if(file_exists($dest_dir . $file2_name))
-//                        unlink($dest_dir . $file2_name);
-//                }
-//                $current_product->photo_url2 = null;
-//
-//                if ($request->hasFile('file2')) {
-//                    $file = $request->file('file2');
-//                    if ($file->isValid()) {
-//                        $basename = $file->getClientOriginalName();
-//                        $ext = $file->getClientOriginalExtension();
-//                        $filename = basename($basename, '.' . $ext);
-//                        $new_file_name = 'pid_' . $product_id . '_' . 'img_2' . $ext;
-//                        $file->move($dest_dir, $new_file_name);
-//                        $current_product->photo_url2 = $new_file_name;
-//                    }
-//                }
-//
-//            }
-//            else {
-//                //NOT CHANGED, do nothing
-//            }
-//
-//            if ($file1_status == "Removed") {
-//                //make value null and delete image if exist in logo
-//                $current_product->photo_url1 = null;
-//                if ($file1_name) {
-//                    if(file_exists($dest_dir . $file1_name))
-//                        unlink($dest_dir . $file1_name);
-//                }
-//            }
-//            else if ($file1_status == "Changed" || $file1_status == "Added") {
-//                //change value in db and change the image in logo
-//                if ($file1_name) {
-//                    if(file_exists($dest_dir . $file1_name))
-//                        unlink($dest_dir . $file1_name);
-//                }
-//                $current_product->photo_url1 = null;
-//
-//                if ($request->hasFile('file1')) {
-//                    $file = $request->file('file1');
-//                    if ($file->isValid()) {
-//                        $basename = $file->getClientOriginalName();
-//                        $ext = $file->getClientOriginalExtension();
-//                        $filename = basename($basename, '.' . $ext);
-//                        $new_file_name = 'pid_' . $product_id . '_' . 'img_1' . $ext;
-//                        $file->move($dest_dir, $new_file_name);
-//                        $current_product->photo_url1 = $new_file_name;
-//                    }
-//                }
-//
-//            }
-//            else {
-//                //NOT CHANGED, do nothing
-//            }
 
             $current_product->save();
             $product_id = $current_product->id;
 
-            if ($product_id)
+            if ($product_id) {
+                // 添加系统日志
+                $this->addSystemLog(User::USER_BACKEND_FACTORY, '商品管理', SysLog::SYSLOG_OPERATION_EDIT);
+
                 return response()->json(['status' => 'success', 'updated_product_id' => $product_id]);
-            else
+            }
+            else {
                 return response()->json(['status' => 'fail', 'message' => '虽然节能产品，错误发生. 请稍后再试.']);
+            }
         }
     }
 
@@ -632,10 +465,15 @@ class ProductCtrl extends Controller
             $new_product->save();
             $product_id = $new_product->id;
 
-            if ($product_id)
+            if ($product_id) {
+                // 添加系统日志
+                $this->addSystemLog(User::USER_BACKEND_FACTORY, '商品管理', SysLog::SYSLOG_OPERATION_ADD);
+
                 return response()->json(['status' => 'success', 'saved_product_id' => $product_id]);
-            else
+            }
+            else {
                 return response()->json(['status' => 'fail', 'message' => '虽然节能产品，错误发生. 请稍后再试.']);
+            }
         }
     }
 

@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Model\FactoryModel\MilkCard;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use Illuminate\Http\Request;
 use Auth;
 use DateTime;
 use DateTimeZone;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+
 
 class MilkCardCtrl extends Controller
 {
@@ -18,6 +23,7 @@ class MilkCardCtrl extends Controller
         $child = 'naika_child';
         $parent = 'naika';
         $current_page = 'naika';
+
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
         $milkcard_count = count(MilkCard::where('factory_id',$current_factory_id)->get());
         $milkcard_used = count(MilkCard::where('factory_id',$current_factory_id)->where('sale_status',1)->get());
@@ -27,6 +33,7 @@ class MilkCardCtrl extends Controller
         foreach ($milkcard_balance as $k=>$mb){
             $balance[$k]['balance'] = $k;
         }
+
         return view('gongchang.naika.naika', [
             'pages' => $pages,
             'child' => $child,
@@ -112,6 +119,7 @@ class MilkCardCtrl extends Controller
                     }
                 }
             }
+
             return redirect()->back();
         }
         else{
@@ -128,14 +136,14 @@ class MilkCardCtrl extends Controller
             $file = $request->file('csv_file');
             $name = time() . '-' . $file->getClientOriginalName();
 
-
             $path = base_path() . '/public/csv/';
-
 
             $file->move($path, $name);
 
-
             $msg = $this->import_csv($path.$name, $factory_id);
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶卡管理', SysLog::SYSLOG_OPERATION_IMPORT);
 
             return redirect()->back()->with('status', $msg);
         }

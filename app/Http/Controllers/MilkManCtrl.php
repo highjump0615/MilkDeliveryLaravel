@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\DeliveryModel\MilkMan;
 use App\Model\DeliveryModel\MilkManDeliveryArea;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use App\Model\BasicModel\Address;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
@@ -16,9 +20,14 @@ use App\Http\Controllers\Controller;
 
 class MilkManCtrl extends Controller
 {
+    /**
+     * 打开配送员管理页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showPeisongyuanRegister(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
         $child = 'peisongyuan';
         $parent = 'naizhan';
@@ -83,6 +92,9 @@ class MilkManCtrl extends Controller
             }
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '配送员管理', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.naizhan.peisongyuan', [
             'pages' => $pages,
             'child' => $child,
@@ -134,6 +146,10 @@ class MilkManCtrl extends Controller
             $milkman_delivery_area->order = $i;
             $milkman_delivery_area->save();
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '配送员管理', SysLog::SYSLOG_OPERATION_ADD);
+
         return $milkman_id;
     }
 
@@ -154,6 +170,9 @@ class MilkManCtrl extends Controller
         $milkman->number = $strNumber;
 
         $milkman->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '配送员管理', SysLog::SYSLOG_OPERATION_EDIT);
 
         return redirect()->route('peisongyuan_page');
     }

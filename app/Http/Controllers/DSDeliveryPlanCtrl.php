@@ -21,7 +21,11 @@ use App\Model\OrderModel\SelfOrderProduct;
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductPrice;
 use Illuminate\Http\Request;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use DateTime;
 use DateTimeZone;
 use Auth;
@@ -30,6 +34,7 @@ use App\Model\OrderModel\Order;
 use App\Http\Requests;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Controller;
+
 
 class DSDeliveryPlanCtrl extends Controller
 {
@@ -491,6 +496,9 @@ class DSDeliveryPlanCtrl extends Controller
         $show_district = $current_district[0].$current_district[1].$current_district[2];
         $addr_district = $current_district[0].' '.$current_district[1].' '.$current_district[2];
         $province = ProvinceData::all();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '自营出库', SysLog::SYSLOG_OPERATION_VIEW);
 
         // 页面信息
         $child = 'ziyingdingdan';
@@ -1078,6 +1086,9 @@ class DSDeliveryPlanCtrl extends Controller
             // 添加到主数组
             array_push($delivery_info, $orderData);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '配送反录', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('naizhan.shengchan.peisongfanru',[
             'pages'                     =>$pages,

@@ -10,6 +10,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Model\UserModel\Page;
+use App\Model\SystemModel\SysLog;
+use App\Model\UserModel\User;
+
+use Auth;
 
 
 class HuancunCtrl extends Controller
@@ -47,21 +51,26 @@ class HuancunCtrl extends Controller
             closedir($handle);
             if ($delDir)
                 return rmdir($path);
-        }else {
+        }
+        else {
             if (file_exists($path)) {
                 return unlink($path);
-            } else {
+            }
+            else {
                 return FALSE;
             }
         }
     }
-
 
     public function showPost(Request $request){
         $directory = '../storage/framework';
         if($request['option1'] == 'data'){
             $this->delDirAndFile($directory.'/cache');
             $this->delDirAndFile($directory.'/sessions');
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_ADMIN, '清理缓存', SysLog::SYSLOG_OPERATION_CLEAR);
+
             $child = 'gengxinhuankun';
             $parent = 'xitong';
             $current_page = 'gengxinhuankun';

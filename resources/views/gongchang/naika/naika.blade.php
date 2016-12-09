@@ -83,7 +83,7 @@
                                 <input type="file" name="csv_file" class="csv-upload"
                                        id="csv_file_upload_input" accept=".csv"/>
                                 &nbsp;
-                                <button class="btn btn-success btn-md" data-action = "print">导出</button>
+                                <button class="btn btn-success btn-md" data-action = "print">打印</button>
                             </form>
                         </div>
                     </div>
@@ -271,17 +271,5 @@
 @endsection
 
 @section('script')
-    <script>
-        $(function(){
-            $('#csv_file_upload_btn').click(function(){
-                $('#csv_file_upload_input').click();
-            });
-
-            $('#csv_file_upload_input').change(function(){
-                console.log('uploading');
-                $('#upload-form').submit();
-            });
-        });
-    </script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naika_admin.js')?>"></script>
 @endsection

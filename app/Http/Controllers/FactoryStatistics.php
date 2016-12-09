@@ -12,7 +12,11 @@ use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\OrderType;
 use App\Model\ProductModel\Product;
 use App\Model\OrderModel\Order;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use App\Model\BasicModel\Customer;
 use App\Model\OrderModel\OrderProperty;
 use Illuminate\Http\Request;
@@ -32,6 +36,7 @@ class FactoryStatistics extends Controller
         $current_page = 'daoqidingdantongji';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
         $currentMonth_str = $currentDate->format('Y-m-01');
@@ -220,6 +225,9 @@ class FactoryStatistics extends Controller
             $input_district = "";
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '到期订单统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('gongchang.tongjifenxi.daoqidingdantongji', [
             'pages' => $pages,
             'child' => $child,
@@ -310,6 +318,10 @@ class FactoryStatistics extends Controller
                     $st['district'] = '';
 
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶品配送统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('gongchang.tongjifenxi.naipinpeisongtongji', [
             'pages' => $pages,
             'child' => $child,
@@ -626,6 +638,9 @@ class FactoryStatistics extends Controller
             }
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户行为统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('gongchang.tongjifenxi.kehuxingweitongji', [
             'pages' => $pages,
             'child' => $child,
@@ -830,6 +845,9 @@ class FactoryStatistics extends Controller
                 }
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户订单修改统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.tongjifenxi.kehudingdanxiugui', [
             'pages' => $pages,
@@ -1073,6 +1091,10 @@ class FactoryStatistics extends Controller
                 $st['district'] = '';
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '订单剩余量统计', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('gongchang.tongjifenxi.dingdanleixingtongji', [
             'pages' => $pages,
             'child' => $child,

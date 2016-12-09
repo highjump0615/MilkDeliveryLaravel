@@ -44,7 +44,7 @@
                 <div class="tab-content">
                     <div id="tab-1" class="tab-pane active"  style="border-color:#fff;">
                         <div class="panel-body">
-                           <table id="order_table" class="table table-bordered">
+                           <table id="table_syslog" class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th data-sort-ignore="true">序号</th>

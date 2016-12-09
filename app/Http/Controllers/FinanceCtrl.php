@@ -24,11 +24,16 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+
 use App\Model\OrderModel\Order;
 
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\FactoryModel\Factory;
+
+use App\Model\SystemModel\SysLog;
 
 use File;
 use Auth;
@@ -66,6 +71,9 @@ class FinanceCtrl extends Controller
         foreach ($stations as $s) {
             $this->getSummary($s);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1357,6 +1365,9 @@ class FinanceCtrl extends Controller
             $this->getSummary($s);
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
+
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'taizhang';
@@ -2054,6 +2065,9 @@ class FinanceCtrl extends Controller
 
         $this->create_transaction_for_wechat($start_date, $end_date, $factory_id);
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '财务管理', SysLog::SYSLOG_OPERATION_FINANCE);
+
         return $this->show_wechat_transaction_list_not_checked_in_zongpingtai($factory_id);
     }
 
@@ -2395,6 +2409,8 @@ class FinanceCtrl extends Controller
 
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '财务管理', SysLog::SYSLOG_OPERATION_VIEW);
 
         $child = 'zhanghuguanli';
         $parent = 'caiwu';

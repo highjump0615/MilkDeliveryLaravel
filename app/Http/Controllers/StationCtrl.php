@@ -9,11 +9,19 @@ use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
 
 use App\Http\Controllers\Controller;
 
+
 class StationCtrl extends Controller
 {
+    /**
+     * 打开基本资料页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showJibenziliao(Request $request){
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
         
@@ -37,6 +45,9 @@ class StationCtrl extends Controller
 
         $provinces = ProvinceData::all();
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '奶站基本资料', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.naizhan.jibenziliao',[
             'pages'=>$pages,
             'child'=>$child,
@@ -46,5 +57,4 @@ class StationCtrl extends Controller
             'province'=>$provinces,
         ]);
     }
-    //
 }

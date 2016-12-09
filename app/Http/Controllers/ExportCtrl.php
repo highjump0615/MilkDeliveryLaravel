@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Controller;
+use App\Model\SystemModel\SysLog;
 use Excel;
 
 class ExportCtrl extends Controller
@@ -31,7 +32,31 @@ class ExportCtrl extends Controller
 
             })->store('xls', 'exports');
 
+            //
+            // 添加系统日志
+            //
+            $nUserType = $request->input('usertype');
+
+            if ($nUserType > 0) {
+                $this->addSystemLog($request->input('usertype'), $request->input('page'), SysLog::SYSLOG_OPERATION_EXPORT);
+            }
+
             return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/exportlist.xls']);
+        }
+    }
+
+    /**
+     * 添加打印日志
+     * @param Request $request
+     */
+    public function printLog(Request $request) {
+        //
+        // 添加系统日志
+        //
+        $nUserType = $request->input('usertype');
+
+        if ($nUserType > 0) {
+            $this->addSystemLog($request->input('usertype'), $request->input('page'), SysLog::SYSLOG_OPERATION_PRINT);
         }
     }
 }

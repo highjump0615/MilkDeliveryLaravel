@@ -11,6 +11,10 @@ use App\Http\Requests;
 use App\Model\UserModel\Page;
 use App\Model\FactoryModel\Factory;
 use App\Http\Controllers\Controller;
+
+use App\Model\SystemModel\SysLog;
+use App\Model\UserModel\User;
+
 use Auth;
 use DateTime;
 
@@ -25,12 +29,20 @@ class CustomerCtrl extends Controller
         }
         return 0;
     }
+
+    /**
+     * 打开客户管理
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showZongpingtaiUserPage(Request $request){
+
         $child = 'kehuliebiao';
         $parent = 'kehu';
         $current_page = 'kehuliebiao';
         $pages = Page::where('backend_type','1')->where('parent_page', '0')->get();
         $factory = Factory::where('is_deleted','<>','1')->get();
+
         if($factory->first() != null){
             foreach ($factory as $fa){
                 $fa['customer'] = 0;
@@ -46,7 +58,9 @@ class CustomerCtrl extends Controller
                 $fa['naizhan_count'] = count($delivery_stations);
             }
         }
-//        return "没有客户!";
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('zongpingtai.kehu.kehuliebiao',[
             'pages'=>$pages,
@@ -114,6 +128,8 @@ class CustomerCtrl extends Controller
             $cu['order_status'] = $this->getOrderStatus($cu->id);
         }
 
+        $this->addSystemLog(User::USER_BACKEND_STATION, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.kehu.kehudangan', [
             'pages' => $pages,
             'child' => $child,
@@ -145,6 +161,9 @@ class CustomerCtrl extends Controller
             }
             $cu['order_status'] = $this->getOrderStatus($cu->id);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.kehu.kehu', [
             'pages' => $pages,

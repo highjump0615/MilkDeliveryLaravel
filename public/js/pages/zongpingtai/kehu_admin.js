@@ -66,26 +66,12 @@ $('button[data-action = "print"]').click(function () {
     var od = $('#customerTable').css('display');
     var fd = $('#filteredTable').css('display');
 
-    var sendData = [];
-
-    var printContents;
     if (od != "none") {
-        //print order data
-        printContents = document.getElementById("customerTable").outerHTML;
-
-    } else if (fd != "none") {
-        //print filter data
-        printContents = document.getElementById("filteredTable").outerHTML;
-    } else {
-        return;
+        printContent('customerTable', gnUserTypeAdmin, '客户列表');
     }
-
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    else if (fd != "none") {
+        printContent('filteredTable', gnUserTypeAdmin, '客户列表');
+    }
 });
 
 $('button[data-action = "export_csv"]').click(function () {
@@ -93,104 +79,10 @@ $('button[data-action = "export_csv"]').click(function () {
     var od = $('#customerTable').css('display');
     var fd = $('#filteredTable').css('display');
 
-    var sendData = [];
-
-    var i = 0;
     if (od != "none") {
-        //send order data
-        $('#customerTable thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                td_data =td_data.split("<");
-                // if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                //     td_data = "";
-                trdata[j] = td_data[0];
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#customerTable tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-    } else if (fd != "none") {
-        //send filter data
-        $('#filteredTable thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                td_data =td_data.split("<");
-                // if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                //     td_data = "";
-                trdata[j] = td_data[0];
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#filteredTable tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data = "";
-
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-    } else {
-        return;
+        data_export('customerTable', gnUserTypeAdmin, '客户列表');
     }
-
-    var send_data = {"data": sendData};
-    console.log(send_data);
-
-    $.ajax({
-        type: 'POST',
-        url: API_URL + "export",
-        data: send_data,
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var path = data.path;
-                location.href = path;
-            }
-        },
-        error: function (data) {
-            //console.log(data);
-        }
-    })
+    else if (fd != "none") {
+        data_export('filteredTable', gnUserTypeAdmin, '客户列表');
+    }
 });

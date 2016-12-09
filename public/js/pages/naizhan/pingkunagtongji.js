@@ -49,81 +49,40 @@ $('button[data-action="show_selected"]').click(function () {
     }
 
     $(filter_table).show();
-
 });
 
 $('button[data-action = "print"]').click(function () {
-
-    var sendData = [];
-
-    var printContents;
-
-    printContents = document.getElementById("view_table").outerHTML;
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    printContent('view_table', gnUserTypeStation, '瓶框统计');
 });
 
 $('button[data-action = "export_csv"]').click(function () {
+    data_export('view_table', gnUserTypeStation, '瓶框统计');
+});
 
-    var sendData = [];
-
-    var i = 0;
-    //send order data
-    $('#view_table thead tr').each(function () {
-        var tr = $(this);
-        var trdata = [];
-
-        var j = 0;
-        $(tr).find('th').each(function () {
-            var td = $(this);
-            var td_data = td.html().toString().trim();
-            td_data =td_data.split("<");
-            // if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-            //     td_data = "";
-            trdata[j] = td_data[0];
-            j++;
-        });
-        sendData[i] = trdata;
-        i++;
-    });
-
-    $('#view_table tbody tr').each(function () {
-        var tr = $(this);
-        var trdata = [];
-
-        var j = 0;
-        $(tr).find('td').each(function () {
-            var td = $(this);
-            var td_data = td.html().toString().trim();
-            if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                td_data = "";
-            trdata[j] = td_data;
-            j++;
-        });
-        sendData[i] = trdata;
-        i++;
-    });
-
-    var send_data = {"data": sendData};
-    console.log(send_data);
-
-    $.ajax({
-        type: 'POST',
-        url: API_URL + "export",
-        data: send_data,
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var path = data.path;
-                location.href = path;
-            }
-        },
-        error: function (data) {
-            //console.log(data);
+$(document).ready(function () {
+    $('#view_table tr:not(:first,:last)').each(function () {
+        var init = 0;
+        var milkman = 0;
+        var factory = 0;
+        var recipient = 0;
+        var damaged = 0;
+        if(!isNaN(parseInt($(this).find('.init_val').text()))){
+            init = parseInt($(this).find('.init_val').text());
         }
+        if(!isNaN(parseInt($(this).find('.milkman').text()))){
+            milkman = parseInt($(this).find('.milkman').text());
+        }
+        if(!isNaN(parseInt($(this).find('.factory').text()))){
+            factory = parseInt($(this).find('.factory').text());
+        }
+        if(!isNaN(parseInt($(this).find('.received').text()))){
+            recipient = parseInt($(this).find('.received').text());
+        }
+        if(!isNaN(parseInt($(this).find('.damage').text()))){
+            damaged = parseInt($(this).find('.damage').text());
+        }
+
+        var total = init + milkman + recipient - factory - damaged;
+        $(this).find('.total').html(total);
     })
 });

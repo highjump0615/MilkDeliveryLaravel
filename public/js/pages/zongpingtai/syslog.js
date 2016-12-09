@@ -63,3 +63,11 @@ $(document).ready(function() {
         }
     });
 });
+
+/**
+ * 导出
+ */
+$('button[data-action = "export_csv"]').click(function () {
+
+    data_export('table_syslog', gnUserTypeAdmin, '后台日志');
+});

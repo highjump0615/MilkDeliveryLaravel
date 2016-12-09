@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-
+use App\Model\UserModel\User;
 use Auth;
 use App\Model\UserModel\User;
 
@@ -39,15 +40,41 @@ class Controller extends BaseController
         return $nId;
     }
 
-    protected function getCurrentUser(){
-        $guard_user_id = session('guard_user_id');
+    /**
+     * 获取当前用户
+     * @return null
+     */
+    protected function getCurrentUser($type) {
+        $user = null;
 
-        if($guard_user_id) {
-            $user = User::find($guard_user_id);
+        if ($type == User::USER_BACKEND_ADMIN) {
+            $user = Auth::guard('zongpingtai')->user();
+        }
+        else if ($type == User::USER_BACKEND_FACTORY) {
+            $user = Auth::guard('gongchang')->user();
+        }
+        else if ($type == User::USER_BACKEND_STATION) {
+            $user = Auth::guard('naizhan')->user();
+        }
+        else {
+            $guard_user_id = session('guard_user_id');
 
-            return $user;
+            if ($guard_user_id) {
+                $user = User::find($guard_user_id);
+            }
         }
 
-        return null;
+        return $user;
     }
+
+    /**
+     * 添加系统日志
+     * @param $page
+     * @param $operation
+     */
+    protected function addSystemLog($usertype, $page, $operation) {
+        $sysMgrCtrl = new SysManagerCtrl();
+        $sysMgrCtrl->addSystemLog($usertype, $page, $operation);
+    }
+
 }

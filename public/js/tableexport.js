@@ -1,5 +1,5 @@
 
-function data_export(tablename) {
+function data_export(tablename, usertype, pagename) {
 
     var sendData = [];
 
@@ -40,7 +40,19 @@ function data_export(tablename) {
         i++;
     });
 
-    var send_data = {"data": sendData};
+    // 没有用户类型，退出
+    if (usertype <= 0) {
+        return;
+    }
+
+    //
+    // 添加系统日志
+    //
+    var send_data = {
+        'data': sendData,
+        'usertype': usertype,
+        'page': pagename
+    };
 
     $.ajax({
         type: 'POST',
@@ -63,8 +75,31 @@ function data_export(tablename) {
  * 打印
  * @param strId
  */
-function printContent(strId) {
+function printContent(strId, usertype, pagename) {
 
     // 打印
-    $('#' + strId).print();
+    var a = $('#' + strId).print();
+
+    // 没有用户类型，退出
+    if (usertype <= 0) {
+        return;
+    }
+
+    //
+    // 添加系统日志
+    //
+    var send_data = {
+        'usertype': usertype,
+        'page': pagename
+    };
+
+    $.ajax({
+        type: 'POST',
+        url: API_URL + "printlog",
+        data: send_data,
+        success: function (data) {
+        },
+        error: function (data) {
+        }
+    });
 }

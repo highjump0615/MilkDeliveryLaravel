@@ -7,6 +7,7 @@ use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\FactoryModel\Factory;
 use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
+use App\Model\SystemModel\SysLog;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -362,8 +363,10 @@ class StationManageCtrl extends Controller
                     }
 
                 }
-
             }
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_ADD);
 
             return response()->json(['status' => 'success', 'sid' => $dsid]);
         }
@@ -496,6 +499,10 @@ class StationManageCtrl extends Controller
             }
 
             $sid = $ds->id;
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_EDIT);
+
             return response()->json(['status' => 'success', 'sid' => $sid]);
         }
     }
@@ -692,7 +699,6 @@ class StationManageCtrl extends Controller
     /*Show station list for delivery area*/
     public function show_station_list_for_delivery_area()
     {
-
         $factory_id = Auth::guard('gongchang')->user()->factory_id;
 
         $factory = Factory::find($factory_id);
@@ -729,6 +735,9 @@ class StationManageCtrl extends Controller
                 }
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '配送范围管理', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.jichuxinxi.naizhan', [
             'pages' => $pages,

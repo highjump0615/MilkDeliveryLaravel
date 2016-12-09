@@ -26,6 +26,8 @@ Route::get('/home', 'HomeController@index');
 //Export Table Data
 Route::post('api/export', 'ExportCtrl@export');
 
+Route::post('api/printlog', 'ExportCtrl@printLog');
+
 //Get all area
 Route::get('api/province_to_city', 'AddressCtrl@all_province_to_city');
 Route::get('api/city_to_district', 'AddressCtrl@all_city_to_district');
@@ -787,6 +789,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     });
 
 //yonghu page view
+
     Route::get('/zongpingtai/yonghu', 'UserCtrl@viewZongpingGuanliyuan');
     Route::get('/zongpingtai/yonghu/yonghu', 'FactoryCtrl@viewUserPage')->name('yonghu_page');
     /*change status*/

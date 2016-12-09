@@ -124,33 +124,4 @@
 
 @section('script')
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/pingkunagtongji.js')?>"></script>
-	<script type="text/javascript">
-		$(document).ready(function () {
-			$('#view_table tr:not(:first,:last)').each(function () {
-				var init = 0;
-				var milkman = 0;
-				var factory = 0;
-				var recipient = 0;
-				var damaged = 0;
-				if(!isNaN(parseInt($(this).find('.init_val').text()))){
-					init = parseInt($(this).find('.init_val').text());
-				}
-				if(!isNaN(parseInt($(this).find('.milkman').text()))){
-					milkman = parseInt($(this).find('.milkman').text());
-				}
-				if(!isNaN(parseInt($(this).find('.factory').text()))){
-					factory = parseInt($(this).find('.factory').text());
-				}
-				if(!isNaN(parseInt($(this).find('.received').text()))){
-					recipient = parseInt($(this).find('.received').text());
-				}
-				if(!isNaN(parseInt($(this).find('.damage').text()))){
-					damaged = parseInt($(this).find('.damage').text());
-				}
-
-				var total = init + milkman + recipient - factory - damaged;
-				$(this).find('.total').html(total);
-			})
-		})
-	</script>
 @endsection

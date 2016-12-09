@@ -21,12 +21,23 @@ use App\Http\Requests;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
+use App\Model\SystemModel\SysLog;
+use App\Model\UserModel\User;
+
+
 class TotalStatisticsCtrl extends Controller
 {
+    /**
+     * 打开奶品配送统计
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function naipinpeisong(Request $request){
+
         $child = 'naipinpeisong';
         $parent = 'tongji';
         $current_page = 'naipinpeisong';
+
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
         $factory_name = $request->input('factory_name');
@@ -86,8 +97,10 @@ class TotalStatisticsCtrl extends Controller
                     }
                 }
             }
-
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '奶品配送统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('zongpingtai.tongji.naipinpeisong', [
             'pages' => $pages,
@@ -102,6 +115,11 @@ class TotalStatisticsCtrl extends Controller
         ]);
     }
 
+    /**
+     * 打开订单类型统计
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function dingdanleixing(Request $request){
         $child = 'dingdanleixing';
         $parent = 'tongji';
@@ -192,6 +210,9 @@ class TotalStatisticsCtrl extends Controller
             $st['product'] = $product_info;
             $count = count($st['product']);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '订单类型统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('zongpingtai.tongji.dingdanleixing', [
             'pages' => $pages,
@@ -497,6 +518,10 @@ class TotalStatisticsCtrl extends Controller
                 }
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '客户行为分析', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('zongpingtai.tongji.kehuxingwei', [
             'pages' => $pages,
             'child' => $child,
@@ -700,6 +725,9 @@ class TotalStatisticsCtrl extends Controller
                 }
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '客户订单修改统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('zongpingtai.tongji.kehudingdanxiugai', [
             'pages' => $pages,
