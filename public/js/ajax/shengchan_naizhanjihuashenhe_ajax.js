@@ -8,7 +8,7 @@ $(document).on('click','.validate',function(e){
             value = 0;
         }
         pending_status += value;
-    })
+    });
     if(pending_status >0){
         $('#alert_view').show();
         return;
@@ -19,7 +19,7 @@ $(document).on('click','.validate',function(e){
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
     e.preventDefault();
 
     var id = $(this).val();
@@ -69,7 +69,7 @@ $(document).on('click','.validate',function(e){
     else{
         show_warning_msg("请输入值!");
     }
-})
+});
 
 $(document).on('click','.cancel',function(e){
     e.preventDefault();

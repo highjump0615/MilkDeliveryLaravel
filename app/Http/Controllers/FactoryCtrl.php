@@ -16,6 +16,9 @@ use App\Http\Controllers\Weixin\WechatesCtrl;
 use App\Model\WechatModel\WechatMenu;
 use App\Model\WechatModel\WechatAd;
 
+use App\Model\SystemModel\SysLog;
+
+
 class FactoryCtrl extends Controller
 {
     public function viewUserPage(Request $request)
@@ -79,9 +82,17 @@ class FactoryCtrl extends Controller
         ]);
     }
 
+    /**
+     * 添加用户
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function storeTianjia(Request $request)
     {
         $this->saveFactory(null, $request);
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '用户管理', SysLog::SYSLOG_OPERATION_ADD);
 
         return redirect()->route('yonghu_page');
     }
@@ -186,11 +197,20 @@ class FactoryCtrl extends Controller
         $factory_user->save();
     }
 
+    /**
+     * 修改保存
+     * @param Request $request
+     * @param $user_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updateTianjia(Request $request,$user_id)
     {
         $fa = Factory::find($user_id);
 
         $this->saveFactory($fa, $request);
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_ADMIN, '用户管理', SysLog::SYSLOG_OPERATION_EDIT);
             
         return redirect()->route('yonghu_page');
     }

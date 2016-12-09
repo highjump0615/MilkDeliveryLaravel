@@ -71,7 +71,6 @@ $(document).on('click','.confirm_submit',function(e){
                 send_plan();
             },
             cancel: function () {
-                return;
             }
         });
         status = 2;

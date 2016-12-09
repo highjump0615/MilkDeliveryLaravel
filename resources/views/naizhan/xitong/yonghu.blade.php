@@ -16,7 +16,6 @@
 				</li>
 			</ol>
 		</div>
-
 			<div class="row white-bg" style="padding: 10px;">
 				<input type="hidden" id="current_station_id" value="{{$current_station_id}}">
 				<div class="ibox-content white-bg vertical-align">

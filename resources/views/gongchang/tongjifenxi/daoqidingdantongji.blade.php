@@ -16,7 +16,7 @@
 			</ol>
 		</div>
 			<div class="row">	
-<!--Table-->				
+			<!--Table-->
 				<div class="ibox-content">
 					<div class="feed-element">
 						<div class="col-md-3">
@@ -146,38 +146,4 @@
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 
 	<script type="text/javascript" src="<?=asset('js/pages/gongchang/daoqidingdan.js')?>"></script>
-
-    <script type="text/javascript">
-		$(document).ready(function(){
-            $('.i-checks').iCheck({
-                checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
-            });			
-			$('.table').treeTable();
-        });
-		$('.footable').footable();
-
-		$('#data_range_select .input-daterange').datepicker({
-			keyboardNavigation: false,
-			forceParse: false,
-			autoclose: true
-		});
-
-		$('button[data-action = "print"]').click(function () {
-
-			var sendData = [];
-
-			var printContents;
-
-			printContents = document.getElementById("table1").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
-		});
-
-
-	</script>
 @endsection

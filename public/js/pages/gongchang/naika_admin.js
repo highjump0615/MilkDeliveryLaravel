@@ -5,6 +5,17 @@ var end_number = 0;
 
 var carddata;
 
+$(function(){
+    $('#csv_file_upload_btn').click(function(){
+        $('#csv_file_upload_input').click();
+    });
+
+    $('#csv_file_upload_input').change(function(){
+        console.log('uploading');
+        $('#upload-form').submit();
+    });
+});
+
 /**
  * 更新数量和金额
  */
@@ -273,25 +284,13 @@ $('button[data-action = "print"]').click(function () {
     var od = $('#cardTable').css('display');
     var fd = $('#filteredTable').css('display');
 
-    var sendData = [];
-
-    var printContents;
     if (od != "none") {
-        //print order data
-        printContents = document.getElementById("cardTable").outerHTML;
-
-    } else if (fd != "none") {
-        //print filter data
-        printContents = document.getElementById("filteredTable").outerHTML;
-    } else {
-        return;
+        printContent('cardTable', gnUserTypeFactory, '奶卡管理');
     }
-
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    else if (fd != "none") {
+        //print filter data
+        printContent('filteredTable', gnUserTypeFactory, '奶卡管理');
+    }
 });
 
 $('#submit').click(function (event) {

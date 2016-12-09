@@ -147,7 +147,6 @@
                                                         <option value="{{$provinces[$i]->name}}">{{$provinces[$i]->name}}</option>
                                                     @endif
                                                 @endfor
-                                            <!--option selected value="北京">北京</option-->
                                             @else
                                                 <option value="empty_province">No Province Ready</option>
                                             @endif

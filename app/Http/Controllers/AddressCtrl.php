@@ -82,6 +82,9 @@ class AddressCtrl extends Controller
                 }
             }
 
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_ADD);
+
             return response()->json(['status' => 'success']);
         }
     }
@@ -201,8 +204,13 @@ class AddressCtrl extends Controller
                 if ($recurseId == 0)
                     break;
             }
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_REMOVE);
+
             return response()->json(['status' => 'success', 'message' => 'Delete Success']);
-        } else {
+        }
+        else {
             return response()->json(['status' => 'failed', 'message' => 'Delete Failed']);
         }
     }
@@ -323,6 +331,9 @@ class AddressCtrl extends Controller
             $this->storeIfNotExist($no_xiaoqu, $street->id);
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EDIT);
+
         return response()->json(['status' => 'success']);
     }
 
@@ -333,7 +344,6 @@ class AddressCtrl extends Controller
 
     public function export(Request $request)
     {
-
         if ($request->ajax()) {
             $fuser = Auth::guard('gongchang')->user();
             $factory_id = $fuser->factory_id;
@@ -363,8 +373,7 @@ class AddressCtrl extends Controller
             })->store('xls', 'exports');
 
             // 添加系统日志
-            $sysMgrCtrl = new SysManagerCtrl();
-            $sysMgrCtrl->addSystemLog($fuser, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
 
             return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/addresslist.xls']);
         }
