@@ -8,7 +8,11 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
+        @if(isset($type) && isset($order))
+            <a class="headl fanh" href="{{ url('weixin/dingdanliebiao').'?type='.$type }}"></a>
+        @else
+            <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
+        @endif
         <h1>确认订单</h1>
     </header>
     <div class="ordsl">
@@ -90,7 +94,7 @@
     $input->SetBody("test");
     $input->SetAttach("test");
     $input->SetOut_trade_no(WxPayConfig::getMCHID() . date("YmdHis"));
-//    $input->SetTotal_fee("" . round($total_amount * 100, 0));
+    //    $input->SetTotal_fee("" . round($total_amount * 100, 0));
     $input->SetTotal_fee("1");
     $input->SetTime_start(date("YmdHis"));
     //$input->SetTime_expire(date("YmdHis", time() + 600));
@@ -134,11 +138,11 @@
                     function (res) {
                         WeixinJSBridge.log(res.err_msg);
                         if (res.err_msg == 'get_brand_wcpay_request:ok') {
-//                            alert('支付成功了');
+                            //                            alert('支付成功了');
                             window.location = SITE_URL + "weixin/zhifuchenggong?order=" + order_id;
                         }
                         else {
-//                            alert('支付失败了');
+                            //                            alert('支付失败了');
                             window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
                         }
                     }
@@ -172,9 +176,9 @@
         };
 
         $(document).ready(function () {
-            @if(isset($message) && $message!="")
-                var message = "{{$message}}";
-                show_info_msg(message);
+                    @if(isset($message) && $message!="")
+            var message = "{{$message}}";
+            show_info_msg(message);
             @endif
 
             $('#calendar').fullCalendar({
@@ -239,7 +243,12 @@
         });
 
         function go_page_address_list() {
-            window.location = SITE_URL + "weixin/dizhiliebiao";
+            @if(isset($order) && isset($type))
+                    window.location = SITE_URL + "weixin/dizhiliebiao?order=" + "{{ $order }}" + "&&type=" + "{{ $type }}";
+            @else
+                    window.location = SITE_URL + "weixin/dizhiliebiao";
+            @endif
+
         }
 
         //edit order product

@@ -2,12 +2,16 @@
 @section('title','续单')
 @section('css')
 
-    <link href='css/fullcalendar.min.css' rel='stylesheet'/>
-    <link rel="stylesheet" href="css/swiper.min.css">
+    <link href="<?=asset('css/fullcalendar.min.css')?> " rel='stylesheet'/>
+    <link rel="stylesheet" href="<?=asset('css/swiper.min.css')?>">
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="javascript:void(0)"></a>
+        @if(isset($type))
+            <a class="headl fanh" href="{{ url('weixin/dingdanliebiao?type=').$type }}"></a>
+        @else
+            <a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
+        @endif
         <h1>我的购物车</h1>
 
     </header>
