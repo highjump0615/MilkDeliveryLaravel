@@ -64,7 +64,7 @@ class WechatOrderProduct extends OrderProduct
 
         $dp = new TempDeliveryPlan;
         //Product Name
-        $dp->product_name = $this->product_name;
+        $dp->product_name = $this->product_simple_name;
 
         //deliver at
         $startAt = $this->start_at;
