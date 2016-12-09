@@ -111,10 +111,8 @@ trait AuthenticatesUsers
             $this->clearLoginAttempts($request);
         }
 
-        // 添加
-        if(Auth::guard($this->getGuard())->user()) {
-            session(['guard_user_id' => Auth::guard($this->getGuard())->user()->id]);
-        }
+        if(Auth::guard($this->getGuard())->user())
+            session(['guard_user_id'=>Auth::guard($this->getGuard())->user()->id]);
 
         if (method_exists($this, 'authenticated')) {
             return $this->authenticated($request, Auth::guard($this->getGuard())->user());
@@ -131,11 +129,10 @@ trait AuthenticatesUsers
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-//        return redirect()->back()->with('status',['login failes']);
         return redirect()->back()
             ->withInput($request->only($this->loginUsername(), 'remember'))
             ->withErrors([
-                $this->loginUsername() => $this->getFailedLoginMessage()
+                $this->loginUsername() => $this->getFailedLoginMessage(),
             ]);
     }
 

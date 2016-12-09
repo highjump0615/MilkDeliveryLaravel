@@ -5,12 +5,18 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="{{url('weixin/dingdanxiugai?order='.$order_id)}}"></a>
+        @if(isset($type))
+            <a class="headl fanh" href="{{url('weixin/dingdanxiugai?order='.$order_id.'&&type='.$type)}}"></a>
+        @else
+            <a class="headl fanh" href="{{url('weixin/dingdanxiugai?order='.$order_id)}}"></a>
+        @endif
         <h1>产品修改</h1>
     </header>
 
     <div class="ordtop pa2t clearfix">
+        @if(isset($current_product_photo_url))
         <img id="pimg" class="ordpro" src="<?=asset('img/product/logo/' . $current_product_photo_url)?>">
+        @endif
         <div class="ordyf">
             <span id="pname">{{ $current_product_name }}</span>
         </div>
@@ -24,13 +30,13 @@
         </div>
         <div class="ordye">
             <span>更改后金额：<b id="after_changed_amount">{{ $current_product_amount }}</b>元</span>
-            <span>差额：<b id="left_amount">0</b>元</span>
+            <span>差额：<b id="left_amount">{{$current_order_remain_amount}}</b>元</span>
         </div>
     </div>
 
     <div class="dnsli  dnsli2 clearfix">
         <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract">
+                 <span class="addSubtract deliver_plan_as">
                   <a class="subtract" href="javascript:;">-</a>
                   <input type="text" min="1" id="changed_product_count" value="{{$current_product_count}}"
                          max="{{$current_product_count}}">
@@ -95,7 +101,11 @@
             @foreach($products as $product)
                 @if($product[0] != $current_product_id)
                     <div class="orddp pa2t clearfix">
-                        <a href="{{url('weixin/tianjiadingdan?product='.$product[0].'&previous=naipinxiugai')}}"><img class="ordpro img_select" src="<?=asset('img/product/logo/' . $product[2])?>"></a>
+                        @if(isset($type))
+                            <a href="{{url('weixin/tianjiadingdan?product='.$product[0].'&previous=naipinxiugai&&type=').$type}}"><img class="ordpro img_select" src="<?=asset('img/product/logo/' . $product[2])?>"></a>
+                        @else
+                            <a href="{{url('weixin/tianjiadingdan?product='.$product[0].'&previous=naipinxiugai')}}"><img class="ordpro img_select" src="<?=asset('img/product/logo/' . $product[2])?>"></a>
+                        @endif
                         <div class="spp spp1">
                             <p class="spname">{{$product[1]}}</p>
                             <p class="spname">{{$product[3]}}元</p>
@@ -303,11 +313,11 @@
         $('#change_order_product').click(function () {
 
             //check left amount
-            if( parseFloat($('#left_amount').html()) < 0 )
-            {
-                show_err_msg('更改后金额不能超过订单余额');
-                return;
-            }
+//            if( parseFloat($('#left_amount').html()) < 0 )
+//            {
+//                show_err_msg('更改后金额不能超过订单余额');
+//                return;
+//            }
 
             var send_data = new FormData();
 
@@ -387,7 +397,11 @@
                     if (data.status == "success") {
                         show_success_msg("更改奶品成功");
                         //go to dingdan xiangqing
-                        window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
+                        @if(isset($type))
+                            window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id+"&&type={{$type}}";
+                        @else
+                            window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
+                        @endif
                     } else {
                         if (data.message) {
                             show_warning_msg(data.message);

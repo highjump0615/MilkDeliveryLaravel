@@ -6,15 +6,23 @@
 @endsection
 @section('content')
     <header>
-        <a class="headl fanh" href="{{url('weixin/dizhiliebiao')}}"></a>
+        @if(isset($order) && isset($type))
+            <a class="headl fanh" href="{{url('weixin/dizhiliebiao').'?order='.$order.'&&type='.$type}}"></a>
+        @else
+            <a class="headl fanh" href="{{url('weixin/dizhiliebiao')}}"></a>
+        @endif
         <h1>填写收货地址</h1>
     </header>
 
     <div class="addrbox">
         <form id="form1" method="post" action="{{url('/weixin/dizhitianxie')}}">
-            <input type="hidden" name="wxuser_id" value="{{$wxuser_id}}">
+            @if(isset($order) && isset($type))
+                <input type="hidden" name="order" value="{{$order}}"/>
+                <input type="hidden" name="type" value="{{$type}}"/>
+            @endif
+            <input type="hidden" name="wxuser_id" value="{{$wxuser_id}}"/>
             @if(isset($address_id))
-            <input type="hidden" name="address_id" value="{{$address_id}}">
+            <input type="hidden" name="address_id" value="{{$address_id}}"/>
             @endif
             <ul class="adrul">
                 <li>

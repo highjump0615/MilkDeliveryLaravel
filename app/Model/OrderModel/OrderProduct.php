@@ -35,6 +35,7 @@ class OrderProduct extends Model
 
     protected $appends = [
         'product_name',
+        'product_simple_name',
         'order_type_name',
         'delivery_type_name',
         'finished_count',
@@ -108,6 +109,15 @@ class OrderProduct extends Model
 
     
     public function getProductNameAttribute()
+    {
+        $product = Product::find($this->product_id);
+        if($product)
+            return $product->name;
+        else
+            return "";
+    }
+
+    public function getProductSimpleNameAttribute()
     {
         $product = Product::find($this->product_id);
         if($product)

@@ -42,6 +42,7 @@ class MilkManDeliveryPlan extends Model
         'plan_price',
         'station_id',
         'product_name',
+        'product_simple_name',
         'status_name',
         'plan_product_image',
     ];
@@ -104,6 +105,11 @@ class MilkManDeliveryPlan extends Model
     public function getProductNameAttribute()
     {
         return $this->order_product->product_name;
+    }
+
+    public function getProductSimpleNameAttribute()
+    {
+        return $this->order_product->product_simple_name;
     }
 
     public function getPlanPriceAttribute()

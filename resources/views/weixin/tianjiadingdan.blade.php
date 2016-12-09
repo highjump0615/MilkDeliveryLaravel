@@ -12,7 +12,7 @@
 
     <header>
         @if($previous == "0")
-        <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
+            <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         @else
             <a class="headl fanh" href="javascript:history.back();"></a>
         @endif
@@ -61,7 +61,6 @@
     <div class="dnsl pa2t">
         <input type="hidden" id="product_id" value="{{$product->id}}">
 
-        @if($previous == "0")
         <div class="dnsli clearfix">
             <div class="dnsti">订单类型：</div>
             <select class="dnsel" id="order_type">
@@ -142,7 +141,6 @@
             {{--</div>--}}
             <div class="ordrq">起送时间：<input class="qssj" id="start_at" name="start_at" type="date" value=""/></div>
         </div>
-        @endif
 
         <div class="dnsall">
             <div class="dnsli clearfix">
@@ -238,13 +236,19 @@
 
             var cur_val = $(this).val();
             if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_MONTH }}") {
+                @if($previous == "0")
                 count_input.attr('min', 30);
+                @endif
                 count_input.val(30);
             } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_SEASON }}") {
+                @if($previous == "0")
                 count_input.attr('min', 90);
+                @endif
                 count_input.val(90);
             } else if (cur_val == "{{ \App\Model\OrderModel\OrderType::ORDER_TYPE_HALF_YEAR }}") {
+                @if($previous == "0")
                 count_input.attr('min', 180);
+                @endif
                 count_input.val(180);
             }
         });
@@ -517,10 +521,10 @@
 
         $('button#add_order').click(function () {
 
-            if (check_bottle_count()) {
-                show_info_msg('请正确设置订奶数量');
-                return;
-            }
+//            if (check_bottle_count()) {
+//                show_info_msg('请正确设置订奶数量');
+//                return;
+//            }
 
             var send_data = new FormData();
 
@@ -606,7 +610,11 @@
                 contentType: false,
                 success: function (data) {
                     if (data.status == "success") {
-                        window.location.href = SITE_URL + "weixin/dingdanxiugai?order="+order_id;
+                        @if(isset($type))
+                            window.location.href = SITE_URL + "weixin/dingdanxiugai?order="+order_id+"type={{$type}}";
+                        @else
+                            window.location.href = SITE_URL + "weixin/dingdanxiugai?order="+order_id;
+                        @endif
                     } else {
                         show_warning_msg("附加产品失败");
                     }

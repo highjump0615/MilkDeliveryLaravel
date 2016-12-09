@@ -770,25 +770,6 @@ if (! function_exists('view')) {
      */
     function view($view = null, $data = [], $mergeData = [])
     {
-        $url_parts = explode('.', $view);
-        $platform = $url_parts[0];
-
-        $subview = null;
-        if(isset($url_parts[1]))
-            $subview = $url_parts[1];
-
-        if($subview && $subview != "auth" && $subview != "shouye") {
-            if ($platform == "gongchang" || $platform == "zongpingtai") {
-
-                $user = Auth::guard($platform)->user();
-
-                if ($user) {
-                    if (!Auth::guard($platform)->user()->canAccess($view))
-                        $view = "errors.403";
-                }
-            }
-        }
-
         $factory = app(ViewFactory::class);
 
         if (func_num_args() === 0) {
@@ -796,6 +777,5 @@ if (! function_exists('view')) {
         }
 
         return $factory->make($view, $data, $mergeData);
-
     }
 }

@@ -58,7 +58,11 @@
 
     <header>
         @if(isset($order_id))
-            <a class="headl fanh" href="{{url('/weixin/dingdanxiugai?order='.$order_id)}}"></a>
+            @if(isset($type))
+                <a class="headl fanh" href="{{url('/weixin/dingdanxiugai?order='.$order_id.'&&type='.$type)}}"></a>
+            @else
+                <a class="headl fanh" href="{{url('/weixin/dingdanxiugai?order='.$order_id)}}"></a>
+            @endif
         @endif
 
         <h1>商品列表</h1>
@@ -68,16 +72,46 @@
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 @foreach($categories as $c)
-                    @if($c->id == $category)
-                        <div class="swiper-slide">
-                            <div class="current"><a href="#">{{$c->name}}</a></div>
-                        </div>
+                    @if(isset($order_id))
+                        @if(isset($type))
+                            @if($c->id == $category)
+                                <div class="swiper-slide">
+                                    <div class="current"><a href="{{url('/weixin/shangpinliebiao?category='.$c->id.'&&order_id='.$order_id.'&&type='.$type)}}"
+                                                            onclick="">{{$c->name}}</a></div>
+                                </div>
+                            @else
+                                <div class="swiper-slide">
+                                    <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id.'&&order_id='.$order_id.'&&type='.$type)}}"
+                                            onclick="">{{$c->name}}</a></div>
+                                </div>
+                            @endif
+                        @else
+                            @if($c->id == $category)
+                                <div class="swiper-slide">
+                                    <div class="current"><a href="{{url('/weixin/shangpinliebiao?category='.$c->id.'&&order_id='.$order_id)}}"
+                                                            onclick="">{{$c->name}}</a></div>
+                                </div>
+                            @else
+                                <div class="swiper-slide">
+                                    <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id.'&&order_id='.$order_id)}}"
+                                            onclick="">{{$c->name}}</a></div>
+                                </div>
+                            @endif
+                        @endif
+
                     @else
-                        <div class="swiper-slide">
-                            <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id)}}"
-                                    onclick="">{{$c->name}}</a></div>
-                        </div>
+                        @if($c->id == $category)
+                            <div class="swiper-slide">
+                                <div class="current"><a href="#">{{$c->name}}</a></div>
+                            </div>
+                        @else
+                            <div class="swiper-slide">
+                                <div><a href="{{url('/weixin/shangpinliebiao?category='.$c->id)}}"
+                                        onclick="">{{$c->name}}</a></div>
+                            </div>
+                        @endif
                     @endif
+
                 @endforeach
             </div>
         </div>
@@ -89,9 +123,15 @@
                 <dl class="pr_dl">
                     <div class="pr_img">
                         @if(isset($order_id))
-                            <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id.'&&order_id='.$order_id)}}">
-                                <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
-                            </a>
+                            @if(isset($type))
+                                <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id.'&&order_id='.$order_id.'&&type='.$type.'&&previous=dingdanxiguai')}}">
+                                    <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
+                                </a>
+                            @else
+                                <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id.'&&order_id='.$order_id.'&&previous=dingdanxiguai')}}">
+                                    <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
+                                </a>
+                            @endif
                         @else
                             <a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
                                 <img src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
