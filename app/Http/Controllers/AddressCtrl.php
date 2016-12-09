@@ -82,6 +82,9 @@ class AddressCtrl extends Controller
                 }
             }
 
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_ADD);
+
             return response()->json(['status' => 'success']);
         }
     }
@@ -201,8 +204,13 @@ class AddressCtrl extends Controller
                 if ($recurseId == 0)
                     break;
             }
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_REMOVE);
+
             return response()->json(['status' => 'success', 'message' => 'Delete Success']);
-        } else {
+        }
+        else {
             return response()->json(['status' => 'failed', 'message' => 'Delete Failed']);
         }
     }
@@ -322,6 +330,9 @@ class AddressCtrl extends Controller
         foreach ($add_xiaoqu as $no_xiaoqu) {
             $this->storeIfNotExist($no_xiaoqu, $street->id);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EDIT);
 
         return response()->json(['status' => 'success']);
     }

@@ -128,6 +128,8 @@ class CustomerCtrl extends Controller
             $cu['order_status'] = $this->getOrderStatus($cu->id);
         }
 
+        $this->addSystemLog(User::USER_BACKEND_STATION, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('naizhan.kehu.kehudangan', [
             'pages' => $pages,
             'child' => $child,
@@ -159,6 +161,9 @@ class CustomerCtrl extends Controller
             }
             $cu['order_status'] = $this->getOrderStatus($cu->id);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.kehu.kehu', [
             'pages' => $pages,

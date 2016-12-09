@@ -73,11 +73,6 @@ $('[data-action="show_selected"]').click(function () {
 });
 
 
-$('button[data-action = "export_csv"]').click(function () {
-    return;
-});
-
-
 $('button[data-action = "print"]').click(function () {
 
     var printContents = $('#station_list')[0].innerHTML;

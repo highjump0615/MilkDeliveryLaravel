@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 
 use App\Model\OrderModel\Order;
 use App\Model\OrderModel\OrderProduct;
@@ -2755,142 +2758,6 @@ class OrderCtrl extends Controller
 */
     }
 
-    //Change Order Products in order xiugai page
-    public function change_order_info(Request $request)
-    {
-        if ($request->ajax()) {
-
-            $fuser = Auth::guard('gongchang')->user();
-            if (!$fuser) {
-                $station_id = Auth::guard('naizhan')->user()->station_id;
-                $station = DeliveryStation::find($station_id);
-                $factory_id = $station->factory_id;
-            } else {
-                $factory_id = $fuser->factory_id;
-            }
-
-            $order_id = $request->input('order_id');
-
-            $order = Order::find($order_id);
-
-            $init_total_amount = $request->input('init_order_total');
-            $current_total_amount = $request->input('current_order_total');
-
-            //Step1-c: Get remaining total amount and delete order product
-            $remain_amount = $order->remain_order_money;
-
-            $customer_id = $request->input('customer_id');
-            $receipt_number = $request->input('receipt_number');
-            $receipt_path = $request->input('receipt_path');
-            $milkman_id = $request->input('milkman_id');
-            $station_id = $request->input('station_id');
-
-            //check integrity
-
-            $customer = Customer::find($customer_id);
-            $customer_name = $customer->name;
-            if (!$order)
-                return response()->json(['status' => 'fail', 'message' => '该订单没有被发现']);
-            if (!$customer)
-                return response()->json(['status' => 'fail', 'message' => '该收货人没有被发现']);
-
-            if ($order->customer_id != $customer_id) {
-                $order->customer_id = $customer_id;
-            }
-
-            if ($order->receipt_number != $receipt_number) {
-                $order->receipt_number = $receipt_number;
-            }
-
-            if ($order->receipt_path != $receipt_path) {
-                $order->receipt_path = $receipt_path;
-            }
-
-            if ($customer->milkman_id != $milkman_id) {
-                $order->milkman_id = $milkman_id;
-            }
-
-            if ($customer->station_id != $station_id) {
-                $order->station_id = $station_id;
-                $notification = new DSNotification();
-                $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单奶站！！");
-            }
-
-            $order->save();
-
-            //delete origin order products
-            $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
-
-            //Step2: Make new delivery plan with new product, new delivery plan
-            //save order products
-            $count = count($request->input('order_product_id'));
-
-            //establish plan
-            for ($i = 0; $i < $count; $i++) {
-                $pid = $request->input('order_product_id')[$i];
-                $otype = $request->input('factory_order_type')[$i];
-                $total_count = $request->input('one_product_total_count')[$i];
-                $one_amount = $request->input('one_p_amount')[$i];
-                $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
-                $delivery_type = $request->input('order_delivery_type')[$i];
-                $avg = $request->input('avg')[$i];
-
-                $op = new OrderProduct;
-                $op->order_id = $order_id;
-                $op->product_id = $pid;
-                $op->order_type = $request->input('factory_order_type')[$i];
-                $op->delivery_type = $delivery_type;
-                $op->product_price = $product_price;
-                $op->total_count = $total_count;
-                $op->total_amount = $one_amount;
-                $op->avg = $avg;
-
-                if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
-                    $op->count_per_day = $request->input('order_product_count_per')[$i];
-                } else {
-                    $custom_dates = $request->input('delivery_dates')[$i];
-//                    if ($delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
-//                        //Week Delivery
-//                        $result = $this->get_week_delivery_info($custom_dates);
-//
-//                    } else {
-//                        //Month Delivery
-//                        $result = $this->get_month_delivery_info($custom_dates);
-//                    }
-                    $result = trim($custom_dates);
-                    $op->custom_order_dates = $result;
-                }
-
-                $op->save();
-
-                //establish plan
-                $this->establish_new_plan($op, $factory_id, $station_id, $milkman_id);
-            }
-
-            //set flag on first order delivery plan
-            $plans = $order->first_delivery_plans;
-            if($plans)
-            {
-                foreach($plans as $plan)
-                {
-                    $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE;
-                    $plan->save();
-                }
-
-            }
-
-            $order->status = Order::ORDER_WAITING_STATUS;
-            $order->save();
-
-            $station_id = Order::find($order_id)->station_id;
-            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
-
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单奶品！！");
-            return response()->json(['status' => 'success']);
-        }
-    }
-
     //Check the date in this week
     public
     function check_in_this_week($date_string)
@@ -2957,9 +2824,13 @@ class OrderCtrl extends Controller
     /**
      * 录入/修改订单
      * @param Request $request
+     * @param $backend_type 后台用户权限
      * @return \Illuminate\Http\JsonResponse
      */
-    function insert_order(Request $request) {
+    function insert_order(Request $request, $backend_type) {
+
+        // 默认操作是添加
+        $nOperation = SysLog::SYSLOG_OPERATION_ADD;
 
         $order = null;
         $factory_id = $station_id = 0;
@@ -3166,6 +3037,9 @@ class OrderCtrl extends Controller
 
         // 订单修改要删除以前的配送明细和奶品信息
         if ($order_id) {
+            // 操作是修改
+            $nOperation = SysLog::SYSLOG_OPERATION_EDIT;
+
             $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
         }
         // 新订单生成订单编号
@@ -3276,6 +3150,9 @@ class OrderCtrl extends Controller
 //                $dsdelivery_history->save();
         }
 
+        // 添加系统日志
+        $this->addSystemLog($backend_type, '订单', $nOperation);
+
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
     }
 
@@ -3329,7 +3206,7 @@ class OrderCtrl extends Controller
                 $factory_id = $fuser->factory_id;
                 $this->factory = Factory::find($factory_id);
 
-                return $this->insert_order($request);
+                return $this->insert_order($request, User::USER_BACKEND_FACTORY);
             }
         }
     }
@@ -3347,7 +3224,7 @@ class OrderCtrl extends Controller
                 $factory_id = $this->station->factory_id;
                 $this->factory = Factory::find($factory_id);
 
-                return $this->insert_order($request);
+                return $this->insert_order($request, User::USER_BACKEND_STATION);
             }
         }
     }
@@ -4252,6 +4129,9 @@ class OrderCtrl extends Controller
             foreach ($udps as $udp) {
                 $udp->passCheck(true);
             }
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '订单', SysLog::SYSLOG_OPERATION_CHECK);
 
             return response()->json(['status' => 'success', 'message' => '订单通过成功.']);
         }

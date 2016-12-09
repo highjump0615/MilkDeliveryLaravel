@@ -79,7 +79,7 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
             }
-        })
+        });
 
         e.preventDefault();
 
@@ -132,7 +132,7 @@ $(document).ready(function(){
                 backend_type: 2,
                 factory_id: $('#current_factory_id').val(),
                 user_role_id: $('#permission').val(),
-            }
+            };
 
             $.ajax({
 

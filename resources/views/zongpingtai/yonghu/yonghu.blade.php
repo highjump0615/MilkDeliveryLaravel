@@ -29,7 +29,7 @@
 					</div>
 				</div>
 				<div><hr></div>
-<!--User_Admin_Table-->				
+				<!--User_Admin_Table-->
                 <div class="ibox float-e-margins">
                     <form class="ibox-content">
                     <div class="ibox-content">
@@ -108,7 +108,7 @@
 				headers: {
 					'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
 				}
-			})
+			});
 
 			e.preventDefault();
 
@@ -122,8 +122,8 @@
 
 			var formData = {
 				id: id,
-				status: status,
-			}
+				status: status
+			};
 
 			$.ajax({
 				type: type,

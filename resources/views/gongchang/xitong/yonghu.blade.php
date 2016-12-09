@@ -73,17 +73,6 @@
 														</div>
 													</div>
 												</div>
-
-												{{--<div class="form-group"><label class="col-sm-3">分组</label>--}}
-												{{--<div class="col-sm-9">--}}
-												{{--<div class="input-group">--}}
-												{{--<select data-placeholder="Choose..." class="chosen-select" style="min-width:395px; height:35px;" tabindex="2" id="group">--}}
-												{{--<option value="产品分析">产品分析</option>--}}
-												{{--</select>--}}
-												{{--</div>--}}
-												{{--</div>--}}
-												{{--</div>--}}
-
 											</form>
 										</div>
 									</div>

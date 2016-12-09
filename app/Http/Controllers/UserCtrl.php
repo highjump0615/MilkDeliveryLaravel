@@ -66,6 +66,11 @@ class UserCtrl extends Controller
         }
     }
 
+    /**
+     * 添加奶厂用户
+     * @param Request $request
+     * @return mixed
+     */
     public function addAccount(Request $request)
     {
         $is_exist = User::where('name',$request->input('name'))->get()->first();
@@ -81,6 +86,9 @@ class UserCtrl extends Controller
             $user->description = $request->input('description');
             $user->last_used_ip = $request->ip();
             $user->save();
+
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '用户管理', SysLog::SYSLOG_OPERATION_ADD);
 
             return Response::json($user);
         }
@@ -102,12 +110,20 @@ class UserCtrl extends Controller
         $user->user_role_id = $request->input('user_role_id');
 
         $user->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '用户管理', SysLog::SYSLOG_OPERATION_EDIT);
+
         return Response::json($user);
     }
 
     public function removeAccount($user_id)
     {
         $removeAccount = User::destroy($user_id);
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '用户管理', SysLog::SYSLOG_OPERATION_REMOVE);
+
         return Response::json($removeAccount);
     }
 

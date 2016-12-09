@@ -72,6 +72,9 @@ class FinanceCtrl extends Controller
             $this->getSummary($s);
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
+
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'taizhang';
@@ -1361,6 +1364,9 @@ class FinanceCtrl extends Controller
         foreach ($stations as $s) {
             $this->getSummary($s);
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_STATION, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
 
         $child = 'taizhang';
         $parent = 'caiwu';

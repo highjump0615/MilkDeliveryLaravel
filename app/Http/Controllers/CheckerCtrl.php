@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Redirect;
 use App\Model\FactoryModel\Factory;
 use App\Model\DeliveryModel\DeliveryStation;
 use Illuminate\Http\Request;
+
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use Auth;
 use DateTime;
 use App\Http\Requests;
@@ -69,10 +73,14 @@ class CheckerCtrl extends Controller
                     array_push($checkers, $c);
                 }
             }
-        }else {
+        }
+        else {
             $station = DeliveryStation::find($station_id);
             $checkers = $station->order_checkers;
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '征订员管理', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.jichuxinxi.zhengdingyuan', [
             'pages' => $pages,
@@ -120,6 +128,9 @@ class CheckerCtrl extends Controller
         $checker->number = OrderCheckers::NUMBER_PREFIX.str_pad($checker->id, OrderCheckers::NUMBER_NUMBERS, '0', STR_PAD_LEFT);
         $checker->save();
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '征订员管理', SysLog::SYSLOG_OPERATION_ADD);
+
         return Redirect::to('/gongchang/jichuxinxi/zhengdingyuan');
     }
 
@@ -151,6 +162,9 @@ class CheckerCtrl extends Controller
 
         $checker->save();
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '征订员管理', SysLog::SYSLOG_OPERATION_EDIT);
+
         return $checker;
     }
 
@@ -159,6 +173,9 @@ class CheckerCtrl extends Controller
         $checker->is_active = 0;
 
         $checker->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '征订员管理', SysLog::SYSLOG_OPERATION_REMOVE);
 
         return response()->json(['success'=>true]);
     }

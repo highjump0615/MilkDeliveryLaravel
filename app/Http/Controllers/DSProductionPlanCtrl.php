@@ -17,7 +17,11 @@ use App\Model\OrderModel\Order;
 use App\Model\ProductionModel\FactoryProductionPlan;
 use App\Model\ProductModel\Product;
 use App\Model\OrderModel\OrderProduct;
+
 use App\Model\UserModel\Page;
+use App\Model\UserModel\User;
+use App\Model\SystemModel\SysLog;
+
 use DateTime;
 use DateTimeZone;
 use Auth;
@@ -480,7 +484,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         return Response::json(['business_balance'=>$business_balance]);
     }
 
-
+    /**
+     * 打开奶站计划审核页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showPlanTableinFactory(){
         $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
 
@@ -572,6 +579,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $si["plan_status"] = count($station_plan);
         }
 
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站计划审核', SysLog::SYSLOG_OPERATION_VIEW);
+
         return view('gongchang.shengchan.naizhanjihuashenhe',[
             'pages'                 =>$pages,
             'child'                 =>$child,
@@ -585,7 +595,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     /*Save total amount of Produce Plan*/
     public function SaveforProduce(Request $request){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
@@ -625,6 +635,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $mfproductionplans->end_at = $produce_end_date;
         $mfproductionplans->status = FactoryProductionPlan::FACTORY_PRODUCE_PLAN_SENT;
         $mfproductionplans->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站计划审核', SysLog::SYSLOG_OPERATION_PRODUCE_OK);
         
         return Response::json(['status'=>'success']);
     }
@@ -717,6 +730,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $mfproductionplans->end_at = $produce_end_date;
         $mfproductionplans->status = FactoryProductionPlan::FACTORY_PRODUCE_CANCELED;
         $mfproductionplans->save();
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站计划审核', SysLog::SYSLOG_OPERATION_PRODUCE_CANCEL);
 
         return Response::json($plan_status);
     }
@@ -893,6 +909,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $nCurPageCount += count($station_plans);
             }
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站配送管理', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.shengchan.naizhanpeisong',[
             // 页面信息
@@ -1084,6 +1103,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $st['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
             $st['mfbox_type'] = FactoryBoxType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
         }
+
+        // 添加系统日志
+        $this->addSystemLog(User::USER_BACKEND_FACTORY, '打印出库单', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.shengchan.naizhanpeisong.dayinchukuchan',[
             'pages'             =>$pages,

@@ -23,14 +23,21 @@ class SysLog extends Model
     const SYSLOG_OPERATION_REMOVE   = 2;
     const SYSLOG_OPERATION_EDIT     = 3;
     const SYSLOG_OPERATION_VIEW     = 4;
+    const SYSLOG_OPERATION_INPUT    = 5;
 
     const SYSLOG_OPERATION_IMPORT   = 10;
     const SYSLOG_OPERATION_EXPORT   = 11;
     const SYSLOG_OPERATION_PRINT    = 12;
 
     const SYSLOG_OPERATION_CLEAR    = 20;
+    const SYSLOG_OPERATION_STOPUSE  = 21;
 
     const SYSLOG_OPERATION_FINANCE  = 100;
+    const SYSLOG_OPERATION_CHECK    = 200;  // 审核
+
+    // 生产
+    const SYSLOG_OPERATION_PRODUCE_OK       = 100;
+    const SYSLOG_OPERATION_PRODUCE_CANCEL   = 200;
 
     /**
      * 用户
@@ -55,6 +62,9 @@ class SysLog extends Model
         else if ($this->operation == SysLog::SYSLOG_OPERATION_VIEW) {
             $strRes = '查看';
         }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_INPUT) {
+            $strRes = '录入';
+        }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_IMPORT) {
             $strRes = '导入';
         }
@@ -69,6 +79,12 @@ class SysLog extends Model
         }
         else if ($this->operation == SysLog::SYSLOG_OPERATION_FINANCE) {
             $strRes = '财务操作';
+        }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_CHECK) {
+            $strRes = '审核';
+        }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_STOPUSE) {
+            $strRes = '停用';
         }
 
         return $strRes;
