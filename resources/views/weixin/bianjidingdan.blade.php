@@ -294,8 +294,8 @@
             $('select#order_type').trigger('change');
 
 
-            calen = new showfullcalendar("calendar",  "change_order_day_num");
-            week = new showmyweek("week", "change_order_day_num");
+            calen = new showfullcalendar2("calendar",  change_order_day_num);
+            week = new showmyweek2("week", change_order_day_num);
             dnsel_changed("dnsel_item0");
 
             init_wechat_order_product();

@@ -81,6 +81,7 @@ class WeChatCtrl extends Controller
 //        session(['wechat_user_id' => $wechat_user_id]);
 //        session(['factory_id' => $factory_id]);
 //        session(['address' => '北京 北京市']);
+//        session(['verified'=>'yes']);
 
 
         //add verified flag
@@ -615,7 +616,7 @@ class WeChatCtrl extends Controller
 
         //left_amount
         $left_amount = $order_remain_amount - $after_changed_amount;
-        $left_amount = round($left_amount, 2);
+        $left_amount = round($left_amount, 3);
 
 
         //show dynamic delivery plans from show_products
@@ -1353,7 +1354,7 @@ class WeChatCtrl extends Controller
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
         if ($order) {
-            $delivery_plans = $order->grouped_delivery_plans;
+            $delivery_plans = $order->grouped_delivery_plans_without_cancelled;
             return view('weixin.dingdanxiangqing', [
                 'order' => $order,
                 'plans' => $delivery_plans,
@@ -2579,9 +2580,20 @@ class WeChatCtrl extends Controller
         $comment = $request->input('comment');
         $group_id = $request->input('group_id');
 
+        if($request->has('order_id'))
+        {
+            $origin_order_id = $request->input('order_id');
+            $origin_order = Order::find($origin_order_id);
 
+            $primary_address_obj = new WechatAddress;
+            $primary_address_obj->name = $origin_order->customer_name;
+            $primary_address_obj->phone = $origin_order->phone;
+            $primary_address_obj->address = $origin_order->main_address;
+            $primary_address_obj->sub_address = $origin_order->sub_address;
 
-        $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
+        } else {
+            $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
+        }
 
         if(!$primary_address_obj)
             return response()->json(['status'=>'fail', 'message'=>'地址和电话号码不存在']);
@@ -2880,7 +2892,31 @@ class WeChatCtrl extends Controller
         $customer_id = $wechat_user->customer_id;
         $customer = Customer::find($customer_id);
 
-        $primary_addr_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
+        /*
+         * Find wechataddress same with order's info,
+         * if Exist, make it as primary and return
+         * if not, create new wechat address and make primary
+         * */
+        $primary_addr_obj = WechatAddress::where('wxuser_id', $wxuser_id)
+            ->where('address', $order->main_address)
+            ->where('phone', $order->phone)
+            ->where('name', $order->customer_name)
+            ->where('sub_address', $order->sub_address)
+            ->get()->first();
+
+        if(!$request->has('from') and !$primary_addr_obj)
+        {
+                //use origin order's address and phone, customer_name
+                $primary_addr_obj = new WechatAddress;
+                $primary_addr_obj->wxuser_id = $wxuser_id;
+                $primary_addr_obj->name = $order->customer_name;
+                $primary_addr_obj->phone = $order->phone;
+                $primary_addr_obj->address = $order->main_address;
+                $primary_addr_obj->sub_address = $order->sub_address;
+                $primary_addr_obj->primary = 1;
+                $primary_addr_obj->save();
+        }
+
 
         //as this is xuedan, that means before, this has passed
         $passed = true;
@@ -2889,7 +2925,7 @@ class WeChatCtrl extends Controller
         if (!$wechat_user)
             abort(403);
         $openid = $wechat_user->openid;
-        $total_amount = round($total_amount, 2);
+        $total_amount = round($total_amount, 3);
 
         //show delivery plan before real order
         $plans = [];
@@ -3050,32 +3086,32 @@ class WeChatCtrl extends Controller
             //set primary address as session address
             session(['address' => $primary_address]);
         }
-        else {
-            //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
-            $wxuser = WechatUser::find($wechat_user_id);
-            if ($wxuser) {
-                $customer_id = $wxuser->customer_id;
-                if ($customer_id) {
-                    $customer = Customer::find($customer_id);
-                    if ($customer) {
-                        //check wechat address
-                        $wx_address_list = WechatAddress::where('wxuser_id', $wechat_user_id)->get();
-                        if (count($wx_address_list) == 0) {
-                            $new_wx_addr = new WechatAddress;
-                            $new_wx_addr->wxuser_id = $wechat_user_id;
-                            $new_wx_addr->name = $customer->name;
-                            $new_wx_addr->phone = $customer->phone;
-                            $new_wx_addr->address = $customer->main_addr;
-                            $new_wx_addr->sub_address = $customer->sub_addr;
-                            $new_wx_addr->primary = 1;
-                            $new_wx_addr->save();
-                            $primary_addr_obj = $new_wx_addr;
-                        }
-                    }
-                }
-            }
-
-        }
+//        else {
+//            //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
+//            $wxuser = WechatUser::find($wechat_user_id);
+//            if ($wxuser) {
+//                $customer_id = $wxuser->customer_id;
+//                if ($customer_id) {
+//                    $customer = Customer::find($customer_id);
+//                    if ($customer) {
+//                        //check wechat address
+//                        $wx_address_list = WechatAddress::where('wxuser_id', $wechat_user_id)->get();
+//                        if (count($wx_address_list) == 0) {
+//                            $new_wx_addr = new WechatAddress;
+//                            $new_wx_addr->wxuser_id = $wechat_user_id;
+//                            $new_wx_addr->name = $customer->name;
+//                            $new_wx_addr->phone = $customer->phone;
+//                            $new_wx_addr->address = $customer->main_addr;
+//                            $new_wx_addr->sub_address = $customer->sub_addr;
+//                            $new_wx_addr->primary = 1;
+//                            $new_wx_addr->save();
+//                            $primary_addr_obj = $new_wx_addr;
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
 
         if ($this->check_total_count($group_id)) {
             $passed = true;
@@ -3085,7 +3121,7 @@ class WeChatCtrl extends Controller
             $message = "订单数量总合得符合订单类型条件";
         }
 
-        $total_amount = round($total_amount, 2);
+        $total_amount = round($total_amount, 3);
 
         //show delivery plan before real order
         $plans = [];
