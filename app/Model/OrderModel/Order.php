@@ -471,7 +471,7 @@ class Order extends Model
                 $result_group[] = [
                     'time'          =>$opdp->deliver_at,
                     'plan_id'       =>$opdp->id,
-                    'product_name'  =>$opdp->product_name,
+                    'product_name'  =>$opdp->product_simple_name,
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
