@@ -129,7 +129,7 @@
                             @for ($i =0; $i< count($order_products); $i++)
                                 <tr>
                                     <td>{{$i+1}}</td>
-                                    <td>{{$order_products[$i]->product_name}}</td>
+                                    <td>{{$order_products[$i]->product_simple_name}}</td>
                                     <td>{{$order_products[$i]->order_type_name}}</td>
                                     <td>{{$order_products[$i]->total_count}}</td>
                                     <td>{{$order_products[$i]->remain_count}}</td>

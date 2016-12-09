@@ -78,7 +78,7 @@ class DSProductionPlan extends Model
         if($product_name == null)
             return null;
         else
-            return $product_name->name;
+            return $product_name->simple_name;
     }
 
     /**

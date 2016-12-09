@@ -154,7 +154,7 @@ class DSDeliveryPlanCtrl extends Controller
         ]);
     }
 
-    /**show
+    /**
      * 配送管理页面计算一种奶品的参数
      * @param $planProduct
      * @param $planCount
