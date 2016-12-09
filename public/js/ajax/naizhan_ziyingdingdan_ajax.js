@@ -122,6 +122,10 @@ $(document).on('click','#add',function(){
         current_last_row_number = document.querySelector('#delivery_milk tr:last-child td:first-child').textContent;
     }
     var last_row_number = parseInt(current_last_row_number,10)+1;
+    if (isNaN(last_row_number)) {
+        // 默认序号是1
+        last_row_number = 1;
+    }
 
     var total_order_count = 0;
     var error_code = 0;
