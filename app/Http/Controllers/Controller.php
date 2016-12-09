@@ -9,7 +9,6 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Model\UserModel\User;
 use Auth;
-use App\Model\UserModel\User;
 
 class Controller extends BaseController
 {
