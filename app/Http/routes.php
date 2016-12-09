@@ -532,9 +532,6 @@ Route::group(['middleware' => ['naizhan']], function () {
     //Go to Xudan Page
     Route::get('/naizhan/dingdan/luruxudan/{order_id}', 'OrderCtrl@show_xudan_dingdan_in_naizhan');
 
-    //Show stoppped dingdan
-    Route::get('naizhan/dingdan/zanting/{order_id}', 'OrderCtrl@show_stopped_order_in_naizhan');
-
     //show detail order
     Route::get('/naizhan/dingdan/xiangqing/{order_id}', 'OrderCtrl@show_detail_order_in_naizhan');
 
