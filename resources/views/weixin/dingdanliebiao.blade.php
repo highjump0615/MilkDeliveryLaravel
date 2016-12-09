@@ -15,7 +15,7 @@
     </script>
 
     <header>
-        @if(isset($set_type))
+        @if(isset($type))
             <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
         @else
             <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
@@ -49,7 +49,8 @@
                                     $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                                     开始日期: {{$op->start_at}}&emsp;
                                 @endif
-                                金额：{{$op->total_amount}}元</div>
+                                金额：{{$op->total_amount}}元
+                            </div>
                         </div>
                     </a>
                 @empty
@@ -59,7 +60,11 @@
                 <div class="ordshz">
                     @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
                         <span class="shsp">
-                        <a href="{{url('/weixin/api/show_xuedan?order='.$o->id)}}">续单</a>
+                            @if(isset($type))
+                                <a href="{{url('/weixin/api/show_xuedan?order='.$o->id.'&&type='.$type)}}">续单</a>
+                            @else
+                                <a href="{{url('/weixin/api/show_xuedan?order='.$o->id)}}">续单</a>
+                            @endif
                     </span>
                     @endif
 
@@ -73,7 +78,11 @@
                         $o->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
                         $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                         <span class="shsp">
-                        <a href="{{url('/weixin/dingdanxiugai?order='.$o->id)}}">修改</a>
+                            @if(isset($type) && ($type !="none"))
+                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&type='.$type)}}">修改</a>
+                            @else
+                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id)}}">修改</a>
+                            @endif
                     </span>
                     @endif
                     @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
@@ -105,12 +114,14 @@
                                 <label style="margin-bottom: 30px;">选择暂停的日期</label>
                                 <div class="input-group col-md-12">
                                     {{--<input type="text" required class="input-sm form-control"--}}
-                                           {{--name="start" id="stop_start"/>--}}
-                                    <input class="input-sm form-control" id="stop_start" required name="start" type="date" value=""/>
+                                    {{--name="start" id="stop_start"/>--}}
+                                    <input class="input-sm form-control" id="stop_start" required name="start"
+                                           type="date" value=""/>
                                     <span class="input-group-addon">至</span>
                                     {{--<input type="text" id="stop_end" required class="input-sm form-control"--}}
-                                           {{--name="end"/>--}}
-                                    <input class="input-sm form-control" id="stop_end" required name="end" type="date" value=""/>
+                                    {{--name="end"/>--}}
+                                    <input class="input-sm form-control" id="stop_end" required name="end" type="date"
+                                           value=""/>
                                 </div>
                                 <input type="hidden" id="stop_order_id" name="order_id" value=""/>
                             </div>
@@ -133,8 +144,8 @@
                                 <label class="align-center  btn-block" style="margin-top: 30px;">选择开启的日期</label>
                                 <div class="input-group">
                                     {{--<input required type="text" class="form-control" id="start_at"--}}
-                                           {{--name="start_at"><span--}}
-                                            {{--class="input-group-addon"><i class="fa fa-calendar"></i></span>--}}
+                                    {{--name="start_at"><span--}}
+                                    {{--class="input-group-addon"><i class="fa fa-calendar"></i></span>--}}
                                     <input required type="date" class="form-control" id="start_at"
                                            name="start_at"><span
                                             class="input-group-addon"><i class="fa fa-calendar"></i></span>
@@ -172,8 +183,8 @@
             }
         }
 
-        Date.prototype.toISOString = function(){
-            return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+        Date.prototype.toISOString = function () {
+            return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate());
         };
 
 
@@ -197,10 +208,10 @@
             $('#cancel_stop').removeAttr('data-order-id');
         }
 
-        function pad(number){
-            var r= String(number);
-            if(r.length === 1){
-                r= '0'+r;
+        function pad(number) {
+            var r = String(number);
+            if (r.length === 1) {
+                r = '0' + r;
             }
             return r;
         }
@@ -246,8 +257,8 @@
 //                    minDate: stop_start_able_date,
 //                });
 
-                Date.prototype.toISOString = function(){
-                    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+                Date.prototype.toISOString = function () {
+                    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate());
                 };
 
                 var min_stop_start = stop_start_able_date.toISOString();
@@ -326,8 +337,8 @@
         });
 
         /*
-        * Restart Order
-        */
+         * Restart Order
+         */
 
         function init_restart_order_modal() {
             $('#restart_order_id').val('');

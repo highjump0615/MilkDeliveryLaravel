@@ -644,16 +644,34 @@ class WeChatCtrl extends Controller
             $iwop->delete();
         }
 
-        return view('weixin.dingdanxiugai', [
-            'order' => $order,
-            'plans' => $delivery_plans,
-            'comment' => $comment,
-            'cartn' => $cartn,
-            'show_products' => $show_products,
-            'after_changed_amount' => $after_changed_amount,
-            'order_remain_amount' => $order_remain_amount,
-            'left_amount' => $left_amount,
-        ]);
+        if($request->has('type'))
+        {
+            $type = $request->input('type');
+
+            return view('weixin.dingdanxiugai', [
+                'order' => $order,
+                'plans' => $delivery_plans,
+                'comment' => $comment,
+                'cartn' => $cartn,
+                'show_products' => $show_products,
+                'after_changed_amount' => $after_changed_amount,
+                'order_remain_amount' => $order_remain_amount,
+                'left_amount' => $left_amount,
+                'type'=>$type,
+            ]);
+
+        } else {
+            return view('weixin.dingdanxiugai', [
+                'order' => $order,
+                'plans' => $delivery_plans,
+                'comment' => $comment,
+                'cartn' => $cartn,
+                'show_products' => $show_products,
+                'after_changed_amount' => $after_changed_amount,
+                'order_remain_amount' => $order_remain_amount,
+                'left_amount' => $left_amount,
+            ]);
+        }
     }
 
 
@@ -747,22 +765,46 @@ class WeChatCtrl extends Controller
             abort(403);
         }
 
-        return view('weixin.naipinxiugai', [
-            'order_id' => $order_id,
-            'current_order_remain_amount' => $current_order_remain_amount,
-            'index' => $index,
-            'products' => $products,
-            'current_product' => $current_product,
-            'current_product_id' => $current_pid,
-            'current_product_amount' => $current_product_amount,
-            'current_product_count' => $current_product_count,
-            'current_product_price' => $current_product_price,
-            'current_product_name' => $current_product_name,
-            'current_product_photo_url' => $current_product_photo_url,
-            'current_delivery_type' => $current_delivery_type,
-            'current_count_per_day' => $current_count_per_day,
-            'current_custom_order_dates' => $current_custom_order_dates,
-        ]);
+        if($request->has('type'))
+        {
+            $type = $request->input('type');
+
+            return view('weixin.naipinxiugai', [
+                'order_id' => $order_id,
+                'current_order_remain_amount' => $current_order_remain_amount,
+                'index' => $index,
+                'products' => $products,
+                'current_product' => $current_product,
+                'current_product_id' => $current_pid,
+                'current_product_amount' => $current_product_amount,
+                'current_product_count' => $current_product_count,
+                'current_product_price' => $current_product_price,
+                'current_product_name' => $current_product_name,
+                'current_product_photo_url' => $current_product_photo_url,
+                'current_delivery_type' => $current_delivery_type,
+                'current_count_per_day' => $current_count_per_day,
+                'current_custom_order_dates' => $current_custom_order_dates,
+                'type'=>$type,
+            ]);
+        } else {
+            return view('weixin.naipinxiugai', [
+                'order_id' => $order_id,
+                'current_order_remain_amount' => $current_order_remain_amount,
+                'index' => $index,
+                'products' => $products,
+                'current_product' => $current_product,
+                'current_product_id' => $current_pid,
+                'current_product_amount' => $current_product_amount,
+                'current_product_count' => $current_product_count,
+                'current_product_price' => $current_product_price,
+                'current_product_name' => $current_product_name,
+                'current_product_photo_url' => $current_product_photo_url,
+                'current_delivery_type' => $current_delivery_type,
+                'current_count_per_day' => $current_count_per_day,
+                'current_custom_order_dates' => $current_custom_order_dates,
+            ]);
+        }
+
     }
 
     //change order product temporally
@@ -1268,7 +1310,7 @@ class WeChatCtrl extends Controller
 //                        ->get();
 //                }
                 return view('weixin.dingdanliebiao', [
-                    'set_type' => true,
+                    'type' => $type,
                     'orders' => $orders,
                     'cartn' => $cartn,
                 ]);
@@ -1285,6 +1327,7 @@ class WeChatCtrl extends Controller
                     })->orderBy('created_at', 'desc')->get();
 
                 return view('weixin.dingdanliebiao', [
+                    'type' => 'none',
                     'orders' => $orders,
                     'cartn' => $cartn,
                 ]);
@@ -1293,6 +1336,7 @@ class WeChatCtrl extends Controller
         }  else {
             $orders= [];
             return view('weixin.dingdanliebiao', [
+                'type' => 'none',
                 'orders' => $orders,
                 'cartn' => 0,
             ]);
@@ -1305,19 +1349,20 @@ class WeChatCtrl extends Controller
         $order = Order::find($order_id);
         $comment = $order->comment;
 
-        if ($order) {
-            $delivery_plans = $order->grouped_delivery_plans;
-        }
-
         $wechat_user_id = session('wechat_user_id');
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
-        return view('weixin.dingdanxiangqing', [
-            'order' => $order,
-            'plans' => $delivery_plans,
-            'comment' => $comment,
-            'cartn' => $cartn,
-        ]);
+        if ($order) {
+            $delivery_plans = $order->grouped_delivery_plans;
+            return view('weixin.dingdanxiangqing', [
+                'order' => $order,
+                'plans' => $delivery_plans,
+                'comment' => $comment,
+                'cartn' => $cartn,
+            ]);
+        } else {
+            abort(403);
+        }
     }
 
 
@@ -1473,15 +1518,34 @@ class WeChatCtrl extends Controller
 
         } else if ($request->has('order_id')) {
 
-            $order_id = $request->input('order_id');
-            //from dingdanxiugai
-            return view('weixin.shangpinliebiao', [
-                'categories' => $categories,
-                'products' => $product_list,
-                'category' => $category_id,
-                'cartn' => $cartn,
-                'order_id' => $order_id,
-            ]);
+            if($request->has('type'))
+            {
+                $type = $request->input('type');
+                $order_id = $request->input('order_id');
+                //from dingdanxiugai
+                return view('weixin.shangpinliebiao', [
+                    'categories' => $categories,
+                    'products' => $product_list,
+                    'category' => $category_id,
+                    'cartn' => $cartn,
+                    'order_id' => $order_id,
+                    'type'=>$type,
+                ]);
+
+
+            } else {
+
+                $order_id = $request->input('order_id');
+                //from dingdanxiugai
+                return view('weixin.shangpinliebiao', [
+                    'categories' => $categories,
+                    'products' => $product_list,
+                    'category' => $category_id,
+                    'cartn' => $cartn,
+                    'order_id' => $order_id,
+                ]);
+            }
+
 
         } else {
 
@@ -1627,9 +1691,22 @@ class WeChatCtrl extends Controller
         $wxuser_id = session('wechat_user_id');
         $addrs = WechatAddress::where('wxuser_id', $wxuser_id)->get();
 
-        return view('weixin.dizhiliebiao', [
-            'address_list' => $addrs,
-        ]);
+        if($request->has('order') and $request->has('type'))
+        {
+
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return view('weixin.dizhiliebiao', [
+                'address_list' => $addrs,
+                'order'=>$order,
+                'type'=>$type,
+            ]);
+        } else {
+            return view('weixin.dizhiliebiao', [
+                'address_list' => $addrs,
+            ]);
+        }
+
     }
 
     public function dizhitianxie(Request $request)
@@ -1673,16 +1750,37 @@ class WeChatCtrl extends Controller
         }
 
         $c_address = str_replace(' ', '/', $c_address);
-        return view('weixin.dizhitianxie', [
-            'wxuser_id' => $wxuser_id,
-            'address_id' => $address_id,
-            'address_list' => $ret,
-            'name' => $c_name,
-            'phone' => $c_phone,
-            'address' => $c_address,
-            'sub_address' => $c_sub_address,
-            'primary' => $c_primary,
-        ]);
+
+        if($request->has('order') and $request->has('type'))
+        {
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return view('weixin.dizhitianxie', [
+                'wxuser_id' => $wxuser_id,
+                'address_id' => $address_id,
+                'address_list' => $ret,
+                'name' => $c_name,
+                'phone' => $c_phone,
+                'address' => $c_address,
+                'sub_address' => $c_sub_address,
+                'primary' => $c_primary,
+                'order'=>$order,
+                'type'=>$type,
+            ]);
+        } else
+        {
+            return view('weixin.dizhitianxie', [
+                'wxuser_id' => $wxuser_id,
+                'address_id' => $address_id,
+                'address_list' => $ret,
+                'name' => $c_name,
+                'phone' => $c_phone,
+                'address' => $c_address,
+                'sub_address' => $c_sub_address,
+                'primary' => $c_primary,
+            ]);
+        }
+
     }
 
     public function addOrUpdateAddress(Request $request)
@@ -1720,8 +1818,16 @@ class WeChatCtrl extends Controller
         }
 
         $addr->save();
+        if($request->has('order') && $request->has('type'))
+        {
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return redirect()->route('dizhiliebiao', ['order'=>$order, 'type'=>$type]);
+        } else
+        {
+            return redirect()->route('dizhiliebiao');
+        }
 
-        return redirect()->route('dizhiliebiao');
     }
 
     public function deleteAddress(Request $request)
@@ -1745,7 +1851,15 @@ class WeChatCtrl extends Controller
             }
         }
 
-        return redirect()->route('dizhiliebiao');
+        if($request->has('order') && $request->has('type'))
+        {
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return redirect()->route('dizhiliebiao', ['order'=>$order, 'type'=>$type]);
+        } else
+        {
+            return redirect()->route('dizhiliebiao');
+        }
     }
 
     public function selectAddress(Request $request)
@@ -1761,8 +1875,16 @@ class WeChatCtrl extends Controller
             $address->primary = true;
             $address->save();
         }
+        
+        if($request->has('order') and $request->has('type'))
+        {
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return redirect()->route('show_xuedan', ['order'=>$order, 'type'=>$type]);
+        } else {
+            return redirect()->route('querendingdan');
+        }
 
-        return redirect()->route('querendingdan');
     }
 
 
@@ -1854,22 +1976,48 @@ class WeChatCtrl extends Controller
 
         if ($request->has('order_id')) {
             $order_id = $request->input('order_id');
-            return view('weixin.tianjiadingdan', [
-                "product" => $product,
-                'file1' => $file1_path,
-                'file2' => $file2_path,
-                'file3' => $file3_path,
-                'file4' => $file4_path,
-                'month_price' => $month_price,
-                'season_price' => $season_price,
-                'half_year_price' => $half_year_price,
-                'gap_day' => $gap_day,
-                'factory_order_types' => $factory_order_types,
-                'reviews' => $reviews,
-                'today' => $today,
-                'previous' => $previous,
-                'order_id' => $order_id,
-            ]);
+
+            if($request->has('type'))
+            {
+                $type = $request->input('type');
+                return view('weixin.tianjiadingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous' => $previous,
+                    'order_id' => $order_id,
+                    'type'=>$type,
+                ]);
+
+            } else
+            {
+                return view('weixin.tianjiadingdan', [
+                    "product" => $product,
+                    'file1' => $file1_path,
+                    'file2' => $file2_path,
+                    'file3' => $file3_path,
+                    'file4' => $file4_path,
+                    'month_price' => $month_price,
+                    'season_price' => $season_price,
+                    'half_year_price' => $half_year_price,
+                    'gap_day' => $gap_day,
+                    'factory_order_types' => $factory_order_types,
+                    'reviews' => $reviews,
+                    'today' => $today,
+                    'previous' => $previous,
+                    'order_id' => $order_id,
+                ]);
+
+            }
 
         } else {
             return view('weixin.tianjiadingdan', [
@@ -2757,18 +2905,42 @@ class WeChatCtrl extends Controller
             }
         }
 
-        return view('weixin.querendingdan', [
-            'primary_addr_obj' => $primary_addr_obj,
-            'customer' => $customer,
-            'wechat_order_products' => $wechat_order_products,
-            'group_id' => $group_id,
-            'wxuser_id' => $wxuser_id,
-            'passed' => $passed,
-            'for'=>'xuedan',
-            'openid'=>$openid,
-            'total_amount'=>$total_amount,
-            'plans' => $plans,
-        ]);
+        if($request->has('type') and $request->has('order'))
+        {
+            $order = $request->input('order');
+            $type = $request->input('type');
+            return view('weixin.querendingdan', [
+                'primary_addr_obj' => $primary_addr_obj,
+                'customer' => $customer,
+                'wechat_order_products' => $wechat_order_products,
+                'group_id' => $group_id,
+                'wxuser_id' => $wxuser_id,
+                'passed' => $passed,
+                'for'=>'xuedan',
+                'openid'=>$openid,
+                'total_amount'=>$total_amount,
+                'plans' => $plans,
+                'order'=>$order,
+                'type'=>$type,
+            ]);
+
+        } else {
+
+            return view('weixin.querendingdan', [
+                'primary_addr_obj' => $primary_addr_obj,
+                'customer' => $customer,
+                'wechat_order_products' => $wechat_order_products,
+                'group_id' => $group_id,
+                'wxuser_id' => $wxuser_id,
+                'passed' => $passed,
+                'for'=>'xuedan',
+                'openid'=>$openid,
+                'total_amount'=>$total_amount,
+                'plans' => $plans,
+            ]);
+        }
+
+
     }
 
     public function get_count_by_order_type($order_type)
