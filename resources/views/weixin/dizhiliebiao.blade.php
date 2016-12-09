@@ -6,7 +6,7 @@
 @section('content')
     <header>
         @if(isset($order) && isset($type))
-            <a class="headl fanh" href="{{url('weixin/api/show_xuedan').'?order='.$order.'&&type='.$type}}"></a>
+            <a class="headl fanh" href="{{url('weixin/api/show_xuedan').'?order='.$order.'&&type='.$type.'&&from=xuedan'}}"></a>
         @else
             <a class="headl fanh" href="{{url('weixin/querendingdan')}}"></a>
     @endif
