@@ -2,20 +2,18 @@
 
 namespace App\Model\WechatModel;
 
+use App\Model\NotificationModel\BaseNotification;
 use Illuminate\Database\Eloquent\Model;
 
-class WechatReview extends Model
+class WechatReview extends BaseNotification
 {
-    const WX_REVIRE_READ_STATUS = 1;
-    const WX_REVIEW_UNREAD_STATUS = 0;
-
-    public $timestamps = false;
     protected $table = 'wxreview';
+
     protected $fillable = [
         'customer_id',
         'content',
         'status',
-        'created_at',
+        'read'
     ];
     //
 }

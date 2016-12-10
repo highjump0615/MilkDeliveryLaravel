@@ -293,7 +293,10 @@ class WeChatCtrl extends Controller
             $remaining_bottle_count = $customer->remaining_bottle_count;
 
             //notification
-            $unread_cnt = WechatReview::where('customer_id', $customer_id)->where('status', WechatReview::WX_REVIEW_UNREAD_STATUS)->get()->count();
+            $unread_cnt = WechatReview::where('customer_id', $customer_id)
+                ->where('status', WechatReview::UNREAD_STATUS)
+                ->get()
+                ->count();
 
         } else {
             $remain_order_amount = 0;
@@ -1694,7 +1697,6 @@ class WeChatCtrl extends Controller
 
         if($request->has('order') and $request->has('type'))
         {
-
             $order = $request->input('order');
             $type = $request->input('type');
             return view('weixin.dizhiliebiao', [
@@ -1702,7 +1704,8 @@ class WeChatCtrl extends Controller
                 'order'=>$order,
                 'type'=>$type,
             ]);
-        } else {
+        }
+        else {
             return view('weixin.dizhiliebiao', [
                 'address_list' => $addrs,
             ]);
