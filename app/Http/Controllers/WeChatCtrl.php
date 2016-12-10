@@ -1354,7 +1354,7 @@ class WeChatCtrl extends Controller
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
         if ($order) {
-            $delivery_plans = $order->grouped_delivery_plans_without_cancelled;
+            $delivery_plans = $order->grouped_delivery_plans;
             return view('weixin.dingdanxiangqing', [
                 'order' => $order,
                 'plans' => $delivery_plans,
