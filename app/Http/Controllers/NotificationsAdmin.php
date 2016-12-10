@@ -18,17 +18,26 @@ use App\Http\Controllers\Controller;
 
 class NotificationsAdmin extends Controller
 {
+    /**
+     * 打开奶厂消息中心
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showGongchangZhongxin(Request $request){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
         $child = 'zhongxin';
         $parent = 'xinxi';
         $current_page = 'zhongxin';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $categories = NotificationCategory::where('type',NotificationCategory::TYPE_FACTORY)->get();
-        $mfnotification = FactoryNotification::where('factory_id',$current_factory_id)->orderby('created_at')->get();
+
+        $categories = FactoryNotification::getCategory();
+        $mfnotification = FactoryNotification::where('factory_id',$current_factory_id)->orderby('created_at', 'desc')->get();
+
         foreach ($mfnotification as $dn){
-            $dn['category_name'] = NotificationCategory::find($dn->category)->category_name;
+            $dn['category_name'] = FactoryNotification::getCategoryName($dn->category);
         }
+
         return view('gongchang.xinxi.zhongxin', [
             'pages' => $pages,
             'child' => $child,
@@ -74,17 +83,27 @@ class NotificationsAdmin extends Controller
         ]);
     }
 
+    /**
+     * 打开奶站消息中心
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanZhongxin(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
+        $current_station_id = $this->getCurrentStationId();
+
         $child = 'zhongxin';
         $parent = 'xiaoxi';
         $current_page = 'zhongxin';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        $categories = NotificationCategory::where('type',NotificationCategory::TYPE_MILK_STATION)->get();
+
+        $categories = DSNotification::getCategory();
         $dsnotification = DSNotification::where('station_id',$current_station_id)->orderby('created_at','desc')->get();
+
         foreach ($dsnotification as $dn){
-            $dn['category_name'] = NotificationCategory::find($dn->category)->category_name;
+            $dn['category_name'] = DSNotification::getCategoryName($dn->category);
         }
+
         return view('naizhan.xiaoxi.zhongxin', [
             'pages' => $pages,
             'child' => $child,
@@ -174,7 +193,7 @@ class NotificationsAdmin extends Controller
     }
 
     /**
-     * 创建新的通知
+     * 创建新的奶站通知
      */
     public function sendToStationNotification($station_id,$category,$title,$content){
         if (!$station_id) {
@@ -187,6 +206,26 @@ class NotificationsAdmin extends Controller
 
         $new_alert = new DSNotification();
         $new_alert->station_id = $station_id;
+        $new_alert->category = $category;
+        $new_alert->title = $title;
+        $new_alert->content = $content;
+        $new_alert->save();
+    }
+
+    /**
+     * 创建新的奶厂通知
+     */
+    public function sendToFactoryNotification($factory_id, $category, $title, $content){
+        if (!$factory_id) {
+            return;
+        }
+
+        if (!$category) {
+            return;
+        }
+
+        $new_alert = new FactoryNotification();
+        $new_alert->factory_id = $factory_id;
         $new_alert->category = $category;
         $new_alert->title = $title;
         $new_alert->content = $content;

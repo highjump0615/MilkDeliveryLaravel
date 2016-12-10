@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\FactoryModel\Factory;
+use App\Model\NotificationModel\FactoryNotification;
 use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
 use App\Model\SystemModel\SysLog;
@@ -272,8 +273,7 @@ class StationManageCtrl extends Controller
     public function insert_station(Request $request)
     {
         if ($request->ajax()) {
-            $fuser = Auth::guard('gongchang')->user();
-            $factory_id = $fuser->factory_id;
+            $factory_id = $this->getCurrentFactoryId(true);
 
             $name = $request->input('st_name');
 
@@ -367,6 +367,10 @@ class StationManageCtrl extends Controller
 
             // 添加系统日志
             $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_ADD);
+
+            // 添加奶厂通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_ACCOUNT, "奶站已添加成功", $name . "奶站已添加成功。");
 
             return response()->json(['status' => 'success', 'sid' => $dsid]);
         }

@@ -6,35 +6,41 @@ use Illuminate\Database\Eloquent\Model;
 use DateTime;
 use DateTimeZone;
 
-class FactoryNotification extends Model
+class FactoryNotification extends BaseNotification
 {
-    const READ_STATUS = 1;
-    const UNREAD_STATUS = 0;
-    
     protected $table = "mfnotifications";
-
-    public $timestamps = false;
 
     protected $fillable = [
         'factory_id',
+        'category',
         'title',
         'content',
         'status',
-        'read',
+        'read'
     ];
 
-    public function sendToFactoryNotification($factory_id,$category,$title,$content){
-        $current_datetime = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_datetime_str = $current_datetime->format('Y-m-d H:i:s');
-        if($factory_id != null && $category != null){
-            $new_alert = new $this;
-            $new_alert->factory_id = $factory_id;
-            $new_alert->category = $category;
-            $new_alert->title = $title;
-            $new_alert->content = $content;
-            $new_alert->created_at = $current_datetime_str;
-            $new_alert->save();
-        }
+    const CATEGORY_PRODUCE              = 200;
+
+    /**
+     * 获取分类列表
+     * @return array
+     */
+    public static function getCategory() {
+        $aryCategory = [
+            [FactoryNotification::FIELD_CID=>FactoryNotification::CATEGORY_PRODUCE,       FactoryNotification::FIELD_CNAME=>"生产管理"]
+        ];
+
+        $aryRes = array_merge(parent::getCategory(), $aryCategory);
+
+        return $aryRes;
     }
-    //
+
+    /**
+     * 获取分类名称
+     * @param $value
+     * @return string
+     */
+    public static function getCategoryName($value) {
+        return parent::findCategoryName(FactoryNotification::getCategory(), $value);
+    }
 }

@@ -35,7 +35,7 @@
 						 <select id="type" data-placeholder="Choose..." class="chosen-select" style="width:305px; height:35px;" tabindex="2">
 							 <option value="">全部</option>
 							 @foreach($categories as $ca)
-								 <option value="{{$ca->category_name}}">{{$ca->category_name}}</option>
+								 <option value="{{$ca['name']}}">{{$ca['name']}}</option>
 							 @endforeach
 						 </select>
 					 </div>
