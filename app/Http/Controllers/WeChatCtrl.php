@@ -11,6 +11,7 @@ use App\Model\DeliveryModel\DeliveryType;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\Factory;
 use App\Model\NotificationModel\DSNotification;
+use App\Model\NotificationModel\FactoryNotification;
 use App\Model\OrderModel\Order;
 use App\Model\OrderModel\OrderCheckers;
 use App\Model\OrderModel\OrderProduct;
@@ -1031,6 +1032,9 @@ class WeChatCtrl extends Controller
         $order->status = Order::ORDER_WAITING_STATUS;
         $order->save();
 
+        $notification = new NotificationsAdmin;
+        $notification->sendToWechatNotification($customer_id, "您的订单修改已提交，请耐心等待，客户将尽快核对您的订单信息");
+
         return response()->json(['status' => 'success']);
     }
 
@@ -1147,8 +1151,11 @@ class WeChatCtrl extends Controller
                 $customer = $order->customer;
                 $customer_name = $customer->name;
 
-                $notification = new NotificationsAdmin();
-                $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了了单日的订单数量。");
+                //notification to factory and wechat
+                $notification = new NotificationsAdmin;
+                $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name."修改了订单, 请管理员尽快审核");
+                $notification->sendToWechatNotification($customer->id, '您的订单修改已提交，请耐心等待，客户将尽快核对您的');
+
 
                 return response()->json(['status' => 'success']);
             }
@@ -1199,6 +1206,7 @@ class WeChatCtrl extends Controller
 
         $messages = [];
 
+        $customer_id = "";
         foreach ($plans_data as $plan_data) {
             $plan_id = $plan_data[0];
             $origin = $plan_data[1];
@@ -1208,6 +1216,9 @@ class WeChatCtrl extends Controller
             $plan = MilkManDeliveryPlan::find($plan_id);
 
             $order_id = $plan->order_id;
+
+            $order = Order::find($order_id);
+            $customer_id = $order->customer_id;
             $diff = $change - $origin;
             $result = $order_ctrl->change_delivery_plan($order_id, $plan_id, $diff);
             if ($result['status'] == "success") {
@@ -1217,6 +1228,11 @@ class WeChatCtrl extends Controller
                 $messages[$count] = $message;
             }
         }
+
+        //notification to factory and wechat
+        $notification = new NotificationsAdmin;
+        $notification->sendToWechatNotification($customer_id, '单日修改成功，配送结果以实际配送为准.');
+
 
         if ($count == $success_count) {
             return response()->json(['status' => 'success']);
@@ -2693,7 +2709,11 @@ class WeChatCtrl extends Controller
         $this->make_order_products_and_delivery_plan($order_id, $group_id, $orderctrl);
 
 
-        //now payment here:
+        //notification to factory and wechat
+        $notification = new NotificationsAdmin;
+        $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name."已经下单, 请管理员尽快审核");
+        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信');
+
 
         //if payment fails, delete order
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
@@ -2770,6 +2790,12 @@ class WeChatCtrl extends Controller
 
         //delete cart and order item
         $this->remove_wechat_order_products_from_wxuser($wopids);
+
+        //notification to factory and wechat
+        $notification = new NotificationsAdmin;
+        $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name."已经下单, 请管理员尽快审核");
+        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信');
+
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);
 
