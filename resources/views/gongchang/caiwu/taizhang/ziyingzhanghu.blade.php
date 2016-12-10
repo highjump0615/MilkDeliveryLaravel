@@ -190,7 +190,6 @@
                         <th data-sort-ignore="true">项目</th>
                         <th data-sort-ignore="true">金额</th>
                         <th data-sort-ignore="true">流水号</th>
-                        <th data-sort-ignore="true">返还金额</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -202,7 +201,6 @@
                                 <td>{{$sbh->type_name}}</td>
                                 <td>{{$sbh->amount}}</td>
                                 <td>{{$sbh->receipt_number}}</td>
-                                <td>{{$sbh->return_amount}}</td>
                             </tr>
                         @endforeach
                     @endif
