@@ -3205,7 +3205,7 @@ class OrderCtrl extends Controller
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product_without_cancelled;
+        $grouped_plans_per_product = $order->grouped_plans_per_product;
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -3237,7 +3237,7 @@ class OrderCtrl extends Controller
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product_without_cancelled;
+        $grouped_plans_per_product = $order->grouped_plans_per_product;
 
         $child = 'dingdan';
         $parent = 'dingdan';
