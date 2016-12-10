@@ -558,7 +558,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $changed_counts = MilkManDeliveryPlan::where('produce_at',$currentDate->format('Y-m-d'))
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('order_product_id',$op->id)
-                    ->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
+                    ->where(function($query){
+                        $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+                        $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+                    })
                     ->get(['changed_plan_count']);
 
                 if ($changed_counts != null){
@@ -911,7 +914,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $delivery_plans = MilkManDeliveryPlan::where('deliver_at', $deliver_date_str)
                     ->where('station_id', $si->id)
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                    ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
+                    ->where(function($query){
+                        $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+                        $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+                    })
                     ->get();
 
                 foreach($delivery_plans as $dp) {
