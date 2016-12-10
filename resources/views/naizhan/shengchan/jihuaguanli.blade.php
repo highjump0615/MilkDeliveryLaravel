@@ -109,11 +109,8 @@
                 </div>
 			</div>
 		</div>
-		
 	</div>
 @endsection
 @section('script')
-    <script type="text/javascript">
-
-    </script>
+	<script src="<?=asset('js/pages/naizhan/jihuaguanli.js') ?>"></script>
 @endsection

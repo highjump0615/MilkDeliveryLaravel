@@ -37,7 +37,7 @@
 												<td class="product_id">今天的配送数据现在不存在！</td>
 											@else
 												@foreach($dsproduction_plans as $dsp)
-													<td class="product_id" value="{{$dsp->product_id}}">{{$dsp->product_simple_name}}</td>
+													<td class="product_id" value="{{$dsp->product_id}}">{{$dsp->product_name}}</td>
 												@endforeach
 											@endif
 										</tr>
