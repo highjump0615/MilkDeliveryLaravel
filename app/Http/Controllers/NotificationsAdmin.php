@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\FactoryModel\Factory;
+use App\Model\NotificationModel\BaseNotification;
 use App\Model\NotificationModel\DSNotification;
 use App\Model\NotificationModel\FactoryNotification;
 use App\Model\NotificationModel\NotificationCategory;
@@ -118,9 +119,9 @@ class NotificationsAdmin extends Controller
     public function getUnreadCountFactory() {
         $current_factory_id = $this->getCurrentFactoryId(true);
 
-        $unreadCount = count(DSNotification::where('read',0)
+        $unreadCount = FactoryNotification::where('read', BaseNotification::UNREAD_STATUS)
             ->where('factory_id', $current_factory_id)
-            ->get());
+            ->count();
 
         return $unreadCount;
     }
@@ -132,9 +133,9 @@ class NotificationsAdmin extends Controller
     public function getUnreadCountStation() {
         $current_station_id = $this->getCurrentStationId();
 
-        $unreadCount = count(DSNotification::where('read',0)
+        $unreadCount = DSNotification::where('read', BaseNotification::UNREAD_STATUS)
             ->where('station_id', $current_station_id)
-            ->get());
+            ->count();
 
         return $unreadCount;
     }
@@ -142,8 +143,7 @@ class NotificationsAdmin extends Controller
     public function changetoActive(Request $request){
         $id = $request->input('id');
         $notification = DSNotification::find($id);
-        $notification->read = DSNotification::READ_STATUS;
-        $notification->save();
+        $notification->setRead(true);
 
         return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountStation()]);
     }
@@ -151,8 +151,7 @@ class NotificationsAdmin extends Controller
     public function changetoInactive(Request $request){
         $id = $request->input('id');
         $notification = DSNotification::find($id);
-        $notification->read = DSNotification::UNREAD_STATUS;
-        $notification->save();
+        $notification->setRead(false);
 
         return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountStation()]);
     }

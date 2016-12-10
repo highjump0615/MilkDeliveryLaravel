@@ -19,7 +19,6 @@ class FactoryNotification extends Model
         'factory_id',
         'title',
         'content',
-        'created_at',
         'status',
         'read',
     ];
