@@ -239,8 +239,8 @@ class NotificationsAdmin extends Controller
             return;
         }
 
-        $new_alert = new WechatReview();
-        $new_alert->$customer_id = $$customer_id;
+        $new_alert = new WechatReview;
+        $new_alert->customer_id = $customer_id;
         $new_alert->content = $content;
         $new_alert->save();
     }

@@ -3866,6 +3866,36 @@ class OrderCtrl extends Controller
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
 
+            //
+            // 添加微信通知
+            //
+            $notification = new NotificationsAdmin;
+
+            if ($order->payment_type == PaymentType::PAYMENT_TYPE_WECHAT) {
+                // 新提交
+                if ($order->status == Order::ORDER_NEW_WAITING_STATUS) {
+                    $notification->sendToWechatNotification($order->customer->id, "您的订单后台已审核通过，订单已生效。");
+                }
+                // 订单修改
+                else {
+                    $notification->sendToWechatNotification($order->customer->id, "您的订单修改内容后台核对后已生效。我们会尽力安排您的订单，请耐心等待！");
+                }
+            }
+
+            $customer_name = $order->customer->name;
+
+            // 添加奶站通知
+            $notification->sendToStationNotification($order->station_id,
+                DSNotification::CATEGORY_ACCOUNT,
+                "订单审核已经通过",
+                $customer_name . "用户订单审核已经通过。");
+
+            //set passed status for deliveryplans
+            $udps = $order->unfinished_delivery_plans;
+            foreach ($udps as $udp) {
+                $udp->passCheck(true);
+            }
+
             // 新订单通过把卡余额加到客户账户余额
             if ($order->status == Order::ORDER_NEW_WAITING_STATUS && $order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
                 $remain_from_card = $order->milkcard->balance - $order->total_amount;
@@ -3880,21 +3910,6 @@ class OrderCtrl extends Controller
                 $order->status = Order::ORDER_ON_DELIVERY_STATUS;
             }
             $order->save();
-
-            $customer_name = $order->customer->name;
-
-            // 发送通知
-            $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($order->station_id,
-                DSNotification::CATEGORY_ACCOUNT,
-                "订单审核已经通过",
-                $customer_name . "用户订单审核已经通过。");
-
-            //set passed status for deliveryplans
-            $udps = $order->unfinished_delivery_plans;
-            foreach ($udps as $udp) {
-                $udp->passCheck(true);
-            }
 
             // 添加系统日志
             $this->addSystemLog(User::USER_BACKEND_FACTORY, '订单', SysLog::SYSLOG_OPERATION_CHECK);
