@@ -109,7 +109,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $planProduct["changed_plan_count"] = 0;
             }
 
-            $is_distributed = $this->calcPlanDataForProduct($planProduct, $cc->changed_plan_count);
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($planProduct, $cc->changed_plan_count));
 
             // 添加到主数组
             $planResult[$index] = $planProduct;
@@ -123,7 +123,32 @@ class DSDeliveryPlanCtrl extends Controller
                 continue;
             }
 
-            $is_distributed = $this->calcPlanDataForProduct($dp, 0);
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp, 0));
+
+            // 添加到主数组
+            $planResult[$dp->product_id] = $dp;
+        }
+
+        // 第三，只要有库存的就添加
+        $prevDeliveryPlans = DSDeliveryPlan::where('station_id', $current_station_id)
+            ->where('remain', '>', 0)
+            ->where('deliver_at', '<', $deliver_date_str)
+            ->orderby('deliver_at', 'desc')
+            ->distinct()
+            ->get(['product_id']);
+
+        foreach($prevDeliveryPlans as $dp){
+            // 这奶品以计算好了，不用再计算
+            if (array_key_exists($dp->product_id, $planResult)) {
+                continue;
+            }
+
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp, 0));
+
+            // 没有库存的，不用计算
+            if ($dp->dp_remain_before <= 0) {
+                continue;
+            }
 
             // 添加到主数组
             $planResult[$dp->product_id] = $dp;
@@ -186,7 +211,8 @@ class DSDeliveryPlanCtrl extends Controller
         // 获取昨日库存量
         $delivery_plans = DSDeliveryPlan::where('product_id',$planProduct->product_id)
             ->where('station_id', $current_station_id)
-            ->where('deliver_at', $currentDate_str)
+            ->where('deliver_at', '<', $deliver_date_str)
+            ->orderby('deliver_at', 'desc')
             ->get()
             ->first();
 
@@ -384,7 +410,7 @@ class DSDeliveryPlanCtrl extends Controller
             $comment = '';
 
             foreach ($by_order_id as $dp) {
-                $name = $dp->order_product->product->name;
+                $name = $dp->order_product->product->simple_name;
                 $count = $dp->delivery_count;
                 $products[] = $name . '*' . $count;
                 if ($dp->plan_count != $dp->changed_plan_count)
@@ -453,7 +479,7 @@ class DSDeliveryPlanCtrl extends Controller
             $comment = '';
 
             foreach($dps_by_order as $dp) {
-                $name = $dp->order_product->product->name;
+                $name = $dp->order_product->product->simple_name;
                 $count = $dp->delivery_count;
                 $products[] = $name.'*'.$count;
                 if($dp->plan_count != $dp->changed_plan_count)
@@ -576,7 +602,7 @@ class DSDeliveryPlanCtrl extends Controller
             $delivery_type = 1;
             $milk_man = '';
             foreach($dps_by_order as $dp) {
-                $name = $dp->order_product->product->name;
+                $name = $dp->order_product->product->simple_name;
                 $count = $dp->delivery_count;
                 $products[] = $name.'*'.$count;
                 if($dp->plan_count != $dp->changed_plan_count)
@@ -875,7 +901,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $box_install_count = 0;     // 奶箱安装数量
 
                 foreach ($by_order_id as $dp) {
-                    $name = $dp->order_product->product->name;
+                    $name = $dp->order_product->product->simple_name;
                     $count = $dp->delivery_count;
                     $products[] = $name . '*' . $count;
 
