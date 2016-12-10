@@ -1785,8 +1785,8 @@ class OrderCtrl extends Controller
             $station_id = Order::find($order_id)->station_id;
             $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
 
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单数量。");
 
             return response()->json(['status' => $result['status'], 'message' => $result['message']]);
         }
@@ -1834,12 +1834,6 @@ class OrderCtrl extends Controller
                 $plan->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_POSTPONE;
                 $plan->save();
             }
-
-//            $station_id = $order->station_id;
-//            $customer_name = Customer::find($order->customer_id)->name;
-//
-//            $notification = new DSNotification();
-//            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的交货计划改变！！");
 
             return response()->json(['status' => 'success']);
         }
@@ -1895,11 +1889,6 @@ class OrderCtrl extends Controller
                 $order->status = Order::ORDER_STOPPED_STATUS;
                 $order->save();
             }
-
-//            //Notification
-//            $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
-//            $notification = new DSNotification();
-//            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单暂停！！");
 
             return $result;
         }
@@ -2562,201 +2551,6 @@ class OrderCtrl extends Controller
                 }
             }
         }
-
-
-    }
-
-
-    //change customer info in order xiugai page
-    public
-    function change_customer(Request $request)
-    {
-        //save changed customer info
-
-/*
-        if ($request->ajax()) {
-
-            
-            $from_station = false;
-            $fuser = Auth::guard('gongchang')->user();
-            if (!$fuser) {
-                $station_id = Auth::guard('naizhan')->user()->station_id;
-                $station = DeliveryStation::find($station_id);
-                $factory_id = $station->factory_id;
-                $from_station = true;
-            } else {
-                $factory_id = $fuser->factory_id;
-            }
-
-            $factory = Factory::find($factory_id);
-
-            $order_id = $request->input('order_id');
-            $customer_id = $request->input('customer_id');
-
-            $province = $request->input('c_province');
-            $city = $request->input('c_city');
-            $district = $request->input('c_district');
-            $street = $request->input('c_street');
-            $xiaoqu = $request->input('c_xiaoqu');
-            $sub_addr = $request->input('c_sub_addr');
-
-            $order = Order::find($order_id);
-            $customer = Customer::find($customer_id);
-            $customer_name = $customer->name;//for notification
-
-            //get origin milkman and station
-            $origin_delivery_station_id = $order->delivery_station_id;
-            $origin_milkman_id = $customer->milkman_id;
-
-            // Find the station and milkman that can delivery this customer's request
-            $addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu . ' ' . $sub_addr;
-            $d_addr = $province . ' ' . $city . ' ' . $district . ' ' . $street . ' ' . $xiaoqu;
-
-            $station_milkman = $this->get_station_milkman_with_address_from_factory($factory_id, $d_addr);
-
-            if ($station_milkman == $this::NOT_EXIST_DELIVERY_AREA) {
-                return response()->json(['status' => 'fail', 'message' => '客户并不住在可以递送区域.']);
-            } else if ($station_milkman == $this::NOT_EXIST_STATION) {
-                return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-            } else if ($station_milkman == $this::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '奶站没有配送员.']);
-            }
-
-            foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-                if ($origin_delivery_station_id == $delivery_station_id) {
-
-                    if ($origin_milkman_id == $milkman_id) {
-
-                        //Only need to save new address to customer and order
-                        $customer->address = $addr;
-                        $customer->save();
-
-                        $order->address = $addr;
-                        $order->save();
-
-                    } else {
-                        //Change delivery plan to new_milkman_id
-                        //here: for the plans to do
-                        $customer->address = $addr;
-                        $customer->save();
-
-                        $order->address = $addr;
-                        $order->save();
-
-                        $udps = $order->unfinished_delivery_plans;
-                        foreach ($udps as $udp) {
-                            $udp->milkman_id = $milkman_id;
-                            $udp->save();
-                        }
-                    }
-
-                    $milkman = MilkMan::find($milkman_id);
-                    $milkman_name = $milkman->name;
-                    $milkman_phone = $milkman->phone;
-
-                    $customer_id = $customer->id;
-                    $get_station = DeliveryStation::find($delivery_station_id);
-                    $station_name = $get_station->name;
-
-                    $notification = new DSNotification();
-                    $notification->sendToStationNotification($delivery_station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单信息！！");
-
-                    return response()->json(['status' => 'success', 'customer_id'=>$customer_id, 'milkman_id'=>$milkman_id,
-                        'milkman_name' => $milkman_name, 'milkman_phone'=>$milkman_phone,
-                        'station_id'=>$delivery_station_id, 'station_name'=>$station_name]);
-
-                } else {
-
-                    //change customer info
-                    $customer->address = $addr;
-                    $customer->station_id = $delivery_station_id;
-                    $customer->milkman_id = $milkman_id;
-                    $customer->save();
-
-                    $customer_id = $customer->id;
-
-                    //change order info
-                    $order->address = $addr;
-                    if($from_station)
-                    {
-                        $order->station_id = $station_id;
-                    } else {
-                        $order->station_id = $delivery_station_id;
-                    }
-                    $order->delivery_station_id = $delivery_station_id;
-                    $order->save();
-
-                    $amount = $this->get_not_finished_amount_order($order);
-                    if ($amount == 0) {
-                        return response()->json(['status' => 'fail']);
-                    }
-
-                    //Make new delivery plan
-                    $order_products = $order->order_products;
-                    foreach ($order_products as $op) {
-
-                        $pid = $op->product_id;
-                        $otype = $op->order_type;
-
-                        $new_price = $this->get_product_price_by_pcd($pid, $otype, $province, $city, $district);
-
-                        if ($new_price) {
-
-                            $op->product_price = $new_price;
-                            $op->save();
-
-                            $amount = $this->establish_new_plan_with_money_amount($op, $factory_id, $delivery_station_id, $milkman_id, $amount);
-                            if ($amount < $new_price) {
-                                $customer->remain_amount += $amount;
-                                $customer->save();
-                                $order->total_amount -= $amount;
-                                $order->save();
-                                break;
-                            }
-                        } else {
-                            return response()->json(['status' => 'fail']);
-                        }
-
-                    }
-                    //As the order has changed, this should be daishenhe
-                    $order->status = Order::ORDER_WAITING_STATUS;
-                    $order->save();
-
-                    $milkman = MilkMan::find($milkman_id);
-                    $milkman_name = $milkman->name;
-                    $milkman_phone = $milkman->phone;
-
-
-                    //set flag on first order delivery plan
-                    $plans = $order->first_delivery_plans;
-                    if($plans)
-                    {
-                        foreach($plans as $plan)
-                        {
-                            $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE;
-                            $plan->save();
-                        }
-                    }
-
-                    $get_station = DeliveryStation::find($delivery_station_id);
-                    $station_name= $get_station->name;
-                    $notification = new DSNotification();
-                    $notification->sendToStationNotification($delivery_station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单信息！！");
-
-                    return response()->json([
-                        'status' => 'success',
-                        'customer_id'=>$customer_id,
-                        'milkman_id'=>$milkman_id,
-                        'milkman_name' => $milkman_name,
-                        'milkman_phone'=>$milkman_phone,
-                        'station_id'=>$delivery_station_id,
-                        'station_name'=>$station_name
-                    ]);
-                }
-
-            }
-        }
-*/
     }
 
     //Check the date in this week
@@ -4087,8 +3881,8 @@ class OrderCtrl extends Controller
             $customer_name = $order->customer->name;
 
             // 发送通知
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过", $customer_name . "用户订单审核已经通过！！");
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过", $customer_name . "用户订单审核已经通过。");
 
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
@@ -4136,9 +3930,9 @@ class OrderCtrl extends Controller
 
             $customer_name = $order->customer->name;
 
-            // 发送通知
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过", $customer_name . "用户订单审核未通过！！");
+            // 添加奶站通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过", $customer_name . "用户订单审核未通过。");
 
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;

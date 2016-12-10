@@ -353,8 +353,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $delivery_transation->save();
             $business_balance = $delivery_transation->business_credit_balance;
         }
-        $notification = new DSNotification();
-        $notification->sendToStationNotification($current_station_id,7,"您本次提交的订单计划","您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元！！");
+
+        // 添加通知
+        $notification = new NotificationsAdmin();
+        $notification->sendToStationNotification($current_station_id,7,"您本次提交的订单计划","您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
@@ -703,11 +705,14 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                     $rf->save();
                 }
             }
+
             $ds->business_credit_balance = $ds->business_credit_balance + $refund_amount;
             $ds->save();
             $milk_type = Product::find($product_id)->name;
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($ds->id,7,"生产计划接受",$milk_type."生产取消！！");
+
+            // 添加奶站通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($ds->id, 7, "生产计划接受", $milk_type . " 生产取消。");
         }
         $order_product = OrderProduct::where('product_id',$product_id)->get(['id']);
         foreach($order_product as $op){
@@ -962,8 +967,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $dsplans->save();
         }
 
-        $notification = new DSNotification();
-        $notification->sendToStationNotification($current_station_id,7,"奶厂已发货",$product_name.":".$actual_count.""."奶厂已发货！");
+        $notification = new NotificationsAdmin();
+        $notification->sendToStationNotification($current_station_id,7,"奶厂已发货",$product_name.":".$actual_count." "."奶厂已发货！");
 
         return Response::json($dsplans);
     }
