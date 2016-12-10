@@ -9,6 +9,7 @@ use App\Model\NotificationModel\DSNotification;
 use App\Model\NotificationModel\FactoryNotification;
 use App\Model\NotificationModel\NotificationCategory;
 use App\Model\UserModel\Page;
+use App\Model\WechatModel\WechatReview;
 use Auth;
 use DateTime;
 use Illuminate\Http\Request;
@@ -193,7 +194,7 @@ class NotificationsAdmin extends Controller
     /**
      * 创建新的奶站通知
      */
-    public function sendToStationNotification($station_id,$category,$title,$content){
+    public function sendToStationNotification($station_id,$category,$title,$content) {
         if (!$station_id) {
             return;
         }
@@ -213,7 +214,7 @@ class NotificationsAdmin extends Controller
     /**
      * 创建新的奶厂通知
      */
-    public function sendToFactoryNotification($factory_id, $category, $title, $content){
+    public function sendToFactoryNotification($factory_id, $category, $title, $content) {
         if (!$factory_id) {
             return;
         }
@@ -226,6 +227,20 @@ class NotificationsAdmin extends Controller
         $new_alert->factory_id = $factory_id;
         $new_alert->category = $category;
         $new_alert->title = $title;
+        $new_alert->content = $content;
+        $new_alert->save();
+    }
+
+    /**
+     * 创建新的微信通知通知
+     */
+    public function sendToWechatNotification($customer_id, $content) {
+        if (!$customer_id) {
+            return;
+        }
+
+        $new_alert = new WechatReview();
+        $new_alert->$customer_id = $$customer_id;
         $new_alert->content = $content;
         $new_alert->save();
     }
