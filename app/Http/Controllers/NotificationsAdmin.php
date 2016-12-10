@@ -51,8 +51,7 @@ class NotificationsAdmin extends Controller
     public function changetoActiveGongchang(Request $request){
         $id = $request->input('id');
         $notification = FactoryNotification::find($id);
-        $notification->read = FactoryNotification::READ_STATUS;
-        $notification->save();
+        $notification->setRead(true);
 
         return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountFactory()]);
     }
@@ -60,8 +59,7 @@ class NotificationsAdmin extends Controller
     public function changetoInactiveGongchang(Request $request){
         $id = $request->input('id');
         $notification = FactoryNotification::find($id);
-        $notification->read = FactoryNotification::UNREAD_STATUS;
-        $notification->save();
+        $notification->setRead(false);
 
         return Response::json(['id'=>$id,'unread'=>$this->getUnreadCountFactory()]);
     }

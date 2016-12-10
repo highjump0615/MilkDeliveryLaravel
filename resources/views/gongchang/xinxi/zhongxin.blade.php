@@ -78,7 +78,7 @@
 						 </thead>
 						 <tbody>
 						 @foreach($mfnotification as $dn)
-							 <tr id="{{$dn->id}}" @if($dn->read == 0)style="background-color: #E6E1DC" @endif>
+							 <tr id="{{$dn->id}}" @if($dn->read == 0)style="font-weight: bold" @endif>
 								 <td><input type="checkbox" class="i-checks" value="{{$dn->id}}" name="change_status"></td>
 								 <td><a href={{ url('/gongchang/xinxi/xiangxi/'.$dn->id)}}>{{$dn->title}}</a></td>
 								 <td class="current_date">{{$dn->created_at}}</td>
