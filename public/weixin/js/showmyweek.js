@@ -88,7 +88,7 @@ function showmyweek(id)
 }
 
 
-function showmyweek(id, change_func)
+function showmyweek2(id, change_func)
 {
     this.id = id;
     this.obj = $("#"+id);

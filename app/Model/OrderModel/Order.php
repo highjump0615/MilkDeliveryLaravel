@@ -392,7 +392,7 @@ class Order extends Model
     public function getGroupedDeliveryPlansAttribute()
     {
         //order_id, station_id
-        $dps = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at')->get();
+        $dps = MilkManDeliveryPlan::where('order_id', $this->id)->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)->orderBy('deliver_at')->get();
         return $dps;
     }
 
@@ -486,6 +486,7 @@ class Order extends Model
         return $new_array;
 //        return $result_group;
     }
+
 
     public function getProvinceIdAttribute()
     {

@@ -8,7 +8,7 @@
 @section('content')
 
     <header>
-        @if(isset($type) && isset($order))
+        @if(isset($type) && isset($order) && $type!="none")
             <a class="headl fanh" href="{{ url('weixin/dingdanliebiao').'?type='.$type }}"></a>
         @else
             <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
@@ -27,7 +27,7 @@
                 </div>
             @else
                 <div class="adrtop pa2t">
-                    <p>请插入您的信息</p>
+                    <p style="color:red;"><i class="fa fa-warning"></i>请插入您的信息</p>
                 </div>
             @endif
         </div>
@@ -201,6 +201,7 @@
                     @endforeach
                 ]
             });
+
         });
 
         //make order based on cart
@@ -213,10 +214,18 @@
 
             var total_amount = $('#total_amount').val();
 
+            @if(isset($order))
+                var origin_order_id = "{{$order}}";
+            @endif
+
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
-                data: {'comment': comment, 'group_id': group_id},
+                @if(isset($order))
+                    data: {'comment': comment, 'group_id': group_id, 'order_id': origin_order_id},
+                @else
+                    data: {'comment': comment, 'group_id': group_id},
+                @endif
                 success: function (data) {
                     console.log(data);
                     if (data.status == 'success') {

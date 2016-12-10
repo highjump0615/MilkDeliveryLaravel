@@ -264,7 +264,7 @@ button.tjord3{ width:55%; background:#00a040}
 .adrul{}
 .adrul li{ padding:2% 3%;  border-bottom:1px dashed #c4c4c4}
 .adrul li label{ font-size:1.3rem; vertical-align:middle}
-.adrul li input{ width:78%;font-size:1.2rem; color:#acacac; border:none}
+.adrul li input{ width:78%;font-size:1.4rem; color:#000000; border:none}
 a.adrxz{ float:right; padding-right:16px; color:#acacac; background:url(../images/adrxz.png) no-repeat center right; background-size:10px}
 .adrul li .tg-list-item{ float:right; margin-top:-2px}
 .ordqr{ margin:8% auto; display:block; width:50%; font-size:1.6rem; line-height:1.8; text-align:center; color:#fff; background:#00a040; -moz-border-radius:2px; border-radius:2px}
@@ -401,3 +401,6 @@ button[disabled], a[disabled], input[disabled] {background-color: #988f89; curso
 a[disabled]{pointer-events: none;}
 button{border-style:none;}
 .sel_adr_form{cursor: pointer;}
+
+/*Calendar*/
+.fc-past{ background-color:rgb(243, 243, 243);}
