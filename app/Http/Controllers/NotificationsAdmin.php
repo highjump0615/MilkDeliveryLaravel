@@ -166,11 +166,32 @@ class NotificationsAdmin extends Controller
             $deliveryStations  = DeliveryStation::where('factory_id',$fa->id)->where('is_deleted',0)->where('status',1)->get();
             foreach ($deliveryStations as $ds){
                 if(count(DSProductionPlan::where('station_id',$ds->id)->where('produce_start_at',$producre_start_date)->get()) == 0){
+                    // 添加奶站通知
                     $notification = new DSNotification();
-                    $notification->sendToStationNotification($ds->id,7,"发送生产计划","你没有发送产品计划。 请尽快发送今天的计划");
+                    $notification->sendToStationNotification($ds->id,7,"提交生产计划","您今天还没有提交生产计划！");
                 }
             }
         }
     }
-    //
+
+    /**
+     * 创建新的通知
+     */
+    public function sendToStationNotification($station_id,$category,$title,$content){
+        if (!$station_id) {
+            return;
+        }
+
+        if (!$category) {
+            return;
+        }
+
+        $new_alert = new DSNotification();
+        $new_alert->station_id = $station_id;
+        $new_alert->category = $category;
+        $new_alert->title = $title;
+        $new_alert->content = $content;
+        $new_alert->save();
+    }
+
 }

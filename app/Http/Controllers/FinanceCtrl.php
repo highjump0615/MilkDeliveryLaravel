@@ -120,8 +120,9 @@ class FinanceCtrl extends Controller
             } else
                 return response()->json(['status' => 'fail', 'message' => "奶站未发现"]);
 
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id,7,"奶厂已给您的结算账户","奶厂已给您的结算账户，转入".$amount."元，本期余额15元。请您查收核对");
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($station_id,7,"奶厂已给您的结算账户","奶厂已给您的结算账户，转入".$amount."元。请您查收核对");
+
             return response()->json(['status' => 'success', 'station_id' => $station_id, 'amount' => $amount]);
         }
     }
@@ -444,8 +445,9 @@ class FinanceCtrl extends Controller
             $dsbcbh->comment = $comment;
             $dsbcbh->save();
 
-            $notification = new DSNotification();
-            $notification->sendToStationNotification($station_id,7,"奶厂已打入","奶厂已打入您的自由账户".$amount."元。");
+            // 添加奶站通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($station_id,7,"奶厂已打入您的自由账户","奶厂已打入您的自由账户".$amount."元。");
 
             return response()->json(['status' => 'success']);
         }

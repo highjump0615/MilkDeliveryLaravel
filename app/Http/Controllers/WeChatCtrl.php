@@ -1143,8 +1143,8 @@ class WeChatCtrl extends Controller
                 $customer = $order->customer;
                 $customer_name = $customer->name;
 
-                $notification = new DSNotification();
-                $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单奶品！！");
+                $notification = new NotificationsAdmin();
+                $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了了单日的订单数量。");
 
                 return response()->json(['status' => 'success']);
             }

@@ -1276,6 +1276,10 @@ class DSDeliveryPlanCtrl extends Controller
             // 从自营账号扣款
             $delivery_transation = DeliveryStation::find($nStationId);
             $delivery_transation->addSelfOrderAccount($balancehistory->amount);
+
+            // 添加奶站通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($nStationId,7,"回报金钱","您本次订单计划多余扣除货款" . $dCostReturnTotal . "元已退回您的自营账户。");
         }
 
         return Response::json(['status'=>"success"]);

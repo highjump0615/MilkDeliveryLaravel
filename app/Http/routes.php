@@ -203,7 +203,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/dingdan/dingdanxiugai/{order_id}', 'OrderCtrl@show_order_revise_in_gongchang');
     Route::post('api/gongchang/dingdan/dingdanxiugai/stop_order_for_some_period', 'OrderCtrl@stop_order_for_some_period');
 
-    Route::post('api/gongchang/dingdan/dingdanxiugai/change_customer', 'OrderCtrl@change_customer');
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
 
@@ -548,7 +547,6 @@ Route::group(['middleware' => ['naizhan']], function () {
 
     //Show Xiugai Page
     Route::get('naizhan/dingdan/xiugai/{order_id}', 'OrderCtrl@show_order_revise_in_naizhan');
-    Route::post('api/naizhan/dingdan/dingdanxiugai/change_customer', 'OrderCtrl@change_customer');
     Route::post('api/naizhan/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
     /*FINANCE MANAGEMENT CTRL*/
