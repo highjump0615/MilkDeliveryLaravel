@@ -13,7 +13,7 @@
 					<a href="{{ url('/naizhan/caiwu/taizhang') }}">奶站台帐</a>
 				</li>
 				<li>
-					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanzhuanzhangjiru') }}">奶卡订单转账记录</a>
+					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangjiru') }}">奶卡订单转账记录</a>
 				</li>
 				<li class="active">
 					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangjiru') }}"><strong>奶卡转账记录</strong></a>
@@ -65,7 +65,7 @@
 								 $j = 0;
 								 ?>
 								 @foreach($transactions as $trs)
-									 <tr data-trstime="{{date('Y-m-d',strtotime($trs_pay->time))}}">
+									 <tr data-trstime="{{date('Y-m-d',strtotime($trs_pay->paid_at))}}">
 										 @if($j==0)
 											 <td rowspan="{{$trs_count}}">{{date('Y-m-d',strtotime($trs_pay->paid_at))}}</td>
 										 @endif

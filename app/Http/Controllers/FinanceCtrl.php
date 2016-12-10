@@ -413,7 +413,6 @@ class FinanceCtrl extends Controller
     {
         if ($request->ajax()) {
 
-            $time = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
             $station_id = $request->input('station_id');
             $io_type = $request->input('io_type');
             $type = $request->input('type');
@@ -438,7 +437,6 @@ class FinanceCtrl extends Controller
             $station->save();
 
             $dsbcbh = new DSBusinessCreditBalanceHistory;
-            $dsbcbh->time = $time;
             $dsbcbh->amount = $amount;
             $dsbcbh->station_id = $station_id;
             $dsbcbh->type = $type;
@@ -596,7 +594,6 @@ class FinanceCtrl extends Controller
                 $t->order_from = date('Y-m-d', strtotime($order_from));
                 $t->order_to = date('Y-m-d', strtotime($order_to));
                 $t->order_count = $order_count;
-                $t->created_at = getCurDateString();
                 $t->status = DSTransaction::DSTRANSACTION_CREATED;
 
                 $t->save();
@@ -621,16 +618,15 @@ class FinanceCtrl extends Controller
         if(!$start)
             $start= date('Y-m-01');
         if(!$end)
-            $end= (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+            $end= getCurDateString();
 
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
         $stations = DeliveryStation::where('factory_id', $factory_id)->get();
 
         //create transaction for orders during start and end date
         $start_date = $start ? date('Y-m-d', strtotime($start)) : date('Y-m-01');
-        $end_date = $end ? date('Y-m-d', strtotime($end)) : (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $end_date = $end ? date('Y-m-d', strtotime($end)) : getCurDateString();
 
         $this->create_transactions_for_money_order($start_date, $end_date, $factory_id);
 
@@ -645,8 +641,10 @@ class FinanceCtrl extends Controller
             $temps = DSTransaction::where('station_id', $station_id)
                 ->where('status', DSTransaction::DSTRANSACTION_CREATED)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-                ->where('created_at', '>=', $start)
-                ->where('created_at', '<=', $end)->get();
+                ->whereDate('created_at', '>=', $start)
+                ->whereDate('created_at', '<=', $end)
+                ->get();
+
             foreach ($temps as $not_checked_transaction) {
                 array_push($not_checked_transactions, $not_checked_transaction);
             }
@@ -686,12 +684,11 @@ class FinanceCtrl extends Controller
     //G5-2: Show Transaciton list for money order that has not been checked
     public function show_transaction_list_not_checked_for_other_money_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
         //Get TransactionPays during first month to today
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         //show not checked list
         $stations = DeliveryStation::where('factory_id', $factory_id)->get();
@@ -700,16 +697,18 @@ class FinanceCtrl extends Controller
 
         foreach ($stations as $station) {
             $station_id = $station->id;
-            $temps = DSTransaction::where('station_id', $station_id)->whereRaw('station_id != delivery_station_id')
+            $temps = DSTransaction::where('station_id', $station_id)
+                ->whereRaw('station_id != delivery_station_id')
                 ->where('status', DSTransaction::DSTRANSACTION_CREATED)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-                ->where('created_at', '>=', $first_m)
-                ->where('created_at', '<=', $last_m)->get();
+                ->whereDate('created_at', '>=', $first_m)
+                ->whereDate('created_at', '<=', $last_m)
+                ->get();
+
             foreach ($temps as $not_checked_transaction) {
                 array_push($not_checked_transactions, $not_checked_transaction);
             }
         }
-
 
         $res = array();
         $station_name_list = [];
@@ -722,7 +721,6 @@ class FinanceCtrl extends Controller
                 $station_name_list[$station_id] = $station_name;
         }
 
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai')); $today =$today_date->format('Y-m-d');
         $child = 'taizhang';
         $parent = 'caiwu';
         $current_page = 'zhuanzhangzhangchan';
@@ -734,9 +732,9 @@ class FinanceCtrl extends Controller
             'parent' => $parent,
             'current_page' => $current_page,
             'stations' => $stations,
-            'today' => $today,
+            'today' => getCurDateString(),
             'ncts' => $res,
-            'station_name_list' => $station_name_list,
+            'station_name_list' => $station_name_list
         ]);
     }
 
@@ -847,7 +845,6 @@ class FinanceCtrl extends Controller
                 $stmoneytrans->transaction_pay_id = $transaction_pay_id;
                 $stmoneytrans->amount = $real_amount;
                 $stmoneytrans->remaining = $total_amount - $real_amount;
-                $stmoneytrans->time = date('Y-m-d H:i');
                 $stmoneytrans->payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
                 $stmoneytrans->save();
 
@@ -908,12 +905,12 @@ class FinanceCtrl extends Controller
     public function show_money_transaction_record_to_others_in_gongchang()
     {
         //Get TransactionPays during first month to today
-        $first_m = date('Y-m-01 00:00');
-        $last_m = date('Y-m-d 23:59');
+        $first_m = date('Y-m-01');
+        $last_m = date('Y-m-d');
 
-        $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)
-            ->where('time', '>=', $first_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+        $stmoneytransfers = StationsMoneyTransfer::where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->get();
 
         //get transactions
@@ -926,10 +923,9 @@ class FinanceCtrl extends Controller
             $trs_count += count($trs);//get all count of transactions
 
             //make array according to transaction pay id
-            $result[$trspay_id] [0] = $stm;
-            $result[$trspay_id] [1] = $trs;//save transaction list
+            $result[$trspay_id][0] = $stm;
+            $result[$trspay_id][1] = $trs;//save transaction list
         }
-
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1055,8 +1051,8 @@ class FinanceCtrl extends Controller
             $temps = DSTransaction::where('station_id', $station_id)
                 ->where('status', DSTransaction::DSTRANSACTION_CREATED)
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-                ->where('created_at', '>=', $first_m)
-                ->where('created_at', '<=', $last_m)
+                ->whereDate('created_at', '>=', $first_m)
+                ->whereDate('created_at', '<=', $last_m)
                 ->get();
 
             foreach ($temps as $not_checked_transaction) {
@@ -1526,15 +1522,15 @@ class FinanceCtrl extends Controller
         $station_id = $this->getCurrentStationId();
 
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         //show not checked list
         $not_checked_transactions = DSTransaction::where('station_id', $station_id)
             ->whereRaw('station_id != delivery_station_id')
             ->where('status', DSTransaction::DSTRANSACTION_CREATED)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('created_at', '>=', $first_m)
-            ->where('created_at', '<=', $last_m)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->get();
 
         $res = array();
@@ -1561,13 +1557,13 @@ class FinanceCtrl extends Controller
     {
         $station_id = $this->getCurrentStationId();
 
-        $first_m = date('Y-m-01 00:00');
-        $last_m = date('Y-m-d 23:59');
+        $first_m = date('Y-m-01');
+        $last_m = getCurDateString();
 
         //Get Station Money Transfers
-        $stmoneytransfers = StationsMoneyTransfer::where('time', '<=', $last_m)
-            ->where('time', '>=', $first_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+        $stmoneytransfers = StationsMoneyTransfer::where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->where(function($query) use($station_id) {
                 $query->where('station1_id', $station_id);
                 $query->orWhere('station2_id', $station_id);
@@ -1657,20 +1653,17 @@ class FinanceCtrl extends Controller
     //N11: Show transaction list not checked
     public function show_transaction_list_not_checked_for_card_in_naizhan()
     {
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
+        $station_id = $this->getCurrentStationId();
 
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         //show not checked list
         $not_checked_transactions = DSTransaction::where('station_id', $station_id)
             ->where('status', DSTransaction::DSTRANSACTION_CREATED)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('created_at', '>=', $first_m)
-            ->where('created_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->get();
 
         $res = array();
@@ -1683,6 +1676,7 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'zhuanzhangzhangdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         return view('naizhan.caiwu.taizhang.naikakuanzhuanzhang.zhuanzhangzhangdan', [
             'pages' => $pages,
             'child' => $child,
@@ -1695,21 +1689,18 @@ class FinanceCtrl extends Controller
     public function show_card_transaction_record_in_naizhan()
     {
         $station_id = Auth::guard('naizhan')->user()->station_id;
-        $station = DeliveryStation::find($station_id);
-        $factory_id = $station->factory_id;
-        $factory = Factory::find($factory_id);
 
-        $first_m = date('Y-m-01 H:i');
-        $last_m = date('Y-m-d H:i');
+        $first_m = date('Y-m-01');
+        $last_m = getCurDateString();
 
-        $transactions = DSTransaction::where('created_at', '>=', $first_m)->where('created_at', '<=', $last_m)
+        $transactions = DSTransaction::where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->where('status', DSTransaction::DSTRANSACTION_COMPLETED)->where('delivery_station_id', $station_id)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->get();
 
         $result = [];
         foreach ($transactions as $trs) {
-
             $trs_pay_id = $trs->transaction_pay_id;
             $trs_pay = DSTransactionPay::find($trs_pay_id);
             $result[$trs_pay_id][0] = $trs_pay;
@@ -1775,7 +1766,8 @@ class FinanceCtrl extends Controller
                 $query->orWhere('status', '!=', Order::ORDER_WAITING_STATUS);
             })
             ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
-            ->orderBy('ordered_at')->get();
+            ->orderBy('created_at')
+            ->get();
 
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';
@@ -1931,8 +1923,6 @@ class FinanceCtrl extends Controller
             $t->order_from = date('Y-m-d', strtotime($order_from));
             $t->order_to = date('Y-m-d', strtotime($order_to));
             $t->order_count = $order_count;
-//            $t->created_at = date('Y-m-d H:i');
-            $t->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
             $t->status = DSTransaction::DSTRANSACTION_CREATED;
 
             $t->save();
@@ -2004,8 +1994,6 @@ class FinanceCtrl extends Controller
             $t->order_from = date('Y-m-d', strtotime($order_from));
             $t->order_to = date('Y-m-d', strtotime($order_to));
             $t->order_count = $order_count;
-
-            $t->created_at = getCurDateString();
             $t->status = DSTransaction::DSTRANSACTION_CREATED;
 
             $t->save();
@@ -2085,8 +2073,6 @@ class FinanceCtrl extends Controller
         if($factory_id == "null")
             return redirect()->route('show_wechat_orders');
 
-        $zuser = Auth::guard('zongpingtai')->user();
-
         //shwo transactions according to delivery_station_id
 //        $start_date = date('Y-m-01');
 //        $end_date = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
@@ -2097,8 +2083,7 @@ class FinanceCtrl extends Controller
 
         if(!$stations || count($stations) == 0)
         {
-            $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-            $today =$today_date->format('Y-m-d');
+            $today = getCurDateString();
 
             $child = 'zhangwujiesuan';
             $parent = 'caiwu';
@@ -2123,6 +2108,7 @@ class FinanceCtrl extends Controller
                 ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
                 ->where('delivery_station_id', $station_id)
                 ->get();
+
             foreach($transactions as $transaction)
             {
                 if($transaction)
@@ -2144,21 +2130,19 @@ class FinanceCtrl extends Controller
             }
         }
 
-        $today_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));         $today =$today_date->format('Y-m-d');
-
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';
         $current_page = 'zhangdanzhuanzhang';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
 
         return view('zongpingtai.caiwu.zhangwujiesuan.zhangdanzhuanzhang', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'ncts'=>$ncts,
-            'station_name_list'=>$station_name_list,
-            'today'=>$today,
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+            'ncts'              =>$ncts,
+            'station_name_list' =>$station_name_list,
+            'today'             =>getCurDateString(),
         ]);
 
     }
@@ -2255,7 +2239,6 @@ class FinanceCtrl extends Controller
                 $stmoneytrans->transaction_pay_id = $transaction_pay_id;
                 $stmoneytrans->amount = $real_amount;
                 $stmoneytrans->remaining = $total_amount - $real_amount;
-                $stmoneytrans->time = date('Y-m-d H:i');
                 $stmoneytrans->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
                 $stmoneytrans->save();
 
@@ -2358,6 +2341,7 @@ class FinanceCtrl extends Controller
         $parent = 'caiwu';
         $current_page = 'lishizhuanzhangjiru';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
+
         return view('zongpingtai.caiwu.zhangwujiesuan.lishizhuanzhangjiru', [
             'pages' => $pages,
             'child' => $child,

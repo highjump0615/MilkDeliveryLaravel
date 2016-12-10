@@ -8,7 +8,6 @@ use App\Model\DeliveryModel\DeliveryStation;
 class StationsMoneyTransfer extends Model
 {
     protected $table = 'stationsmoneytransfer';
-    public $timestamps = false;
 
     protected $fillable = [
         'id',
@@ -17,7 +16,6 @@ class StationsMoneyTransfer extends Model
         'transaction_pay_id',
         'amount',
         'remaining',
-        'time',
         'payment_type',
     ];
 

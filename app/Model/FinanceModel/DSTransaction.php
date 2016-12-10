@@ -10,7 +10,6 @@ use App\Model\FinanceModel\StationsMoneyTransfer;
 class DSTransaction extends Model
 {
     protected $table = 'dstransactions';
-    public $timestamps = false;
 
     protected $fillable = [
         'id',
@@ -22,7 +21,6 @@ class DSTransaction extends Model
         'order_from',
         'order_to',
         'order_count',
-        'created_at',
         'transaction_pay_id',
         'status',
     ];
@@ -77,7 +75,7 @@ class DSTransaction extends Model
         $money_transfer = StationsMoneyTransfer::where('station1_id', $this->station_id)
             ->where('station2_id', $this->delivery_station_id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->orderBy('time', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get()
             ->first();
 
@@ -92,7 +90,7 @@ class DSTransaction extends Model
         $remain = 0;
         $money_transfer = StationsMoneyTransfer::where('station2_id', $this->delivery_station_id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-            ->orderBy('time', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get()
             ->first();
 

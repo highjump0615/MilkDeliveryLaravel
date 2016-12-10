@@ -70,9 +70,9 @@
                                 $j = 0;
                                 ?>
                                 @foreach($transactions as $trs)
-                                    <tr data-trstime="{{date('Y-m-d',strtotime($stm->time))}}">
+                                    <tr data-trstime="{{$stm->created_at}}">
                                         @if($j==0)
-                                            <td rowspan="{{$trs_count}}">{{date('Y-m-d',strtotime($stm->time))}}</td>
+                                            <td rowspan="{{$trs_count}}">{{$stm->created_at}}</td>
                                             <td rowspan="{{$trs_count}}">{{$stm->station_name}}</td>
                                             <td rowspan="{{$trs_count}}">{{$stm->delivery_station_name}}</td>
                                         @endif

@@ -348,11 +348,11 @@ class DeliveryStation extends Authenticatable
     public function getBusinessInAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
-            ->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
             ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_IN)
             ->get();
 
@@ -366,10 +366,12 @@ class DeliveryStation extends Authenticatable
     public function getBusinessOutAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
-        $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
+        $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
+            ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
             ->get();
 
         $total = 0;
@@ -386,9 +388,9 @@ class DeliveryStation extends Authenticatable
         $last_m = getCurDateString();
 
         $histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
-            ->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)
-            ->orderby('time', 'desc')
+            ->whereDate('created_at', '>=', $first_m)
+            ->whereDate('created_at', '<=', $last_m)
+            ->orderby('created_at', 'desc')
             ->get();
 
         return $histories;

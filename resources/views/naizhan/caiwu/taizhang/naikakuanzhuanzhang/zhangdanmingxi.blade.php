@@ -13,7 +13,7 @@
 					<a href="{{ url('/naizhan/caiwu/taizhang') }}">奶站台帐</a>
 				</li>
 				<li>
-					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanzhuanzhangjiru') }}">奶卡订单转账记录</a>
+					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangjiru') }}">奶卡订单转账记录</a>
 				</li>
 				<li>
 					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhangdanmingxi/'.$trans->id) }}"><strong>奶卡账单明细</strong></a>
@@ -57,7 +57,7 @@
 								<th data-sort-ignore="true">下单时间</th>
 								<th data-sort-ignore="true">客户名</th>
 								<th data-sort-ignore="true">订单金额</th>
-								<th data-sort-ignore="true">订单号</th>
+								<th data-sort-ignore="true">订单编号</th>
 							</tr>
 							</thead>
 							<tbody>

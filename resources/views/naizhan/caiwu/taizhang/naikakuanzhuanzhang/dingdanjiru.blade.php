@@ -91,7 +91,7 @@
                                 @for($i= 0; $i< count($card_orders_not_checked); $i++)
                                     <tr>
                                         <td>{{$i+1}}</td>
-                                        <td class="o_date">{{$card_orders_not_checked[$i]->ordered_at}}</td>
+                                        <td class="o_date">{{$card_orders_not_checked[$i]->created_at}}</td>
                                         <td>{{$card_orders_not_checked[$i]->customer_name}}</td>
                                         <td>{{$card_orders_not_checked[$i]->total_amount}}</td>
                                         <td>{{$card_orders_not_checked[$i]->milk_card_id}}</td>

@@ -13,10 +13,10 @@
                     <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan') }}">账务结算</a>
                 </li>
                 <li>
-                    <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan/zhangwuzhuanzhang') }}">账单转账</a>
+                    <a href="">账单转账</a>
                 </li>
                 <li class="active">
-                    <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan/zhangdanmingxi') }}"><strong>账单明细</strong></a>
+                    <a href=""><strong>账单明细</strong></a>
                 </li>
             </ol>
         </div>
@@ -60,7 +60,7 @@
                                 <th data-sort-ignore="true">时间</th>
                                 <th data-sort-ignore="true">客户名</th>
                                 <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">交易号</th>
+                                <th data-sort-ignore="true">订单编号</th>
                             </tr>
                             </thead>
                             <tbody>

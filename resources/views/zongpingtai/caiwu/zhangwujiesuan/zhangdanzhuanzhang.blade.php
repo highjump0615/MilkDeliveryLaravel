@@ -42,7 +42,7 @@
                     <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan') }}">账务结算</a>
                 </li>
                 <li class="active">
-                    <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan/zhangwuzhuanzhang') }}"><strong>账单转账</strong></a>
+                    <a href=""><strong>账单转账</strong></a>
                 </li>
             </ol>
         </div>

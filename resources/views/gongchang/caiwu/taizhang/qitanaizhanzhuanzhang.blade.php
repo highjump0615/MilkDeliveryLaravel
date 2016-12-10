@@ -147,7 +147,7 @@
                                 @for($i= 0; $i< count($other_orders_nc); $i++)
                                     <tr>
                                         <td>{{$i+1}}</td>
-                                        <td class="o_date">{{$other_orders_nc[$i]->ordered_at}}</td>
+                                        <td class="o_date">{{$other_orders_nc[$i]->created_at}}</td>
                                         <td class="o_station"
                                             data-sid="{{$other_orders_nc[$i]->station_id}}">{{$other_orders_nc[$i]->station_name}}</td>
                                         <td>{{$other_orders_nc[$i]->customer_name}}</td>

@@ -121,7 +121,7 @@
                                 @for($i= 0; $i< count($wechat_orders); $i++)
                                     <tr>
                                         <td>{{$i+1}}</td>
-                                        <td class="o_date">{{$wechat_orders[$i]->ordered_at}}</td>
+                                        <td class="o_date">{{$wechat_orders[$i]->created_at}}</td>
                                         <td>{{$wechat_orders[$i]->customer_name}}</td>
                                         <td>{{$wechat_orders[$i]->total_amount}}</td>
                                         <td>{{$wechat_orders[$i]->number}}</td>

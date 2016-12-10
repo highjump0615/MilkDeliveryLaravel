@@ -78,7 +78,7 @@ function data_export(tablename, usertype, pagename) {
 function printContent(strId, usertype, pagename) {
 
     // 打印
-    var a = $('#' + strId).print();
+    $('#' + strId).print();
 
     // 没有用户类型，退出
     if (usertype <= 0) {
