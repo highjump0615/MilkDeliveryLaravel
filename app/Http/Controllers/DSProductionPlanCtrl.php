@@ -297,6 +297,11 @@ class DSProductionPlanCtrl extends Controller
             $dsproduction_plan->save();
         }
 
+        //
+        // 添加账单历史
+        //
+        $delivery_station = DeliveryStation::find($current_station_id);
+
         $transaction_history_info = DB::select(DB::raw("select sum(retail * settle_product_price) as retail_amount, sum(test_drink * settle_product_price) as test_amount , 
 sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle_product_price) as channel_amount
                 from dsproductionplan where produce_start_at = :produce_start_at and station_id = :station_id"),
@@ -348,15 +353,17 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $sent_amount += $th->channel_amount;
             }
 
-            $delivery_transation = DeliveryStation::find($current_station_id);
-            $delivery_transation->business_credit_balance = $delivery_transation->business_credit_balance - $th->retail_amount - $th->test_amount -$th->group_amount -$th->channel_amount;
-            $delivery_transation->save();
-            $business_balance = $delivery_transation->business_credit_balance;
+            $delivery_station->business_credit_balance = $delivery_station->business_credit_balance - $th->retail_amount - $th->test_amount -$th->group_amount -$th->channel_amount;
+            $delivery_station->save();
+            $business_balance = $delivery_station->business_credit_balance;
         }
 
         // 添加通知
         $notification = new NotificationsAdmin();
         $notification->sendToStationNotification($current_station_id,7,"您本次提交的订单计划","您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
+
+        // 添加奶厂通知
+        $notification->sendToFactoryNotification($delivery_station->factory_id, 1, "奶站已提交了今天的生产计划", $delivery_station->name . "奶站已提交了今天的生产计划。");
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
@@ -494,7 +501,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function showPlanTableinFactory(){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(false);
 
         $child = 'naizhanjihuashenhe';
         $parent = 'shengchan';
@@ -827,7 +834,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $products = Product::where('factory_id',$current_factory_id)
             ->where('is_deleted',0)
-            ->get(['id','name']);
+            ->get(['id','simple_name']);
 
         foreach ($products as $p) {
             $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)

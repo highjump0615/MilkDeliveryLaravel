@@ -14,12 +14,10 @@ class DSNotification extends BaseNotification
 
     protected $fillable = [
         'station_id',
-        'factory_id',
         'category',
         'title',
         'content',
         'status',
-        'read',
+        'read'
     ];
-    //
 }

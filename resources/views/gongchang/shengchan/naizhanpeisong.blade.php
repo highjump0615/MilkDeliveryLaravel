@@ -39,7 +39,7 @@
 								<?php $i++; ?>
 								<tr id="{{$p->id}}">
 									<td>{{$i}}</td>
-									<td>{{$p->name}}</td>
+									<td>{{$p->simple_name}}</td>
 									<td>{{$p->produce_count}}</td>
 									<td class="editfill product_count" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
 									<td></td>
