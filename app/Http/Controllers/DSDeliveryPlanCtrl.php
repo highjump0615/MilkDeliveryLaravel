@@ -1262,7 +1262,7 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         // 没有返还金额，不要添加返还记录
-        if ($dCostReturnTotal == 0) {
+        if ($dCostReturnTotal > 0) {
             // 添加返还记录
             $balancehistory = new DSBusinessCreditBalanceHistory;
             $balancehistory->station_id = $nStationId;
