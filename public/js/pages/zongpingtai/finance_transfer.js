@@ -1,3 +1,6 @@
+/**
+ * Created by Administrator on 16/12/10.
+ */
 
 $(document).ready(function () {
     $('#all_check .iCheck-helper').css('display', 'none');
@@ -78,14 +81,14 @@ $(document).ready(function () {
 
         $.ajax({
             type: 'POST',
-            url: API_URL + 'gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan/complete_trans',
+            url: API_URL + 'zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/complete_trans',
             data: sendData,
             success: function (data) {
-                console.log(data);
                 if (data.status = "success") {
                     show_success_msg(" 转账账单成功");
+
                     $('#insert_modal_form').modal('hide');
-                    window.location.href = SITE_URL + "gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangjilu";
+                    window.location.href = SITE_URL + "zongpingtai/caiwu/zhangwujiesuan/lishizhuanzhangjiru/" + data.factory;
                 }
             },
             error: function (data) {
@@ -96,7 +99,6 @@ $(document).ready(function () {
     });
 
     $('button[data-action="insert_modal"]').click(function () {
-
         var trans_id_list = [];
         //get selected trans id
 
@@ -130,34 +132,35 @@ $(document).ready(function () {
             return;
         }
 
-        console.log(trans_id_list);
-        var sendData = {'tids': trans_id_list};
-
         $('#insert_modal').modal('show');
+
+        var sendData = {'tids': trans_id_list};
+        console.log(sendData);
 
         $.ajax({
             type: "POST",
-            url: API_URL + 'gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan/get_trans_data',
+            url: API_URL + 'zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/get_trans_data',
             data: sendData,
             success: function (data) {
                 console.log(data);
                 if (data.status == "success") {
                     var trs_list = data.trs;
 
-                    var itable = $('#insert_modal_table');
-                    var itbody = $('#insert_modal_table tbody');
-                    $(itbody).empty();
+                    var ptable = $('#insert_modal_table');
+                    var ptbody = $('#insert_modal_table tbody');
+                    $(ptbody).empty();
 
-                    var footable = $(itable).data('footable');
+                    var footable = $(ptable).data('footable');
 
                     for (var i = 0; i < trs_list.length; i++) {
                         var trs = trs_list[i];
-                        var et = parseFloat(trs[3]) + parseFloat(trs[4]);
-                        var trd = '<tr><td>' + (i + 1) + '</td><td>' + trs[0] + '<input type="hidden" name="station_id[]" value="' + trs[7] + '"></td><td>' + trs[1] + '<input type="hidden" name="delivery_station_id[]" value="' + trs[8] + '"></td><td>' + trs[2] + '<input type="hidden" name="trs_ids[]" value="' + trs[6] + '"></td><td>' + trs[3] + '</td>';
-                        trd += '<td>' + trs[4] + '</td><td>' + trs[5] + '<input type="hidden" name="total_amount[]" value="' + trs[5] + '"></td><td><input type="number" required min="0" step="0.01" name="real_input[]" type="text"/></td><td><input required  name="trans_number[]" type="text"/></td><td><input name="comment[]" type="text"/></td>';
+                        var trd = '<tr><td>' + (i + 1) + '</td><td>' + trs[0] + '<input type="hidden" name="delivery_station_id[]" value="' + trs[5] + '">' + '<input type="hidden" name="trs_ids[]" value="' + trs[4] + '"></td><td>' + trs[1] + '</td><td>' + trs[2] + '</td>';
+                        trd += '<td>' + trs[3] + '<input type="hidden" name="total_amount[]" value="'+trs[3]+'"></td>';
+                        trd += '<td><input type="number" required min="0" step="0.01" name="real_input[]" type="text"/></td><td><input required  name="trans_number[]" type="text"/></td><td><input name="comment[]" type="text"/></td>';
                         footable.appendRow(trd);
                     }
                 }
+
             },
             error: function (data) {
                 console.log(data);
@@ -170,7 +173,6 @@ $(document).ready(function () {
     });
 
     $('button[data-action="print_modal"]').click(function () {
-
 
         var trans_id_list = [];
         //get selected trans id
@@ -208,14 +210,14 @@ $(document).ready(function () {
         $('#print_modal').modal('show');
 
         var sendData = {'tids': trans_id_list};
+        console.log(sendData);
 
         $.ajax({
             type: "POST",
-            url: API_URL + 'gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/zhuanzhangzhangchan/get_trans_data',
+            url: API_URL + 'zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/get_trans_data',
             data: sendData,
             success: function (data) {
                 console.log(data);
-
                 if (data.status == "success") {
                     var trs_list = data.trs;
 
@@ -225,11 +227,11 @@ $(document).ready(function () {
 
                     var footable = $(ptable).data('footable');
 
+                    console.log(footable);
                     for (var i = 0; i < trs_list.length; i++) {
                         var trs = trs_list[i];
-                        var et = parseFloat(trs[3]) + parseFloat(trs[4]);
                         var trd = '<tr><td>' + (i + 1) + '</td><td>' + trs[0] + '</td><td>' + trs[1] + '</td><td>' + trs[2] + '</td><td>' + trs[3] + '</td>';
-                        trd += '<td>' + trs[4] + '</td><td>' + trs[5] + '</td><td></td><td></td><td></td>';
+                        trd += '<td></td><td></td><td></td>';
                         footable.appendRow(trd);
                     }
                 }
@@ -409,4 +411,6 @@ $(document).ready(function () {
             printContent('filter_table', 0, '');
         }
     });
+
 });
+
