@@ -316,7 +316,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->retail_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
                 $sent_amount += $th->retail_amount;
             }
@@ -327,7 +326,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->test_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
                 $sent_amount += $th->test_amount;
             }
@@ -338,7 +336,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->group_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
                 $sent_amount += $th->group_amount;
             }
@@ -349,7 +346,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->channel_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
                 $sent_amount += $th->channel_amount;
             }
@@ -380,18 +376,19 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
     public function modifyTijiaojihuaPlan(Request $request) {
         $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $produce_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-        $produce_start_at = $produce_Date->format('Y-m-d');
 
-        $current_Date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $current_Date->format('Y-m-d');
+        $produce_start_at = getNextDateString();
+        $current_date_str = getCurDateString();
 
         $current_dsdelivery_plans = DSProductionPlan::where('produce_start_at',$produce_start_at)->where('station_id',$current_station_id)->get();
         foreach ($current_dsdelivery_plans as $cd){
             $cd->delete();
         }
-        $refund_money = DSBusinessCreditBalanceHistory::where('time',$current_date_str)->where('station_id',$current_station_id)->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)->get();
+        $refund_money = DSBusinessCreditBalanceHistory::whereDate('created_at',$current_date_str)
+            ->where('station_id',$current_station_id)
+            ->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)
+            ->get();
+
         $refund_amount = 0;
         foreach ($refund_money as $rm){
             $refund_amount += $rm->amount;
@@ -460,7 +457,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->retail_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
             }
             if($th->test_amount !=null){
@@ -470,7 +466,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->test_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
             }
             if($th->group_amount !=null){
@@ -480,7 +475,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->group_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
             }
             if($th->channel_amount !=null){
@@ -490,7 +484,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
                 $balancehistory->amount = $th->channel_amount;
                 $balancehistory->return_amount = 0;
-                $balancehistory->time = $current_date_str;
                 $balancehistory->save();
             }
 
@@ -694,7 +687,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             foreach($plan as $p){
                 $p->status = DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL;
                 $p->save();
-                $refunds = DSBusinessCreditBalanceHistory::where('time',$currentDate_str)->where('station_id',$p->station_id)->where('io_type',2)->get();
+
+                $refunds = DSBusinessCreditBalanceHistory::whereDate('created_at',$currentDate_str)
+                    ->where('station_id', $p->station_id)
+                    ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
+                    ->get();
+
                 foreach ($refunds as $rf){
                     if($rf->type == DSBusinessCreditBalanceHistory::DSBCBH_OUT_STATION_RETAIL_BUSINESS){
 //                        $rf->amount = $rf->amount - $p->retail * $p->settle_product_price;
@@ -790,19 +788,24 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     
     public function cancelStationPlan(Request $request){
         $station_id = $request->input('station_id');
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $currentDate->format('Y-m-d');
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-        $produce_date_str = $currentDate->format('Y-m-d');
+
+        $current_date_str = getCurDateString();
+        $produce_date_str = getNextDateString();
+
         if($station_id == null)
             return Response::json(['status'=>"没有奶站！"]);
+
         $dsproductionplans = DSProductionPlan::where('station_id',$station_id)->where('produce_start_at',$produce_date_str)->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN)->get();
         foreach ($dsproductionplans as $dsp){
             $dsp->status = DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL;
             $dsp->save();
         }
 
-        $refund = DSBusinessCreditBalanceHistory::where('time',$current_date_str)->where('station_id',$station_id)->where('io_type',2)->get();
+        $refund = DSBusinessCreditBalanceHistory::whereDate('created_at',$current_date_str)
+            ->where('station_id',$station_id)
+            ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
+            ->get();
+
         $refund_amount = 0;
         foreach ($refund as $rf){
             $refund_amount += $rf->amount;

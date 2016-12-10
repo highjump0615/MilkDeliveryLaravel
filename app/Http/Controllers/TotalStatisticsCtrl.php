@@ -80,8 +80,13 @@ class TotalStatisticsCtrl extends Controller
                 foreach ($dscalcbal as $dc){
                     $fa['order_total'] += $dc->amount;
                 }
-                $businesscalcbal = DSBusinessCreditBalanceHistory::where('station_id',$st->id)->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)->
-                wherebetween('time',[$start_date,$end_date])->get();
+
+                $businesscalcbal = DSBusinessCreditBalanceHistory::where('station_id',$st->id)
+                    ->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)
+                    ->whereDate('created_at', '>=', $start_date)
+                    ->whereDate('created_at', '<=', $end_date)
+                    ->get();
+
                 foreach ($businesscalcbal as $bcb){
                     if($bcb->type == DSBusinessCreditBalanceHistory::DSBCBH_OUT_STATION_RETAIL_BUSINESS){
                         $fa['retail'] += $bcb->amount - $bcb->return_amount;
@@ -237,8 +242,7 @@ class TotalStatisticsCtrl extends Controller
         $province = ProvinceData::all();
         $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
         $date_start = $date_start->format('Y-m-d');
-        $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $date_end = $date_end->format('Y-m-d');
+        $date_end = getCurDateString();
 
         $station_name = $request->input('station_name');
         $station_number = $request->input('station_number');

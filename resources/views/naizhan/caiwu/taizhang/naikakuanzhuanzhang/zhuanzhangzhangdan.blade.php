@@ -13,7 +13,7 @@
 					<a href="{{ url('/naizhan/caiwu/taizhang') }}">奶站台帐</a>
 				</li>
 				<li>
-					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanzhuanzhangjiru') }}">奶卡订单转账记录</a>
+					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangjiru') }}">奶卡订单转账记录</a>
 				</li>
 				<li class="active">
 					<a href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/zhuanzhangzhangdan') }}"><strong>奶卡转账账单</strong></a>

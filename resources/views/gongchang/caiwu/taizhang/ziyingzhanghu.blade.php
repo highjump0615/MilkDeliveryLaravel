@@ -197,7 +197,7 @@
                         @foreach($self_business_history as $sbh)
                             <tr>
                                 <td>{{$sbh->io_name}}</td>
-                                <td class="o_date">{{$sbh->time}}</td>
+                                <td class="o_date">{{$sbh->created_at}}</td>
                                 <td>{{$sbh->type_name}}</td>
                                 <td>{{$sbh->amount}}</td>
                                 <td>{{$sbh->receipt_number}}</td>

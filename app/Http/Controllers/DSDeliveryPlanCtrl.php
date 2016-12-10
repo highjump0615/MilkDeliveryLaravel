@@ -1270,7 +1270,6 @@ class DSDeliveryPlanCtrl extends Controller
             $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
             $balancehistory->amount = $dCostReturnTotal;
             $balancehistory->return_amount = 0;
-            $balancehistory->time = $deliver_date_str;
             $balancehistory->save();
 
             // 从自营账号扣款
