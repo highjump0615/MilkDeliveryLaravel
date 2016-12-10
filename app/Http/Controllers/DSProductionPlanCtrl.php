@@ -6,6 +6,7 @@ use App\Model\DeliveryModel\DSDeliveryPlan;
 use App\Model\FactoryModel\Factory;
 use App\Model\FinanceModel\DSBusinessCreditBalanceHistory;
 use App\Model\NotificationModel\DSNotification;
+use App\Model\NotificationModel\FactoryNotification;
 use App\Model\StationModel\DSBottleRefund;
 use App\Model\StationModel\DSBoxRefund;
 use App\Model\FactoryModel\FactoryBottleType;
@@ -358,12 +359,18 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $business_balance = $delivery_station->business_credit_balance;
         }
 
-        // 添加通知
+        // 添加奶站通知
         $notification = new NotificationsAdmin();
-        $notification->sendToStationNotification($current_station_id,7,"您本次提交的订单计划","您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
+        $notification->sendToStationNotification($current_station_id,
+            DSNotification::CATEGORY_TRANSACTION,
+            "您本次提交的订单计划",
+            "您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
 
         // 添加奶厂通知
-        $notification->sendToFactoryNotification($delivery_station->factory_id, 1, "奶站已提交了今天的生产计划", $delivery_station->name . "奶站已提交了今天的生产计划。");
+        $notification->sendToFactoryNotification($delivery_station->factory_id,
+            FactoryNotification::CATEGORY_PRODUCE,
+            "奶站已提交了今天的生产计划",
+            $delivery_station->name . "奶站已提交了今天的生产计划。");
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
@@ -654,17 +661,16 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         return Response::json(['status'=>'success']);
     }
 
-    
     /*Cancel produce*/
     public function StopforProduce(Request $request){
 
         $plan_status = null;
 
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-        $produce_date = $currentDate->format('Y-m-d');
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
+        $currentDate_str = getCurDateString();
+        $produce_date = getNextDateString();
+
         $product_id = $request->input('product_id');
         $count = $request->input('count');
         $produce_period = $request->input('produce_period');
@@ -679,6 +685,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $produce_end_date = date('Y-m-d',strtotime($date."+".$produce_period."days"));
         }
 
+        $notification = new NotificationsAdmin();
         $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->get();
 
         foreach ($deliverystations as $ds){
@@ -718,9 +725,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $milk_type = Product::find($product_id)->name;
 
             // 添加奶站通知
-            $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($ds->id, 7, "生产计划接受", $milk_type . " 生产取消。");
+            $notification->sendToStationNotification($ds->id,
+                DSNotification::CATEGORY_ACCOUNT,
+                "生产取消",
+                $milk_type . " 生产取消。");
         }
+
         $order_product = OrderProduct::where('product_id',$product_id)->get(['id']);
         foreach($order_product as $op){
             $plan_status = MilkManDeliveryPlan::where('produce_at',$produce_date)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->where('order_product_id',$op->id)->get();
@@ -975,7 +985,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         $notification = new NotificationsAdmin();
-        $notification->sendToStationNotification($current_station_id,7,"奶厂已发货",$product_name.":".$actual_count." "."奶厂已发货！");
+        $notification->sendToStationNotification($current_station_id,
+            DSNotification::CATEGORY_ACCOUNT,
+            "奶厂已发货",
+            $product_name . ":" . $actual_count . " 奶厂已发货！");
 
         return Response::json($dsplans);
     }

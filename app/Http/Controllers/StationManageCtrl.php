@@ -370,7 +370,7 @@ class StationManageCtrl extends Controller
 
             // 添加奶厂通知
             $notification = new NotificationsAdmin();
-            $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_ACCOUNT, "奶站已添加成功", $name . "奶站已添加成功。");
+            $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_PRODUCE, "奶站已添加成功", $name . "奶站已添加成功。");
 
             return response()->json(['status' => 'success', 'sid' => $dsid]);
         }

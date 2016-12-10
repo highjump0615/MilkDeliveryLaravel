@@ -1786,7 +1786,10 @@ class OrderCtrl extends Controller
             $customer_name = Customer::find(Order::find($order_id)->customer_id)->name;
 
             $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($station_id, 7, "修改了单日", $customer_name . "用户修改了单日的订单数量。");
+            $notification->sendToStationNotification($station_id,
+                DSNotification::CATEGORY_CHANGE_ORDER,
+                "修改了单日",
+                $customer_name . "用户修改了单日的订单数量。");
 
             return response()->json(['status' => $result['status'], 'message' => $result['message']]);
         }
@@ -3882,7 +3885,10 @@ class OrderCtrl extends Controller
 
             // 发送通知
             $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核已经通过", $customer_name . "用户订单审核已经通过。");
+            $notification->sendToStationNotification($order->station_id,
+                DSNotification::CATEGORY_ACCOUNT,
+                "订单审核已经通过",
+                $customer_name . "用户订单审核已经通过。");
 
             //set passed status for deliveryplans
             $udps = $order->unfinished_delivery_plans;
@@ -3932,7 +3938,10 @@ class OrderCtrl extends Controller
 
             // 添加奶站通知
             $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($order->station_id, 7, "订单审核未通过", $customer_name . "用户订单审核未通过。");
+            $notification->sendToStationNotification($order->station_id,
+                DSNotification::CATEGORY_ACCOUNT,
+                "订单审核未通过",
+                $customer_name . "用户订单审核未通过。");
 
             // 删除其订单的配送明细
             $udps = $order->unfinished_delivery_plans;

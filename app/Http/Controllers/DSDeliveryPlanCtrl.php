@@ -1279,7 +1279,10 @@ class DSDeliveryPlanCtrl extends Controller
 
             // 添加奶站通知
             $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($nStationId,7,"回报金钱","您本次订单计划多余扣除货款" . $dCostReturnTotal . "元已退回您的自营账户。");
+            $notification->sendToStationNotification($nStationId,
+                DSNotification::CATEGORY_TRANSACTION,
+                "回报金钱",
+                "您本次订单计划多余扣除货款" . $dCostReturnTotal . "元已退回您的自营账户。");
         }
 
         return Response::json(['status'=>"success"]);
