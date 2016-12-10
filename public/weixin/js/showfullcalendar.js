@@ -137,7 +137,7 @@ function showfullcalendar(id)
 
 
 //show only 1~31
-function showfullcalendar(id, change_func)
+function showfullcalendar2(id, change_func)
 {
     this.id = id;
     this.custom_dates = "";
