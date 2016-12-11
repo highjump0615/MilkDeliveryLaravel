@@ -156,7 +156,7 @@
 				@endforeach
 				</div>
 				<div class="col-md-offset-5 col-md-2">
-					<button id="return" class="btn btn-success" style="width: 70%"><i class="fa fa-reply"></i></button>
+					<button id="return" class="btn btn-success">查看今日配送列表</button>
 				</div>
 			</div>
 		</div>
