@@ -102,7 +102,7 @@
                     <div class="col-md-2 col-md-offset-6 pull-right">
                         <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选
                         </button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
+                        <!--<button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>-->
                     </div>
                 </div>
                 @endif
