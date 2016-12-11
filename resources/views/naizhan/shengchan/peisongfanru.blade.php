@@ -177,7 +177,7 @@
 						</div>
 						@else
 						<div style="text-align: center;">
-							<button id="return" class="btn btn-success btn-m-d" style="width: 200px;"><i class="fa fa-reply"></i></button>
+							<button id="return" class="btn btn-success btn-m-d" style="width: 200px;">查看今日配送列表</button>
 						</div>
 						@endif
                     </div>

@@ -23,13 +23,11 @@
 						<div class="col-md-2"></div>
 						<div class="col-lg-8">
 							<div class="col-lg-3">
-								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">添加出库</a>
+								<a href="{{ url('/naizhan/shengchan/ziyingdingdan') }}" class="btn btn-success" type="button" style="width:100%;">自营出库</a>
 							</div>
-							<img id="shop" src="<?=asset('img/piao/arrow.png')?>" class="col-lg-1 img-responsive" width="20px;"/>
 							<div class="col-lg-3">
-								<a href="{{ url('/naizhan/shengchan/jinripeisongdan') }}" class="col-lg-3 btn btn-success" type="button" style="width:100%;">生成今日配送单</a>
+								<a href="{{ url('/naizhan/shengchan/jinripeisongdan') }}" class="col-lg-3 btn btn-success" type="button" style="width:100%;">今日配送单</a>
 							</div>
-							<img id="shop" src="<?=asset('img/piao/arrow.png')?>" class="col-lg-1 img-responsive" width="20px;"/>
 							<div class="col-lg-3">
 								<a href="{{ url('/naizhan/shengchan/peisongfanru') }}" class="col-lg-3 btn btn-success" type="button" style="width:100%;">配送返录</a>
 							</div>
