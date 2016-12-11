@@ -249,8 +249,8 @@ class StationManageCtrl extends Controller
                     $user_info->status = User::USER_STATUS_ACTIVE;
                 else
                     $user_info->status = User::USER_STATUS_INACTIVE;
-                $user_info->save();
 
+                $user_info->save();
             }
 
             if ($station) {
