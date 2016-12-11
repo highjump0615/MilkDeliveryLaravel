@@ -27,7 +27,7 @@ function verifyPhone() {
 // 验证身份证号码形式
 function verifyIdNum() {
     var objInput = $('input[name="idnumber"]');
-    objInput.prop('pattern', '^(\d){15}|(\d{17}(\d|x|X))$');
+    objInput.prop('pattern', '^[1-9]{1}[0-9]{14}$|^[1-9]{1}[0-9]{16}([0-9]|[xX])$');
 
     objInput.on('input', function (e) {
         e.target.setCustomValidity('');
