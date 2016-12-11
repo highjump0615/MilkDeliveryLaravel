@@ -16,7 +16,7 @@
 			<button type="button" onclick="window.location='{{URL::to('/gongchang/dingdan/daishenhedingdan')}}'" class="btn btn-outline btn-success btn-xs col-xs-3">待处理订单</button>
 			<button type="button" onclick="window.location='{{URL::to('/gongchang/xinxi/zhongxin')}}'" class="btn btn-outline btn-success btn-xs col-xs-3">消息中心
 				&nbsp;
-				<span id="notification" class="label label-success">@if(count(\App\Model\NotificationModel\FactoryNotification::where('factory_id',Auth::guard('gongchang')->user()->factory_id)->where('read',0)->get())>0) {{count(\App\Model\NotificationModel\FactoryNotification::where('factory_id',Auth::guard('gongchang')->user()->factory_id)->where('read',0)->get())}} @endif</span>
+				<span id="notification" class="label label-danger">@if(count(\App\Model\NotificationModel\FactoryNotification::where('factory_id',Auth::guard('gongchang')->user()->factory_id)->where('read',0)->get())>0) {{count(\App\Model\NotificationModel\FactoryNotification::where('factory_id',Auth::guard('gongchang')->user()->factory_id)->where('read',0)->get())}} @endif</span>
 			</button>
 			</p>
 		</div>

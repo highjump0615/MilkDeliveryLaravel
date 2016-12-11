@@ -29,7 +29,7 @@ $('#active').click(function () {
             dataType:'json',
             success: function (data) {
                 var role = '<td id="status'+data.id+'">已读</td>';
-                var notification = '<span id="notification" class="label label-success">'+data.unread+'</span>';
+                var notification = '<span id="notification" class="label label-danger">'+data.unread+'</span>';
                 $('#status'+data.id).replaceWith(role);
                 $('#'+data.id).css("font-weight","");
                 $('.i-checks').each(function () {
@@ -76,13 +76,13 @@ $('#inactive').click(function () {
             dataType:'json',
             success: function (data) {
                 var role = '<td id="status'+data.id+'" class="status">未读</td>';
-                var notification = '<span id="notification" class="label label-success">'+data.unread+'</span>'
+                var notification = '<span id="notification" class="label label-danger">'+data.unread+'</span>'
                 $('#status'+data.id).replaceWith(role);
                 $('#'+data.id).css("font-weight","bold");
                 $('.i-checks').each(function () {
                     $(this).prop("checked", false);
                     $(this).closest('.icheckbox_square-green').removeClass('checked');
-                })
+                });
                 $('#notification').replaceWith(notification);
             },
             error:function (data) {
@@ -90,7 +90,7 @@ $('#inactive').click(function () {
             }
         });
     }
-})
+});
 
 //Filter Function
 $('button[data-action="show_selected"]').click(function () {
