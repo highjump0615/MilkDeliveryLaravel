@@ -1,6 +1,7 @@
 @extends('gongchang.layout.master')
 @section('css')
     <link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
+    <link href="<?=asset('css/pages/order_list.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
     @include('gongchang.theme.sidebar')
@@ -195,6 +196,7 @@
                                 <th data-sort-ignore="true">征订员</th>
                                 <th data-sort-ignore="true">奶站</th>
                                 <th data-sort-ignore="true">配送员</th>
+                                <th class="o_receipt" data-sort-ignore="true">票据号</th>
                                 <th data-sort-ignore="true">状态</th>
                                 <th data-sort-ignore="true">备注</th>
                             </tr>
@@ -221,6 +223,7 @@
                                                 {{$orders[$i]->milkman->name}} {{$orders[$i]->milkman->phone}}
                                             @endif
                                         </td>
+                                        <td class="o_receipt">{{$orders[$i]->receipt_number}}</td>
                                         <td class="o_status" data-status="{{$orders[$i]->status}}" data-value="{{$orders[$i]->status_name}}" style="width: 70px;">
                                             {{$orders[$i]->status_name}}</td>
                                         <td>{{$orders[$i]->comment}}</td>

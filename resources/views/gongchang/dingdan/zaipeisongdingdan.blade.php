@@ -1,4 +1,9 @@
 @extends('gongchang.layout.master')
+
+@section('css')
+    <link href="<?=asset('css/pages/order_list.css') ?>" rel="stylesheet">
+@endsection
+
 @section('content')
     @include('gongchang.theme.sidebar')
     <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -131,6 +136,7 @@
                                 <th data-sort-ignore="true">征订员</th>
                                 <th data-sort-ignore="true">奶站</th>
                                 <th data-sort-ignore="true">配送员</th>
+                                <th class="o_receipt" data-sort-ignore="true">票据号</th>
                                 <th data-sort-ignore="true">备注</th>
                             </tr>
                             </thead>
@@ -156,6 +162,7 @@
                                                 {{$orders[$i]->milkman->name}} {{$orders[$i]->milkman->phone}}
                                             @endif
                                         </td>
+                                        <td class="o_receipt">{{$orders[$i]->receipt_number}}</td>
                                         <td>{{$orders[$i]->comment}}</td>
                                     </tr>
                                 @endfor

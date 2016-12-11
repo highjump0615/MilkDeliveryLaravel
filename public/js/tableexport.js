@@ -40,11 +40,6 @@ function data_export(tablename, usertype, pagename) {
         i++;
     });
 
-    // 没有用户类型，退出
-    if (usertype <= 0) {
-        return;
-    }
-
     //
     // 添加系统日志
     //
