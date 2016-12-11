@@ -404,3 +404,4 @@ button{border-style:none;}
 
 /*Calendar*/
 .fc-past{ background-color:rgb(243, 243, 243);}
+#order_remain_amount{display: none;}
