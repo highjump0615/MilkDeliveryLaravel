@@ -16,7 +16,7 @@
 		</div>
 		
 			<div class="row white-bg">	
-<!--Table-->				
+				<!--Table-->
 				<div class="ibox-content">
 					<div class="feed-element">
 						<div class="col-md-3">
@@ -29,12 +29,17 @@
 						</div>
 						<div class="col-md-3">
 							<label>所属:</label>
-							<input type="text" id="filter_station" class="form-control" style="width: 70%; display: inline">
-						</div>				
+							&nbsp;
+							<select data-placeholder="" class="form-control" id="filter_station" style="width: 70%; display: inline">
+								<option value="奶厂">奶厂</option>
+								@foreach($stations as $s)
+									<option value="{{$s->name}}">{{$s->name}}</option>
+								@endforeach
+							</select>
+						</div>
 						<div class="col-md-3"  style="padding-top:5px;">
 							<button type="button" class="btn btn-success btn-md" data-action="show_selected">筛选</button>
-							&nbsp;
-							&nbsp;
+							&nbsp;&nbsp;
 							<button type="button" class="btn btn-success btn-md btn-outline" data-action="print">打印</button>
 						</div>
 					</div>

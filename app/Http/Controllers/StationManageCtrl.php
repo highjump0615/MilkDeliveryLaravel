@@ -718,8 +718,6 @@ class StationManageCtrl extends Controller
 
 
         //Delivery area of this station: street and xiaoqu
-
-
         $area_address = array();
 
         foreach($stations as $s) {
@@ -728,7 +726,6 @@ class StationManageCtrl extends Controller
             if ($delivery_areas->first() != null) {
                 foreach ($delivery_areas as $da) {
                     if ($da->address != null) {
-
                         $xiaoqu = Address::addressObjFromName($da->address, $factory_id);
 
                         if ($xiaoqu) {
