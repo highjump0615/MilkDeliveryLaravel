@@ -3174,7 +3174,6 @@ class WeChatCtrl extends Controller
             }
         }
 
-
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
             'wechat_order_products' => $wechat_order_products,
