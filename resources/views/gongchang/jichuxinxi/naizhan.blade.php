@@ -99,6 +99,7 @@
                                         <span class="station_name text-bold">{{$station->name}}</span><br>{{$station->address}}
                                     </td>
                                     <td class="address" data-province="{{$station->province_name}}" data-city="{{$station->city_name}}" data-district="{{$station->district_name}}">
+                                        @if (isset($area_address[$station->id]))
                                         @foreach($area_address[$station->id] as $street_id=>$street)
                                             {{$street[0]}}:
                                             @foreach($street[1] as $xiaoqu_id => $xiaoqu_name)
@@ -106,6 +107,7 @@
                                             @endforeach
                                             <br>
                                         @endforeach
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
