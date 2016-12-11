@@ -15,7 +15,7 @@
 			</ol>
 		</div>
 		<div class="row">
-<!--Table-->				
+<!--Table-->
 			<div class="ibox-content">
 				<div class="feed-element">
 					<div class="col-md-3">
@@ -160,6 +160,9 @@
 @endsection
 
 @section('script')
+	<script src="<?=asset('js/plugins/table_export/jquery.base64.js') ?>"></script>
+	<script src="<?=asset('js/plugins/table_export/tableExport.js') ?>"></script>
+
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 	<script src="<?=asset('js/pages/gongchang/dingdanleixingtongji.js') ?>"></script>
 @endsection
