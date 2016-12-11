@@ -10,6 +10,9 @@ $(document).ready(function () {
 $('#insert_order_receipt_form').on('submit', function (e) {
     e.preventDefault();
 
+    var submit = $(this).find('button[type="submit"]');
+    $(submit).attr('disabled', 'disabled');
+
     var sendData = $('#insert_order_receipt_form').serializeArray();
     console.log(sendData);
 
