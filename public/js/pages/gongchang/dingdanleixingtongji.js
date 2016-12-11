@@ -58,6 +58,13 @@ $('button[data-action = "print"]').click(function () {
     printContent('order_type_table', gnUserTypeFactory, '订单类型统计');
 });
 
+// $('button[data-action = "export_csv"]').click(function () {
+//     data_export('order_type_table', gnUserTypeFactory, '订单类型统计');
+// });
+
+
 $('button[data-action = "export_csv"]').click(function () {
     data_export('order_type_table', gnUserTypeFactory, '订单类型统计');
+    // table_export_with_name('order_type_table', '订单类型统计');
+    // $('#order_type_table').tableExport({type:'excel',escape:'false'});
 });
