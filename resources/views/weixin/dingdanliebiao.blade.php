@@ -79,9 +79,9 @@
                         $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
                         <span class="shsp">
                             @if(isset($type) && ($type !="none"))
-                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&type='.$type)}}">修改</a>
+                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&type='.$type.'&&start=yes')}}">修改</a>
                             @else
-                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id)}}">修改</a>
+                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&start=yes')}}">修改</a>
                             @endif
                     </span>
                     @endif

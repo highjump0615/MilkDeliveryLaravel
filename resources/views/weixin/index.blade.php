@@ -166,8 +166,12 @@
                         $(city_obj).addClass('active');
                         $(prov_obj).addClass('active');
                         $('#prov_title').text(prov);
-
                         $('.adrtc').delay(2000).fadeOut(200);
+                    } else {
+                        if(data.message)
+                        {
+                            show_err_msg(data.message);
+                        }
                     }
                 },
                 error: function (data) {
