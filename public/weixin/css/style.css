@@ -369,6 +369,12 @@ button.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; li
 .tsjy_ul li span{ float:right}
 .tsjy_ul li div{ float:left; width:70%;}
 
+/*消息中心*/
+.tsjz_ul{}
+.tsjz_ul li{ min-height:32px; line-height:22px; border-bottom: dashed 1px #ccc; line-height:32px; text-indent:10px; padding-right:10px; line-height:2.2; overflow:auto}
+.tsjz_ul li span{ text-align: center; padding:0}
+.tsjz_ul li a{text-align: left; padding:0}
+
 
 /*商品列表*/
 .pr_t{ margin:5px auto; height:30px; border-bottom: solid 1px #Ccc; }

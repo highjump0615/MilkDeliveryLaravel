@@ -203,8 +203,8 @@
     <div class="he50"></div>
 
     <div class="dnsbt clearfix">
-        <button id="cancel" class="dnsb1"><i class="fa fa-reply"></i> 取消</button>
-        <button id="submit_order" class="dnsb2"><i class="fa fa-save"></i> 保存</button>
+        <button id="submit_order" class="dnsb1"><i class="fa fa-save"></i> 保存</button>
+        <button id="cancel" class="dnsb2"><i class="fa fa-reply"></i> 取消</button>
     </div>
 @endsection
 @section('script')

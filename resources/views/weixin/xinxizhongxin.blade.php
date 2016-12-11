@@ -10,12 +10,12 @@
         <a class="topa1" href="{{url('/weixin/gerenzhongxin')}}">&nbsp;</a>
     </div>
 
-    <ul class="tsjy_ul">
+    <ul class="tsjz_ul">
         @if(count($reviews) == 0)
             <p class="no_data"> 没有消息 </p>
         @else
             @foreach($reviews as $rw)
-                <li><span>{{$rw->created_at}}</span><a href="#">{{$rw->content}}</a></li>
+                <li><a class="col-xs-9" href="#">{{$rw->content}}</a><span class="col-xs-3">{{$rw->created_at}}</span></li>
             @endforeach
         @endif
     </ul>

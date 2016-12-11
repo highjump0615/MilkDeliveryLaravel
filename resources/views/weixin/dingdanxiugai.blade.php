@@ -111,7 +111,7 @@
                 events: [
                         @foreach($plans as $p)
                     {
-                        title: "{{$p->product_simple_name}} {{$p->changed_plan_count}}",
+                        title: "{{$p->product_name}} {{$p->changed_plan_count}}",
                         start: '{{$p->deliver_at}}',
                         className: 'ypsrl',
                         textColor: '#00cc00'
