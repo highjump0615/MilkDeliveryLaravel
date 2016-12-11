@@ -384,7 +384,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         foreach ($current_dsdelivery_plans as $cd){
             $cd->delete();
         }
-        $refund_money = DSBusinessCreditBalanceHistory::whereDate('created_at',$current_date_str)
+        $refund_money = DSBusinessCreditBalanceHistory::whereDate('created_at', '=', $current_date_str)
             ->where('station_id',$current_station_id)
             ->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)
             ->get();
@@ -682,17 +682,21 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         $notification = new NotificationsAdmin();
-        $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->get();
+        $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->get(['id', 'business_credit_balance']);
 
         foreach ($deliverystations as $ds){
-            $plan = DSProductionPlan::where('station_id',$ds->id)->where('product_id',$product_id)->where('produce_start_at',$produce_date)->get();
+            $plan = DSProductionPlan::where('station_id',$ds->id)
+                ->where('product_id',$product_id)
+                ->where('produce_start_at',$produce_date)
+                ->get();
+
             $refund_amount = 0;
             foreach($plan as $p){
                 $p->status = DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL;
                 $p->save();
 
-                $refunds = DSBusinessCreditBalanceHistory::whereDate('created_at',$currentDate_str)
-                    ->where('station_id', $p->station_id)
+                $refunds = DSBusinessCreditBalanceHistory::where('station_id', $p->station_id)
+                    ->whereDate('created_at', '=', $currentDate_str)
                     ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
                     ->get();
 
@@ -723,6 +727,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
             $ds->business_credit_balance = $ds->business_credit_balance + $refund_amount;
             $ds->save();
+
             $milk_type = Product::find($product_id)->name;
 
             // 添加奶站通知
@@ -734,7 +739,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $order_product = OrderProduct::where('product_id',$product_id)->get(['id']);
         foreach($order_product as $op){
-            $plan_status = MilkManDeliveryPlan::where('produce_at',$produce_date)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->where('order_product_id',$op->id)->get();
+            $plan_status = MilkManDeliveryPlan::where('produce_at',$produce_date)
+                ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                ->where('order_product_id',$op->id)
+                ->get();
+
             if($plan_status != null){
                 foreach($plan_status as $ps){
                     $ps->delivered_count = 0;
@@ -760,7 +769,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站计划审核', SysLog::SYSLOG_OPERATION_PRODUCE_CANCEL);
 
-        return Response::json($plan_status);
+        return Response::json(['status'=>'success']);
     }
 
     /**
@@ -804,7 +813,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $dsp->save();
         }
 
-        $refund = DSBusinessCreditBalanceHistory::whereDate('created_at',$current_date_str)
+        $refund = DSBusinessCreditBalanceHistory::whereDate('created_at', '=', $current_date_str)
             ->where('station_id',$station_id)
             ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
             ->get();

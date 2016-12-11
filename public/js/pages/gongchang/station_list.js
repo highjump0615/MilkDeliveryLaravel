@@ -77,7 +77,7 @@ $('.js-switch').change(function (e) {
         url: API_URL + 'gongchang/xitong/naizhanzhanghao/change_status_of_station',
         data: {
             'station_id': sid,
-            'checked': checked,
+            'checked': checked
         },
         success: function (data) {
             console.log(data);

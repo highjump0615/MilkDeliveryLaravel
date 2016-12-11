@@ -8,8 +8,6 @@ class DSBusinessCreditBalanceHistory extends Model
 {
     protected $table = 'dsbusinesscreditbalancehistory';
 
-    public $timestamps = false;
-
     protected $fillable = [
         'id',
         'station_id',

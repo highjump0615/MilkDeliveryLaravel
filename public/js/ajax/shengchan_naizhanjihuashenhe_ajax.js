@@ -122,7 +122,6 @@ function cancel_product(butObj) {
         data: store_formData,
         dataType: 'json',
         success: function (data) {
-            console.log(data);
             var new_status='<td id="check'+id+'">生产取消</td>';
             $("#check" + id).replaceWith( new_status );
         },
