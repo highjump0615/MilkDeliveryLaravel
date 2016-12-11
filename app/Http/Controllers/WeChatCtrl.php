@@ -1686,6 +1686,12 @@ class WeChatCtrl extends Controller
     {
         if($request->has('order')) {
             $order_id = $request->input('order');
+
+            $customer_id = Order::find($order_id);
+
+            $notification = new NotificationsAdmin;
+            $notification->sendToWechatNotification($customer_id, '抱歉，您的订单未及时付款，订单已经取消');
+
             $orderctrl = new OrderCtrl();
             $orderctrl->delete_order($order_id);
         }

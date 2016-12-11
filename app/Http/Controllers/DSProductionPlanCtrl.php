@@ -501,7 +501,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function showPlanTableinFactory(){
-        $current_factory_id = $this->getCurrentFactoryId(false);
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $child = 'naizhanjihuashenhe';
         $parent = 'shengchan';
