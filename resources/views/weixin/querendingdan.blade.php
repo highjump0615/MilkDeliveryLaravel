@@ -78,8 +78,11 @@
     </div>
 
     <?php
+
     ini_set('date.timezone', 'Asia/Shanghai');
+
     //error_reporting(E_ERROR);
+
     include_once app_path() . "/Lib/Payweixin/WxPayConfig.php";
     include_once app_path() . "/Lib/Payweixin/WxPayApi.php";
     include_once app_path() . "/Lib/Payweixin/WxPayJsApiPay.php";
@@ -103,17 +106,18 @@
     $input->SetTrade_type("JSAPI");
     $input->SetOpenid($openid);
 
-    $order = WxPayApi::unifiedOrder($input);
-    //function printf_info($data)
-    //{
-    //    foreach($data as $key=>$value){
-    //        echo "<font color='#00ff55;'>$key</font> : $value <br/>";
-    //    }
-    //}
-    //printf_info($order);
+    $worder = WxPayApi::unifiedOrder($input);
+
+//    function printf_info($data)
+//    {
+//        foreach($data as $key=>$value){
+//            echo "<font color='#00ff55;'>$key</font> : $value <br/>";
+//        }
+//    }
+//    printf_info($order);
 
     if ($total_amount > 0)
-        $jsApiParameters = $tools->GetJsApiParameters($order);
+        $jsApiParameters = $tools->GetJsApiParameters($worder);
     else
         $jsApiParameters = '';
 
