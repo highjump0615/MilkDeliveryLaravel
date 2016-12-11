@@ -26,7 +26,6 @@
         </div>
         <div class="ordyf">
             <span>现在金额：<b id="current_amount">{{ $current_product_amount }}</b>元</span>
-            <span>剩余： <b id="order_remain_amount">{{$current_order_remain_amount}}</b>元</span>
         </div>
         <div class="ordye">
             <span>更改后金额：<b id="after_changed_amount">{{ $current_product_amount }}</b>元</span>
@@ -202,23 +201,45 @@
 
         }
 
+        function set_original_product()
+        {
+            var origin_img_url = logo_base_url + '/' + '{{$current_product_photo_url}}';
+            $('#pimg').attr('src', origin_img_url);
+            $('#pname').html("{{ $current_product_name }}");
+            var current_product_count ="{{  $current_product_count }}";
+            $('#product_count').html(current_product_count);
+            $('#changed_product_count').val(current_product_count).attr('max', current_product_count);
+            $('#product_price').html("{{ $current_product_price }}");
+
+            $('#after_changed_amount').html("{{ $current_product_amount }}");
+            $('#left_amount').html("{{$current_order_remain_amount}}");
+        }
+
         //show current selected or origin product info above
         function reset_product_above() {
-            var current_p = products[selected_product_id];
-            var new_img_url = logo_base_url + '/' + current_p[2];
-            $('#pimg').attr('src', new_img_url);
-            $('#pname').html(current_p[1]);
-            $('#product_count').html(current_p[4]);
-            $('#changed_product_count').val(current_p[4]);
-            $('#changed_product_count').attr('max', current_p[4]);
-            $('#product_price').html(current_p[3]);
+            if(current_product_id == selected_product_id)
+            {
+                //show origin product
+                set_original_product();
+            } else {
+                //show selected new product
+                var current_p = products[selected_product_id];
+                var new_img_url = logo_base_url + '/' + current_p[2];
+                $('#pimg').attr('src', new_img_url);
+                $('#pname').html(current_p[1]);
+                $('#product_count').html(current_p[4]);
+                $('#changed_product_count').val(current_p[4]);
+                $('#changed_product_count').attr('max', current_p[4]);
+                $('#product_price').html(current_p[3]);
 
-            //order product amount after changed
-            var after_changed_amount = parseFloat(current_p[4]) * parseFloat(current_p[3]);
-            $('#after_changed_amount').html(after_changed_amount.toFixed(2));
+                //order product amount after changed
+                var after_changed_amount = parseFloat(current_p[4]) * parseFloat(current_p[3]);
+                $('#after_changed_amount').html(after_changed_amount.toFixed(2));
 
-            var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
-            $('#left_amount').html(left_amount.toFixed(2));
+                var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
+                $('#left_amount').html(left_amount.toFixed(2));
+            }
+
         }
 
         function deselect_all() {

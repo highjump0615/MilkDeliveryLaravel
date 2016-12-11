@@ -83,7 +83,7 @@ class WechatOrderProduct extends OrderProduct
         while ($total_count > 0)
         {
             $ndp = new TempDeliveryPlan();
-            $ndp->product_name = $this->product_name;
+            $ndp->product_name = $this->product_simple_name;
 
             $deliver_at = $this->getNextDeliverDate($deliver_at);
             $ndp->deliver_at = $deliver_at;
