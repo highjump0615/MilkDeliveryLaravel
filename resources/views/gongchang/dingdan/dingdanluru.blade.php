@@ -411,9 +411,9 @@
                                                     @if (isset($products))
                                                         @foreach ($products as $product)
                                                             @if($op->product_id == $product->id)
-                                                                <option value="{{$product->id}}" selected>{{$product->name}}</option>
+                                                                <option value="{{$product->id}}" selected>{{$product->simple_name}}</option>
                                                             @else
-                                                                <option value="{{$product->id}}">{{$product->name}}</option>
+                                                                <option value="{{$product->id}}">{{$product->simple_name}}</option>
                                                             @endif
                                                         @endforeach
                                                     @else
@@ -529,7 +529,7 @@
                                                     style="height:34px;">
                                                 @if (isset($products))
                                                     @foreach ($products as $product)
-                                                        <option value="{{$product->id}}">{{$product->name}}</option>
+                                                        <option value="{{$product->id}}">{{$product->simple_name}}</option>
                                                     @endforeach
                                                 @else
                                                     <option value="none">这家工厂没有注册的产品</option>
