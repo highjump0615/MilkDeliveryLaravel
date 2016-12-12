@@ -55,6 +55,7 @@ class Factory extends Model
         'active_products',
         'factory_provinces',
         'active_box_types',
+        'first_active_address',
     ];
 
 
@@ -62,6 +63,26 @@ class Factory extends Model
     {
         $provinces = Address::where('level', 1)->where('factory_id', $this->id)->get();
         return $provinces;
+    }
+
+    public function getFirstActiveAddressAttribute()
+    {
+        $provinces = Address::where('level', 1)->where('factory_id', $this->id)->get();
+        $result = "";
+        foreach($provinces as $province)
+        {
+            $city = Address::where('level',2)->where('factory_id', $this->id)->where('parent_id', $province->id)->get()->first();
+            if($city)
+            {
+                $result = $province->name.' '.$city->name;
+                break;
+            }
+        }
+
+        if($result)
+        {
+            return $result;
+        }
     }
    
 
