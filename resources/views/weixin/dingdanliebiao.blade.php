@@ -15,7 +15,7 @@
     </script>
 
     <header>
-        @if(isset($type))
+        @if(isset($type) && $type!="none")
             <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
         @else
             <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
