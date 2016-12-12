@@ -225,26 +225,6 @@ class WeChatCtrl extends Controller
         $city = $request->input('city');
 
         $addr = $province . " " . $city;
-
-
-        //check for logined user's primary address
-        if(session('verified') == 'yes')
-        {
-            //this is the logined user, so maybe he has the primary address and compare with them.
-            //disable selction other address with his primary address
-            $wxuser_id = session('wechat_user_id');
-            $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
-            if($primary_address_obj)
-            {
-                $primary_address = $primary_address_obj->address;
-                if(strpos($primary_address, $addr) === false)
-                {
-                    return response()->json(['status'=>'fail', 'message'=>'请选择您的正确主要地址']);
-                }
-            }
-
-        }
-
         session(['address' => $addr]);
 
         return response()->json(['status' => 'success']);
@@ -1786,16 +1766,37 @@ class WeChatCtrl extends Controller
         {
             $order = $request->input('order');
             $type = $request->input('type');
-            return view('weixin.dizhiliebiao', [
-                'address_list' => $addrs,
-                'order'=>$order,
-                'type'=>$type,
-            ]);
+
+            if($request->has('message'))
+            {
+                $message = $request->input('message');
+                return view('weixin.dizhiliebiao', [
+                    'address_list' => $addrs,
+                    'order'=>$order,
+                    'type'=>$type,
+                    'message'=>$message,
+                ]);
+            } else {
+                return view('weixin.dizhiliebiao', [
+                    'address_list' => $addrs,
+                    'order'=>$order,
+                    'type'=>$type,
+                ]);
+            }
         }
         else {
-            return view('weixin.dizhiliebiao', [
-                'address_list' => $addrs,
-            ]);
+            if($request->has('message')) {
+                $message = $request->input('message');
+                return view('weixin.dizhiliebiao', [
+                    'address_list' => $addrs,
+                    'message'=>$message,
+                ]);
+            } else {
+                return view('weixin.dizhiliebiao', [
+                    'address_list' => $addrs,
+                ]);
+            }
+
         }
 
     }
@@ -1990,13 +1991,29 @@ class WeChatCtrl extends Controller
 
         WechatAddress::where('wxuser_id', $wxuser_id)->update(['primary' => 0]);
 
+        //check wheter selected address and session_address
+        $session_addr = session('address');
+
         $address = WechatAddress::find($address_id);
         if ($address) {
+            $sel_addr = $address->address;
+            if(strpos($sel_addr, $session_addr) === false)
+            {
+
+                if($request->has('order') and $request->has('type')) {
+                    $order = $request->input('order');
+                    $type = $request->input('type');
+                    return redirect()->route('dizhiliebiao', ['message' => '改地址不在所选区域.', 'order'=>$order, 'type'=>$type]);
+                }else{
+                    return redirect()->route('dizhiliebiao', ['message' => '改地址不在所选区域.']);
+                }
+            }
+
             $address->primary = true;
             $address->save();
 
             //as the address changed, we should reset the wechat product's prices
-            $this->reset_wechat_order_product_price();
+//            $this->reset_wechat_order_product_price();
         }
 
         if($request->has('order') and $request->has('type'))
@@ -2718,7 +2735,17 @@ class WeChatCtrl extends Controller
         }
 
         if(!$primary_address_obj)
-            return response()->json(['status'=>'fail', 'message'=>'地址和电话号码不存在']);
+            return response()->json(['status'=>'err_stop', 'message'=>'地址和电话号码不存在']);
+        else
+        {
+            //check session address and primary address
+            $addr = session('address');
+            $primary_address = $primary_address_obj->address;
+            if(strpos($primary_address, $addr) === false)
+            {
+                return response()->json(['status'=>'err_stop', 'message'=>'请选择您的正确主要地址']);
+            }
+        }
 
         $customer = Customer::where('phone', $primary_address_obj->phone)->get()->first();
 
@@ -3213,10 +3240,6 @@ class WeChatCtrl extends Controller
 
                 }
             }
-
-
-            //set primary address as session address
-            session(['address' => $primary_address]);
         }
 //        else {
 //            //if this user has customer account and wechat address has not info about this user, make the wechat address automatically

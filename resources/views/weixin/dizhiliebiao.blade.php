@@ -90,6 +90,11 @@
 @endsection
 @section('script')
     <script>
+
+        @if(isset($message))
+            var msg = "{{$message}}";
+            show_err_msg(msg);
+        @endif
         $('.adrsc').click(function () {
             $('.rqtc').show();
         });
