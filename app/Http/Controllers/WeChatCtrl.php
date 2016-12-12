@@ -35,6 +35,24 @@ use Illuminate\Http\Request;
 
 class WeChatCtrl extends Controller
 {
+
+    public function isLoggedIn()
+    {
+        $wxuser_id = session('wechat_user_id');
+        $wxuser = WechatUser::find($wxuser_id);
+        $customer_id = $wxuser->customer_id;
+        if($customer_id)
+        {
+            session(['loggedin'=>true]);
+            return true;
+        }
+        else
+        {
+            session(['loggedin'=>false]);
+            return false;
+        }
+    }
+
     //First page
     public function showIndexPage(Request $request)
     {
@@ -82,13 +100,7 @@ class WeChatCtrl extends Controller
 //        session(['wechat_user_id' => $wechat_user_id]);
 //        session(['factory_id' => $factory_id]);
 //        session(['address' => '北京 北京市']);
-//        session(['verified'=>'yes']);
-
-
-        //add verified flag
-        if (!session('verified')) {
-            session(['verified' => 'no']);
-        }
+//        session(['loggedin'=>true]);
 
         /*
          * Address in Session
@@ -278,12 +290,6 @@ class WeChatCtrl extends Controller
             $wechat_user_id = session('wechat_user_id');
         }
 
-
-        //add verified flag
-        if (!session('verified')) {
-            session(['verified' => 'no']);
-        }
-
         $address = session('address');
         if($address == "" || !$address )
         {
@@ -291,7 +297,6 @@ class WeChatCtrl extends Controller
             session(['address' => $address]);
         }
 
-        $verified = session('verified');
         $wechat_user = WechatUser::find($wechat_user_id);
         if ($wechat_user == null)
             abort(403);
@@ -302,7 +307,7 @@ class WeChatCtrl extends Controller
         $customer_id = $wechat_user->customer_id;
         $customer = Customer::find($customer_id);
 
-        if ($customer && $verified == "yes") {
+        if ($customer) {
             //get customer's order remain amount
             $remain_order_amount = $customer->remain_order_amount;
             //get customer's remaining bottle amount
@@ -313,11 +318,15 @@ class WeChatCtrl extends Controller
                 ->where('status', WechatReview::UNREAD_STATUS)
                 ->get()
                 ->count();
+            $loggedin = true;
+            session(['loggedin'=>true]);
 
         } else {
             $remain_order_amount = 0;
             $remaining_bottle_count = 0;
             $unread_cnt = 0 ;
+            $loggedin = false;
+            session(['loggedin'=>false]);
         }
 
         return view('weixin.gerenzhongxin', [
@@ -325,7 +334,7 @@ class WeChatCtrl extends Controller
             'remain_amount' => $remain_order_amount,
             'remaining_bottle_count' => $remaining_bottle_count,
             'cartn' => $cartn,
-            'verified' => $verified,
+            'loggedin' => $loggedin,
             'unread_cnt'=>$unread_cnt,
         ]);
     }
@@ -382,7 +391,7 @@ class WeChatCtrl extends Controller
 
         if ($request->has('from')) {
 
-            if(session('verified') != "yes")
+            if(session('loggedin') != true)
             {
                 return redirect()->route('dengji');
             }
@@ -1321,8 +1330,8 @@ class WeChatCtrl extends Controller
             if($request->has('type'))
             {
                 $type = $request->input('type');
-                $verified = session('verified');
-                if($verified != "yes")
+
+                if(!session('loggedin'))
                 {
                     return redirect()->route('dengji');
                 }
@@ -1542,10 +1551,8 @@ class WeChatCtrl extends Controller
         }
 
 
-        //add verified flag
-        if (!session('verified')) {
-            session(['verified' => 'no']);
-        }
+        //check loggedin
+        $this->isLoggedIn();
 
         $address = session('address');
         if($address == "" || !$address )
@@ -1731,7 +1738,7 @@ class WeChatCtrl extends Controller
         //check logged in user's phone number ?= order = phone number
 
         $check = 'nov';
-        if(session('verified') == "yes")
+        if(session('loggedin'))
         {
             //the user has loggedin
             $wechat_user = WechatUser::find($wechat_user_id);
@@ -1781,6 +1788,14 @@ class WeChatCtrl extends Controller
         $customer_id = WechatUser::find($wechat_user_id)->customer_id;
         $reviews = WechatReview::where('customer_id',$customer_id)->orderby('created_at','desc')->get();
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
+
+        $wxreviews = WechatReview::where('customer_id', $customer_id)->where('status', WechatReview::UNREAD_STATUS)->get()->all();
+        foreach($wxreviews as $wxreview)
+        {
+            $wxreview->status = WechatReview::READ_STATUS;
+            $wxreview->save();
+        }
+
         return view('weixin.xinxizhongxin', [
             'reviews'=>$reviews,
             'cartn' => $cartn,
@@ -2069,9 +2084,9 @@ class WeChatCtrl extends Controller
         $product = Product::find($product_id);
 
         if ($request->has('previous')) {
-            $previous = 1;
+            $previous = $request->input('previous');
         } else {
-            $previous = 0;
+            $previous = "none";
         }
 
         //Product image
@@ -2189,7 +2204,8 @@ class WeChatCtrl extends Controller
 
             }
 
-        } else {
+        }
+        else {
             return view('weixin.tianjiadingdan', [
                 "product" => $product,
                 'file1' => $file1_path,
@@ -2276,15 +2292,6 @@ class WeChatCtrl extends Controller
 
         //save group id for this direct order
         session(['group_id' => $group_id]);
-
-        //without login, enable make order
-//        $verified = session('verified');
-//
-//        if ($verified == "no") {
-//            //this user needs to be phone number verified
-//            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
-//        }
-
         return response()->json(['status' => 'success']);
     }
 
@@ -2396,11 +2403,6 @@ class WeChatCtrl extends Controller
         }
 
 
-        //add verified flag
-        if (!session('verified')) {
-            session(['verified' => 'no']);
-        }
-
         $wechat_user_id = session('wechat_user_id');
 
         $carts = WechatCart::where('wxuser_id', $wechat_user_id)->get();
@@ -2484,13 +2486,6 @@ class WeChatCtrl extends Controller
 
         //store this group id for cart to session
         session(['group_id' => $group_id]);
-
-        //without login, enable make order
-//        //here check verified
-//        $verified = session('verified');
-//        if ($verified == "no") {
-//            return response()->json(['status' => 'fail', 'redirect_path' => 'phone_verify']);
-//        }
 
         return response()->json(['status' => 'success']);
 
@@ -3131,10 +3126,28 @@ class WeChatCtrl extends Controller
             }
         }
 
-        if($request->has('type') and $request->has('order'))
+        if($request->has('order'))
         {
             $order = $request->input('order');
-            $type = $request->input('type');
+            if($request->has('type'))
+            {
+                $type = $request->input('type');
+                return view('weixin.querendingdan', [
+                    'primary_addr_obj' => $primary_addr_obj,
+                    'customer' => $customer,
+                    'wechat_order_products' => $wechat_order_products,
+                    'group_id' => $group_id,
+                    'wxuser_id' => $wxuser_id,
+                    'passed' => $passed,
+                    'for'=>'xuedan',
+                    'openid'=>$openid,
+                    'total_amount'=>$total_amount,
+                    'plans' => $plans,
+                    'order'=>$order,
+                    'type'=>$type,
+                    'today'=>$today,
+                ]);
+            }
             return view('weixin.querendingdan', [
                 'primary_addr_obj' => $primary_addr_obj,
                 'customer' => $customer,
@@ -3147,7 +3160,6 @@ class WeChatCtrl extends Controller
                 'total_amount'=>$total_amount,
                 'plans' => $plans,
                 'order'=>$order,
-                'type'=>$type,
                 'today'=>$today,
             ]);
 
@@ -3389,7 +3401,16 @@ class WeChatCtrl extends Controller
 
     public function dengchu(Request $request)
     {
-        session(['verified' => 'no']);
+        session(['loggedin' => false]);
+        //set wxuser's customer id as null
+        $wxuser_id = session('wechat_user_id');
+        $wxuser = WechatUser::find($wxuser_id);
+        if($wxuser)
+        {
+            $wxuser->customer_id = null;
+            $wxuser->save();
+
+        }
 
         return redirect()->route('weixin_qianye');
     }
@@ -3445,7 +3466,7 @@ class WeChatCtrl extends Controller
             $wxuser->phone_verify_code = "";
             $wxuser->save();
 
-            session(['verified' => 'yes']);
+            session(['loggedin' => true]);
 
             return response()->json(['status' => 'success']);
         } else
