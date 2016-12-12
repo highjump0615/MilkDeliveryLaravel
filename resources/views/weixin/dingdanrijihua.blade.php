@@ -96,8 +96,14 @@
                     {
                         title: "{{$p->product_simple_name}} {{$p->changed_plan_count}}",
                         start: '{{$p->deliver_at}}',
-                        className: 'ypsrl',
-                        textColor: '#00cc00'
+                        @if($p->isEditAvailable())
+                        className: 'ypsrl editable',
+                        selectable: true,
+                        @else
+                        className: 'ypsrl noteditable',
+                        selectable: false,
+                        @endif
+                        textColor: '#00cc00',
                     },
                     @endforeach
                 ],
