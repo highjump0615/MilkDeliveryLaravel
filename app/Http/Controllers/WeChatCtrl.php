@@ -670,6 +670,8 @@ class WeChatCtrl extends Controller
 
         }
 
+
+
         //Show remaining amount of order and order products for change
         $order_remain_amount = $order->remaining_amount;
 
@@ -704,6 +706,9 @@ class WeChatCtrl extends Controller
             $iwop->delete();
         }
 
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+
         if($request->has('type'))
         {
             $type = $request->input('type');
@@ -718,6 +723,7 @@ class WeChatCtrl extends Controller
                 'order_remain_amount' => $order_remain_amount,
                 'left_amount' => $left_amount,
                 'type'=>$type,
+                'today'=>$today,
             ]);
 
         } else {
@@ -730,6 +736,7 @@ class WeChatCtrl extends Controller
                 'after_changed_amount' => $after_changed_amount,
                 'order_remain_amount' => $order_remain_amount,
                 'left_amount' => $left_amount,
+                'today'=>$today,
             ]);
         }
     }
@@ -1420,6 +1427,9 @@ class WeChatCtrl extends Controller
 
     public function dingdanxiangqing(Request $request)
     {
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+
         $order_id = $request->input('order');
         $order = Order::find($order_id);
         $comment = $order->comment;
@@ -1434,6 +1444,7 @@ class WeChatCtrl extends Controller
                 'plans' => $delivery_plans,
                 'comment' => $comment,
                 'cartn' => $cartn,
+                'today'=>$today,
             ]);
         } else {
             abort(403);
@@ -3023,6 +3034,7 @@ class WeChatCtrl extends Controller
 
         $factory = Factory::find($factory_id);
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today =  $today_date->format('Y-m-d');
         $gap_day = intval($factory->gap_day);
 
         $start_at_new = $today_date->modify("+" . $gap_day . " days");
@@ -3136,6 +3148,7 @@ class WeChatCtrl extends Controller
                 'plans' => $plans,
                 'order'=>$order,
                 'type'=>$type,
+                'today'=>$today,
             ]);
 
         } else {
@@ -3151,6 +3164,7 @@ class WeChatCtrl extends Controller
                 'openid'=>$openid,
                 'total_amount'=>$total_amount,
                 'plans' => $plans,
+                'today'=>$today,
             ]);
         }
 
@@ -3192,6 +3206,9 @@ class WeChatCtrl extends Controller
     //Confirm Wechat order products to be included in Order
     public function querendingdan(Request $request)
     {
+        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
+        $today = $today_date->format('Y-m-d');
+
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
 
@@ -3321,6 +3338,7 @@ class WeChatCtrl extends Controller
             'total_amount' => $total_amount,
             'openid' => $openid,
             'plans'=> $plans,
+            'today'=>$today,
         ]);
 
     }
