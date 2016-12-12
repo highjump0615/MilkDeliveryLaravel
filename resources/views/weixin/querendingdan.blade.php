@@ -128,8 +128,9 @@
 @section('script')
     <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
     <script type="text/javascript">
-        var order_id;
 
+        var today = "{{$today}}";
+        var order_id;
 
         //调用微信JS api 支付
         function jsApiCall() {
@@ -194,6 +195,7 @@
                 },
                 firstDay: 0,
                 editable: false,
+                now: today,
                 events: [
                         @foreach($plans as $p)
                     {
