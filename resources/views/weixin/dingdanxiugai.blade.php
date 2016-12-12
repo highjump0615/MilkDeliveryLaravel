@@ -98,6 +98,7 @@
 @section('script')
     <script src='js/fullcalendar.min.js'></script>
     <script type="text/javascript">
+        var today = "{{$today}}";
         $(function () {
             $('#calendar').fullCalendar({
                 header: {
@@ -107,7 +108,7 @@
                 },
                 firstDay: 0,
                 editable: false,
-
+                now: today,
                 events: [
                         @foreach($plans as $p)
                     {
