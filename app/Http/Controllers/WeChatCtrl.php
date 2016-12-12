@@ -106,6 +106,11 @@ class WeChatCtrl extends Controller
 
         //get address from weixin api and save them
         $address = session('address');
+        if($address == "" || !$address )
+        {
+            $address = $factory->first_active_address;
+            session(['address' => $address]);
+        }
 
 //        if(!$address) {
 //
@@ -277,6 +282,13 @@ class WeChatCtrl extends Controller
         //add verified flag
         if (!session('verified')) {
             session(['verified' => 'no']);
+        }
+
+        $address = session('address');
+        if($address == "" || !$address )
+        {
+            $address = $factory->first_active_address;
+            session(['address' => $address]);
         }
 
         $verified = session('verified');
@@ -1524,6 +1536,13 @@ class WeChatCtrl extends Controller
             session(['verified' => 'no']);
         }
 
+        $address = session('address');
+        if($address == "" || !$address )
+        {
+            $address = $factory->first_active_address;
+            session(['address' => $address]);
+        }
+
 
 //        $factory_id = session('factory_id');
 //        $wechat_user_id = session('wechat_user_id');
@@ -2003,9 +2022,9 @@ class WeChatCtrl extends Controller
                 if($request->has('order') and $request->has('type')) {
                     $order = $request->input('order');
                     $type = $request->input('type');
-                    return redirect()->route('dizhiliebiao', ['message' => '改地址不在所选区域.', 'order'=>$order, 'type'=>$type]);
+                    return redirect()->route('dizhiliebiao', ['message' => '该地址不在所选区域，可在首页更改区域.', 'order'=>$order, 'type'=>$type]);
                 }else{
-                    return redirect()->route('dizhiliebiao', ['message' => '改地址不在所选区域.']);
+                    return redirect()->route('dizhiliebiao', ['message' => '该地址不在所选区域，可在首页更改区域.']);
                 }
             }
 
@@ -2743,7 +2762,7 @@ class WeChatCtrl extends Controller
             $primary_address = $primary_address_obj->address;
             if(strpos($primary_address, $addr) === false)
             {
-                return response()->json(['status'=>'err_stop', 'message'=>'请选择您的正确主要地址']);
+                return response()->json(['status'=>'err_stop', 'message'=>'该地址不在所选区域，可在首页更改区域.']);
             }
         }
 
