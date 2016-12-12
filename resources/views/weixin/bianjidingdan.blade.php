@@ -588,6 +588,11 @@
 
             var order_dates = 0;
 
+            if(!custom_date)
+            {
+                return " ";
+            }
+
             custom_date = custom_date.slice(0,-1);
             var custom_array = custom_date.split(',');
             var value_array = [];
@@ -627,6 +632,11 @@
         function get_order_days_from_calendar( total_count, custom_date){
 
             var order_dates = 0;
+
+            if(!custom_date)
+            {
+                return " ";
+            }
 
             custom_date = custom_date.slice(0,-1);
             var custom_array = custom_date.split(',');
