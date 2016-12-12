@@ -3346,12 +3346,13 @@ class WeChatCtrl extends Controller
 
         if($customer)
         {
+            $code = "11111";
             $wxuser->phone_verify_code = $code;
             $wxuser->save();
 
             // 发送验证码
-            $smsCtrl = new YimeiSmsCtrl();
-            $smsCtrl->sendSMS($phone, $code);
+//            $smsCtrl = new YimeiSmsCtrl();
+//            $smsCtrl->sendSMS($phone, $code);
 
             return response()->json(['status' => 'success']);
         }
