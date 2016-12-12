@@ -11,7 +11,7 @@
 @section('content')
 
     <header>
-        @if($previous == "0")
+        @if(isset($previous) && $previous == "none")
             <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         @else
             <a class="headl fanh" href="javascript:history.back();"></a>
@@ -193,7 +193,7 @@
 
     <div class="he50"></div>
 
-    @if($previous == "0" && !isset($order_id))
+    @if(!isset($order_id))
     <div class="dnsbt clearfix">
         <button id="make_order" class="dnsb1"><i class="fa fa-check-circle"></i> 立即订购</button>
         <button id="submit_order" class="dnsb2"><i class="fa fa-cart-plus"></i> 加入购物车</button>

@@ -39,7 +39,7 @@
         <dl class="prob clearfix">
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
-                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
+                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id).'&&previous=index'}}">
                         <div class="milk_img_div">
                             <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
                         </div>
@@ -181,7 +181,7 @@
 
         function go_to_product(pid)
         {
-            location.href = SITE_URL+"weixin/tianjiadingdan?product="+pid;
+            location.href = SITE_URL+"weixin/tianjiadingdan?product="+pid+'&&previous=index';
         }
 
     </script>

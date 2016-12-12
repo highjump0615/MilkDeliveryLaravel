@@ -10,6 +10,8 @@
     <header>
         @if(isset($type) && isset($order) && $type!="none")
             <a class="headl fanh" href="{{ url('weixin/dingdanliebiao').'?type='.$type }}"></a>
+        @elseif(isset($type) && $type == "none")
+            <a class="headl fanh" href="{{ url('weixin/dingdanliebiao')}}"></a>
         @else
             <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         @endif
