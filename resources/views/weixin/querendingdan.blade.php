@@ -130,6 +130,7 @@
     <script type="text/javascript">
         var order_id;
 
+
         //调用微信JS api 支付
         function jsApiCall() {
             WeixinJSBridge.invoke(
@@ -236,15 +237,20 @@
                         $(order_bt).prop('disabled', false);
 
                         order_id = data.order_id;
-
                         callpay();
-                    } else {
+                    } else if(data.status == "fail") {
                         if (data.message) {
                             show_err_msg(data.message);
                         }
 
                         $(order_bt).prop('disabled', false);
                         window.location = SITE_URL + "weixin/zhifushibai";
+                    } else {
+
+                        if (data.message) {
+                            show_err_msg(data.message);
+                        }
+                        $(order_bt).prop('disabled', false);
                     }
                 },
                 error: function (data) {
