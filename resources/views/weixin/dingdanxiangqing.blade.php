@@ -67,7 +67,7 @@
 	@include('weixin.layout.footer')
 @endsection
 @section('script')
-	<script src='js/fullcalendar.min.js'></script>
+	<script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
 	<script type="text/javascript">
 		$(function() {
 			$('#calendar').fullCalendar({
@@ -78,7 +78,7 @@
 				},
 				firstDay:0,
 				editable: false,
-
+				now: "{{$today}}",
 				events: [
 						@foreach($plans as $p)
 					{
