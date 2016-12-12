@@ -73,7 +73,6 @@
     <script type="text/javascript">
 
         var today = "{{$today}}";
-
         var trs = $("#internalActivities tr");
 //        var btnMore = $("#seeMoreRecords");
         var trsLength = trs.length;
@@ -89,6 +88,7 @@
                     center: 'title',
                     right: 'next'
                 },
+                now: today,
                 firstDay: 0,
                 editable: false,
                 events: [
@@ -98,7 +98,6 @@
                         start: '{{$p->deliver_at}}',
                         className: 'ypsrl',
                         textColor: '#00cc00'
-
                     },
                     @endforeach
                 ],
@@ -151,7 +150,7 @@
                 var day_td = $('#calendar table thead tr').find('td.selected');
 
                 if ($(day_td).length > 0) {
-                    if (!($(day_td).hasClass('fc-past'))) {
+                    if (!($(day_td).hasClass('editable'))) {
                         var date = $(day_td).data('date');
                         window.location = SITE_URL + "weixin/danrixiugai?date=" + date;
                     } else {
