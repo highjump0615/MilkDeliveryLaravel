@@ -1100,8 +1100,7 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
 
-        if(!session('loggedin'))
-        {
+        if (!session('loggedin')) {
             return redirect()->route('dengji');
         }
 
@@ -2453,41 +2452,28 @@ class WeChatCtrl extends Controller
         $comment = $request->input('comment');
         $group_id = $request->input('group_id');
 
-        if ($request->has('order_id')) {
-            $origin_order_id = $request->input('order_id');
-            $origin_order = Order::find($origin_order_id);
+        $addr_obj_id = $request->input('addr_obj_id');
+        $addr_obj = WechatAddress::find($addr_obj_id);
 
-            $primary_address_obj = new WechatAddress;
-            $primary_address_obj->name = $origin_order->customer_name;
-            $primary_address_obj->phone = $origin_order->phone;
-            $primary_address_obj->address = $origin_order->main_address;
-            $primary_address_obj->sub_address = $origin_order->sub_address;
+        if (!$addr_obj)
+            return response()->json(['status' => 'err_stop', 'message' => '地址和电话号码不存在.']);
 
-        } else {
-            $primary_address_obj = WechatAddress::where('wxuser_id', $wxuser_id)->where('primary', 1)->get()->first();
+        //check session address and primary address
+        $addr = session('address');
+        $order_address = $addr_obj->address;
+
+        if (strpos($order_address, $addr) === false) {
+            return response()->json(['status' => 'err_stop', 'message' => '该地址不在所选区域，可在首页更改区域.']);
         }
 
-        if (!$primary_address_obj)
-            return response()->json(['status' => 'err_stop', 'message' => '地址和电话号码不存在']);
-        else {
-            //check session address and primary address
-            $addr = session('address');
-            $primary_address = $primary_address_obj->address;
-            if (strpos($primary_address, $addr) === false) {
-                return response()->json(['status' => 'err_stop', 'message' => '该地址不在所选区域，可在首页更改区域.']);
-            }
-        }
-
-        $customer = Customer::where('phone', $primary_address_obj->phone)->get()->first();
+        $customer = Customer::where('phone', $addr_obj->phone)->get()->first();
 
         $orderctrl = new OrderCtrl();
         if (!$customer) {
             //create new customer
-            $primary_address = $primary_address_obj->address;
-
             $station = null;
             //get station and milkman from factory and primary_address
-            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $primary_address, $station);
+            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
 
             if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
                 return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围.']);
@@ -2501,9 +2487,9 @@ class WeChatCtrl extends Controller
             foreach ($station_milkman as $delivery_station_id => $milkman_id) {
                 //make new customer and change product price
                 $customer = new Customer;
-                $customer->phone = $primary_address_obj->phone;
-                $customer->name = $primary_address_obj->name;
-                $customer->address = $primary_address_obj->address . ' ' . $primary_address_obj->sub_address;
+                $customer->phone = $addr_obj->phone;
+                $customer->name = $addr_obj->name;
+                $customer->address = $addr_obj->address . ' ' . $addr_obj->sub_address;
                 $customer->station_id = $delivery_station_id;
                 $customer->factory_id = $factory_id;
                 $customer->milkman_id = $milkman_id;
@@ -2536,8 +2522,8 @@ class WeChatCtrl extends Controller
         $order = new Order;
         $order->factory_id = $factory_id;
         $order->customer_id = $customer_id;
-        $order->phone = $primary_address_obj->phone;
-        $order->address = $primary_address_obj->address . ' ' . $primary_address_obj->sub_address;
+        $order->phone = $addr_obj->phone;
+        $order->address = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $order->order_property_id = OrderProperty::ORDER_PROPERTY_NEW_ORDER;
         $order->station_id = $station_id;
         $order->order_checker_id = $order_checker->id;
@@ -2783,23 +2769,23 @@ class WeChatCtrl extends Controller
          * if Exist, make it as primary and return
          * if not, create new wechat address and make primary
          * */
-        $primary_addr_obj = WechatAddress::where('wxuser_id', $wxuser_id)
+        $addr_obj = WechatAddress::where('wxuser_id', $wxuser_id)
             ->where('address', $order->main_address)
             ->where('phone', $order->phone)
             ->where('name', $order->customer_name)
             ->where('sub_address', $order->sub_address)
             ->get()->first();
 
-        if (!$request->has('from') and !$primary_addr_obj) {
+        if (!$request->has('from') and !$addr_obj) {
             //use origin order's address and phone, customer_name
-            $primary_addr_obj = new WechatAddress;
-            $primary_addr_obj->wxuser_id = $wxuser_id;
-            $primary_addr_obj->name = $order->customer_name;
-            $primary_addr_obj->phone = $order->phone;
-            $primary_addr_obj->address = $order->main_address;
-            $primary_addr_obj->sub_address = $order->sub_address;
-            $primary_addr_obj->primary = 1;
-            $primary_addr_obj->save();
+            $addr_obj = new WechatAddress;
+            $addr_obj->wxuser_id = $wxuser_id;
+            $addr_obj->name = $order->customer_name;
+            $addr_obj->phone = $order->phone;
+            $addr_obj->address = $order->main_address;
+            $addr_obj->sub_address = $order->sub_address;
+            $addr_obj->primary = 0;
+            $addr_obj->save();
         }
 
 
@@ -2823,39 +2809,22 @@ class WeChatCtrl extends Controller
             }
         }
 
-        if ($request->has('type')) {
-            $type = $request->input('type');
-            return view('weixin.querendingdan', [
-                'primary_addr_obj' => $primary_addr_obj,
-                'customer' => $customer,
-                'wechat_order_products' => $wechat_order_products,
-                'group_id' => $group_id,
-                'wxuser_id' => $wxuser_id,
-                'passed' => $passed,
-                'for' => 'xuedan',
-                'openid' => $openid,
-                'total_amount' => $total_amount,
-                'plans' => $plans,
-                'order' => $order_id,
-                'type' => $type,
-                'today' => $today,
-            ]);
-        } else {
-            return view('weixin.querendingdan', [
-                'primary_addr_obj' => $primary_addr_obj,
-                'customer' => $customer,
-                'wechat_order_products' => $wechat_order_products,
-                'group_id' => $group_id,
-                'wxuser_id' => $wxuser_id,
-                'passed' => $passed,
-                'for' => 'xuedan',
-                'openid' => $openid,
-                'total_amount' => $total_amount,
-                'plans' => $plans,
-                'order' => $order_id,
-                'today' => $today,
-            ]);
-        }
+        $type = $request->input('type');
+        return view('weixin.querendingdan', [
+            'addr_obj' => $addr_obj,
+            'customer' => $customer,
+            'wechat_order_products' => $wechat_order_products,
+            'group_id' => $group_id,
+            'wxuser_id' => $wxuser_id,
+            'passed' => $passed,
+            'for' => 'xuedan',
+            'openid' => $openid,
+            'total_amount' => $total_amount,
+            'plans' => $plans,
+            'order' => $order_id,
+            'type' => $type,
+            'today' => $today,
+        ]);
     }
 
     public function get_count_by_order_type($order_type)
@@ -2950,7 +2919,7 @@ class WeChatCtrl extends Controller
 
                         //there is not product price for this primary address
                         return view('weixin.querendingdan', [
-                            'primary_addr_obj' => $primary_addr_obj,
+                            'addr_obj' => $primary_addr_obj,
                             'wechat_order_products' => $wechat_order_products,
                             'group_id' => $group_id,
                             'wxuser_id' => $wechat_user_id,
@@ -2963,32 +2932,6 @@ class WeChatCtrl extends Controller
                 }
             }
         }
-//        else {
-//            //if this user has customer account and wechat address has not info about this user, make the wechat address automatically
-//            $wxuser = WechatUser::find($wechat_user_id);
-//            if ($wxuser) {
-//                $customer_id = $wxuser->customer_id;
-//                if ($customer_id) {
-//                    $customer = Customer::find($customer_id);
-//                    if ($customer) {
-//                        //check wechat address
-//                        $wx_address_list = WechatAddress::where('wxuser_id', $wechat_user_id)->get();
-//                        if (count($wx_address_list) == 0) {
-//                            $new_wx_addr = new WechatAddress;
-//                            $new_wx_addr->wxuser_id = $wechat_user_id;
-//                            $new_wx_addr->name = $customer->name;
-//                            $new_wx_addr->phone = $customer->phone;
-//                            $new_wx_addr->address = $customer->main_addr;
-//                            $new_wx_addr->sub_address = $customer->sub_addr;
-//                            $new_wx_addr->primary = 1;
-//                            $new_wx_addr->save();
-//                            $primary_addr_obj = $new_wx_addr;
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
 
         if ($this->check_total_count($group_id)) {
             $passed = true;
@@ -3012,7 +2955,7 @@ class WeChatCtrl extends Controller
         }
 
         return view('weixin.querendingdan', [
-            'primary_addr_obj' => $primary_addr_obj,
+            'addr_obj' => $primary_addr_obj,
             'wechat_order_products' => $wechat_order_products,
             'group_id' => $group_id,
             'wxuser_id' => $wechat_user_id,
