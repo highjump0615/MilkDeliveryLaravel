@@ -1939,7 +1939,18 @@ class OrderCtrl extends Controller
                 // 恢复这期间的配送明细
                 $qb->restore();
             }
+        }
 
+        // 暂停时间设置
+        $last = new DateTime($end_date);
+        $last_date = $last->modify('+1 day');
+        $restart_date = $last_date->format('Y-m-d');
+
+        $order->stop_at = $start_date;
+        $order->restart_at = $restart_date;
+        $order->save();
+
+        foreach ($order_products as $op) {
             //
             // 重新规划配送明细
             //
@@ -1961,15 +1972,6 @@ class OrderCtrl extends Controller
             // 调整配送明细
             $op->processExtraCount(null, $nCountExtra - $nCountPlus);
         }
-
-        // 暂停时间设置
-        $last = new DateTime($end_date);
-        $last_date = $last->modify('+1 day');
-        $restart_date = $last_date->format('Y-m-d');
-
-        $order->stop_at = $start_date;
-        $order->restart_at = $restart_date;
-        $order->save();
 
         return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
     }
