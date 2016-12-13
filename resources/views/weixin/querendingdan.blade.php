@@ -239,7 +239,6 @@
                     console.log(data);
                     if (data.status == 'success') {
                         $(order_bt).prop('disabled', false);
-
                         order_id = data.order_id;
                         callpay();
                     } else if(data.status == "fail") {
