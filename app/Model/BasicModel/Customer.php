@@ -212,7 +212,7 @@ class Customer extends Model
 
         $orders = Order::where('customer_id', $customer_id)
             ->where(function ($query) {
-                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                $query->where('status', Order::ORDER_ON_DELIVERY_STATUS);
                 $query->orwhere('status', Order::ORDER_PASSED_STATUS);
             })
             ->orderBy('id', 'desc')
@@ -222,9 +222,14 @@ class Customer extends Model
         foreach($orders as $order)
         {
             $order_id = $order->id;
-            $plan = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $date)->get()->first();
-            if($plan)
-                array_push($plans, $plan);
+            $plans_o = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $date)->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)->get()->all();
+            if($plans_o)
+            {
+                foreach($plans_o as $plan)
+                {
+                    array_push($plans, $plan);
+                }
+            }
         }
 
         return $plans;

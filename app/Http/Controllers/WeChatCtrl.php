@@ -89,6 +89,7 @@ class WeChatCtrl extends Controller
             $wechat_user_id = session('wechat_user_id');
         }
 
+
 //        $factory_id = 1;
 //        $wechat_user_id = 113;
 //        $factory = Factory::find($factory_id);
@@ -366,7 +367,7 @@ class WeChatCtrl extends Controller
             $orders = Order::where('customer_id', $customer_id)
                 ->where(function ($query) {
 //                    $query->where('status', Order::ORDER_FINISHED_STATUS);
-                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                    $query->where('status', Order::ORDER_ON_DELIVERY_STATUS);
                     $query->orwhere('status', Order::ORDER_PASSED_STATUS);
                 })
                 ->orderBy('id', 'desc')
