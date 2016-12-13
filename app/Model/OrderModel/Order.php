@@ -454,7 +454,7 @@ class Order extends Model
                 // 不显示订单修改导致取消的明细
                 ->where(function($query) {
                     $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
                 })
                 ->orderBy('deliver_at')
                 ->get();
