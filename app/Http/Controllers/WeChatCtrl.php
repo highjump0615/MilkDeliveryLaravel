@@ -89,6 +89,7 @@ class WeChatCtrl extends Controller
             $wechat_user_id = session('wechat_user_id');
         }
 
+        $this->isLoggedIn();
 
 //        $factory_id = 1;
 //        $wechat_user_id = 113;
@@ -97,21 +98,7 @@ class WeChatCtrl extends Controller
 //        session(['wechat_user_id' => $wechat_user_id]);
 //        session(['factory_id' => $factory_id]);
 //        session(['address' => '北京 北京市']);
-//        session(['loggedin'=>true]);
-
-        /*
-         * Address in Session
-         *
-         * if this user is a new user, the address will be stored as the address from weixin api
-         * currently, until weixin api enabled, use the default address with beijing
-         *
-         * if the user has his wechat user account
-         *  find his primary address in wechat address list and save his primary address as session address
-         *
-         * if he has not primary address, if the this user has customer account,
-         * save the customer addresss as session address
-         *
-         * */
+//        session(['loggedin' => true]);
 
         //get address from weixin api and save them
         $address = session('address');
@@ -119,48 +106,6 @@ class WeChatCtrl extends Controller
             $address = $factory->first_active_address;
             session(['address' => $address]);
         }
-
-//        if(!$address) {
-//
-//            //if wechat not exist, create new wechat user
-//            $wechat_user = WechatUser::find($wechat_user_id);
-//            if (!$wechat_user) {
-//                $wechat_user = new WechatUser;
-//                $wechat_user->save();
-//                $wechat_user_id = $wechat_user->id;
-//
-//                session(['wechat_user_id'=>$wechat_user_id]);
-//                session(['address' => '北京 北京市']);
-//
-//                $address = session('address');
-//
-//            } else {
-//
-//                //get this user's address and save in session
-//                $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->where('primary', 1)->get()->first();
-//                if ($primary_addr) {
-//                    session(['address' => $primary_addr->address]);
-//                } else {
-//
-//                    $primary_addr = WechatAddress::where('wxuser_id', $wechat_user_id)->get()->first();
-//                    if ($primary_addr) {
-//                        session(['address' => $primary_addr->address]);
-//                    } else {
-//                        //if customer exist for this user, save customer's address on session address
-//                        $customer_id = $wechat_user->customer_id;
-//                        if ($customer_id) {
-//                            $customer = Customer::find($customer_id);
-//                            if ($customer) {
-//                                session(['address' => $customer->main_addr]);
-//                            }
-//                        }
-//
-//                    }
-//                }
-//
-//                $address = session('address');
-//            }
-//        }
 
         $banners = WechatAd::where('factory_id', $factory_id)
             ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
@@ -414,120 +359,6 @@ class WeChatCtrl extends Controller
      *   8: custom_date
      * */
 
-    /*
-    //show order product change page
-    public function dingdanxiugai(Request $request)
-    {
-        $order_id = $request->input('order');
-        $order = Order::find($order_id);
-        if (!$order) {
-            abort(403);
-        }
-        $comment = $order->comment;
-        $delivery_plans = $order->grouped_delivery_plans;
-
-        $wechat_user_id = session('wechat_user_id');
-        $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
-
-        //after_changed_amount
-        $after_changed_amount = 0;
-
-        //products to show : order_products and products_in_session
-        //product info: photo_url, product_name, price, product_count, product_amount  -> order_product_id
-
-        $show_products = [];
-
-        if (!session('change_order_product')) {
-            //make change_order_product data in session
-            $cop = [];
-            $show_products = [];
-            foreach ($order->order_products as $op) {
-                $product = $op->product;
-
-                $product_id = $product->id;
-                $photo_url = $product->photo_url1;
-                $product_name = $product->name;
-                $product_count = $op->remain_count;
-                $product_price =  round($op->product_price, 3);
-                $product_amount = round($op->remain_amount, 3);
-                $delivery_type = $op->delivery_type;
-                $count_per = $op->count_per_day;
-                $custom_date = $op->custom_order_dates;
-
-                $start_at = $op->start_at_after_delivered;
-                $order_type = $op->order_type;
-
-                //add to after_changed_amount
-                $after_changed_amount += $product_amount;
-
-                $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
-            }
-
-            $cop[$order_id] = $show_products;
-            session(['change_order_product' => $cop]);
-
-        } else {
-            //exist,  check whether data exist for this order
-            $cop = session('change_order_product');
-            if (array_key_exists($order_id, $cop)) {
-                $show_products = $cop[$order_id];
-
-                foreach ($show_products as $cop_one_product) {
-                    //add to after_changed_amount
-                    $after_changed_amount += $cop_one_product[5];
-                }
-
-            } else {
-                //create data for this order
-                $cop = session('change_order_product');
-                $show_products = [];
-                foreach ($order->order_products as $op) {
-                    $product = $op->product;
-
-                    $product_id = $product->id;
-                    $photo_url = $product->photo_url1;
-                    $product_name = $product->name;
-                    $product_count = $op->remain_count;
-                    $product_price = round($op->product_price, 3);
-                    $product_amount = round($op->remain_amount, 3);
-                    $delivery_type = $op->delivery_type;
-                    $count_per = $op->count_per_day;
-                    $custom_date = $op->custom_order_dates;
-
-                    $start_at = $op->start_at_after_delivered;
-                    $order_type = $op->order_type;
-
-                    //add to after_changed_amount
-                    $after_changed_amount += $product_amount;
-
-                    $show_products[] = array($product_id, $product_name, $photo_url, $product_count, $product_price, $product_amount, $delivery_type, $count_per, $custom_date, $start_at, $order_type);
-                }
-
-                $cop[$order_id] = $show_products;
-                session(['change_order_product' => $cop]);
-            }
-        }
-
-        //Show remaining amount of order and order products for change
-        $order_remain_amount = $order->remaining_amount;
-
-        //left_amount
-        $left_amount = $order_remain_amount - $after_changed_amount;
-        $left_amount = round($left_amount, 2);
-
-        return view('weixin.dingdanxiugai', [
-            'order' => $order,
-            'plans' => $delivery_plans,
-            'comment' => $comment,
-            'cartn' => $cartn,
-            'show_products' => $show_products,
-            'after_changed_amount' => $after_changed_amount,
-            'order_remain_amount' => $order_remain_amount,
-            'left_amount' => $left_amount,
-        ]);
-    }
-    */
-
     //show order product change page
     public function dingdanxiugai(Request $request)
     {
@@ -659,7 +490,6 @@ class WeChatCtrl extends Controller
 
         }
 
-
         //Show remaining amount of order and order products for change
         $order_remain_amount = $order->remaining_amount;
 
@@ -695,35 +525,17 @@ class WeChatCtrl extends Controller
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
-        if ($request->has('type')) {
-            $type = $request->input('type');
-
-            return view('weixin.dingdanxiugai', [
-                'order' => $order,
-                'plans' => $delivery_plans,
-                'comment' => $comment,
-                'cartn' => $cartn,
-                'show_products' => $show_products,
-                'after_changed_amount' => $after_changed_amount,
-                'order_remain_amount' => $order_remain_amount,
-                'left_amount' => $left_amount,
-                'type' => $type,
-                'today' => $today,
-            ]);
-
-        } else {
-            return view('weixin.dingdanxiugai', [
-                'order' => $order,
-                'plans' => $delivery_plans,
-                'comment' => $comment,
-                'cartn' => $cartn,
-                'show_products' => $show_products,
-                'after_changed_amount' => $after_changed_amount,
-                'order_remain_amount' => $order_remain_amount,
-                'left_amount' => $left_amount,
-                'today' => $today,
-            ]);
-        }
+        return view('weixin.dingdanxiugai', [
+            'order' => $order,
+            'plans' => $delivery_plans,
+            'comment' => $comment,
+            'cartn' => $cartn,
+            'show_products' => $show_products,
+            'after_changed_amount' => $after_changed_amount,
+            'order_remain_amount' => $order_remain_amount,
+            'left_amount' => $left_amount,
+            'today' => $today,
+        ]);
     }
 
 
@@ -1192,15 +1004,13 @@ class WeChatCtrl extends Controller
                 $order->save();
 
                 //notification
-                $station_id = $order->station_id;
                 $customer = $order->customer;
                 $customer_name = $customer->name;
 
                 //notification to factory and wechat
                 $notification = new NotificationsAdmin;
-                $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "修改了订单, 请管理员尽快审核");
+                $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer_name . "修改了订单, 请管理员尽快审核");
                 $notification->sendToWechatNotification($customer->id, '您的订单修改已提交，请耐心等待，客户将尽快核对您的');
-
 
                 return response()->json(['status' => 'success']);
             }
@@ -1290,6 +1100,13 @@ class WeChatCtrl extends Controller
         $wechat_user_id = session('wechat_user_id');
         $wechat_user = WechatUser::find($wechat_user_id);
 
+        if(!session('loggedin'))
+        {
+            return redirect()->route('dengji');
+        }
+
+        $type = $request->input('type');
+
         if (!$wechat_user)
             abort(403);
 
@@ -1299,101 +1116,49 @@ class WeChatCtrl extends Controller
             $customer = Customer::find($customer_id);
             $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
-            if ($request->has('type')) {
-                $type = $request->input('type');
+            $type = $request->input('type');
 
-                if (!session('loggedin')) {
-                    return redirect()->route('dengji');
-                }
-
-                $orders = Order::where('is_deleted', 0)
-                    ->where('phone', $customer->phone);
-
-                switch ($type) {
-                    case 'waiting':
-                        $orders = $orders->where(function ($query) {
-                            $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
-                            $query->orWhere('status', Order::ORDER_WAITING_STATUS);
-                        });
-                        break;
-                    case 'finished':
-                        $orders = $orders->where('status', Order::ORDER_FINISHED_STATUS);
-                        break;
-                    case 'stopped':
-                        $orders = $orders->where('status', Order::ORDER_STOPPED_STATUS);
-                        break;
-                    case 'on_delivery':
-                        $orders = $orders->where(function ($query) {
-                            $query->where('status', Order::ORDER_PASSED_STATUS);
-                            $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                        });
-                        break;
-                    default:
-                        break;
-                }
-
-                $orders = $orders->orderBy('created_at', 'desc')->get();
-
-//                if ($type == 'waiting') {
-//                    $orders = Order::where('is_deleted', 0)
-//                        ->where(function($query){
-//                                $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
-//                                $query->orWhere('status', Order::ORDER_WAITING_STATUS);
-//                        })
-//                        ->where('phone', $customer->phone)
-//                        ->orderBy('id', 'desc')
-//                        ->get();
-//                }
-//                else if ($type == 'finished') {
-//                    $orders = Order::where('is_deleted', 0)
-//                        ->where('status', Order::ORDER_FINISHED_STATUS)
-//                        ->Where('phone', $customer->phone)
-//                        ->orderBy('id', 'desc')
-//                        ->get();
-//                }
-//                else if ($type == 'stopped') {
-//                    $orders = Order::where('is_deleted', 0)
-//                        ->where('status', Order::ORDER_STOPPED_STATUS)
-//                        ->Where('phone', $customer->phone)
-//                        ->orderBy('id', 'desc')
-//                        ->get();
-//                }
-//                else if ($type == 'on_delivery') {
-//                    $orders = Order::where('is_deleted', 0)
-//                        ->where(function ($query) {
-//                            $query->where('status', Order::ORDER_PASSED_STATUS);
-//                            $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-//                        })
-//                        ->where('phone', $customer->phone)
-//                        ->orderBy('id', 'desc')
-//                        ->get();
-//                }
-                return view('weixin.dingdanliebiao', [
-                    'type' => $type,
-                    'orders' => $orders,
-                    'cartn' => $cartn,
-                ]);
-            } else {
-
-                //show orders that has same customer_id and telephone
-                $orders = Order::where('is_deleted', 0)
-                    ->where(function ($query)
-                    use ($customer_id, $customer) {
-                        $query->where('customer_id', $customer_id);
-                        $query->orWhere('phone', $customer->phone);
-                    })->orderBy('created_at', 'desc')->get();
-
-                return view('weixin.dingdanliebiao', [
-                    'type' => 'none',
-                    'orders' => $orders,
-                    'cartn' => $cartn,
-                ]);
+            if (!session('loggedin')) {
+                return redirect()->route('dengji');
             }
+
+            $orders = Order::where('is_deleted', 0)
+                ->where('phone', $customer->phone);
+
+            switch ($type) {
+                case 'waiting':
+                    $orders = $orders->where(function ($query) {
+                        $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
+                        $query->orWhere('status', Order::ORDER_WAITING_STATUS);
+                    });
+                    break;
+                case 'finished':
+                    $orders = $orders->where('status', Order::ORDER_FINISHED_STATUS);
+                    break;
+                case 'stopped':
+                    $orders = $orders->where('status', Order::ORDER_STOPPED_STATUS);
+                    break;
+                case 'on_delivery':
+                    $orders = $orders->where(function ($query) {
+                        $query->where('status', Order::ORDER_PASSED_STATUS);
+                        $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                    });
+                    break;
+                default:
+                    break;
+            }
+
+            $orders = $orders->orderBy('created_at', 'desc')->get();
+            return view('weixin.dingdanliebiao', [
+                'type' => $type,
+                'orders' => $orders,
+                'cartn' => $cartn,
+            ]);
 
         } else {
             $orders = [];
             return view('weixin.dingdanliebiao', [
-                'type' => 'none',
+                'type' => $type,
                 'orders' => $orders,
                 'cartn' => 0,
             ]);
