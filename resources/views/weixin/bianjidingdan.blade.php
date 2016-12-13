@@ -556,7 +556,7 @@
                     start++;
                     if(start>7)
                     {
-                        start  = 1;
+                        start  = 0;
                     }
 
                 }while(! array.hasOwnProperty(start));
@@ -588,18 +588,16 @@
 
             var order_dates = 0;
 
-            if(!custom_date)
-            {
-                return " ";
-            }
-
             custom_date = custom_date.slice(0,-1);
             var custom_array = custom_date.split(',');
             var value_array = [];
             for(var i = 0 ; i <custom_array.length; i++ )
             {
                 var one_arr = custom_array[i].split(':');
-                value_array [one_arr[0]] = one_arr[1];
+                var index =one_arr[0];
+                if(index == "0")
+                        index = 7;
+                value_array [index] = one_arr[1];
             }
             //set start_date based on start_at day of week
             var start_at = $('#start_at').val();
@@ -632,11 +630,6 @@
         function get_order_days_from_calendar( total_count, custom_date){
 
             var order_dates = 0;
-
-            if(!custom_date)
-            {
-                return " ";
-            }
 
             custom_date = custom_date.slice(0,-1);
             var custom_array = custom_date.split(',');
@@ -697,12 +690,18 @@
             {
                 //show custom bottle count on week
                 var custom_date = week.get_submit_value();
-                order_day_num = get_order_days_from_week(total_count, custom_date);
+                if(!custom_date || custom_date=="" || custom_date==undefined)
+                    order_day_num="";
+                else
+                    order_day_num = get_order_days_from_week(total_count, custom_date);
 
             } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
 
                 var custom_date = calen.get_submit_value();
-                order_day_num = get_order_days_from_calendar(total_count, custom_date);
+                if(!custom_date)
+                    order_day_num="";
+                else
+                    order_day_num = get_order_days_from_calendar(total_count, custom_date);
 
             } else {
                 return;
