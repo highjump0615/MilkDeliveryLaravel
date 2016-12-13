@@ -350,12 +350,11 @@ class OrderProduct extends Model
                     $dateStop = $this->order->stop_at;
                     $dateRestart = $this->order->restart_at;
 
-                    if ($dateStop < $dateDeliverNew && $dateDeliverNew < $dateRestart) {
+                    if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
                         $bRestart = true;
                     }
                 }
             }
-
 
             $date = $dateDeliverNew;
 
