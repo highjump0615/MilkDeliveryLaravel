@@ -337,6 +337,10 @@ class WeChatCtrl extends Controller
     public function dingdanrijihua(Request $request)
     {
 
+        if (session('loggedin') != true) {
+            return redirect()->route('dengji');
+        }
+
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
@@ -350,18 +354,9 @@ class WeChatCtrl extends Controller
 
         if (!$customer_id) {
             $plans = array();
+
         } else {
             $plans = array();
-
-            //show wechat only
-//            $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-//                ->where(function ($query) {
-////                    $query->where('status', Order::ORDER_FINISHED_STATUS);
-//                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-////                    $query->orwhere('status', Order::ORDER_PASSED_STATUS);
-//                })
-//                ->orderBy('id', 'desc')
-//                ->get()->all();
 
             //show all order including admin order
             $orders = Order::where('customer_id', $customer_id)
@@ -384,11 +379,6 @@ class WeChatCtrl extends Controller
         usort($plans, array($this, "cmp"));
 
         if ($request->has('from')) {
-
-            if (session('loggedin') != true) {
-                return redirect()->route('dengji');
-            }
-
             return view('weixin.dingdanrijihua', [
                 'plans' => $plans,
                 'today' => $today,
@@ -2727,6 +2717,7 @@ class WeChatCtrl extends Controller
 
         $orderctrl = new OrderCtrl();
         if (!$customer) {
+            //create new customer
             $primary_address = $primary_address_obj->address;
 
             $station = null;
@@ -2755,10 +2746,6 @@ class WeChatCtrl extends Controller
             }
             if ($customer) {
                 $customer->save();
-
-                $customer_id = $customer->id;
-                $wechat_user->customer_id = $customer_id;
-                $wechat_user->save();
             }
         }
 
