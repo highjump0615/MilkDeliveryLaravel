@@ -1149,13 +1149,11 @@ class WeChatCtrl extends Controller
                 case 'finished':
                     $orders = $orders->where('status', Order::ORDER_FINISHED_STATUS);
                     break;
-                case 'stopped':
-                    $orders = $orders->where('status', Order::ORDER_STOPPED_STATUS);
-                    break;
                 case 'on_delivery':
                     $orders = $orders->where(function ($query) {
                         $query->where('status', Order::ORDER_PASSED_STATUS);
                         $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                        $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
                     });
                     break;
                 default:
