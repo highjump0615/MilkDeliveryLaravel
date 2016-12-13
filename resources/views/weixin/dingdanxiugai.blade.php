@@ -6,12 +6,7 @@
 @section('content')
 
     <header>
-        @if(isset($type))
-            <a class="headl fanh" href="{{url('weixin/dingdanliebiao?type='.$type)}}"></a>
-        @else
-            <a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
-        @endif
-        {{--<a class="headl fanh" href="javascript:history.back();"></a>--}}
+        <a class="headl fanh" href="{{url('weixin/dingdanliebiao?type=on_delivery')}}"></a>
         <h1>订单修改</h1>
     </header>
     @if(isset($order))
@@ -166,12 +161,7 @@
                     },
                     success: function (data) {
                         if (data.status == "success") {
-                            @if(isset($type))
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao?type="+"{{$type}}";
-                            @else
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao";
-                            @endif
-
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao?type=on_delivery";
                         } else {
                             if (data.message) {
                                 show_warning_msg(data.message);
@@ -201,11 +191,7 @@
                     success: function (data) {
                         if (data.status == "success") {
                             show_success_msg('订单修改成功');
-                            @if(isset($type))
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao?type="+"{{$type}}";
-                            @else
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao";
-                            @endif
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao?type=on_delivery";
                         } else {
                             if (data.message) {
                                 show_warning_msg(data.message);

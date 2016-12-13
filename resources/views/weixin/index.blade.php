@@ -31,7 +31,7 @@
             <li><a href="{{url('/weixin/dingdanrijihua')}}"><img src="<?=asset('weixin/images/nav1.png')?>">订单计划</a>
             </li>
             <li><a href="{{url('/weixin/toushu')}}"><img src="<?=asset('weixin/images/nav2.png')?>">咨询投诉</a></li>
-            <li><a href="{{url('/weixin/dingdanliebiao')}}"><img src="<?=asset('weixin/images/nav3.png')?>">修改订单</a>
+            <li><a href="{{url('/weixin/dingdanliebiao?type=on_delivery')}}"><img src="<?=asset('weixin/images/nav3.png')?>">修改订单</a>
             </li>
         </ul>
     </nav>

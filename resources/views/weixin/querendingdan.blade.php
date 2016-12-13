@@ -8,10 +8,12 @@
 @section('content')
 
     <header>
-        @if(isset($type) && isset($order) && $type!="none")
-            <a class="headl fanh" href="{{ url('weixin/dingdanliebiao').'?type='.$type }}"></a>
-        @elseif(isset($type) && $type == "none")
-            <a class="headl fanh" href="{{ url('weixin/dingdanliebiao')}}"></a>
+        @if(isset($type) && isset($order))
+            @if($type == "on_delivery")
+                <a class="headl fanh" href="{{ url('weixin/dingdanliebiao?type=on_delivery') }}"></a>
+            @elseif($type == "finished")
+                <a class="headl fanh" href="{{ url('weixin/dingdanliebiao?type=finished') }}"></a>
+            @endif
         @else
             <a class="headl fanh" href="{{url('weixin/shangpinliebiao')}}"></a>
         @endif

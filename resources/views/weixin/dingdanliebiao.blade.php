@@ -15,11 +15,7 @@
     </script>
 
     <header>
-        @if(isset($type) && $type!="none")
-            <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
-        @else
-            <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
-        @endif
+        <a class="headl fanh" href="javascript:history.back();"></a>
         <h1>订单列表</h1>
     </header>
 
