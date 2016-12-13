@@ -425,7 +425,10 @@
                     } else {
                         $('#restart_order_modal').modal('hide');
                         $(submit).prop('disabled', false);
-                        show_warning_msg("开启订单失败. " + data.message);
+                        if(data.message)
+                            show_warning_msg("开启订单失败. " + data.message);
+                        else
+                            show_warning_msg("开启订单失败. ");
 
                         var order_id = $('#apply_restart').data('order-id');
                         $('.restart_order[data-order-id = "' + order_id + '"]').trigger('click');
