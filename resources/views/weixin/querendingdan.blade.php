@@ -23,11 +23,12 @@
         <input type="hidden" id="group_id" value="{{$group_id}}"/>
         <input type="hidden" id="wxuser_id" value="{{$wxuser_id}}">
         <div class="addrli addrli2" style="cursor:pointer" onclick="go_page_address_list();">
-            @if(isset($primary_addr_obj) && ($primary_addr_obj != null))
+            @if(isset($addr_obj) && ($addr_obj != null))
                 <div class="adrtop pa2t">
-                    <p>{{$primary_addr_obj->name}} {{$primary_addr_obj->phone}}<br>
-                        {{$primary_addr_obj->address}} {{$primary_addr_obj->sub_address}}
+                    <p>{{$addr_obj->name}} {{$addr_obj->phone}}<br>
+                        {{$addr_obj->address}} {{$addr_obj->sub_address}}
                     </p>
+                    <input type="hidden" value="{{$addr_obj->id}}" id="addr_obj_id">
                 </div>
             @else
                 <div class="adrtop pa2t">
@@ -74,7 +75,7 @@
     </div>
     <div class="he50"></div>
     <div class="dnsbt clearfix">
-        @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($primary_addr_obj) && ($primary_addr_obj != null) && $total_amount>0 )
+        @if( isset($passed) && $passed == 1 && count($wechat_order_products) > 0 && isset($addr_obj) && ($addr_obj != null) && $total_amount>0 )
             <button class="tjord tjord2" id="make_order">去付款</button>
         @else
             <button class="tjord tjord2" disabled>去付款</button>
@@ -225,6 +226,8 @@
 
             var total_amount = $('#total_amount').val();
 
+            var addr_obj_id = $('#addr_obj_id').val();
+
             @if(isset($order))
                 var origin_order_id = "{{$order}}";
             @endif
@@ -233,9 +236,9 @@
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
                 @if(isset($order))
-                    data: {'comment': comment, 'group_id': group_id, 'order_id': origin_order_id},
+                    data: {'comment': comment, 'group_id': group_id, 'order_id': origin_order_id, 'addr_obj_id':addr_obj_id},
                 @else
-                    data: {'comment': comment, 'group_id': group_id},
+                    data: {'comment': comment, 'group_id': group_id, 'addr_obj_id':addr_obj_id},
                 @endif
                 success: function (data) {
                     console.log(data);

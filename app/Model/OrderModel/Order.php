@@ -195,24 +195,20 @@ class Order extends Model
 
     public function getSubAddressAttribute()
     {
-        $sub_addr = "";
-        $customer = $this->customer;
-        if($customer)
-        {
-            $sub_addr = $customer->sub_addr;
-        }
-
+        $sub_addr = str_replace($this->main_address, '', $this->address);
         return $sub_addr;
     }
 
     public function getMainAddressAttribute()
     {
         $main_addr = "";
-        $customer = $this->customer;
-        if($customer)
-        {
-            $main_addr = $customer->main_addr;
-        }
+        $addr = $this->address;
+        $addr_list = explode(' ', $addr);
+        $count = count($addr_list);
+        if($count>=5)
+            $main_addr = $addr_list[0].' '.$addr_list[1].' '.$addr_list[2].' '.$addr_list[3].' '.$addr_list[4];
+        else
+            $main_addr = $addr;
 
         return $main_addr;
     }

@@ -56,11 +56,7 @@
                 <div class="ordshz">
                     @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
                         <span class="shsp">
-                            @if(isset($type))
-                                <a href="{{url('/weixin/show_xuedan?order='.$o->id.'&&type='.$type)}}">续单</a>
-                            @else
-                                <a href="{{url('/weixin/show_xuedan?order='.$o->id)}}">续单</a>
-                            @endif
+                            <a href="{{url('/weixin/show_xuedan?order='.$o->id.'&&type='.$type)}}">续单</a>
                     </span>
                     @endif
 
