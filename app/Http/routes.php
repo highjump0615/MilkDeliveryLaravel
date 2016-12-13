@@ -970,7 +970,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/dingdanxiangqing', 'WeChatCtrl@dingdanxiangqing');
 
     /* xuedan */
-    Route::get('api/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
+    Route::get('/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
     //make xudan based on created wechat order products
     Route::post('/api/make_order_from_wopids', 'WeChatCtrl@make_order_from_wopids');
 
