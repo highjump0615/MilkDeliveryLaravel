@@ -1,7 +1,6 @@
 @extends('weixin.layout.master')
 @section('title','订单日计划修改')
 @section('css')
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link href="<?=asset('weixin/css/fullcalendar.min.css')?>" rel="stylesheet"/>
     <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
@@ -78,6 +77,8 @@
         var trsLength = trs.length;
         var currentIndex = 10;
 
+        var edit_min_date = "{{$edit_min_date}}";
+
         trs.hide();
 
 
@@ -99,55 +100,35 @@
                         @if($p->isEditAvailable())
                         className: 'ypsrl editable',
                         selectable: true,
+                        color: '#00cc00',
                         @else
                         className: 'ypsrl noteditable',
                         selectable: false,
+                        color:'#a82828',
                         @endif
-                        textColor: '#00cc00',
+                        textColor: 'white',
                     },
                     @endforeach
                 ],
-                viewRender: function (view, element) {
-                    var start_date = view.intervalStart;
-
-                    var cal_year = start_date.format('YYYY');
-                    var cal_month = start_date.format('MM');
-
-                    $(trs).each(function(){
-                        var tr = $(this);
-                        var date_str = tr.data('date');
-
-                        if(date_str != undefined) {
-                            var date_obj = new Date(date_str);
-
-                            var year = date_obj.getUTCFullYear();
-
-                            var month = date_obj.getUTCMonth() + 1;;
-
-                            if(cal_year == year && cal_month == month) {
-                                tr.show();
-                            } else {
-                                tr.hide();
-                            }
-
-                        }
-
-
-                    });
-                }
             });
 
             $('.footable').footable();
 
             $(document).on('click', '#calendar table thead tr td.fc-day-top', function () {
-                var day_td = $(this);
-                var date = $(day_td).data('date');
-                if($(day_td).hasClass('fc-past'))
-                        return;
+
+                if(!edit_min_date)
+                    return;
 
                 $('#calendar table thead tr td').each(function () {
                     $(this).removeClass('selected');
                 });
+
+                var day_td = $(this);
+                var date = $(day_td).data('date');
+
+                if(date < edit_min_date)
+                        return;
+
                 $(day_td).addClass('selected');
             });
 

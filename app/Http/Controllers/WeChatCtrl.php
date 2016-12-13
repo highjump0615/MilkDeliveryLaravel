@@ -323,16 +323,31 @@ class WeChatCtrl extends Controller
 
         usort($plans, array($this, "cmp"));
 
+        $edit_min_date = "";
+        if(count($plans)>0)
+        {
+            foreach($plans as $plan)
+            {
+                if($plan->isEditAvailable())
+                {
+                    $edit_min_date = $plan->deliver_at;
+                    break;
+                }
+            }
+        }
+
         if ($request->has('from')) {
             return view('weixin.dingdanrijihua', [
                 'plans' => $plans,
                 'today' => $today,
                 'from' => 'geren',
+                'edit_min_date' =>$edit_min_date,
             ]);
         } else {
             return view('weixin.dingdanrijihua', [
                 'plans' => $plans,
                 'today' => $today,
+                'edit_min_date' =>$edit_min_date,
             ]);
         }
 
