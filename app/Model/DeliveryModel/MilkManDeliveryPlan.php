@@ -40,7 +40,6 @@ class MilkManDeliveryPlan extends Model
 
     protected $appends = [
         'plan_price',
-        'station_id',
         'product_name',
         'product_simple_name',
         'status_name',
@@ -117,17 +116,6 @@ class MilkManDeliveryPlan extends Model
         $plan_price = ($this->product_price) * ($this->changed_plan_count);
         return $plan_price;
     }
-
-    public function getStationIdAttribute(){
-        $station = Order::find($this->order_id);
-        if($station == null){
-            return null;
-        }
-        else{
-            return $station->station_id;
-        }
-    }
-    //
 
     public function order(){
         if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
@@ -303,8 +291,8 @@ class MilkManDeliveryPlan extends Model
         }
         else {
             // 配送时间已过的不能修改
-            $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-            $dateDeliver = DateTime::createFromFormat('Y-m-j', $this->deliver_at);
+            $dateCurrent = date(getCurDateString());
+            $dateDeliver = date($this->deliver_at);
 
             if ($dateCurrent > $dateDeliver) {
                 $editAvailable = false;
