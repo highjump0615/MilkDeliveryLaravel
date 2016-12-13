@@ -126,10 +126,12 @@
                 var day_td = $(this);
                 var date = $(day_td).data('date');
 
-                if(date < edit_min_date)
-                        return;
+                var date_obj = new Date(date);
 
-                $(day_td).addClass('selected');
+                if(date_obj.getTime() >= edit_min_date_obj.getTime())
+                {
+                    $(day_td).addClass('selected');
+                }
             });
 
 
