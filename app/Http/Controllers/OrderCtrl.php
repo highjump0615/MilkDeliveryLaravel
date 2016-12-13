@@ -3322,7 +3322,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'weitongguodingdan';
@@ -3359,7 +3359,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
 			->get();
 
         $child = 'weitongguo';
@@ -3394,7 +3394,7 @@ class OrderCtrl extends Controller
             ->where('factory_id', $factory_id)
             ->where('stop_at', '<=', getCurDateString())
             ->where('restart_at', '>=', getCurDateString())
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zantingdingdan';
@@ -3429,7 +3429,7 @@ class OrderCtrl extends Controller
             ->where('delivery_station_id', $this->getCurrentStationId())
             ->where('stop_at', '<=', getCurDateString())
             ->where('restart_at', '>=', getCurDateString())
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zantingliebiao';
@@ -3463,7 +3463,8 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         $child = 'zaipeisongdingdan';
         $parent = 'dingdan';
@@ -3496,7 +3497,7 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $station_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zaipeisong';
@@ -3653,7 +3654,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_FINISHED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         //find total amount according to payment type
@@ -3694,7 +3695,7 @@ class OrderCtrl extends Controller
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
             ->where('delivery_station_id', $station_id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $order_properties = OrderProperty::get()->all();
@@ -3721,7 +3722,6 @@ class OrderCtrl extends Controller
     public
     function show_passed_dingdan_in_gongchang()
     {
-
         $fuser = Auth::guard('gongchang')->user();
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
@@ -3729,7 +3729,8 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('status', Order::ORDER_PASSED_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -3802,9 +3803,8 @@ class OrderCtrl extends Controller
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
             })
             ->where('factory_id', $factory_id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();//add time condition
-
 
         $child = 'daishenhedingdan';
         $parent = 'dingdan';
@@ -3989,7 +3989,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'daishenhe';
@@ -4019,7 +4019,8 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -4081,7 +4082,7 @@ class OrderCtrl extends Controller
                 $query->where('station_id', $station_id);
                 $query->orWhere('delivery_station_id', $station_id);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         //find total amount according to payment type
@@ -4132,7 +4133,11 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->orderBy('id', 'desc')->where('factory_id', $factory_id)->get();//add time condition
+        $orders = Order::where('is_deleted', "0")
+            ->orderBy('updated_at', 'desc')
+            ->where('factory_id', $factory_id)
+            ->get();//add time condition
+
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
@@ -4197,7 +4202,10 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->orderBy('id', 'desc')->where('factory_id', $factory_id)->get();//add time condition
+        $orders = Order::where('is_deleted', "0")
+            ->orderBy('updated_at', 'desc')
+            ->where('factory_id', $factory_id)
+            ->get();//add time condition
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
