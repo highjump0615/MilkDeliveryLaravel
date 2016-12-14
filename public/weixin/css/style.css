@@ -155,7 +155,7 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .ordtop p{font-size:15px;}
 .ordsl .ordtop.nocart{border-bottom: none;}
 .ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1;}
-img.ordpro{min-height:60px; max-height:100px; height:auto;}
+img.ordpro{min-height:100px; max-height:120px; height:auto;}
 .ordyf{padding-top: 2%; font-size:1.4rem;}
 .ordye{ position:absolute; right:3%; bottom:3%; color:#ed5a02; font-size:1.4rem}
 .ordyf > span, .ordye > span{margin:0 10px;}
