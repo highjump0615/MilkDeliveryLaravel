@@ -1931,7 +1931,7 @@ class OrderCtrl extends Controller
                 $qb = MilkManDeliveryPlan::onlyTrashed()
                     ->where('order_product_id', $op->id)
                     ->where('deliver_at', '>=', $dateStopStart)
-                    ->where('deliver_at', '<=', $order->restart_at);
+                    ->where('deliver_at', '<=', $order->order_stop_end_date);
 
                 // 计算多余量
                 $nCountPlus = $qb->sum('changed_plan_count');
@@ -3393,7 +3393,7 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>=', getCurDateString())
+            ->where('restart_at', '>', getCurDateString())
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -3428,7 +3428,7 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $this->getCurrentStationId())
             ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>=', getCurDateString())
+            ->where('restart_at', '>', getCurDateString())
             ->orderBy('updated_at', 'desc')
             ->get();
 
