@@ -517,13 +517,7 @@
             change_order_day_num();
         });
 
-        $('.minus').click(function(){
-            change_order_day_num();
-        });
 
-        $('.plus').click(function(){
-            change_order_day_num();
-        });
 
         $('#start_at').change(function(){
             change_order_day_num();
@@ -701,6 +695,27 @@
             //get total order day numbers
             $('#order_day_num').text(order_day_num);
         }
+
+        $(".plus").click(function () {
+            $(this).prev().val(parseInt($(this).prev().val()) + 1);
+            if(parseInt($(this).prev().val()) >1 )
+            {
+                $(this).parent().find('.minus').removeClass("minusDisable");
+            }
+
+            change_order_day_num();
+        });
+        $(".minus").click(function () {
+            if (parseInt($(this).next().val()) > 1) {
+                $(this).next().val(parseInt($(this).next().val()) - 1);
+                $(this).removeClass("minusDisable");
+            }
+            if (parseInt($(this).next().val()) <= 1) {
+                $(this).addClass("minusDisable");
+            }
+
+            change_order_day_num();
+        });
 
     </script>
 
