@@ -78,10 +78,10 @@
         </div>
         <div class="dnsli clearfix">
             <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract product_total_count">
-                  <a class="subtract" href="javascript:;">-</a>
+                 <span class="minusplus product_total_count">
+                  <a class="minus" href="javascript:;">-</a>
                   <input type="text" id="total_count" value="{{$wop->total_count}}" style="ime-mode: disabled;">
-                  <a class="add" href="javascript:;">+</a>
+                  <a class="plus" href="javascript:;">+</a>
                  </span>（瓶）
         </div>
         <div class="dnsli clearfix">
@@ -107,20 +107,20 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" class="deliver_count_per_day" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" class="deliver_count_per_day" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
@@ -512,25 +512,16 @@
             change_order_day_num();
         });
 
-        $('.product_total_count .subtract').click(function(){
-            change_order_day_num();
-        });
-
-        $('.product_total_count .add').click(function(){
-            change_order_day_num();
-        });
-
-
         $('.deliver_count_per_day').change(function(){
 
             change_order_day_num();
         });
 
-        $('.deliver_plan_as .subtract').click(function(){
+        $('.minus').click(function(){
             change_order_day_num();
         });
 
-        $('.deliver_plan_as .add').click(function(){
+        $('.plus').click(function(){
             change_order_day_num();
         });
 

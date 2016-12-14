@@ -1,10 +1,7 @@
 @extends('weixin.layout.master')
 @section('title','产品详情')
 @section('css')
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
-    <link href="<?=asset('font-awesome/css/font-awesome.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/datepicker/datepicker3.css')?>" rel="stylesheet">
 
 @endsection
@@ -74,10 +71,10 @@
         </div>
         <div class="dnsli clearfix">
             <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract">
-                  <a class="subtract" href="javascript:;">-</a>
+                 <span class="minusplus">
+                  <a class="minus" href="javascript:;">-</a>
                   <input type="text" min="1" id="total_count" value="30" style="ime-mode: disabled;">
-                  <a class="add" href="javascript:;">+</a>
+                  <a class="plus" href="javascript:;">+</a>
                  </span>（瓶）
         </div>
 
@@ -104,20 +101,20 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
@@ -206,7 +203,6 @@
 
 @endsection
 @section('script')
-
     <script src="<?=asset('weixin/js/showfullcalendar.js')?>"></script>
     <script src="<?=asset('weixin/js/myweek.js')?>"></script>
 
@@ -629,6 +625,3 @@
     </script>
 
 @endsection
-
-
-
