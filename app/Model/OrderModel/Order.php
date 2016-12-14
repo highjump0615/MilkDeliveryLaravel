@@ -346,7 +346,7 @@ class Order extends Model
         $dateStop = date($this->stop_at);
         $dateRestart = date($this->restart_at);
 
-        if ($dateStop <= $dateCurrent && $dateCurrent <= $dateRestart) {
+        if ($dateStop <= $dateCurrent && $dateCurrent < $dateRestart) {
             return true;
         }
 
