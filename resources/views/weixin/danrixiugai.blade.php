@@ -74,13 +74,13 @@
 //                            location.reload();
                             location.href = SITE_URL + "weixin/dingdanrijihua";
                         } else {
-                            show_warning_msg('修改单日失败');
+                            show_warning_msg('剩余奶品数量不足，修改失败');
                             console.log(data.messages);
                         }
                     },
                     error: function (data) {
                         console.log(data);
-                        show_warning_msg('修改单日失败');
+                        show_warning_msg('剩余奶品数量不足，修改失败');
                     }
                 });
             }
