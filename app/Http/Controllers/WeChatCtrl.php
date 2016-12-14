@@ -122,12 +122,15 @@ class WeChatCtrl extends Controller
         $result = array();
         //province list
         $provinces = Address::where('level', 1)->where('factory_id', $factory_id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
-        foreach ($provinces as $province) {
-            $cities = Address::where('level', 2)->where('factory_id', $factory_id)
-                ->where('parent_id', $province->id)->where('is_active', 1)->where('is_deleted', 0)->get();
-            foreach ($cities as $city) {
-                $result[$province->name][] = $city->name;
+            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get()->all();
+        if(count($provinces)>0)
+        {
+            foreach ($provinces as $province) {
+                $cities = Address::where('level', 2)->where('factory_id', $factory_id)
+                    ->where('parent_id', $province->id)->where('is_active', 1)->where('is_deleted', 0)->get()->all();
+                foreach ($cities as $city) {
+                    $result[$province->name][] = $city->name;
+                }
             }
         }
 
@@ -888,7 +891,7 @@ class WeChatCtrl extends Controller
         $order->save();
 
         $notification = new NotificationsAdmin;
-        $notification->sendToWechatNotification($customer_id, "您的订单修改已提交，请耐心等待，客户将尽快核对您的订单信息");
+        $notification->sendToWechatNotification($customer_id, "您的订单修改已提交，请耐心等待，客户将尽快核对您的订单信息！");
 
         return response()->json(['status' => 'success']);
     }
@@ -1008,7 +1011,7 @@ class WeChatCtrl extends Controller
                 //notification to factory and wechat
                 $notification = new NotificationsAdmin;
                 $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer_name . "修改了订单, 请管理员尽快审核");
-                $notification->sendToWechatNotification($customer->id, '您的订单修改已提交，请耐心等待，客户将尽快核对您的');
+                $notification->sendToWechatNotification($customer->id, '您的订单修改已提交，请耐心等待，客户将尽快核对您的订单信息！');
 
                 return response()->json(['status' => 'success']);
             }
@@ -1086,7 +1089,7 @@ class WeChatCtrl extends Controller
 
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
-        $notification->sendToWechatNotification($customer_id, '单日修改成功，配送结果以实际配送为准.');
+        $notification->sendToWechatNotification($customer_id, '单日修改成功，配送结果以实际配送为准');
 
 
         if ($count == $success_count) {
@@ -2198,7 +2201,7 @@ class WeChatCtrl extends Controller
         $wxuser = WechatUser::find($wxuser_id);
 
         $address = session('address');
-        
+
         $product = $wop->product;
         $product_id = $product->id;
 
@@ -2515,7 +2518,7 @@ class WeChatCtrl extends Controller
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
-        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信');
+        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
 
         //if payment fails, delete order
@@ -2597,7 +2600,7 @@ class WeChatCtrl extends Controller
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
-        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信');
+        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
 
         return response()->json(['status' => 'success', 'order_id' => $order_id]);

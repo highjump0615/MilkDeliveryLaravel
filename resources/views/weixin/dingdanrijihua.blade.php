@@ -124,6 +124,9 @@
                 });
 
                 var day_td = $(this);
+                if($(day_td).hasClass('fc-past'))
+                        return;
+
                 var date = $(day_td).data('date');
 
                 if(date < edit_min_date)
