@@ -45,6 +45,7 @@ class Customer extends Model
             ->where(function ($query) {
                 $query->where('status', Order::ORDER_PASSED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
             })->get()->all();
 
         foreach($orders as $order)
@@ -63,6 +64,7 @@ class Customer extends Model
             ->where(function ($query) {
                 $query->where('status', Order::ORDER_PASSED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
             })->get()->all();
 
         foreach($orders as $order)
