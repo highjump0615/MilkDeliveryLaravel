@@ -11,7 +11,7 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="{{url('weixin/querendingdan')}}"></a>
+        <a class="headl fanh" href="javascript:history.back();"></a>
         <h1>产品更改</h1>
 
     </header>
