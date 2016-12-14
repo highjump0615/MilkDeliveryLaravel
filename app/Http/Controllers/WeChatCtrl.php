@@ -1089,10 +1089,10 @@ class WeChatCtrl extends Controller
         }
 
         if ($count == $success_count) {
-            return response()->json(['status' => 'success']);
             //notification to factory and wechat
             $notification = new NotificationsAdmin;
             $notification->sendToWechatNotification($customer_id, '单日修改成功，配送结果以实际配送为准');
+            return response()->json(['status' => 'success']);
         } else {
             return response()->json(['status' => 'fail', 'messages' => $messages]);
         }
