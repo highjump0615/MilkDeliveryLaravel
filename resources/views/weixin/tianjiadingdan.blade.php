@@ -622,6 +622,24 @@
             });
 
         });
+
+        $(".plus").click(function () {
+            $(this).prev().val(parseInt($(this).prev().val()) + 1);
+            if(parseInt($(this).prev().val()) >1 )
+            {
+                $(this).parent().find('.minus').removeClass("minusDisable");
+            }
+        });
+        $(".minus").click(function () {
+            if (parseInt($(this).next().val()) > 1) {
+                $(this).next().val(parseInt($(this).next().val()) - 1);
+                $(this).removeClass("minusDisable");
+            }
+            if (parseInt($(this).next().val()) <= 1) {
+                $(this).addClass("minusDisable");
+            }
+        });
+
     </script>
 
 @endsection
