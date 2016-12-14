@@ -195,24 +195,20 @@ class Order extends Model
 
     public function getSubAddressAttribute()
     {
-        $sub_addr = "";
-        $customer = $this->customer;
-        if($customer)
-        {
-            $sub_addr = $customer->sub_addr;
-        }
-
+        $sub_addr = str_replace($this->main_address, '', $this->address);
         return $sub_addr;
     }
 
     public function getMainAddressAttribute()
     {
         $main_addr = "";
-        $customer = $this->customer;
-        if($customer)
-        {
-            $main_addr = $customer->main_addr;
-        }
+        $addr = $this->address;
+        $addr_list = explode(' ', $addr);
+        $count = count($addr_list);
+        if($count>=5)
+            $main_addr = $addr_list[0].' '.$addr_list[1].' '.$addr_list[2].' '.$addr_list[3].' '.$addr_list[4];
+        else
+            $main_addr = $addr;
 
         return $main_addr;
     }
@@ -248,7 +244,10 @@ class Order extends Model
     public function getHasStoppedAttribute()
     {
         // 只考虑没过期的
-        if (strtotime('today') > strtotime($this->restart_at)) {
+        $dateCurrent = date(getCurDateString());
+        $dateRestart = date(getCurDateString());
+
+        if ($dateCurrent > $dateRestart) {
             return false;
         }
 
@@ -343,7 +342,11 @@ class Order extends Model
             return false;
         }
 
-        if (strtotime($this->stop_at) <= strtotime('today')  && strtotime('today') <= strtotime($this->restart_at)) {
+        $dateCurrent = date(getCurDateString());
+        $dateStop = date($this->stop_at);
+        $dateRestart = date($this->restart_at);
+
+        if ($dateStop <= $dateCurrent && $dateCurrent <= $dateRestart) {
             return true;
         }
 
@@ -454,7 +457,7 @@ class Order extends Model
                 // 不显示订单修改导致取消的明细
                 ->where(function($query) {
                     $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+                    $query->orwhere('cancel_reason', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
                 })
                 ->orderBy('deliver_at')
                 ->get();

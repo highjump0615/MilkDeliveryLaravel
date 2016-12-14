@@ -81,7 +81,7 @@
                         <button class="btn btn-success btn-outline btn-md  col-md-3"
                                 data-orderid="{{$order->id}}"
                                 data-stop-at="{{$order->stop_at}}"
-                                data-restart-at="{{$order->restart_at}}"
+                                data-restart-at="{{$order->order_stop_end_date}}"
                                 data-target="#restart_order_modal"
                                 data-toggle="modal"
                                 id="restart_order_bt">开始订单
