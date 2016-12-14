@@ -8,7 +8,7 @@ $(document).ready(function() {
         stop_start_able_date = order_start_date;
     }
 
-    var restart_able_date = s_timeCurrent;
+    var restart_able_date = new Date(s_timeCurrent);
     if (order_start_date > restart_able_date) {
         restart_able_date = order_start_date;
     }
