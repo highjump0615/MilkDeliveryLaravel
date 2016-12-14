@@ -16,14 +16,22 @@ class WechatUser extends Model
         'last_session',
         'last_used_ip',
         'image_url',
-
     ];
     
     public $timestamps = false;
 
     protected $appends = [
         'order_start_at',
+        'is_loggedin',
     ];
+
+    public function getIsLoggedinAttribute()
+    {
+        if($this->customer_id)
+            return true;
+        else
+            return false;
+    }
 
     public function getOrderStartAtAttribute()
     {

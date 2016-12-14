@@ -35,20 +35,6 @@ use Illuminate\Http\Request;
 class WeChatCtrl extends Controller
 {
 
-    public function isLoggedIn()
-    {
-        $wxuser_id = session('wechat_user_id');
-        $wxuser = WechatUser::find($wxuser_id);
-        $customer_id = $wxuser->customer_id;
-        if ($customer_id) {
-            session(['loggedin' => true]);
-            return true;
-        } else {
-            session(['loggedin' => false]);
-            return false;
-        }
-    }
-
     //First page
     public function showIndexPage(Request $request)
     {
@@ -88,8 +74,6 @@ class WeChatCtrl extends Controller
         } else {
             $wechat_user_id = session('wechat_user_id');
         }
-
-        $this->isLoggedIn();
 
 //        $factory_id = 1;
 //        $wechat_user_id = 113;
@@ -257,16 +241,13 @@ class WeChatCtrl extends Controller
                 ->where('status', WechatReview::UNREAD_STATUS)
                 ->get()
                 ->count();
-            $loggedin = true;
-            session(['loggedin' => true]);
-
         } else {
             $remain_order_amount = 0;
             $remaining_bottle_count = 0;
             $unread_cnt = 0;
-            $loggedin = false;
-            session(['loggedin' => false]);
         }
+
+        $loggedin = $wechat_user->is_loggedin;
 
         return view('weixin.gerenzhongxin', [
             'user' => $wechat_user,
@@ -282,15 +263,16 @@ class WeChatCtrl extends Controller
     public function dingdanrijihua(Request $request)
     {
 
-        if (session('loggedin') != true) {
-            return redirect()->route('dengji');
-        }
-
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
 
         $wxuser_id = session('wechat_user_id');
         $factory_id = session('factory_id');
+
+        if(!$wxuser_id || !$factory_id)
+        {
+            abort(403);
+        }
 
         //show all plans for order in passed, on_delivery, finished
 
@@ -390,6 +372,9 @@ class WeChatCtrl extends Controller
             $start = true;
 
         $wechat_user_id = session('wechat_user_id');
+        if(!$wechat_user_id)
+            abort(403);
+
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
         //after_changed_amount
@@ -1045,6 +1030,9 @@ class WeChatCtrl extends Controller
 
         //get plans for the date
         $wechat_user_id = session('wechat_user_id');
+        if(!$wechat_user_id)
+            abort(403);
+
         $wechat_user = WechatUser::find($wechat_user_id);
         $customer_id = $wechat_user->customer_id;
         $customer = Customer::find($customer_id);
@@ -1113,17 +1101,16 @@ class WeChatCtrl extends Controller
     public function dingdanliebiao(Request $request)
     {
         $wechat_user_id = session('wechat_user_id');
+        if(!$wechat_user_id)
+            abort(403);
+
         $wechat_user = WechatUser::find($wechat_user_id);
 
-        if (!session('loggedin')) {
+        if (!$wechat_user->is_loggedin) {
             return redirect()->route('dengji');
         }
 
         $type = $request->input('type');
-
-        if (!$wechat_user)
-            abort(403);
-
         $customer_id = $wechat_user->customer_id;
 
         if ($customer_id) {
@@ -1131,10 +1118,6 @@ class WeChatCtrl extends Controller
             $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
             $type = $request->input('type');
-
-            if (!session('loggedin')) {
-                return redirect()->route('dengji');
-            }
 
             $orders = Order::where('is_deleted', 0)
                 ->where('phone', $customer->phone);
@@ -1293,26 +1276,11 @@ class WeChatCtrl extends Controller
             $wechat_user_id = session('wechat_user_id');
         }
 
-
-        //check loggedin
-        $this->isLoggedIn();
-
         $address = session('address');
         if ($address == "" || !$address) {
             $address = $factory->first_active_address;
             session(['address' => $address]);
         }
-
-
-//        $factory_id = session('factory_id');
-//        $wechat_user_id = session('wechat_user_id');
-
-//        $factory = Factory::find($factory_id);
-
-//        if (!$factory) {
-//            abort(403);
-//        }
-
         $product_list = [];
 
         $products = $factory->active_products;
@@ -1469,6 +1437,9 @@ class WeChatCtrl extends Controller
     {
         $order_id = $request->input('order');
         $wechat_user_id = session('wechat_user_id');
+        if(!$wechat_user_id)
+            abort(403);
+        $wechat_user = WechatUser::find($wechat_user_id);
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->get()->count();
 
         $group_id = session('group_id');
@@ -1479,9 +1450,8 @@ class WeChatCtrl extends Controller
         //check logged in user's phone number ?= order = phone number
 
         $check = 'nov';
-        if (session('loggedin')) {
+        if ($wechat_user->is_loggedin) {
             //the user has loggedin
-            $wechat_user = WechatUser::find($wechat_user_id);
             $customer_id = $wechat_user->customer_id;
             $customer = Customer::find($customer_id);
             $order = Order::find($order_id);

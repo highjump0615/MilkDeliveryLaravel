@@ -62,14 +62,8 @@ Route::post('api/gongchang/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
 
 
 //Test
-Route::get('/tests', function () {
-    $a = "1.2345";
-    $b = "2.3456";
-
-    $term_start = (float)$a - (float)$b;
-    var_dump($term_start);
-    echo $term_start;
-});
+Route::get('/test', 'WeChatCtrl@test');
+Route::get('/apply', 'WeChatCtrl@apply');
 
 /*Send hourly notification*/
 Route::get('api/send_alert_to_deliverystation','NotificationsAdmin@sendHourlyRequstforPlan');
