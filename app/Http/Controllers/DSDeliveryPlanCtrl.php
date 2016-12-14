@@ -1027,12 +1027,12 @@ class DSDeliveryPlanCtrl extends Controller
             // 配送员信息，默认是第一个
             if (empty($current_milkman) && count($milkman) > 0) {
                 $current_milkman = $milkman[0]->id;
-
-                // 奶瓶回收
-                $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
-                    ->where('time',$deliver_date_str)
-                    ->get(['count','bottle_type']);
             }
+
+            // 奶瓶回收
+            $milkman_bottle_refunds = MilkmanBottleRefund::where('milkman_id',$current_milkman)
+                ->where('time',$deliver_date_str)
+                ->get(['count','bottle_type']);
 
             return view('naizhan.shengchan.peisongfanru',[
                 'pages'                     =>$pages,
