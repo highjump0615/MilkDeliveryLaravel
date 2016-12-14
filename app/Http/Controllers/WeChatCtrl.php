@@ -2481,7 +2481,7 @@ class WeChatCtrl extends Controller
         $today = $today_date->format('Y-m-d');
 
         //start at: wechat order product's first deliver at
-        $start_at = $wechat_user->order_start_at(group_id);
+        $start_at = $wechat_user->order_start_at($group_id);
 
         //make order
         $order = new Order;
