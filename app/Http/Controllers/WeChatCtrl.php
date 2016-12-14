@@ -295,6 +295,7 @@ class WeChatCtrl extends Controller
 //                    $query->where('status', Order::ORDER_FINISHED_STATUS);
                     $query->where('status', Order::ORDER_ON_DELIVERY_STATUS);
                     $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+                    $query->orwhere('status', Order::ORDER_STOPPED_STATUS);
                 })
                 ->orderBy('id', 'desc')
                 ->get()->all();
