@@ -21,7 +21,6 @@ class WechatUser extends Model
     public $timestamps = false;
 
     protected $appends = [
-        'order_start_at',
         'is_loggedin',
     ];
 
@@ -33,9 +32,9 @@ class WechatUser extends Model
             return false;
     }
 
-    public function getOrderStartAtAttribute()
+    public function order_start_at($group_id)
     {
-        $wops = WechatOrderProduct::where('wxuser_id', $this->id)->get()->all();
+        $wops = WechatOrderProduct::where('wxuser_id', $this->id)->where('group_id', $group_id)->get()->all();
 
         $first = true;
 
