@@ -11,7 +11,7 @@
 @section('content')
 
     <header>
-        <a class="headl fanh" href="{{url('weixin/querendingdan')}}"></a>
+        <a class="headl fanh" href="javascript:history.back();"></a>
         <h1>产品更改</h1>
 
     </header>
@@ -78,10 +78,10 @@
         </div>
         <div class="dnsli clearfix">
             <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract product_total_count">
-                  <a class="subtract" href="javascript:;">-</a>
+                 <span class="minusplus product_total_count">
+                  <a class="minus" href="javascript:;">-</a>
                   <input type="text" id="total_count" value="{{$wop->total_count}}" style="ime-mode: disabled;">
-                  <a class="add" href="javascript:;">+</a>
+                  <a class="plus" href="javascript:;">+</a>
                  </span>（瓶）
         </div>
         <div class="dnsli clearfix">
@@ -107,20 +107,20 @@
         <!-- 天天送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item0" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" class="deliver_count_per_day" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
         <!--隔日送 -->
         <div class="dnsli clearfix dnsel_item" id="dnsel_item1" style="display: none;">
             <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" class="deliver_count_per_day" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
         </div>
 
@@ -512,27 +512,12 @@
             change_order_day_num();
         });
 
-        $('.product_total_count .subtract').click(function(){
-            change_order_day_num();
-        });
-
-        $('.product_total_count .add').click(function(){
-            change_order_day_num();
-        });
-
-
         $('.deliver_count_per_day').change(function(){
 
             change_order_day_num();
         });
 
-        $('.deliver_plan_as .subtract').click(function(){
-            change_order_day_num();
-        });
 
-        $('.deliver_plan_as .add').click(function(){
-            change_order_day_num();
-        });
 
         $('#start_at').change(function(){
             change_order_day_num();
@@ -556,7 +541,7 @@
                     start++;
                     if(start>7)
                     {
-                        start  = 1;
+                        start  = 0;
                     }
 
                 }while(! array.hasOwnProperty(start));
@@ -594,7 +579,10 @@
             for(var i = 0 ; i <custom_array.length; i++ )
             {
                 var one_arr = custom_array[i].split(':');
-                value_array [one_arr[0]] = one_arr[1];
+                var index =one_arr[0];
+                if(index == "0")
+                        index = 7;
+                value_array [index] = one_arr[1];
             }
             //set start_date based on start_at day of week
             var start_at = $('#start_at').val();
@@ -687,12 +675,18 @@
             {
                 //show custom bottle count on week
                 var custom_date = week.get_submit_value();
-                order_day_num = get_order_days_from_week(total_count, custom_date);
+                if(!custom_date || custom_date=="" || custom_date==undefined)
+                    order_day_num="";
+                else
+                    order_day_num = get_order_days_from_week(total_count, custom_date);
 
             } else if (delivery_type == parseInt("{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}")){
 
                 var custom_date = calen.get_submit_value();
-                order_day_num = get_order_days_from_calendar(total_count, custom_date);
+                if(!custom_date)
+                    order_day_num="";
+                else
+                    order_day_num = get_order_days_from_calendar(total_count, custom_date);
 
             } else {
                 return;
@@ -701,6 +695,27 @@
             //get total order day numbers
             $('#order_day_num').text(order_day_num);
         }
+
+        $(".plus").click(function () {
+            $(this).prev().val(parseInt($(this).prev().val()) + 1);
+            if(parseInt($(this).prev().val()) >1 )
+            {
+                $(this).parent().find('.minus').removeClass("minusDisable");
+            }
+
+            change_order_day_num();
+        });
+        $(".minus").click(function () {
+            if (parseInt($(this).next().val()) > 1) {
+                $(this).next().val(parseInt($(this).next().val()) - 1);
+                $(this).removeClass("minusDisable");
+            }
+            if (parseInt($(this).next().val()) <= 1) {
+                $(this).addClass("minusDisable");
+            }
+
+            change_order_day_num();
+        });
 
     </script>
 

@@ -6,12 +6,7 @@
 @section('content')
 
     <header>
-        @if(isset($type))
-            <a class="headl fanh" href="{{url('weixin/dingdanliebiao?type='.$type)}}"></a>
-        @else
-            <a class="headl fanh" href="{{url('weixin/dingdanliebiao')}}"></a>
-        @endif
-        {{--<a class="headl fanh" href="javascript:history.back();"></a>--}}
+        <a class="headl fanh" href="{{url('weixin/dingdanliebiao?type=on_delivery')}}"></a>
         <h1>订单修改</h1>
     </header>
     @if(isset($order))
@@ -127,7 +122,13 @@
 
                 var index = $(this).data('index');
                 var order_id = $(this).data('order-id');
-
+                //Should remove one product at least
+                var length = $('.ordtop').length;
+                if(length <=1)
+                {
+                    show_err_msg('您不能删除最后一个订单产品');
+                    return;
+                }
                 $.ajax({
                     type: "POST",
                     url: SITE_URL + "weixin/api/remove_product_from_order",
@@ -139,8 +140,7 @@
                         if (data.status == "success") {
                             show_success_msg("删除奶品成功");
                             //go to dingdan xiangqing
-                            //window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
-                            location.reload();
+                            window.location.href = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
                         } else {
                             if (data.message) {
                                 show_warning_msg(data.message);
@@ -162,16 +162,11 @@
                     type: "POST",
                     url: SITE_URL + "weixin/api/cancel_change_order",
                     data: {
-                        'order_id': order_id
+                        'order_id': order_id,
                     },
                     success: function (data) {
                         if (data.status == "success") {
-                            @if(isset($type))
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao?type="+"{{$type}}";
-                            @else
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao";
-                            @endif
-
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao?type=on_delivery";
                         } else {
                             if (data.message) {
                                 show_warning_msg(data.message);
@@ -201,11 +196,7 @@
                     success: function (data) {
                         if (data.status == "success") {
                             show_success_msg('订单修改成功');
-                            @if(isset($type))
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao?type="+"{{$type}}";
-                            @else
-                                    window.location.href = SITE_URL + "weixin/dingdanliebiao";
-                            @endif
+                            window.location.href = SITE_URL + "weixin/dingdanliebiao?type=on_delivery";
                         } else {
                             if (data.message) {
                                 show_warning_msg(data.message);

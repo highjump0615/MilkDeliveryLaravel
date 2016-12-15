@@ -20,10 +20,10 @@
                     <img class="ordpro" src="<?=asset('/img/product/logo/'.$plan->plan_product_image)?>">
                     <p>{{$plan->product_name}}</p>
                     <div class="ordye">金额：{{$plan->plan_price}}元</div>
-                    <span class="addSubtract deliver_plan_as">
-                        <a class="subtract " href="javascript:;">-</a>
+                    <span class="minusplus">
+                        <a class="minus" href="javascript:;">-</a>
                         <input type="text" value="{{$plan->changed_plan_count}}" style="ime-mode: disabled;"/>
-                        <a class="add" href="javascript:;">+</a>
+                        <a class="plus" href="javascript:;">+</a>
                     </span>
                     <input type="hidden" class="change_plan_count" data-planid="{{$plan->id}}" data-origin = "{{$plan->changed_plan_count}}"/>
                 </li>
@@ -49,7 +49,7 @@
 
             var sendData = [];
             $('li.one_plan').each(function(){
-                var changed = parseInt($(this).find('span.addSubtract input').val());
+                var changed = parseInt($(this).find('span.minusplus input').val());
                 var origin = parseInt($(this).find('input.change_plan_count').data('origin'));
                 var plan_id = $(this).find('input.change_plan_count').data('planid');
 
@@ -74,17 +74,34 @@
 //                            location.reload();
                             location.href = SITE_URL + "weixin/dingdanrijihua";
                         } else {
-                            show_warning_msg('修改单日失败');
+                            show_warning_msg('剩余奶品数量不足，修改失败');
                             console.log(data.messages);
                         }
                     },
                     error: function (data) {
                         console.log(data);
-                        show_warning_msg('修改单日失败');
+                        show_warning_msg('剩余奶品数量不足，修改失败');
                     }
                 });
             }
 
+        });
+
+        $(".plus").click(function () {
+            $(this).prev().val(parseInt($(this).prev().val()) + 1);
+            if(parseInt($(this).prev().val()) >1 )
+            {
+                $(this).parent().find('.minus').removeClass("minusDisable");
+            }
+        });
+        $(".minus").click(function () {
+            if (parseInt($(this).next().val()) > 1) {
+                $(this).next().val(parseInt($(this).next().val()) - 1);
+                $(this).removeClass("minusDisable");
+            }
+            if (parseInt($(this).next().val()) <= 1) {
+                $(this).addClass("minusDisable");
+            }
         });
 
     </script>

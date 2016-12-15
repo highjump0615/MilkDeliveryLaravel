@@ -15,11 +15,7 @@
     </script>
 
     <header>
-        @if(isset($type))
-            <a class="headl fanh" href="{{url('weixin/gerenzhongxin')}}"></a>
-        @else
-            <a class="headl fanh" href="{{url('weixin/qianye')}}"></a>
-        @endif
+        <a class="headl fanh" href="javascript:history.back();"></a>
         <h1>订单列表</h1>
     </header>
 
@@ -30,7 +26,9 @@
             <div class="ordsl">
                 <div class="ordnum">
                     <span>订单日期: {{$o->ordered_at}}</span>
-                    <label>订单号：{{$o->number}}</label>&emsp;<label>状态: {{$o->status_name}}</label>
+                    <label>订单号：{{$o->number}}</label>
+                    <br>
+                    <label>状态: {{$o->status_name}}</label>
                 </div>
                 @forelse($o->order_products as $op)
                     <a href="{{url('/weixin/dingdanxiangqing?order='.$o->id)}}">
@@ -58,43 +56,7 @@
                 @endforelse
 
                 <div class="ordshz">
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
-                        <span class="shsp">
-                            @if(isset($type))
-                                <a href="{{url('/weixin/api/show_xuedan?order='.$o->id.'&&type='.$type)}}">续单</a>
-                            @else
-                                <a href="{{url('/weixin/api/show_xuedan?order='.$o->id)}}">续单</a>
-                            @endif
-                    </span>
-                    @endif
-
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
-                        <span class="shsp">
-                        <a href="{{url('/weixin/dingdanpingjia?order='.$o->id)}}">评价</a>
-                    </span>
-                    @endif
-
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
-                        $o->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
-                        $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <span class="shsp">
-                            @if(isset($type) && ($type !="none"))
-                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&type='.$type.'&&start=yes')}}">修改</a>
-                            @else
-                                <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&start=yes')}}">修改</a>
-                            @endif
-                    </span>
-                    @endif
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <span class="shsp-r">
-                    暂停订单
-                    <input type="checkbox" class="js-switch stop_order"
-                           data-start-at="{{$o->start_at}}"
-                           data-end-at="{{$o->order_end_date}}"
-                           data-order-id="{{$o->id}}"/>
-                    </span>
-                    @endif
-                    @if($o->status == \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS)
+                    @if($o->isStopped())
                         <span class="shsp-r">
                     开启订单
                     <input type="checkbox" class="js-switch restart_order"
@@ -102,6 +64,39 @@
                            data-stop-end-at="{{$o->restart_at}}"
                            data-order-id="{{$o->id}}"/>
                     </span>
+                    @else
+                        @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS || $o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS )
+                            <span class="shsp">
+                            <a href="{{url('/weixin/show_xuedan?order='.$o->id.'&&type='.$type)}}">续单</a>
+                    </span>
+                        @endif
+
+                        @if($o->status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS)
+                            <span class="shsp">
+                        <a href="{{url('/weixin/dingdanpingjia?order='.$o->id)}}">评价</a>
+                    </span>
+                        @endif
+
+                        @if($o->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS ||
+                            $o->status == \App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS ||
+                            $o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                            <span class="shsp">
+                            @if(isset($type) && ($type !="none"))
+                                    <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&type='.$type.'&&start=yes')}}">修改</a>
+                                @else
+                                    <a href="{{url('/weixin/dingdanxiugai?order='.$o->id.'&&start=yes')}}">修改</a>
+                                @endif
+                    </span>
+                        @endif
+                        @if($o->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
+                            <span class="shsp-r">
+                    暂停订单
+                    <input type="checkbox" class="js-switch stop_order"
+                           data-start-at="{{$o->start_at}}"
+                           data-end-at="{{$o->order_end_date}}"
+                           data-order-id="{{$o->id}}"/>
+                    </span>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -433,7 +428,10 @@
                     } else {
                         $('#restart_order_modal').modal('hide');
                         $(submit).prop('disabled', false);
-                        show_warning_msg("开启订单失败. " + data.message);
+                        if(data.message)
+                            show_warning_msg("开启订单失败. " + data.message);
+                        else
+                            show_warning_msg("开启订单失败. ");
 
                         var order_id = $('#apply_restart').data('order-id');
                         $('.restart_order[data-order-id = "' + order_id + '"]').trigger('click');

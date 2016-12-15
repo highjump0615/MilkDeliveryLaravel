@@ -7,7 +7,7 @@
 
     <div class="top">
         <h1>投诉建议</h1>
-        <a class="topa1" href="{{url('/weixin/gerenzhongxin')}}">&nbsp;</a>
+        <a class="topa1" href="javascript:history.back();">&nbsp;</a>
     </div>
 
 

@@ -40,7 +40,7 @@
 <body>
 <div class="container">
     <div class="content">
-        <div class="title">访问禁止</div>
+        <div class="title">会话失效，请关闭重新启动.</div>
     </div>
 </div>
 </body>
