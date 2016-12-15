@@ -3391,10 +3391,9 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $orders = Order::queryStopped()
+            ->where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>', getCurDateString())
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -3426,10 +3425,9 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $orders = Order::queryStopped()
+            ->where('is_deleted', "0")
             ->where('delivery_station_id', $this->getCurrentStationId())
-            ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>', getCurDateString())
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -4785,32 +4783,6 @@ class OrderCtrl extends Controller
 
             return response()->json(['status' => 'success', 'order_product_price' => $one_order_product_total_price]);
         }
-    }
-
-    public function update_order_status()
-    {
-        $now = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $now->format('Y-m-d');
-
-        Order::where('status', Order::ORDER_STOPPED_STATUS)
-            ->where('restart_at', $today)
-            ->update([
-                'status' => Order::ORDER_ON_DELIVERY_STATUS,
-                'stop_at' => '',
-                'restart_at' => '',
-                'status_changed_at' => (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s'),
-            ]);
-
-        Order::where('stop_at', $today)
-            ->where(function ($query) {
-                $query->where('status', Order::ORDER_PASSED_STATUS);
-                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-            })->update([
-                'status' => Order::ORDER_STOPPED_STATUS,
-                'status_changed_at' => (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s'),
-            ]);
-
-        return $today;
     }
 
     //MODULE

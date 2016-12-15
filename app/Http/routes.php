@@ -74,8 +74,6 @@ Route::get('/gongchang', function () {
     return view('gongchang.auth.login');
 });
 
-Route::get('/update-order-status', 'OrderCtrl@update_order_status');
-
 Route::group(['middleware' => ['gongchang']], function () {
 
     //get all product names
