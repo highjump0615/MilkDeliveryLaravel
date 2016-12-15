@@ -110,6 +110,34 @@
                     },
                     @endforeach
                 ],
+                viewRender: function (view, element) {
+                    var start_date = view.intervalStart;
+
+                    var cal_year = start_date.format('YYYY');
+                    var cal_month = start_date.format('MM');
+
+                    $(trs).each(function(){
+                        var tr = $(this);
+                        var date_str = tr.data('date');
+
+                        if(date_str != undefined) {
+                            var date_obj = new Date(date_str);
+
+                            var year = date_obj.getUTCFullYear();
+
+                            var month = date_obj.getUTCMonth() + 1;;
+
+                            if(cal_year == year && cal_month == month) {
+                                tr.show();
+                            } else {
+                                tr.hide();
+                            }
+
+                        }
+
+
+                    });
+                }
             });
 
             $('.footable').footable();
@@ -124,6 +152,9 @@
                 });
 
                 var day_td = $(this);
+                if($(day_td).hasClass('fc-past'))
+                        return;
+
                 var date = $(day_td).data('date');
 
                 if(date < edit_min_date)
