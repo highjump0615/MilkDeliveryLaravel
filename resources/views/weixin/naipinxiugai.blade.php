@@ -35,11 +35,11 @@
 
     <div class="dnsli  dnsli2 clearfix">
         <div class="dnsti">订奶数量：</div>
-                 <span class="addSubtract deliver_plan_as">
-                  <a class="subtract" href="javascript:;">-</a>
+                 <span class="minusplus">
+                  <a class="minus" href="javascript:;">-</a>
                   <input type="text" min="1" id="changed_product_count" value="{{$current_product_count}}"
                          max="{{$current_product_count}}">
-                  <a class="add" href="javascript:;">+</a>
+                  <a class="plus" href="javascript:;">+</a>
                  </span>（瓶）
     </div>
     <div class="dnsli clearfix">
@@ -65,20 +65,20 @@
     <!-- 天天送 -->
     <div class="dnsli clearfix dnsel_item" id="dnsel_item0">
         <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
     </div>
 
     <!--隔日送 -->
     <div class="dnsli clearfix dnsel_item" id="dnsel_item1">
         <div class="dnsti">每天配送数量：</div>
-            <span class="addSubtract deliver_plan_as">
-                <a class="subtract" href="javascript:;">-</a>
+            <span class="minusplus deliver_plan_as">
+                <a class="minus" href="javascript:;">-</a>
                 <input type="text" value="1" style="ime-mode: disabled;">
-                <a class="add" href="javascript:;">+</a>
+                <a class="plus" href="javascript:;">+</a>
             </span>（瓶）
     </div>
 
@@ -287,40 +287,27 @@
 
         //change order product count
 
+        function reset_order_info(){
+            var pcount = $('#changed_product_count').val();
+            var price = parseFloat($('#product_price').html());
+
+            var after_changed_amount = parseFloat(pcount * price).toFixed(2);
+            $('#after_changed_amount').html(after_changed_amount);
+
+            var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
+            $('#left_amount').html(left_amount.toFixed(2));
+        }
+
         $('#changed_product_count').change(function(){
-            var pcount = $(this).val();
-            var price = parseFloat($('#product_price').html());
-
-            var after_changed_amount = parseFloat(pcount * price).toFixed(2);
-            $('#after_changed_amount').html(after_changed_amount);
-
-            var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
-            $('#left_amount').html(left_amount.toFixed(2));
+          reset_order_info();
         });
 
-
-        $('.add').click(function(){
-
-            var pcount = $('#changed_product_count').val();
-            var price = parseFloat($('#product_price').html());
-
-            var after_changed_amount = parseFloat(pcount * price).toFixed(2);
-            $('#after_changed_amount').html(after_changed_amount);
-
-            var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
-            $('#left_amount').html(left_amount.toFixed(2));
+        $('.plus').click(function(){
+            reset_order_info();
         });
 
-        $('.subtract').click(function(){
-
-            var pcount = $('#changed_product_count').val();
-            var price = parseFloat($('#product_price').html());
-
-            var after_changed_amount = parseFloat(pcount * price).toFixed(2);
-            $('#after_changed_amount').html(after_changed_amount);
-
-            var left_amount = current_product_amount + current_order_remain_amount - after_changed_amount;
-            $('#left_amount').html(left_amount.toFixed(2));
+        $('.minus').click(function(){
+            reset_order_info();
         });
 
 
@@ -437,5 +424,21 @@
 
         });
 
+        $(".plus").click(function () {
+            $(this).prev().val(parseInt($(this).prev().val()) + 1);
+            if(parseInt($(this).prev().val()) >1 )
+            {
+                $(this).parent().find('.minus').removeClass("minusDisable");
+            }
+        });
+        $(".minus").click(function () {
+            if (parseInt($(this).next().val()) > 1) {
+                $(this).next().val(parseInt($(this).next().val()) - 1);
+                $(this).removeClass("minusDisable");
+            }
+            if (parseInt($(this).next().val()) <= 1) {
+                $(this).addClass("minusDisable");
+            }
+        });
     </script>
 @endsection

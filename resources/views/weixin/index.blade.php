@@ -31,7 +31,7 @@
             <li><a href="{{url('/weixin/dingdanrijihua')}}"><img src="<?=asset('weixin/images/nav1.png')?>">订单计划</a>
             </li>
             <li><a href="{{url('/weixin/toushu')}}"><img src="<?=asset('weixin/images/nav2.png')?>">咨询投诉</a></li>
-            <li><a href="{{url('/weixin/dingdanliebiao')}}"><img src="<?=asset('weixin/images/nav3.png')?>">修改订单</a>
+            <li><a href="{{url('/weixin/dingdanliebiao?type=on_delivery')}}"><img src="<?=asset('weixin/images/nav3.png')?>">修改订单</a>
             </li>
         </ul>
     </nav>
@@ -39,7 +39,7 @@
         <dl class="prob clearfix">
             <dt class="proti"><a href="javascript:void(0)">新品上市</a></dt>
             @forelse($products as $p)
-                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id)}}">
+                <dd class="prol"><a href="{{url('/weixin/tianjiadingdan?product='.$p[0]->id).'&&previous=index'}}">
                         <div class="milk_img_div">
                             <img class="bimg img-responsive" src="<?=asset('img/product/logo/' . $p[0]->photo_url1)?>">
                         </div>
@@ -181,7 +181,7 @@
 
         function go_to_product(pid)
         {
-            location.href = SITE_URL+"weixin/tianjiadingdan?product="+pid;
+            location.href = SITE_URL+"weixin/tianjiadingdan?product="+pid+'&&previous=index';
         }
 
     </script>

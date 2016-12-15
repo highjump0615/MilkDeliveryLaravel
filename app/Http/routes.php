@@ -62,14 +62,8 @@ Route::post('api/gongchang/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
 
 
 //Test
-Route::get('/tests', function () {
-    $a = "1.2345";
-    $b = "2.3456";
-
-    $term_start = (float)$a - (float)$b;
-    var_dump($term_start);
-    echo $term_start;
-});
+Route::get('/test', 'WeChatCtrl@test');
+Route::get('/apply', 'WeChatCtrl@apply');
 
 /*Send hourly notification*/
 Route::get('api/send_alert_to_deliverystation','NotificationsAdmin@sendHourlyRequstforPlan');
@@ -970,7 +964,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/dingdanxiangqing', 'WeChatCtrl@dingdanxiangqing');
 
     /* xuedan */
-    Route::get('api/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
+    Route::get('/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
     //make xudan based on created wechat order products
     Route::post('/api/make_order_from_wopids', 'WeChatCtrl@make_order_from_wopids');
 

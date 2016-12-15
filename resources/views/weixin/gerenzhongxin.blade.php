@@ -14,7 +14,7 @@
     <div class="top">
         <h1>个人中心</h1>
 
-        @if($verified=="yes")
+        @if($loggedin)
         <a class="topr1" href="{{url('/weixin/dengchu')}}">登出</a>
         @else
         <a class="topr1" href="{{url('/weixin/dengji')}}">登录</a>

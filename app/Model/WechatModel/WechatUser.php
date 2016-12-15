@@ -16,18 +16,25 @@ class WechatUser extends Model
         'last_session',
         'last_used_ip',
         'image_url',
-
     ];
     
     public $timestamps = false;
 
     protected $appends = [
-        'order_start_at',
+        'is_loggedin',
     ];
 
-    public function getOrderStartAtAttribute()
+    public function getIsLoggedinAttribute()
     {
-        $wops = WechatOrderProduct::where('wxuser_id', $this->id)->get()->all();
+        if($this->customer_id)
+            return true;
+        else
+            return false;
+    }
+
+    public function order_start_at($group_id)
+    {
+        $wops = WechatOrderProduct::where('wxuser_id', $this->id)->where('group_id', $group_id)->get()->all();
 
         $first = true;
 

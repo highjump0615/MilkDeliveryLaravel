@@ -154,8 +154,8 @@ header h1{ font-size:1.6rem; display: inline-block;}
 .ordtop{ padding:2% 3%; position:relative; font-size:0; min-height:150px;}
 .ordtop p{font-size:15px;}
 .ordsl .ordtop.nocart{border-bottom: none;}
-.ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1}
-img.ordpro{min-height:120px;}
+.ordpro{ margin-right:2%; margin-left:2%; float:left; display:inline-block; width:26%; border:1px solid #e1e1e1;}
+img.ordpro{min-height:100px; max-height:120px; height:auto;}
 .ordyf{padding-top: 2%; font-size:1.4rem;}
 .ordye{ position:absolute; right:3%; bottom:3%; color:#ed5a02; font-size:1.4rem}
 .ordyf > span, .ordye > span{margin:0 10px;}
@@ -337,7 +337,7 @@ button.fsyzm{ margin-left:1%; display:inline-block; width:29%; color:#9c9c9c; li
 .cen_menu{ clear:both; padding-top:5%; padding-bottom:10%}
 .cen_menu li{height:38px; line-height:38px; border-bottom:solid 1px #ccc; }
 .cen_menu li span{ float:right; background:url(../images/td.png) right; text-align:right; background-repeat:no-repeat; background-size:8px; padding-right:15px;}
-.cen_menu li span.unread{padding-left: 10px; background:antiquewhite; border-radius: 50%;  padding-right: 10px; line-height: 30px; margin-top: 5px;}
+.cen_menu li span.unread{padding-left: 10px; background:#f00;color:#fff; border-radius: 50%;  padding-right: 10px; line-height: 30px; margin-top: 5px;}
 
 /*我的评价*/
 .pj_t{ height:35px; line-height:35px; border-bottom:solid 1px #ccc; font-size:1.6rem; margin-bottom:10px; text-indent:10px;}
@@ -411,3 +411,11 @@ button{border-style:none;}
 /*Calendar*/
 .fc-past{ background-color:rgb(243, 243, 243);}
 #order_remain_amount{display: none;}
+
+.minusplus{height:24px; line-height:24px; overflow:hidden;display:inline-block; margin-right:5px; width:78px; vertical-align:middle; background:#e7e7e7}
+.minusplus a{width:23px;display:inline-block; text-align:center}
+.minusplus a.minus,.minusplus a.minusDisable{ float:left}
+.minusplus a.plus,.minusplus a.plusDisable{float:right}
+.minusplus a.minusDisable{ background:#f3f3f3}
+.minusplus a.plusDisable{ background:#f3f3f3}
+.minusplus input{float:left;line-height:26px; height:24px;border:0;width:30px;text-align:center;border-left:1px solid #fff;border-right:1px solid #fff; outline:none; background:none; font-size:1.3rem}
