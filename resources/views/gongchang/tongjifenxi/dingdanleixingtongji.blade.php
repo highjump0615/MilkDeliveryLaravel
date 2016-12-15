@@ -123,12 +123,12 @@
 							</tr>
 							<tr class="milk_amount">
 								<td>单数合计</td>
-								<td class="total">{{$st->yuedan_xin_total/30}}</td>
-								<td class="remain">{{$st->yuedan_xu_total/30}}</td>
-								<td class="total">{{$st->jidan_xin_total/90}}</td>
-								<td class="remain">{{$st->jidan_xu_total/90}}</td>
-								<td class="total">{{$st->banniandan_xin_total/180}}</td>
-								<td class="remain">{{$st->banniandan_xu_total/180}}</td>
+								<td class="total">{{round($st->yuedan_xin_total/30, 2)}}</td>
+								<td class="remain">{{round($st->yuedan_xu_total/30, 2)}}</td>
+								<td class="total">{{round($st->jidan_xin_total/90, 2)}}</td>
+								<td class="remain">{{round($st->jidan_xu_total/90, 2)}}</td>
+								<td class="total">{{round($st->banniandan_xin_total/180, 2)}}</td>
+								<td class="remain">{{round($st->banniandan_xu_total/180, 2)}}</td>
 								<td class="f_total"></td>
 								<td class="f_remain"></td>
 							</tr>
