@@ -231,10 +231,24 @@ class Order extends Model
         return $remain;
     }
 
+    /**
+     * 重写获取status字段
+     * @return int
+     */
+    public function getStatusAttribute(){
+        $nStatus = $this->attributes['status'];
+
+        // 假装设置STOPPED状态
+        if ($this->isStopped()) {
+            $nStatus = Order::ORDER_STOPPED_STATUS;
+        }
+
+        return $nStatus;
+    }
+
     public function setStatusAttribute($value){
-        $now = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $this->attributes['status'] = $value;
-        $this->attributes['status_changed_at'] = $now->format('Y-m-d');
+        $this->attributes['status_changed_at'] = getCurDateString();
     }
 
     /**
@@ -352,6 +366,14 @@ class Order extends Model
         }
 
         return false;
+    }
+
+    /**
+     * 获取暂停订单
+     * @return QueryBuiler
+     */
+    public static function queryStopped() {
+        return Order::where('stop_at', '<=', getCurDateString())->where('restart_at', '>', getCurDateString());
     }
 
     public function getDeliveryPlansSentToProductionPlanAttribute()
