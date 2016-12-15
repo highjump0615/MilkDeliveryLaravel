@@ -582,8 +582,8 @@ class FactoryStatistics extends Controller
         }
 
         /* 16. 暂停客户数 *//* 17. 剩余订单金额 */
-        $res = Order::where('is_deleted', 0)
-            ->where('status', Order::ORDER_STOPPED_STATUS)
+        $res = Order::queryStopped()
+            ->where('is_deleted', 0)
             ->groupBy('station_id')
             ->selectRaw('station_id, count(*) as count, sum(total_amount) as sum')
             ->get();
@@ -715,8 +715,8 @@ class FactoryStatistics extends Controller
         }
 
 
-        $res = Order::where('is_deleted', 0)
-            ->where('status', Order::ORDER_STOPPED_STATUS)
+        $res = Order::queryStopped()
+            ->where('is_deleted', 0)
             ->whereBetween('status_changed_at', array($start_date, $end_date))
             ->selectRaw('station_id, count(*) as count')
             ->get();

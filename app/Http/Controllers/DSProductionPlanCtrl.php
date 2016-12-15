@@ -237,19 +237,6 @@ class DSProductionPlanCtrl extends Controller
                 $mp->save();
             }
         }
-        $orders_stop = Order::where('station_id',$current_station_id)->where('stop_at',$current_date_str)->get();
-        foreach ($orders_stop as $od){
-            if($od->status == Order::ORDER_PASSED_STATUS || $od->status == Order::ORDER_ON_DELIVERY_STATUS)
-            $od->status = Order::ORDER_STOPPED_STATUS;
-            $od->save();
-        }
-        $orders_restart = Order::where('station_id',$current_station_id)->where('restart_at',$current_date_str)->get();
-        foreach ($orders_restart as $od){
-            if($od->status == Order::ORDER_STOPPED_STATUS){
-                $od->status = Order::ORDER_ON_DELIVERY_STATUS;
-                $od->save();
-            }
-        }
 
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
