@@ -1903,7 +1903,7 @@ class OrderCtrl extends Controller
      * @param $start_date
      * @param $end_date
      * @param $order_id
-     * @param $includeEnd 是否包括结束那天
+     * @param $forRestart 是否包括结束那天
      * @return \Illuminate\Http\JsonResponse
      */
     private function pauseOrder($start_date, $end_date, $order, $forRestart) {
@@ -1943,26 +1943,24 @@ class OrderCtrl extends Controller
         }
 
         // 暂停时间设置
-        $last = new DateTime($end_date);
-        $last_date = $last->modify('+1 day');
-        $restart_date = $last_date->format('Y-m-d');
+        $strRestartDate = $end_date;
+        if (!$forRestart) {
+            $last = new DateTime($end_date);
+            $last_date = $last->modify('+1 day');
+            $strRestartDate = $last_date->format('Y-m-d');
+        }
 
         $order->stop_at = $start_date;
-        $order->restart_at = $restart_date;
+        $order->restart_at = $strRestartDate;
         $order->save();
 
         foreach ($order_products as $op) {
             //
             // 重新规划配送明细
             //
-            if ($forRestart) {
-                $end_date = $end->modify('-1 day');
-                $end_date = $end_date->format('Y-m-d');
-            }
-
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
                 ->where('deliver_at', '>=', $start_date)
-                ->where('deliver_at', '<=', $end_date);
+                ->where('deliver_at', '<', $strRestartDate);
 
             // 计算多余量
             $nCountExtra = $qb->sum('changed_plan_count');

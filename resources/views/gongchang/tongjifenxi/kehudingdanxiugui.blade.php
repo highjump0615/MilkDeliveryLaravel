@@ -78,8 +78,8 @@
 									<th data-sort-ignore="true" rowspan="2">配送规则修改</th>
 								</tr>
 								<tr>
-									<th data-sort-ignore="true">增加单词配送量</th>
-									<th data-sort-ignore="true">减少单词配送量</th>
+									<th data-sort-ignore="true">增加单次配送量</th>
+									<th data-sort-ignore="true">减少单次配送量</th>
 									<th data-sort-ignore="true">鲜奶调换酸奶</th>
 									<th data-sort-ignore="true">酸奶调换鲜奶</th>
 									<th data-sort-ignore="true">酸奶变更口味</th>
