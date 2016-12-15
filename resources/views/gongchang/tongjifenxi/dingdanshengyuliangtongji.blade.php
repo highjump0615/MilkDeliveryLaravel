@@ -130,11 +130,11 @@
 							</tr>
 							<tr class="milk_amount">
 								<td>单数合计</td>
-								<td class="total">{{$st->t_yuedan/30}}</td>
+								<td class="total">{{round($st->t_yuedan/30, 2)}}</td>
 								<td class="remain">{{round((($st->t_yuedan-$st->r_yuedan)/30),2)}}</td>
-								<td class="total">{{$st->t_jidan/90}}</td>
+								<td class="total">{{round($st->t_jidan/90)}}</td>
 								<td class="remain">{{round((($st->t_jidan-$st->r_jidan)/90),2)}}</td>
-								<td class="total">{{$st->t_banniandan/180}}</td>
+								<td class="total">{{round($st->t_banniandan/180)}}</td>
 								<td class="remain">{{round((($st->t_banniandan-$st->r_banniandan)/180),2)}}</td>
 								<td class="f_total"></td>
 								<td class="f_remain"></td>
