@@ -116,6 +116,9 @@ $('button[data-action="show_selected"]').click(function () {
         o_factory = tr.find('td.o_factory_station').data('fid');
         o_station = tr.find('td.o_factory_station').data('sid');
 
+        // 去掉时间为 00:00:00，只考虑日期
+        var oo = new Date(o_date);
+        oo.setHours(0, 0, 0);
 
         if (f_factory == "none" || f_factory == o_factory) {
             tr.attr('data-show-1', '1');
@@ -123,20 +126,12 @@ $('button[data-action="show_selected"]').click(function () {
             tr.attr('data-show-1', '0');
         }
 
-        if (f_station == "none" || f_station == o_station) {
-            tr.attr('data-show-2', '1');
-        } else {
-            tr.attr('data-show-2', '0');
-        }
-
-
         if ((f_start_date == "" && f_end_date == "")) {
             tr.attr("data-show-3", "1");
 
         } else if (f_start_date == "" && f_end_date != "") {
 
             var f2 = new Date(f_end_date);
-            var oo = new Date(o_date);
             if (oo <= f2) {
                 tr.attr("data-show-3", "1");
             } else {
@@ -146,7 +141,6 @@ $('button[data-action="show_selected"]').click(function () {
         } else if (f_start_date != "" && f_end_date == "") {
 
             var f1 = new Date(f_start_date);
-            var oo = new Date(o_date);
             if (oo >= f1) {
                 tr.attr("data-show-3", "1");
             } else {
@@ -156,7 +150,6 @@ $('button[data-action="show_selected"]').click(function () {
             //f_start_date, f_end_date, o_date
             var f1 = new Date(f_start_date);
             var f2 = new Date(f_end_date);
-            var oo = new Date(o_date);
             if (f1 <= f2 && f1 <= oo && oo <= f2) {
                 tr.attr("data-show-3", "1");
 
@@ -168,7 +161,7 @@ $('button[data-action="show_selected"]').click(function () {
             }
         }
 
-        if ((tr.attr("data-show-1") == "1" ) && (tr.attr("data-show-2") == "1" ) && (tr.attr("data-show-3") == "1" )) {
+        if ((tr.attr("data-show-1") == "1" ) && (tr.attr("data-show-3") == "1" )) {
             //tr.removeClass('hide');
             filter_rows[i] = $(tr)[0].outerHTML;
             i++;
