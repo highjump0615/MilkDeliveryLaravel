@@ -60,7 +60,7 @@
                     </div>
 -->
                     <label class="col-md-offset-3 col-md-1 control-label text-right" style="padding-top:5px;">日期:</label>
-                    <div class="col-md-3">
+                    <div class="col-md-3 data_range_select">
                         <div class="input-daterange input-group">
                             <input id="filter_start_date" type="text" class="input-md form-control" name="start"/>
                             <span class="input-group-addon">至</span>
