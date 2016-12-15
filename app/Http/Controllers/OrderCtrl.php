@@ -116,7 +116,8 @@ class OrderCtrl extends Controller
 
                     $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
                     $daynums = $this->days_in_month($deliver_at);
-                } else {
+                }
+                else {
                     //get avaiable key value > current_key
                     $old_key = $key;
 

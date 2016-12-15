@@ -261,6 +261,8 @@ class Order extends Model
 
     public function getStatusNameAttribute()
     {
+        $status_name="待审核";
+
         switch($this->status)
         {
             case $this::ORDER_NEW_WAITING_STATUS:
@@ -287,7 +289,6 @@ class Order extends Model
                 $status_name="退订";
                 break;
             default:
-                $status_name="待审核";
                 break;
         }
 
@@ -457,7 +458,7 @@ class Order extends Model
                 // 不显示订单修改导致取消的明细
                 ->where(function($query) {
                     $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
                 })
                 ->orderBy('deliver_at')
                 ->get();
