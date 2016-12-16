@@ -53,10 +53,6 @@ $(document).on('change', '#area', function () {
                 role += '</td></tr>';
             }
             $('#xiaoqi_table').append(role);
-            $('.i-checks').iCheck({
-                checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
-            });
         },
         error:function (data) {
             console.log('Error:',data);

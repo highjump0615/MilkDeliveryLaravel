@@ -16,7 +16,7 @@ $(document).on('click','#search',function () {
     var end_date = $('#end_date').val();
     var province = $('#province option:selected').val();
     window.location.href = SITE_URL+"milk/public/gongchang/tongjifenxi/daoqidingdantongji/?station_name="+station_name+"&station_number="+station_number+"&start_date="+start_date+"&end_date="+end_date+"&province="+province+"&city="+city+"&district="+district+"";
-})
+});
 
 $('.province_list').on('change', function () {
 
@@ -129,13 +129,6 @@ $('.district_list').on('change', function () {
     district = current_district;
 });
 
-$(document).ready(function(){
-    $('.i-checks').iCheck({
-        checkboxClass: 'icheckbox_square-green',
-        radioClass: 'iradio_square-green'
-    });
-    $('.table').treeTable();
-});
 $('.footable').footable();
 
 $('#data_range_select .input-daterange').datepicker({

@@ -1,10 +1,8 @@
 @extends('gongchang.layout.master')
 @section('css')
-	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
 
 	<link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
 	
-	<link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 	<!-- Star Rating -->
     <link href="<?=asset('css/plugins/star-rating/star-rating.css') ?>" media="all" rel="stylesheet" type="text/css" />
 	<link href="<?=asset('css/plugins/star-rating/themes/krajee-fa/theme.css') ?>" media="all" rel="stylesheet" type="text/css" />
@@ -160,7 +158,6 @@
 @section('script')
 	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
    
-	<script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
     <!-- Data picker -->
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 

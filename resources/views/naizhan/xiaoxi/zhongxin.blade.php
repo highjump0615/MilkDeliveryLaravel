@@ -1,8 +1,6 @@
 @extends('naizhan.layout.master')
 
 @section('css')
-	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
-	<link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -126,7 +124,6 @@
 @section('script')
 	<script src="<?=asset('js/global.js')?>"></script>
 	<script src="<?=asset('js/pages/naizhan/xiaoxizhongxin.js')?>"></script>
-	<script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
     <script type="text/javascript">
     	$(document).ready(function(){
             $('.i-checks').iCheck({
