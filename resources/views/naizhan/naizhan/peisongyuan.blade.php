@@ -2,7 +2,6 @@
 
 @section('css')
     <link href="<?=asset('css/plugins/chosen/chosen.css')?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/iCheck/custom.css')?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -260,7 +259,6 @@
 @section('script')
 
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
     <script src="<?=asset('js/global.js')?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
 

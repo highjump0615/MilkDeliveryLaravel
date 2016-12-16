@@ -1,17 +1,12 @@
 @extends('gongchang.layout.master')
 @section('css')
     <!--Multi Selector-->
-    <link href="<?=asset('css/plugins/select2/select2.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">
 
     <style type="text/css">
 
         select {
             height: 35px;
-            width: 100%;
-        }
-
-        span.select2 {
             width: 100%;
         }
 

@@ -1,6 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/pages/order_detail_product.css')?>" rel="stylesheet">
     <style>
         #save_sub_addr {

@@ -1,7 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
-
     <!--Multi Selector-->
     <link href="<?=asset('css/plugins/select2/select2.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">

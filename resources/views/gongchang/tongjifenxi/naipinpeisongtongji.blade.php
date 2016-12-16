@@ -1,7 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
-	<link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -139,7 +137,6 @@
 
 @section('script')
 	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
-	<script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
     <!-- Data picker -->
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 

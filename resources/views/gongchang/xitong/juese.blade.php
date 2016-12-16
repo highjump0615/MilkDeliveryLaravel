@@ -1,6 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/added/build.css') ?>" rel="stylesheet">
 
     <style type="text/css">
@@ -237,23 +236,12 @@
     <meta name="_token" content="{!! csrf_token() !!}" />
     <!--Get API_URL-->
     <script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
-    <!--iCheck-->
-    <script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
-    <!--Treeview for permission table-->
-    <script type="text/javascript" src="<?=asset('js/plugins/added/treetable.js') ?>"></script>
     <!--Apply Ajax for Role_name table-->
     <script type="text/javascript" src="<?=asset('js/ajax/jueseajax.js') ?>"></script>
     <!--Apply Ajax for Permission table-->
     <script type="text/javascript" src="<?=asset('js/ajax/juesepermission.js') ?>"></script>
     <script>
         $(document).ready(function () {
-            $('.i-checks').iCheck({
-                checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
-            });
-
-            $('.table').treeTable();
-
             var role_id = $('#user_role_id').val();
             $('#role'+role_id+'').addClass('active').siblings().removeClass('active');
             $(document).bind('selectstart dragstart', function (e) {
