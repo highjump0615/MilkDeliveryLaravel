@@ -192,6 +192,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/kehu_admin.js')?>"></script>
 @endsection

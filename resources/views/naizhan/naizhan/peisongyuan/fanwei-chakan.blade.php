@@ -174,7 +174,6 @@
 
 @section('script')
 	<script src="<?=asset('js/plugins/multiselect/multiselect.min.js') ?>"></script>
-	<script src="<?=asset('js/global.js')?>"></script>
 	<script src="<?=asset('js/pages/naizhan/peisongyuan_area_change.js')?>"></script>
 
 	<script>

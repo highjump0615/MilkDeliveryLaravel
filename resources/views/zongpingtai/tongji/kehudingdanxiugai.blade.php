@@ -85,7 +85,6 @@
 									<th>鲜奶调换酸奶</th>
 									<th>酸奶调换鲜奶</th>
 									<th>酸奶变更口味</th>
-									<th></th>
 								</tr>
                             </thead>
 							<tbody>

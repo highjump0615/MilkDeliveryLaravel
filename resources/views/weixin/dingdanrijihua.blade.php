@@ -2,7 +2,6 @@
 @section('title','订单日计划修改')
 @section('css')
     <link href="<?=asset('weixin/css/fullcalendar.min.css')?>" rel="stylesheet"/>
-    <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -67,8 +66,7 @@
 @endsection
 @section('script')
     <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
-    <!-- FooTable -->
-    <script src="<?=asset('js/plugins/footable/footable.all.min.js') ?>"></script>
+
     <script type="text/javascript">
 
         var today = "{{$today}}";
@@ -139,8 +137,6 @@
                     });
                 }
             });
-
-            $('.footable').footable();
 
             $(document).on('click', '#calendar table thead tr td.fc-day-top', function () {
 

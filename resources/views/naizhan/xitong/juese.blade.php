@@ -184,8 +184,7 @@
 
 @section('script')
     <meta name="_token" content="{!! csrf_token() !!}" />
-    <!--Get API_URL-->
-    <script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
+
     <!--Apply Ajax for Role_name table-->
     <script type="text/javascript" src="<?=asset('js/pages/naizhan/jueseajax.js') ?>"></script>
     <!--Apply Ajax for Permission table-->

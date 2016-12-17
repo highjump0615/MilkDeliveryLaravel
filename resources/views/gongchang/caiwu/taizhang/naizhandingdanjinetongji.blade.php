@@ -1,7 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <!-- FooTable -->
-    <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')

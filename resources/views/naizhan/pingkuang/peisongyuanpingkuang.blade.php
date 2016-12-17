@@ -98,6 +98,5 @@
 	</div>
 @endsection
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/peisongyuanpingkuang.js') ?>"></script>
 @endsection

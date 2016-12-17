@@ -116,16 +116,14 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/global.js')?>"></script>
+
 	<script src="<?=asset('js/pages/gongchang/xiaoxizhongxin.js')?>"></script>
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 
     <script type="text/javascript">
 		$(document).ready(function(){
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green',
+                radioClass: 'iradio_square-green'
             });
         });
 		$('#data_range_select .input-daterange').datepicker({

@@ -21,7 +21,7 @@
 		<div class="row">
 			@if($today_status == 0)
 				<div class="ibox-content">
-					<p><b>今天状态</b></p>
+					<p><b>&nbsp;&nbsp;&nbsp;今天状态</b></p>
 					<table id="today_input" class="table table-bordered">
 						<thead>
 						<tr>

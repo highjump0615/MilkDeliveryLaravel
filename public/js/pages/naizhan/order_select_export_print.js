@@ -173,107 +173,12 @@ $('button[data-action = "export_csv"]').click(function () {
     var od = $('#order_table').css('display');
     var fd = $('#filter_table').css('display');
 
-    var sendData = [];
-
-    var i = 0;
     if (od != "none") {
-        //send order data
-        $('#order_table thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data="";
-
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#order_table tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data="";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-
+        data_export('order_table', 0, '');
     }
     else if (fd != "none") {
-        //send filter data
-        $('#filter_table thead tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('th').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data="";
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
-        $('#filter_table tbody tr').each(function () {
-            var tr = $(this);
-            var trdata = [];
-
-            var j = 0;
-            $(tr).find('td').each(function () {
-                var td = $(this);
-                var td_data = td.html().toString().trim();
-                if (td_data.includes('span') || td_data.includes('button') || td_data.includes('href'))
-                    td_data="";
-
-                trdata[j] = td_data;
-                j++;
-            });
-            sendData[i] = trdata;
-            i++;
-        });
-
+        data_export('filter_table', 0, '');
     }
-    else {
-        return;
-    }
-
-    var send_data = {"data": sendData};
-
-    $.ajax({
-        type: 'POST',
-        url: API_URL + "export",
-        data: send_data,
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var path = data.path;
-                location.href = path;
-            }
-        },
-        error: function (data) {
-            //console.log(data);
-        }
-    })
 });
 
 //Pring
@@ -282,24 +187,12 @@ $('button[data-action = "print"]').click(function () {
     var od = $('#order_table').css('display');
     var fd = $('#filter_table').css('display');
 
-    var printContents;
     if (od != "none") {
-        //print order data
-        printContents = document.getElementById("order_table").outerHTML;
-
-    } else if (fd != "none") {
-        //print filter data
-        printContents = document.getElementById("filter_table").outerHTML;
-    } else {
-        return;
+        printContent('order_table', 0, '');
     }
-
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    else if (fd != "none") {
+        printContent('filter_table', 0, '');
+    }
 });
 
 

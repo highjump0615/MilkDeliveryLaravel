@@ -111,7 +111,7 @@
                                 <th data-sort-ignore="true">时间</th>
                                 <th data-sort-ignore="true">客户名</th>
                                 <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">交易号</th>
+                                <th data-sort-ignore="true">订单号</th>
                                 <th data-sort-ignore="true">收款方</th>
                                 <th data-sort-ignore="true">状态</th>
                             </tr>
@@ -152,7 +152,7 @@
                                 <th data-sort-ignore="true">时间</th>
                                 <th data-sort-ignore="true">客户名</th>
                                 <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">交易号</th>
+                                <th data-sort-ignore="true">订单号</th>
                                 <th data-sort-ignore="true">收款方</th>
                                 <th data-sort-ignore="true">状态</th>
                             </tr>

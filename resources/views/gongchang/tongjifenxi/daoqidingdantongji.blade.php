@@ -136,11 +136,5 @@
 @endsection
 
 @section('script')
-@section('script')
-	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
-   
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
-
 	<script type="text/javascript" src="<?=asset('js/pages/gongchang/daoqidingdan.js')?>"></script>
 @endsection
