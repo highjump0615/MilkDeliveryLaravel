@@ -328,9 +328,6 @@
     </div>
 @endsection
 @section('script')
-    <!-- Chosen -->
-    <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-
     <script src="<?=asset('js/plugins/simpleimgupload/jquery.uploadimg.js') ?>"></script>
 
     <script>

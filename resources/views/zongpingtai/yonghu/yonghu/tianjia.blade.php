@@ -149,8 +149,6 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/cropper/cropper.min.js')?>"></script>
-	<script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 	<script>
 		$('#date_1 .input-group.date').datepicker({
 			todayBtn: "linked",

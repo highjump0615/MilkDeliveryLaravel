@@ -157,7 +157,7 @@
         var swiper = new Swiper('.swiper-container', {
             spaceBetween: 30,
             slidesPerView: 4,
-            freeMode: true,
+            freeMode: true
         });
 
         var current_menu = 1;

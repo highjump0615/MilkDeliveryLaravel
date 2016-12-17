@@ -49,10 +49,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2" style="padding-top:5px;">
-                            <button type="button" class="btn btn-success btn-m-d" data-action="show_selected">筛选
-                            </button>
-                            &nbsp;
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-success btn-m-d" data-action="show_selected">筛选</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="print">打印</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="export_csv">导出</button>
                         </div>
@@ -259,7 +257,6 @@
 @section('script')
 
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/global.js')?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
 
 @endsection

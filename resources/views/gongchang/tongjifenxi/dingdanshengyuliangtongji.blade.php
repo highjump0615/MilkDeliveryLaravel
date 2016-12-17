@@ -166,6 +166,5 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 	<script src="<?=asset('js/pages/gongchang/dingdanshengyuliangtongji.js') ?>"></script>
 @endsection

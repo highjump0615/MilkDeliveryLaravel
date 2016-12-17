@@ -226,8 +226,7 @@
 @section('script')
 	<meta name="_token" content="{!! csrf_token() !!}" />
 	<script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
-	<!--Get API_URL-->
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
+
 	<!--Apply Ajax for Role_name table-->
 	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/jueseajax.js') ?>"></script>
 	<!--Apply Ajax for Permission table-->

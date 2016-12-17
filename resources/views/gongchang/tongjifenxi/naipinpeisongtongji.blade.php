@@ -136,9 +136,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
-
 	<script src="<?=asset('js/pages/gongchang/naipinpeisongtongji.js') ?>"></script>
 @endsection

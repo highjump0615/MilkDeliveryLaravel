@@ -1,8 +1,6 @@
 @extends('gongchang.layout.master')
 @section('css')
 
-	<link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
-	
 	<!-- Star Rating -->
     <link href="<?=asset('css/plugins/star-rating/star-rating.css') ?>" media="all" rel="stylesheet" type="text/css" />
 	<link href="<?=asset('css/plugins/star-rating/themes/krajee-fa/theme.css') ?>" media="all" rel="stylesheet" type="text/css" />
@@ -156,11 +154,6 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
-   
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
-
 	<script src="<?=asset('js/plugins/star-rating/star-rating.js') ?>" type="text/javascript"></script>
 
     <script src="<?=asset('js/pages/gongchang/pingjia.js') ?>" type="text/javascript"></script>

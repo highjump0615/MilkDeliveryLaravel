@@ -2,9 +2,8 @@
 @section('title','产品详情')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css')?>" rel="stylesheet">
-
 @endsection
+
 @section('content')
 
     <header>
@@ -269,7 +268,7 @@
             var swiper = new Swiper('.swiper-container', {
                 pagination: '.swiper-pagination',
                 paginationClickable: true,
-                spaceBetween: 30,
+                spaceBetween: 30
             });
 
                     @if(isset($gap_day))

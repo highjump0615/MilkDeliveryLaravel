@@ -188,7 +188,6 @@
 	</div>
 @endsection
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js') ?>"></script>
 @endsection

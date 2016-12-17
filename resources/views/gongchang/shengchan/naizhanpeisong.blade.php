@@ -155,8 +155,6 @@
 @endsection
 
 @section('script')
-	<!--Get API_URL-->
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/shengchan_naizhanpeisong_ajax.js') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/naizhanpeisong.js') ?>"></script>

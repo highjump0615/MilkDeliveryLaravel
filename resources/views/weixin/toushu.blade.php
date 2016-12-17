@@ -1,8 +1,8 @@
 @extends('weixin.layout.master')
 @section('title','投诉建议')
 @section('css')
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
 @endsection
+
 @section('content')
 
     <div class="top">

@@ -48,7 +48,6 @@
     @include('weixin.layout.footer')
 @endsection
 @section('script')
-    <script src="js/jquery-1.10.1.min.js"></script>
     <script language="javascript">
 
         var swiper = new Swiper('.swiper-container', {
