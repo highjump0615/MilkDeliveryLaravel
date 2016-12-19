@@ -394,6 +394,10 @@ class DSDeliveryPlanCtrl extends Controller
             ->where('deliver_at', $date)
             ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->with(array('order' => function($query) {
+                $query->orderBy('delivery_time');
+                $query->orderBy('address');
+            }))
             ->get()
             ->groupBy(function($sort){
                 return $sort->order_id;
@@ -852,9 +856,13 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 配送任务根据配送员分组
         $milkman_delivery_plans_all = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
+            ->where('deliver_at', $deliver_date_str)
             ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->with(array('order' => function($query) {
+                $query->orderBy('delivery_time');
+                $query->orderBy('address');
+            }))
             ->get();
 
         $milkman_info = array();
@@ -911,7 +919,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $delivery_type = $dp->type;
                     $flag = $dp->flag;
 
-                    if ($dp->isBoxInstall()) {
+                    if ($dp->flag && $dp->milk_box_install) {
                         $box_install_count = 1;
                     }
 
