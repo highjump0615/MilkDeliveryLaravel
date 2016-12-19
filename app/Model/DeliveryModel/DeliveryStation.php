@@ -550,11 +550,12 @@ class DeliveryStation extends Authenticatable
     public function getWechatOrdersReallyGotAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);

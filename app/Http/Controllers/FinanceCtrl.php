@@ -203,7 +203,7 @@ class FinanceCtrl extends Controller
         //Really orders received wechat
         $wechat_orders_really_got = $station->wechat_orders_really_got;
         $wechat_orders_really_got_count = count($wechat_orders_really_got);
-        $wechat_orders_really_got_sum = $this->getSumOfOrders($wechat_orders_really_got);
+        $wechat_orders_really_got_sum = $this->calcOrderTransferAmount($wechat_orders_really_got);
 
 
         //CARD ORDERS
