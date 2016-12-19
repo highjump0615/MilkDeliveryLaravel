@@ -21,13 +21,13 @@
 		<div class="row white-bg" style="padding: 10px;">
 			<input type="hidden" id="current_factory_id" value="{{$current_factory_id}}">
 			<div class="ibox-content white-bg vertical-align">
-				<a data-toggle="modal" id="btn-add" class="btn btn-success" href="#modal-form" type="button">添加账号</a>
+				<a data-toggle="modal" id="btn-add" class="btn btn-success" href="#modal-form" type="button">添加用户</a>
 				<div id="modal-form" class="modal fade" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-								<h4 class="modal-title">新管</h4>
+								<h4 class="modal-title">添加/修改用户</h4>
 							</div>
 							<div class="modal-body">
 								<div class="row">
