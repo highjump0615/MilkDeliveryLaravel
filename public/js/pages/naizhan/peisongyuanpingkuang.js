@@ -20,5 +20,5 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('table1', gnUserTypeStation, '配送员瓶框回收记录');
+    data_export('table1', gnUserTypeStation, '配送员瓶框回收记录', 0, 1);
 });

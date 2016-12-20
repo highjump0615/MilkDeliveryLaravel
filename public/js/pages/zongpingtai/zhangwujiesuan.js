@@ -193,10 +193,10 @@ $('button[data-action = "export_csv"]').click(function () {
     var fd = $('#filter_table').css('display');
 
     if (od != "none") {
-        data_export('order_table', gnUserTypeAdmin, '财务结算');
+        data_export('order_table', gnUserTypeAdmin, '财务结算', 0, 0);
     }
     else if (fd != "none") {
-        data_export('filter_table', gnUserTypeAdmin, '财务结算');
+        data_export('filter_table', gnUserTypeAdmin, '财务结算', 0, 0);
     }
 });
 

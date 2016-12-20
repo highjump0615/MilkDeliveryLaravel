@@ -2,33 +2,68 @@
  * 把含有rowspan、colspan的table还原
  */
 jQuery.fn.RevertTable = function(){
-    $("tr",this).each(function(trindex,tritem){
-        revertTr('th', trindex, tritem);
-        revertTr('td', trindex, tritem);
-    });
+    var bUnMerged;
+
+    do {
+        bUnMerged = false;
+
+        $("tr",this).each(function(trindex,tritem){
+            bUnMerged = revertTr('th', trindex, tritem);
+            if (bUnMerged) {
+                // break;
+                return false;
+            }
+
+            bUnMerged = revertTr('td', trindex, tritem);
+            if (bUnMerged) {
+                // break;
+                return false;
+            }
+        });
+
+    } while (bUnMerged);
 };
 
 function revertTr(strTag, trindex, tritem) {
-    $(tritem).find(strTag).each(function(tdindex,tditem){
+    var bUnMerged = false;
+
+    $(tritem).find(strTag).each(function (tdindex, tditem) {
         var rowspanCount = $(tditem).attr("rowspan");
         var colspanCount = $(tditem).attr("colspan");
         var value = $(tditem).text();
         var newtd = '<' + strTag + '>' + value + '</' + strTag + '>';
-        if(rowspanCount>1){
-            var parent=$(tditem).parent("tr")[0];
-            while(rowspanCount-->1){
-                $($(parent).next()[0].children[tdindex]).before(newtd);
-                parent=$(parent).next();
+        if (rowspanCount > 1) {
+            var parent = $(tditem).parent("tr")[0];
+            while (rowspanCount-- > 1) {
+                if (tdindex >= $(parent).next()[0].children.length) {
+                    $($(parent).next()[0].children[tdindex-1]).after(newtd);
+                }
+                else {
+                    $($(parent).next()[0].children[tdindex]).before(newtd);
+                }
+                parent = $(parent).next();
             }
-            $(tditem).attr("rowspan",1);
+            $(tditem).attr("rowspan", 1);
+
+            bUnMerged = true;
+
+            // break
+            return false;
         }
-        if(colspanCount>1){
-            while(colspanCount-->1){
+        if (colspanCount > 1) {
+            while (colspanCount-- > 1) {
                 $(tditem).after(newtd);
             }
-            $(tditem).attr("colspan",1);
+            $(tditem).attr("colspan", 1);
+
+            bUnMerged = true;
+
+            // break
+            return false;
         }
     });
+
+    return bUnMerged;
 }
 
 /**
@@ -51,7 +86,7 @@ function addData(aryData, strTag, itemTr) {
  * @param usertype
  * @param pagename
  */
-function data_export(tablename, usertype, pagename) {
+function data_export(tablename, usertype, pagename, rowheader, colheader) {
 
     var dataTable = $('#' + tablename);
     var strHtmlOld = dataTable.prop('outerHTML');
@@ -60,12 +95,6 @@ function data_export(tablename, usertype, pagename) {
     dataTable.RevertTable();
 
     var sendData = [];
-
-    //
-    // $('tr', tablename).each(function(trindex, tritem) {
-    // });
-
-
     var i = 0;
 
     //send order data
@@ -79,6 +108,7 @@ function data_export(tablename, usertype, pagename) {
             $(td).find('span').remove();
             $(td).find('button').remove();
             $(td).find('a').remove();
+            $(td).find('input').remove();
 
             var td_data = td.html().toString().trim();
             trdata[j] = td_data;
@@ -98,6 +128,7 @@ function data_export(tablename, usertype, pagename) {
             $(td).find('span').remove();
             $(td).find('button').remove();
             $(td).find('a').remove();
+            $(td).find('input').remove();
 
             var td_data = td.html().toString().trim();
             trdata[j] = td_data;
@@ -116,7 +147,9 @@ function data_export(tablename, usertype, pagename) {
     var send_data = {
         'data': sendData,
         'usertype': usertype,
-        'page': pagename
+        'page': pagename,
+        'row_header': rowheader,
+        'column_header': colheader
     };
 
     $.ajax({

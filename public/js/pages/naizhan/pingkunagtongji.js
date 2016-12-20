@@ -56,7 +56,7 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('view_table', gnUserTypeStation, '瓶框统计');
+    data_export('view_table', gnUserTypeStation, '瓶框统计', 0, 1);
 });
 
 $(document).ready(function () {
