@@ -4016,7 +4016,7 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         //find total amount according to payment type
@@ -4079,7 +4079,7 @@ class OrderCtrl extends Controller
                 $query->where('station_id', $station_id);
                 $query->orWhere('delivery_station_id', $station_id);
             })
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         //find total amount according to payment type
