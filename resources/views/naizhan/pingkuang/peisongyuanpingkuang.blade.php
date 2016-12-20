@@ -37,7 +37,7 @@
                             <input type="text" class="input-sm form-control" id="end" value="{{$end_date}}"/>
                         </div>
 					</div>
-					<div class="col-md-2"  style="padding-top:5px;">
+					<div class="col-md-3"  style="padding-top:5px;">
 						<button id="find" type="button" class="btn btn-success btn-m-d">筛选</button>
 						&nbsp;
 						<button class="btn btn-success btn-outline btn-m-d" data-action="export_csv">导出</button>
@@ -56,7 +56,6 @@
 									<th data-sort-ignore="true">瓶类</th>
 									<th data-sort-ignore="true">配送员回收量</th>
 									<th data-sort-ignore="true">配送数量</th>
-									<th data-sort-ignore="true"></th>
 								</tr>
                             </thead>
                             <tbody>
@@ -72,7 +71,6 @@
 									<td>{{$type}}</td>
 									<td>{{$m['refund']}}</td>
 									<td>@if($m['delivered'] == '') 0 @else {{$m['delivered']}} @endif</td>
-									<td></td>
 									<?php $refund_sum += $m['refund']; $delivered_sum += $m['delivered'];?>
 								</tr>
 								@endforeach
@@ -80,7 +78,6 @@
 									<td>合计</td>
 									<td>{{$refund_sum}}</td>
 									<td>{{$delivered_sum}}</td>
-									<td></td>
 								</tr>
 							@endforeach
                             </tbody>
