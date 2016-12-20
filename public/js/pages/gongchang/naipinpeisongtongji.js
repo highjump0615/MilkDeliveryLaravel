@@ -26,5 +26,5 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('table1', gnUserTypeFactory, '奶品配送统计');
+    data_export('table1', gnUserTypeFactory, '奶品配送统计', 1, 4);
 });

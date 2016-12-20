@@ -207,10 +207,10 @@ $('button[data-action = "export_csv"]').click(function () {
     var fd = $('#table_filter').css('display');
 
     if (od != "none") {
-        data_export('table_data', gnUserTypeAdmin, '财务管理');
+        data_export('table_data', gnUserTypeAdmin, '财务管理', 0, 0);
     }
     else if (fd != "none") {
-        data_export('table_filter', gnUserTypeAdmin, '财务管理');
+        data_export('table_filter', gnUserTypeAdmin, '财务管理', 0, 0);
     }
 });
 
