@@ -36,5 +36,5 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('table1', gnUserTypeStation, '计划管理');
+    data_export('table1', gnUserTypeStation, '计划管理', 0, 1);
 });

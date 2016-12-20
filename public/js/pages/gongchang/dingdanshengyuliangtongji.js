@@ -54,5 +54,5 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('order_type_table', gnUserTypeFactory, '订单剩余量统计');
+    data_export('order_type_table', gnUserTypeFactory, '订单剩余量统计', 2, 5);
 });

@@ -88,9 +88,9 @@ $('button[data-action = "export_csv"]').click(function () {
     var fd = $('#filteredTable').css('display');
 
     if (od != "none") {
-        data_export('customerTable', gnUserTypeStation, '客户管理');
+        data_export('customerTable', gnUserTypeStation, '客户管理', 0, 0);
     }
     else if (fd != "none") {
-        data_export('filteredTable', gnUserTypeStation, '客户管理');
+        data_export('filteredTable', gnUserTypeStation, '客户管理', 0, 0);
     }
 });
