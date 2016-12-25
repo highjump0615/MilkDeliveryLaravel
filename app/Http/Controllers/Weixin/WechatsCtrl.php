@@ -29,7 +29,6 @@ class WeChatsCtrl extends Controller
 				$wechatObj->valid();
 			}
 		}
-       
     }
 	public function createMenus()
 	{	
@@ -40,5 +39,5 @@ class WeChatsCtrl extends Controller
 		echo $result;
 	}
 
-     
+
 }
