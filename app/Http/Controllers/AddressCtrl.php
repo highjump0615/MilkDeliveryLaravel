@@ -342,44 +342,6 @@ class AddressCtrl extends Controller
         return chr(255) . chr(254) . mb_convert_encoding($str, 'UTF-16LE', 'UTF-8');
     }
 
-    public function export(Request $request)
-    {
-        if ($request->ajax()) {
-            $fuser = Auth::guard('gongchang')->user();
-            $factory_id = $fuser->factory_id;
-
-            $streets = Address::where('level', 4)->where('factory_id', $factory_id)->get();
-
-            $rows = array();
-            foreach ($streets as $street) {
-                $province_name = $street->province->name;
-                $city_name = $street->city->name;
-                $district_name = $street->district->name;
-                $street_name = $street->name;
-                $xiaoqu_name = $street->sub_addresses_str;
-                array_push($rows, array($province_name, $city_name, $district_name, $street_name, $xiaoqu_name));
-            }
-
-            Excel::create('addresslist', function ($excel) use ($rows) {
-
-                $excel->sheet('Sheet1', function ($sheet) use ($rows) {
-
-                    //$sheet->appendRow(array('序号', '省', '市', '区', '街道', '小区'));
-                    foreach ($rows as $row) {
-                        $sheet->appendRow($row);
-                    }
-                });
-
-            })->store('xls', 'exports');
-
-            // 添加系统日志
-            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
-
-            return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/addresslist.xls']);
-        }
-
-    }
-
     /*
      * Get all cities in Province
      * in: Province_Name
