@@ -126,7 +126,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/jichuxinxi/dizhiku/update', 'AddressCtrl@update');
     Route::post('api/gongchang/jichuxinxi/dizhiku/delete_address', 'AddressCtrl@delete_address');
     Route::post('api/gongchang/jichuxinxi/dizhiku/setflag', 'AddressCtrl@setflag');
-    Route::get('api/gongchang/jichuxinxi/dizhiku/export', 'AddressCtrl@export');
 
     //GongChang/Jichuxinxi/Shangpin
     Route::get('/gongchang/jichuxinxi/shangpin', 'ProductCtrl@show_product_list')->name('show_product_list');
