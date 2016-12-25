@@ -7,7 +7,7 @@
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
 				<li class="active">
-					<a href="{{ url('naizhan/kehu')}}">客户管理</a>
+					<a href="">客户管理</a>
 				</li>
 				<li class="active">
 					<strong>客户档案</strong>
