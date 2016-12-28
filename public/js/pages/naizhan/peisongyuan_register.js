@@ -8,6 +8,17 @@ $(document).ready(function () {
     verifyIdNum();
 });
 
+/**
+ * 点击每行配送员信息跳转到配送范围页面，操作列除外
+ */
+$('.tbl_data tbody tr td:not(:nth-child(7))').on('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    var nId =$(this).parent().data('target');
+    window.location = SITE_URL+'naizhan/naizhan/fanwei-chakan/'+nId;
+});
+
 $(document).on('change', '#area', function () {
     street = [];
     $('#xiaoqi_table').html("");
@@ -141,9 +152,10 @@ $('#add_milkman').submit(function(e){
             var last_row_number = parseInt(current_last_row_number,10)+1;
             if(isNaN(parseInt(current_last_row_number,10)))
                 last_row_number = 1;
-            var role = '<tr id="peisongyuan'+data+'"><td>'+last_row_number+'</td><td>'+name+'</td><td>'+phone+'</td><td>'+number+'</td>';
-            role += '<td><a href="fanwei-chakan/'+data+'">'+street+'</a></td>';
-            role += '<td><a href="fanwei-chakan/'+data+'">'+xiaoqi_val+'</a></td>';
+            var role = '<tr class="row-hover-light-blue" data-target="'+data+'" id="peisongyuan'+data+'">';
+            role += '<td>'+last_row_number+'</td><td>'+name+'</td><td>'+phone+'</td><td>'+number+'</td>';
+            role += '<td>'+street+'</td>';
+            role += '<td>'+xiaoqi_val+'</td>';
             role += '<td><button class="btn btn-sm btn-success modify" data-toggle="modal" href="#modal-form" value="'+data+'">修改</button>&nbsp;';
             role += '<button class="btn btn-sm btn-success delete disabled" value="'+data+'">删除</button></td>';
             $('#peisongyuan').append(role);
@@ -295,26 +307,13 @@ $('button[data-action = "print"]').click(function () {
     var od = $('#peisongyuan').css('display');
     var fd = $('#filtered_table').css('display');
 
-    var sendData = [];
-
     var printContents;
     if (od != "none") {
-        //print order data
-        printContents = document.getElementById("peisongyuan").outerHTML;
-
-    } else if (fd != "none") {
-        //print filter data
-        printContents = document.getElementById("filtered_table").outerHTML;
-    } else {
-        return;
+        printContent('peisongyuan', 0, '');
     }
-
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    else if (fd != "none") {
+        printContent('filtered_table', 0, '');
+    }
 });
 
 $('button[data-action = "export_csv"]').click(function () {
