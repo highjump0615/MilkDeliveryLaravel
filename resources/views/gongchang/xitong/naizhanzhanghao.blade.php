@@ -60,7 +60,7 @@
                             <label class="col-md-5 text-right">区域:</label>
                             <div class="col-md-7">
                                 <select required id="filter_province" name="province"
-                                        class="province_list form-control col-md-3" style="width: 150px;">
+                                        class="province_list form-control col-md-3">
                                     <option value="none">全部</option>
                                     @if (isset($provinces))
                                         @foreach($provinces as $province)
