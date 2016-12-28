@@ -536,7 +536,7 @@ class ProductCtrl extends Controller
 
         $categories = ProductCategory::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
         $bottle_types = FactoryBottleType::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
-        $product_basket_specs = FactoryBoxType::where('is_deleted', 0)->get();
+        $product_basket_specs = FactoryBoxType::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
 
         $dest_dir = url('/img/product/logo/');
 
