@@ -138,8 +138,7 @@
                         <p style="color: #ff0000">无法删除配送员!</p>
                     </div>
                     <div class="ibox-content">
-                        <table id="peisongyuan" class="table footable table-bordered" data-page-size="10"
-                               data-limit-navigation="5">
+                        <table id="peisongyuan" class="table footable table-bordered tbl_data" data-page-size="10" data-limit-navigation="5">
                             <thead>
                             <tr>
                                 <th data-sort-ignore="true">顺序</th>
@@ -156,18 +155,14 @@
                             <?php $i = 0; ?>
                             @foreach($milkmans as $mm)
                                 <?php $i++; ?>
-                                <tr id="peisongyuan{{$mm->id}}">
+                                <tr class="row-hover-light-blue" data-target="{{$mm->id}}" id="peisongyuan{{$mm->id}}">
                                     <td>{{$i}}</td>
                                     <td class="name">{{$mm->name}}</td>
                                     {{--<td>Y036521</td>--}}
                                     <td>{{$mm->phone}}</td>
                                     <td class="number">{{$mm->number}}</td>
-                                    <td class="area"><a
-                                                href="{{ url('/naizhan/naizhan/fanwei-chakan/'.$mm->id) }}">{{$mm->street}}</a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ url('/naizhan/naizhan/fanwei-chakan/'.$mm->id) }}">{{$mm->xiaoqi}}</a>
-                                    </td>
+                                    <td class="area">{{$mm->street}}</td>
+                                    <td>{{$mm->xiaoqi}}</td>
                                     <td>
                                         <button class="btn btn-sm btn-success modify" data-toggle="modal" href="#modal-form" value="{{$mm->id}}">修改</button>
                                         &nbsp;
@@ -185,7 +180,7 @@
                             </tfoot>
                         </table>
 
-                        <table id="filtered_table" class="table footable table-bordered" style="display: none"
+                        <table id="filtered_table" class="table footable table-bordered tbl_data" style="display: none"
                                data-page-size="10" data-limit-navigation="5">
                             <thead>
                             <tr>
