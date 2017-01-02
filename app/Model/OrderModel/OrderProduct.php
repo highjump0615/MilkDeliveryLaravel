@@ -283,10 +283,9 @@ class OrderProduct extends Model
         $nIntervalDay = $nMaxDay - $nIndex + $aryDate[0];
 
         // 获取下一个索引
-        $nResultIndex = $aryDate[0];
         for ($i = 0; $i < count($aryDate); $i++) {
             // 超过最大范围，查看下一个索引
-            if ($nIndex > $nMaxDay) {
+            if ($aryDate[$i] > $nMaxDay) {
                 continue;
             }
 
