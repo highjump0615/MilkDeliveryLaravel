@@ -390,14 +390,13 @@ class DSDeliveryPlanCtrl extends Controller
      */
     private function getOrderDeliverList($station_id, $date) {
 
-        $delivery_plans = MilkManDeliveryPlan::where('station_id', $station_id)
-            ->where('deliver_at', $date)
-            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
-            ->with(array('order' => function($query) {
-                $query->orderBy('delivery_time');
-                $query->orderBy('address');
-            }))
+        $delivery_plans = MilkManDeliveryPlan::join('orders as o', 'o.id', '=', 'milkmandeliveryplan.order_id')
+            ->where('milkmandeliveryplan.station_id', $station_id)
+            ->where('milkmandeliveryplan.deliver_at', $date)
+            ->where('milkmandeliveryplan.type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->whereBetween('milkmandeliveryplan.status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->orderBy('o.delivery_time')
+            ->orderBy('o.address')
             ->get()
             ->groupBy(function($sort){
                 return $sort->order_id;
