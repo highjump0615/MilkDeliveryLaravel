@@ -1259,6 +1259,18 @@ class DSDeliveryPlanCtrl extends Controller
         //
         $nStationId = $this->getCurrentStationId();
 
+        // 反录全部配送才计算返还问题
+        $nNotDelivered = MilkManDeliveryPlan::where('station_id', $nStationId)
+            ->where('deliver_at',$deliver_date_str)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->count();
+
+        if ($nNotDelivered > 0) {
+            // 还没反录完，退出
+            return Response::json(['status'=>"success"]);
+        }
+
         // 查询已配送完的配送订单
         $deliver_finished_plans = MilkManDeliveryPlan::where('station_id', $nStationId)
             ->where('deliver_at',$deliver_date_str)
