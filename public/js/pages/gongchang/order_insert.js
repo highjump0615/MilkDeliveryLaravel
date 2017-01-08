@@ -249,12 +249,6 @@ $('#customer_form').on("submit", function (e) {
 
                 //trigger to calculate the product price
                 // init_product_lines();
-
-                // 根据得到的奶站信息，重新计算价格
-                $('#product_table tbody tr').each(function () {
-                    calculate_current_product_value(tr);
-                    set_avg_count(tr);
-                });
             }
             else {
                 if (data.message) {
