@@ -770,11 +770,24 @@ class Order extends Model
         return $addr_id;
     }
 
-
+    /**
+     * 获取配送员id
+     * @return int|null
+     */
     public function getMilkmanIdAttribute()
     {
-        //$addr_id = $this->addr_id;
+        return $this->milkman->id;
+    }
 
+    /**
+     * 获取配送员
+     * @return
+     */
+    public function getMilkmanAttribute()
+    {
+        //
+        // 抽取地址信息
+        //
         $addr_to_xiaoqu = "";
 
         $addr_list = multiexplode(' ', $this->address);
@@ -787,51 +800,21 @@ class Order extends Model
         }
         $addr_to_xiaoqu = trim($addr_to_xiaoqu);
 
-        if($addr_to_xiaoqu)
-        {
-            $mda = MilkManDeliveryArea::where('address', $addr_to_xiaoqu)->get()->first();
-            if(!$mda)
-            {
-                return null;
-            }
-            $milkman_id = $mda->milkman_id;
-            return $milkman_id;
-        } else {
-            return 0;
-        }
-    }
-
-    public function getMilkmanPhoneAttribute()
-    {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman->phone;
-        } else
-            return "";
-    }
-
-    public function getMilkmanAttribute()
-    {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman;
-        } else
+        if (empty($addr_to_xiaoqu)) {
             return null;
+        }
+
+        // 获取配送员
+        return $this->deliveryStation->get_milkman_of_address($addr_to_xiaoqu);
     }
 
-
+    /**
+     * 获取配送员名称
+     * @return mixed
+     */
     public function getMilkmanNameAttribute()
     {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman->name;
-        }
+        return $this->milkman->name;
     }
 
     public function getAllOrderTypesAttribute()
