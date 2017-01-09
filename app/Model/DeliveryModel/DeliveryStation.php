@@ -681,14 +681,10 @@ class DeliveryStation extends Authenticatable
             ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
             ->whereMonth('created_at', '=', date('m'))
             ->whereYear('created_at', '=', date('Y'))
-            ->selectRaw('sum(amount) as sum')
             ->get()
-            ->first();
+            ->sum('amount');
 
-        if($res)
-            return $res['sum'];
-        else
-            return 0;
+        return $res;
     }
 
     //get money orders
