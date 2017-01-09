@@ -62,7 +62,6 @@ class DeliveryStation extends Authenticatable
         'money_orders_really_got_sum',
         'money_orders_of_others',
         'money_orders_of_mine',
-        'money_not_received_start_of_month',
 
         //Wechat
         'wechat_orders',
@@ -687,6 +686,37 @@ class DeliveryStation extends Authenticatable
         return $res;
     }
 
+    /**
+     * 计算期初没收款的金额
+     * @return int
+     */
+    public function getMoneyNotReceivedStartOfMonth(){
+        $first_m = date('Y-m-01');
+
+        $orders = Order::where('station_id', $this->id)
+            ->where('ordered_at', '<', $first_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->where(function($query){
+                    $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                })
+            ->get();
+
+        $order_total = $this->getSumOfOrders($orders);
+
+        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('time', '<', $first_m)
+            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)
+            ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
+            ->get();
+
+        $received_total = $this->getSumOfHistories($calc_histories);
+
+        return $order_total - $received_total;
+    }
+
     //get money orders
     public function getMoneyOrdersAttribute()
     {
@@ -817,7 +847,7 @@ class DeliveryStation extends Authenticatable
         return $sum;
     }
 
-    public function getSumOfHistoreis($histories)
+    public function getSumOfHistories($histories)
     {
         $total = 0;
         foreach ($histories as $his) {
@@ -833,7 +863,7 @@ class DeliveryStation extends Authenticatable
 
         $money_orders_really_got_sum = $this->money_orders_really_got_sum;
 
-        $receivable = $money_orders_sum - $money_orders_really_got_sum + $this->money_not_received_start_of_month;
+        $receivable = $money_orders_sum - $money_orders_really_got_sum + $this->getMoneyNotReceivedStartOfMonth();
 
         return $receivable;
     }
