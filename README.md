@@ -48,6 +48,7 @@ Milk Delivery Admin & Mobile Web App
 ## Need to Improve  
 - 提高加载地区列表速度
 - 微信公众号、支付采用Laravel插件  
+- model里删除多余的appends属性, 换成get函数，提高性能  
 ... ...
 
 ------
