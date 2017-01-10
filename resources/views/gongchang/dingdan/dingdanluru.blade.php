@@ -700,21 +700,6 @@
     </div>
 @endsection
 
-<!-- 奶站订单录入，获取配送范围地址 -->
-<?php
-
-if (isset($station)) {
-    $strStreet = "";
-    $strVillage = "";
-    if (count($station->delivery_area) > 0) {
-        $strStreet = $station->delivery_area[0]->street_name;
-        $strVillage = $station->delivery_area[0]->village_name;
-    }
-}
-
-?>
-
-
 @section('script')
     <script type="text/javascript" src="<?=asset('webcam/webcam.min.js') ?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
@@ -751,10 +736,8 @@ if (isset($station)) {
             street_name = "{{$order->getAddrStreet()}}";
             village_name = "{{$order->getAddrVillage()}}";
         @elseif (isset($station))
-            city_name = "{{$station->city}}";
-            district_name = "{{$station->district}}";
-            station_street = "{{$strStreet}}";
-            station_village = "{{$strVillage}}";
+            city_name = "{{$station->city_name}}";
+            district_name = "{{$station->district_name}}";
         @endif
 
         @if(isset($gap_day))

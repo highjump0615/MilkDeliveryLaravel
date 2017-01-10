@@ -50,7 +50,6 @@ class DeliveryStation extends Authenticatable
 
     protected $appends = [
         'total_count',
-//        'delivery_area',
         'received_order_money',
         'receivable_order_money',
         'orders_in_month',
@@ -783,6 +782,10 @@ class DeliveryStation extends Authenticatable
         return $totalCount;
     }
 
+    /**
+     * 获取配送范围
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function delivery_area()
     {
         return $this->hasMany('App\Model\DeliveryModel\DSDeliveryArea', 'station_id', 'id');
@@ -791,6 +794,45 @@ class DeliveryStation extends Authenticatable
     public function factory()
     {
         return $this->belongsTo('App\Model\FactoryModel\Factory');
+    }
+
+    /**
+     * 获取配送范围根据街道分组
+     * @return mixed
+     */
+    public function getDeliveryAreaGrouped() {
+        $deliveryarea = DSDeliveryArea::where('station_id', $this->id)
+            ->get()
+            ->groupBy(function($area){
+                $addr = $area->address;
+                $addrs = explode(" ", $addr);
+                return $addrs[0].$addrs[1].$addrs[2].$addrs[3];
+            });
+
+        return $deliveryarea;
+    }
+
+    /**
+     * 获取配送范围街道小区信息
+     * @return array
+     */
+    public function getDeliveryStreetVillage() {
+
+        $aryStreet = array();
+
+        foreach ($this->delivery_area as $area) {
+
+            $addr = $area->address;
+            $addrs = explode(" ", $addr);
+
+            if (!isset($aryStreet[$addrs[3]])) {
+                $aryStreet[$addrs[3]] = array();
+            }
+
+            array_push($aryStreet[$addrs[3]], $addrs[4]);
+        }
+
+        return $aryStreet;
     }
 
     /**

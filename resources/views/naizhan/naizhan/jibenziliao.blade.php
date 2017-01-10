@@ -304,7 +304,7 @@
                                 </thead>
                                 <tbody>
                                 <?php $i = 0; ?>
-                                @foreach($dsinfo->deliveryarea as $district_areas)
+                                @foreach($dsinfo->getDeliveryAreaGrouped() as $district_areas)
                                     <?php $j = 0; $i++;?>
                                     @foreach($district_areas as $key=>$da)
                                         <?php $addrs = explode(" ", $da->address) ?>
