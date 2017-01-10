@@ -40,7 +40,7 @@
 									<?php $i++; ?>
 								<tr>
 									<td>{{$i}}</td>
-									<td>{{$p->name}}</td>
+									<td>{{$p->simple_name}}</td>
 									<td id="plan_count">{{$p->plan_count}}</td>
 									<td id="changed_count">{{$p->change_order_amount}}</td>
 									<td id="sum"></td>
