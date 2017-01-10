@@ -495,9 +495,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $current_page = 'naizhanjihuashenhe';
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getNextDateString();
 
         // 获取所有产品信息
         $products = Product::where('factory_id',$current_factory_id)
@@ -542,7 +540,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $order_product = OrderProduct::where('product_id',$p->id)->get(['id']);
             foreach($order_product as $op){
                 // 只考虑提交过的订单
-                $changed_counts = MilkManDeliveryPlan::where('produce_at',$currentDate->format('Y-m-d'))
+                $changed_counts = MilkManDeliveryPlan::where('produce_at', $currentDate_str)
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('order_product_id',$op->id)
                     ->where(function($query){
@@ -561,7 +559,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $plan_ordered_count = 0;
             $plan_ordered = DSProductionPlan::where('product_id',$p->id)
                 ->where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
-                ->where('produce_start_at',$currentDate->format('Y-m-d'))
+                ->where('produce_start_at', $currentDate_str)
                 ->get();
 
             foreach($plan_ordered as $po){
@@ -576,7 +574,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         foreach($stations as $si) {
             $areas = explode(" ",$si->address);
             $si["area"] = $areas[0];
-            $station_plan = DSProductionPlan::where('station_id', $si->id)->where('produce_start_at', $currentDate->format('Y-m-d'))->get();
+            $station_plan = DSProductionPlan::where('station_id', $si->id)->where('produce_start_at', $currentDate_str)->get();
             $si["station_plan"] = $station_plan;
             $si["plan_status"] = count($station_plan);
         }
