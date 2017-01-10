@@ -502,7 +502,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         // 获取所有产品信息
         $products = Product::where('factory_id',$current_factory_id)
             ->where('is_deleted',0)
-            ->get(['id','name','production_period']);
+            ->get(['id','simple_name','production_period']);
 
         foreach($products as $p){
             $plan_info = DSProductionPlan::where('produce_start_at', $currentDate_str)

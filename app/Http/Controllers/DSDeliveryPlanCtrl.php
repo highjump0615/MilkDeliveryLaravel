@@ -778,7 +778,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $prodData = array();
 
                 // 初始化
-                $prodData['name'] = $mdp->order_product->product->name;
+                $prodData['name'] = $mdp->order_product->product->simple_name;
                 $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER] = 0;
                 $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP] = 0;
                 $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL] = 0;
@@ -1090,7 +1090,7 @@ class DSDeliveryPlanCtrl extends Controller
             $milkboxinstall = 0;
 
             foreach($by_order_id as $pro=>$dp) {
-                $name = $dp->order_product->product->name;
+                $name = $dp->order_product->product->simple_name;
                 $count = $dp->delivery_count;
                 $products[$pro]['name'] = $name;
                 $products[$pro]['count'] = $count;
