@@ -68,9 +68,9 @@
 							{{--<input type="checkbox" checked class="i-checks" name="input[]">--}}
                         {{--</div>--}}
 						<div class="col-md-12">
-							<input type="checkbox" class="i-checks"
-								   data-tid="{{$st->name}}"
-								   data-station-id="{{$st->id}}" style="display: inline"/>
+							{{--<input type="checkbox" class="i-checks"--}}
+								   {{--data-tid="{{$st->name}}"--}}
+								   {{--data-station-id="{{$st->id}}" style="display: inline"/>--}}
 							<table class="table table-bordered" id="table1">
 								<thead class="gray-bg">
 									<tr>
