@@ -366,12 +366,8 @@
             gbIsStation = true;
         @endif
 
-
         // 解析当前服务器的时间 (2014-08-12 09:25:24)
-        var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
-        time = time.split(':');
-        var gDateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
-
+        var gDateToday = new Date(s_timeCurrent);
 
         var today = new Date();
         var gap_day = parseInt("{{$gap_day}}");

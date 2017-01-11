@@ -70,20 +70,20 @@ class DSDeliveryPlan extends Model
      * @param $productid
      * @return mixed
      */
-    public static function getDeliveryPlanGenerated($stationid, $productid, $deliverDate = null) {
+    public static function getDeliveryPlanGenerated($stationid, $productid = 0, $deliverDate = null) {
         $date = $deliverDate;
 
         if (!$date) {
             $date = getCurDateString();
         }
 
-        $deliveryPlan = DSDeliveryPlan::where('product_id', $productid)
-            ->where('station_id', $stationid)
-            ->where('deliver_at', $date)
-            ->get()
-            ->first();
+        $deliveryPlan = DSDeliveryPlan::where('station_id', $stationid)->where('deliver_at', $date);
 
-        return $deliveryPlan;
+        if ($productid > 0) {
+            $deliveryPlan->where('product_id', $productid);
+        }
+
+        return $deliveryPlan->count();
     }
 
 }

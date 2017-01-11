@@ -247,6 +247,11 @@ $('#customer_form').on("submit", function (e) {
                 var station_data = '<option data-milkman="' + data.milkman_id + '" value="' + data.station_id + '">' + data.station_name + '</option>';
                 $('#station_list').append(station_data);
 
+                // 重新初始化起送日期
+                dateToday = new Date(data.date_start);
+                var dateStart = getStartDate();
+                $('.single_date').datepicker('setStartDate', dateStart);
+
                 //trigger to calculate the product price
                 // init_product_lines();
             }

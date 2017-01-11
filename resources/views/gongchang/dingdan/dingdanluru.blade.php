@@ -702,7 +702,6 @@
 
 @section('script')
     <script type="text/javascript" src="<?=asset('webcam/webcam.min.js') ?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
 
     <script language="JavaScript">
 
@@ -730,6 +729,12 @@
             gbIsStation = true;
         @endif
 
+        @if ($is_edit)
+            dateToday = new Date("{{$station->getChangeStartDate()}}");
+        @else
+            dateToday = new Date(s_timeCurrent);
+        @endif
+
         @if (isset($order))
             city_name = "{{$order->getAddrCity()}}";
             district_name = "{{$order->getAddrDistrict()}}";
@@ -744,9 +749,10 @@
         var gap_day = parseInt("{{$gap_day}}");
         @endif
 
-        var copy_tr_data = copy_tr_data = $("#first_data").html();
+        var copy_tr_data = $("#first_data").html();
 
     </script>
 
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_insert.js') ?>"></script>
 @endsection
