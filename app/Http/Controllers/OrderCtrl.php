@@ -3178,7 +3178,8 @@ class OrderCtrl extends Controller
                 'status'        => 'fail',
                 'message'       => '奶站没有配送员.',
                 'station_name'  => $station->name,
-                'station_id'    => $station->id
+                'station_id'    => $station->id,
+                'date_start'    => $station->getChangeStartDate()
             ]);
         }
 
@@ -3208,7 +3209,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
             }
             else {
@@ -3243,7 +3245,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $delivery_station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
 
             }
@@ -3270,7 +3273,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $delivery_station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
             }
         }

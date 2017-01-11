@@ -54,11 +54,6 @@ $(document).ready(function () {
     firstday = startofweek();
     lastday = endofweek();
 
-    // 解析当前服务器的时间 (2014-08-12 09:25:24)
-    var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
-    time = time.split(':');
-    dateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
-
     firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
     lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
 
@@ -484,7 +479,7 @@ function initStartDateCalendar() {
         // 修改要改成以保存的, 过了保存的时期，只能选择今天
         if ($(input).val().length > 0 && dateVal > dateStart) {
             $(this).datepicker('setDate', dateVal);
-            $(this).datepicker('setStartDate', dateVal);
+            // $(this).datepicker('setStartDate', dateVal);
         }
         else {
             // 默认选择第一天
@@ -498,8 +493,7 @@ function initStartDateCalendar() {
  * @returns {Date}
  */
 function getStartDate() {
-    var able_date = new Date();
-    $.extend(able_date, dateToday);
+    var able_date = new Date(dateToday);
 
     // 只有新订单才考虑3天后的问题
     if (!gbIsEdit && gnOrderId == 0) {

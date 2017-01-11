@@ -1150,4 +1150,16 @@ class DeliveryStation extends Authenticatable
         $this->business_credit_balance += $amount;
         $this->save();
     }
+
+    public function getChangeStartDate() {
+        // 正常是返回当天
+        $dateStart = getCurDateString();
+
+        // 已生成配送列表，返回第二天
+        if (DSDeliveryPlan::getDeliveryPlanGenerated($this->id)) {
+            $dateStart = getNextDateString();
+        }
+
+        return $dateStart;
+    }
 }
