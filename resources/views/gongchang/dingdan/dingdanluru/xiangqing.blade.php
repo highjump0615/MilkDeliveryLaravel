@@ -199,7 +199,7 @@
                             <th data-sort-ignore="true">单数</th>
                             <th data-sort-ignore="true">瓶/次</th>
                             <th data-sort-ignore="true">配送规则</th>
-                            <th data-sort-ignore="true">订单余额</th>
+                            <th data-sort-ignore="true">订单金额</th>
                         </tr>
                         </thead>
                         <tbody>

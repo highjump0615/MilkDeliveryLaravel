@@ -79,14 +79,13 @@ class OrderProduct extends Model
             ->where('order_product_id', $this->id)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             ->get();
-        $finished_amount = $finished_count = 0;
+        $finished_amount = 0;
 
         if($mdps)
         {
             foreach($mdps as $mdp)
             {
-                $finished_count += $mdp->delivered_count;
-                $finished_amount += $finished_count*$mdp->product_price;
+                $finished_amount += $mdp->delivered_count*$mdp->product_price;
             }
         }
 
