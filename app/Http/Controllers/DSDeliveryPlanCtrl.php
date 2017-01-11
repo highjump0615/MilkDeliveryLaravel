@@ -795,50 +795,6 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     /**
-     * 今日配送单的配送量统计
-     * @param $milkman_id
-     * @return array
-     */
-    public function jinrichangestatus($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-
-        $deliver_date_str = getCurDateString();
-
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
-            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
-            ->where('milkman_id',$milkman_id)
-            ->get();
-
-        $status = array();
-        $status['new_order_amount'] = 0;
-        $status['new_changed_order_amount'] = 0;
-        $status['milkbox_amount'] = 0;
-
-        foreach ($milkman_delivery_plans as $k=>$mdp){
-            // 只考虑订单配送
-            if ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER) {
-                    // 第一次配送的数量合计
-                    $status['new_order_amount'] += $mdp->delivery_count;
-                }
-                if($mdp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE) {
-                    $status['new_changed_order_amount'] += $mdp->delivery_count;
-                }
-
-                if ($mdp->isBoxInstall()) {
-                    $status['milkbox_amount']++;
-                }
-            }
-//            elseif ($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL){
-//                $status['milkbox_amount']++;
-//            }
-        }
-
-        return $status;
-    }
-
-    /**
      * 打开今日配送单
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -887,6 +843,12 @@ class DSDeliveryPlanCtrl extends Controller
             return $sort->milkman_id;
         });
 
+        // 变化量统计数据
+        $changestatus = array();
+        $changestatus['new_order_amount'] = 0;
+        $changestatus['new_changed_order_amount'] = 0;
+        $changestatus['milkbox_amount'] = 0;
+
         foreach ($milkman_delivery_plans as $m => $dps_by_milkman) {
             $delivery_info = array();
             $comment = '';
@@ -918,16 +880,28 @@ class DSDeliveryPlanCtrl extends Controller
                     $delivery_type = $dp->type;
                     $flag = $dp->flag;
 
-                    if ($dp->flag && $dp->milk_box_install) {
+                    if ($dp->flag && $orderData->milk_box_install) {
                         $box_install_count = 1;
                     }
 
                     $comment = $dp->comment;
+
+                    // 计算变化量统计数据
+                    if($dp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER) {
+                        // 第一次配送的数量合计
+                        $changestatus['new_order_amount'] += $dp->delivery_count;
+                    }
+                    if($dp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER_RULE_CHANGE) {
+                        $changestatus['new_changed_order_amount'] += $dp->delivery_count;
+                    }
                 }
 
                 $orderData['product'] = implode(',', $products);
                 if ($box_install_count > 0) {
                     $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
+
+                    // 计算变化量统计数据
+                    $changestatus['milkbox_amount']++;
                 }
 
                 $orderData['changed'] = $is_changed;
@@ -943,7 +917,7 @@ class DSDeliveryPlanCtrl extends Controller
             $milkman_info[$m]['milkman_name'] = MilkMan::find($m)->name;
             $milkman_info[$m]['milkman_number'] = MilkMan::find($m)->phone;
             $milkman_info[$m]['milkman_products'] = $this->MilkmanProductInfo(MilkMan::find($m)->id);
-            $milkman_info[$m]['milkman_changestatus'] = $this->jinrichangestatus(MilkMan::find($m)->id);
+            $milkman_info[$m]['milkman_changestatus'] = $changestatus;
         }
 
         return view('naizhan.shengchan.jinripeisongdan',[
