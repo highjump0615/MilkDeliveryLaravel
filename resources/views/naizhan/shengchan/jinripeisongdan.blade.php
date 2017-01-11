@@ -106,7 +106,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table class="table footable table-bordered">
+                        <table class="table table-bordered">
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
