@@ -172,11 +172,12 @@ class MilkManDeliveryPlan extends Model
     public function setCount($value) {
 
         $this->changed_plan_count = $value;
-        $this->delivery_count = $value;
 
         // 已提交生产计划才算是修改
-        if ($this->status < MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+        if ($this->status > MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING &&
+            $this->status < MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
             $this->plan_count = $value;
+            $this->delivery_count = $value;
         }
 
         $this->save();
@@ -268,7 +269,7 @@ class MilkManDeliveryPlan extends Model
             if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING) {
                 $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
                 $this->determineStatus();
-                $this->save();
+                $this->setCount($this->changed_plan_count);
             }
         }
         else {
