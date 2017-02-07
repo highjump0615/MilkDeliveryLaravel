@@ -3,6 +3,8 @@
 * 	配置账号信息
 */
 
+use App\Model\FactoryModel\Factory;
+
 class WxPayConfig
 {
 	//=======【基本信息设置】=====================================
@@ -71,6 +73,12 @@ class WxPayConfig
         //
         public static function getAPPID()
         {
+            $factory_id = session('factory_id');
+            $factory = Factory::find($factory_id);
+            if ($factory) {
+                return $factory->app_id;
+            }
+
             return self::$APPID;
         }
 	
@@ -86,6 +94,12 @@ class WxPayConfig
         
 	public static function getAPPSECRET()
         {
+            $factory_id = session('factory_id');
+            $factory = Factory::find($factory_id);
+            if ($factory) {
+                return $factory->app_secret;
+            }
+
             return self::$APPSECRET;
         }
 	
