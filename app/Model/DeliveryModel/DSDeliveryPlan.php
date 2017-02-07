@@ -83,7 +83,7 @@ class DSDeliveryPlan extends Model
             $deliveryPlan->where('product_id', $productid);
         }
 
-        return $deliveryPlan->count();
+        return $deliveryPlan->first();
     }
 
 }
