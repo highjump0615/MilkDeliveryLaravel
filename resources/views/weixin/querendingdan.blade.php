@@ -129,7 +129,7 @@
     <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
     <script type="text/javascript">
 
-        var today = "{{$today}}";
+        var today = "{{getCurDateString()}}";
         var order_id;
 
         //调用微信JS api 支付
