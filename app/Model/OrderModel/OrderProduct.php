@@ -481,11 +481,12 @@ class OrderProduct extends Model
                 if ($nIncrease == 0) {
                     $deliveryPlan = $lastDeliverPlan->replicate();
 
-                    $deliveryPlan->determineStatus();
-                    $deliveryPlan->delivered_count = 0;
-
                     $deliveryPlan->deliver_at = $this->getNextDeliverDate($lastDeliverPlan->deliver_at);
                     $deliveryPlan->produce_at = $this->getProductionDate($deliveryPlan->deliver_at);
+
+                    // 状态和数量
+                    $deliveryPlan->determineStatus();
+                    $deliveryPlan->delivered_count = 0;
 
                     // 获取下一个配送规则数量
                     $nNormalCount = $this->getDeliveryTypeCount($deliveryPlan->deliver_at);
