@@ -222,6 +222,9 @@ class MilkManDeliveryPlan extends Model
         $dateSubmit = date('Y-m-d',strtotime($strDateProduce."-1 days"));
         $datetimeSubmit = DateTime::createFromFormat('Y-m-j', $dateSubmit);
 
+        // 默认是通过状态
+        $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
+
         // 提交日期已过
         if ($dateCurrent > $datetimeSubmit) {
             $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
