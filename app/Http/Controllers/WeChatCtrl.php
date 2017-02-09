@@ -3226,6 +3226,20 @@ class WeChatCtrl extends Controller
 
         $wechat_order_products = WechatOrderProduct::where('group_id', $group_id)->where('group_id', '!=', null)->get()->all();
 
+        //show delivery plan before real order
+        $plans = [];
+        if(count($wechat_order_products)>0)
+        {
+            foreach($wechat_order_products as $wechat_order_product)
+            {
+                $wop_plans = $wechat_order_product->get_temp_plans();
+                foreach($wop_plans as $wop_plan)
+                {
+                    $plans[]= $wop_plan;
+                }
+            }
+        }
+
         $openid = $wechat_user->openid;
 
         //set new product price on primary address for the wechat order product
@@ -3271,6 +3285,7 @@ class WeChatCtrl extends Controller
                             'message' => '未定义地址的产品价格',
                             'total_amount' => $total_amount,
                             'openid' => $openid,
+                            'plans'=> $plans,
                         ]);
                     }
 
@@ -3313,20 +3328,6 @@ class WeChatCtrl extends Controller
         }
 
         $total_amount = round($total_amount, 3);
-
-        //show delivery plan before real order
-        $plans = [];
-        if(count($wechat_order_products)>0)
-        {
-            foreach($wechat_order_products as $wechat_order_product)
-            {
-                $wop_plans = $wechat_order_product->get_temp_plans();
-                foreach($wop_plans as $wop_plan)
-                {
-                    $plans[]= $wop_plan;
-                }
-            }
-        }
 
         return view('weixin.querendingdan', [
             'primary_addr_obj' => $primary_addr_obj,
