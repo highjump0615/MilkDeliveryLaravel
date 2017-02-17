@@ -93,7 +93,7 @@
                 events: [
                         @foreach($plans as $p)
                     {
-                        title: "{{$p->product_simple_name}} {{$p->changed_plan_count}}",
+                        title: "{{$p->product_simple_name}} {{$p['bottle_count']}}",
                         start: '{{$p->deliver_at}}',
                         @if($p->isEditAvailable())
                         className: 'ypsrl editable',
