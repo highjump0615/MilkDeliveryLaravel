@@ -303,6 +303,16 @@ class WeChatCtrl extends Controller
             foreach ($orders as $order) {
                 $plans_order = $order->grouped_delivery_plans;
                 foreach ($plans_order as $plan) {
+                    //
+                    // determine bottle count based on status
+                    //
+                    if ($plan->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {
+                        $plan['bottle_count'] = $plan['delivered_count'];
+                    }
+                    else {
+                        $plan['bottle_count'] = $plan['changed_plan_count'];
+                    }
+
                     array_push($plans, $plan);
                 }
             }
