@@ -933,7 +933,7 @@ class DSDeliveryPlanCtrl extends Controller
 
     public function undelivered_process($mkdp)
     {
-        $undelivered_count = $mkdp->delivery_count - $mkdp->delivered_count;
+        $undelivered_count = $mkdp->changed_plan_count - $mkdp->delivered_count;
 
         $mkdp->order_product->processExtraCount($mkdp, $undelivered_count);
     }
