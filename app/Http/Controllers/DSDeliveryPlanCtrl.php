@@ -914,9 +914,14 @@ class DSDeliveryPlanCtrl extends Controller
             }
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
-            $milkman_info[$m]['milkman_name'] = MilkMan::find($m)->name;
-            $milkman_info[$m]['milkman_number'] = MilkMan::find($m)->phone;
-            $milkman_info[$m]['milkman_products'] = $this->MilkmanProductInfo(MilkMan::find($m)->id);
+
+            // 配送员信息
+            $milkman = MilkMan::find($m);
+            $milkman_info[$m]['milkman_id'] = $milkman->id;
+            $milkman_info[$m]['milkman_name'] = $milkman->name;
+            $milkman_info[$m]['milkman_number'] = $milkman->phone;
+            $milkman_info[$m]['milkman_products'] = $this->MilkmanProductInfo($milkman->id);
+
             $milkman_info[$m]['milkman_changestatus'] = $changestatus;
         }
 
