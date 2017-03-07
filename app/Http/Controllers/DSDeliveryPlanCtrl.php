@@ -843,13 +843,13 @@ class DSDeliveryPlanCtrl extends Controller
             return $sort->milkman_id;
         });
 
-        // 变化量统计数据
-        $changestatus = array();
-        $changestatus['new_order_amount'] = 0;
-        $changestatus['new_changed_order_amount'] = 0;
-        $changestatus['milkbox_amount'] = 0;
-
         foreach ($milkman_delivery_plans as $m => $dps_by_milkman) {
+            // 变化量统计数据
+            $changestatus = array();
+            $changestatus['new_order_amount'] = 0;
+            $changestatus['new_changed_order_amount'] = 0;
+            $changestatus['milkbox_amount'] = 0;
+
             $delivery_info = array();
             $comment = '';
 
