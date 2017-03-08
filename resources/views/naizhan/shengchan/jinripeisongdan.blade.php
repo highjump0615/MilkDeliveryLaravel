@@ -19,7 +19,7 @@
 			<div class="wrapper-content">
 
 				@if(isset($alert_msg) != 0)
-					<label style="color: red; font-size: 18px;">{{$alert_msg}}</label>
+					<label class="redalert">{{$alert_msg}}</label>
 				@endif
 			
 				<div class="ibox-content">
