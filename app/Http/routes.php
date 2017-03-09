@@ -234,6 +234,8 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/determine_station_plan', 'DSProductionPlanCtrl@determineStationPlan');
     /*Production Plan cancel*/
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan', 'DSProductionPlanCtrl@cancelStationPlan');
+    /* 保存实际生产量 */
+    Route::post('api/gongchang/shengchan/naizhanpeisong/save', 'DSProductionPlanCtrl@saveProducedCount');
     /*Gongchang Finance*/
 
     //Finance First page: stations account info page
