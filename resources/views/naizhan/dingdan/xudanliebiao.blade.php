@@ -107,7 +107,6 @@
 								<option value="none"></option>
 								<option value="{{\App\Model\OrderModel\Order::ORDER_WAITING_STATUS}}">待审核</option>
 								<option value="{{\App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS}}">在配送</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_PASSED_STATUS}}">未起奶</option>
 								<option value="{{\App\Model\OrderModel\Order::ORDER_STOPPED_STATUS}}">暂停</option>
 								<option value="{{\App\Model\OrderModel\Order::ORDER_FINISHED_STATUS}}">已完成</option>
 								<option value="{{\App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS}}">未通过</option>
