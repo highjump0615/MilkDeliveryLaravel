@@ -240,13 +240,13 @@
                     </div>
 
                     <!-- 微信订单修改不显示票据号 -->
-                    @if (!(isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
+                    @if (!($is_edit && isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">票据号:</label>
                         <div class="col-md-3">
                             <input required type="text" name="receipt_number" class="form-control"
                                    id="receipt_number"
-                                   @if (isset($order)) value="{{$order->receipt_number}}" @endif/>
+                                   @if (isset($order) && $is_edit) value="{{$order->receipt_number}}" @endif/>
                         </div>
                         <div class="col-md-4">
                             <button type="button" class="btn btn-outline btn-success" style="display:none;"
@@ -275,7 +275,11 @@
                     </div>
                     @endif
 
-                    <input type="hidden" required name="customer_id" id="customer_id"/>
+                    <input type="hidden"
+                           required
+                           name="customer_id"
+                           id="customer_id"
+                           @if (isset($order)) value="{{$order->customer_id}}" @endif />
                 </div>
 
                 <!--Order Info -->
