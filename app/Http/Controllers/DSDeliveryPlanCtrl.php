@@ -990,16 +990,13 @@ class DSDeliveryPlanCtrl extends Controller
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED]);
 
         // 是否已生成配送列表？
-        $milkman_delivery_plans = $queryDeliveryPlan->get();
-        $deliveryPlan = $milkman_delivery_plans->first();
+        $deliveryPlan = $queryDeliveryPlan->first();
 
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
             ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, $deliver_date_str))) {
 
-            $strAlertMsg = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
-
-            return view('naizhan.shengchan.peisongfanru',[
+            $aryView = [
                 'pages'                     =>$pages,
                 'child'                     =>$child,
                 'parent'                    =>$parent,
@@ -1010,8 +1007,15 @@ class DSDeliveryPlanCtrl extends Controller
                 'deliver_date'              =>$deliver_date_str,
                 'current_date'              =>$current_date_str,
                 'current_milkman'           =>0,
-                'alert_msg'                 =>$strAlertMsg,
-            ]);
+                'is_todayrefund'            =>false
+            ];
+
+            // 没生成今日配送单
+            if ($deliveryPlan) {
+                $aryView['alert_msg'] = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
+            }
+
+            return view('naizhan.shengchan.peisongfanru', $aryView);
         }
 
         //
