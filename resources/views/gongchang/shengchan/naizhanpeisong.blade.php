@@ -1,5 +1,6 @@
 @extends('gongchang.layout.master')
 @section('css')
+	<link href="<?=asset('css/pages/gongchang/naizhanpeisong.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -40,7 +41,7 @@
 									<td>{{$i}}</td>
 									<td>{{$p->simple_name}}</td>
 									<td>{{$p->produce_count}}</td>
-									<td class="editfill product_count" contenteditable="true" id="produce_count{{$p->id}}">{{$p->produce_count}}</td>
+									<td class="editfill product_count" contenteditable="true" id="produce_count{{$p->id}}">{{$p->real_count}}</td>
 									<td></td>
 									<td id="total_confirm{{$p->id}}"></td>
 									<td id="rest{{$p->id}}"></td>
@@ -50,7 +51,10 @@
 							<tfoot>
 								<tr>
 									<td colspan="7">
-										<ul class="pagination pull-right"></ul>
+										<div class="pull-right production-footer">
+											<ul class="pagination pull-left"></ul>
+											<button id="but_save" class="btn btn-success">保存</button>
+										</div>
 									</td>
 								</tr>
 							</tfoot>

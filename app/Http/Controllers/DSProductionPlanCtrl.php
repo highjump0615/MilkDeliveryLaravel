@@ -827,6 +827,29 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     }
 
     /**
+     * 保存实际生产量
+     * @param Request $request
+     * @return mixed
+     */
+    public function saveProducedCount(Request $request) {
+
+        // 解析上传的参数数组
+        $table_info = json_decode($request->getContent(),true);
+
+        foreach ($table_info as $ti){
+            $product_id = $ti['id'];
+            $real_count = $ti['count'];
+
+            // 保存 & 更新数据库
+            FactoryProductionPlan::where('product_id', $product_id)
+                ->where('end_at', getPrevDateString())
+                ->update(['real_count' => $real_count]);
+        }
+
+        return Response::json(['status' => 'success']);
+    }
+
+    /**
      * 打开奶站配送管理
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -861,11 +884,15 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $factory_plan = FactoryProductionPlan::where('factory_id',$current_factory_id)
                 ->where('product_id',$p->id)
                 ->where('end_at',$current_date_str)
-                ->get(['count'])
-                ->first();
+                ->first(['count', 'real_count']);
 
             if($factory_plan != null){
-                $p["produce_count"] = $factory_plan->count;
+                // 初始计划量和实际生产量是一样
+                $p["produce_count"] = $p["real_count"] = $factory_plan->count;
+
+                if ($factory_plan->real_count) {
+                    $p["real_count"] = $factory_plan->real_count;
+                }
             }
 //            $total_ordered_count = 0;
 //
