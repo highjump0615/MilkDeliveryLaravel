@@ -221,5 +221,6 @@
 @endsection
 
 @section('script')
+    <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
     <script src="<?=asset('js/pages/naizhan/order_select_export_print.js') ?>"></script>
 @endsection

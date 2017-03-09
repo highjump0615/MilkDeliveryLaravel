@@ -218,5 +218,6 @@
     <script>
         var at_page = "zaipeisong";
     </script>
+    <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
 @endsection
