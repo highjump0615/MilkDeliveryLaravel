@@ -90,7 +90,7 @@ $(document).ready(function () {
         set_avg_count(this);
     });
 
-    verifyPhone();
+    // verifyPhone();
 });
 
 //Show Camera function
