@@ -99,21 +99,6 @@
 					</div>
 				</div>
 				<div class="feed-element">
-					<div class="vertical-align">
-						<label class="col-md-1 control-label">订单状态:</label>
-						<div class="col-md-2">
-							<select data-placeholder="" id="filter_status" class="chosen-select form-control"
-									style="height:35px;" tabindex="2">
-								<option value="none"></option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_WAITING_STATUS}}">待审核</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS}}">在配送</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_STOPPED_STATUS}}">暂停</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_FINISHED_STATUS}}">已完成</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_NOT_PASSED_STATUS}}">未通过</option>
-								<option value="{{\App\Model\OrderModel\Order::ORDER_CANCELLED_STATUS}}">退订</option>
-							</select>
-						</div>
-					</div>
 					<div class="feed-element form-group" id="data_range_select">
 						<label class="col-md-2 control-label">下单日期:</label>
 						<div class="input-daterange input-group col-md-4" id="datepicker">
