@@ -1,0 +1,17 @@
+
+@media (min-width: 768px) {
+    .fixedintop {
+        position: fixed;
+        top: 0px;
+        width: 100%;
+        padding-right: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .fixedintop {
+        position: fixed;
+        top: 0px;
+        width: 100%;
+    }
+}
