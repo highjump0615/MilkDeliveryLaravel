@@ -82,4 +82,12 @@ class Product extends Model
         //ProductPrice::where('product_id', $this->id)->where('sales_area', )
          return 6.8;
     }
+
+    /**
+     * 获取奶框信息
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function box() {
+        return $this->belongsTo('App\Model\FactoryModel\FactoryBoxType', 'basket_spec');
+    }
 }

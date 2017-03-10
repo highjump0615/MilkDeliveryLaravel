@@ -85,12 +85,14 @@
 											</div>
 											<div class="col-md-4">
 												<label>发货人：</label>
-												<input type="text" id="input_name">
+												<input type="text" id="input_name" value="{{$sender_name}}" />
 											</div>
 											<div class="col-md-4">
 												<label>车牌号：</label>
-												<input type="text" id="input_carnum">
+												<input type="text" id="input_carnum" value="{{$car_number}}" >
 											</div>
+											<!-- 奶站id -->
+											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>
 									</tr>
 									<tr>
@@ -106,12 +108,12 @@
 									<?php $i=0; ?>
 									@foreach($station->mfbox_type as $bt)
 										<?php $i++; ?>
-									<tr>
+									<tr class="boxtype" value="{{$bt['box']->id}}">
 										@if($i == 1)
 										<td rowspan="{{count($station->mfbox_type)}}">奶筐</td>
 										@endif
-										<td width="20%">{{$bt->name}}</td>
-										<td width="30%" contenteditable="true"></td>
+										<td width="20%">{{$bt['box']->name}}</td>
+										<td class="boxcount" width="30%" contenteditable="true">{{$bt['count']}}</td>
 									</tr>
 									@endforeach
 								</tbody>
@@ -133,44 +135,6 @@
     <!-- Data picker -->
     <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 
-    <script type="text/javascript">
-		$(document).ready(function(){
-            $('.i-checks').iCheck({
-                checkboxClass: 'icheckbox_square-green',
-                radioClass: 'iradio_square-green'
-            });
-        });
-		$('.footable').footable();
-		
-			$('#date_2 .input-group.date').datepicker({
-            todayBtn: "linked",
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: false,
-            autoclose: true
-        });
+	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js') ?>"></script>
 
-		$('#search').click(function () {
-			var station_name = $('#station_name').val();
-			var station_number = $('#station_number').val();
-			var address = $('#address').val();
-			var date = $('#date').val();
-			window.location.href = SITE_URL+"milk/public/gongchang/shengchan/naizhanpeisong/dayinchukuchan/?station_name="+station_name+"&date="+date+"&station_number="+station_number+"&address="+address+"";
-		});
-
-		$('button[data-action = "print"]').click(function () {
-			var sendData = [];
-
-			// 填写里面的文字输入框
-			$('#table1 input[type=text]').each(function () {
-				$(this).prop('outerHTML', $(this).val());
-			});
-
-			printContent('table1');
-		});
-
-		$('#return').click(function () {
-			window.location.href = SITE_URL + "gongchang/shengchan/naizhanpeisong";
-		})
-    </script>
 @endsection

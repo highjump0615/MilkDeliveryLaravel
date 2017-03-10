@@ -1002,7 +1002,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('product_id',$product_id)
             ->where('produce_end_at', getPrevDateString())
             ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
-            ->get()
             ->first();
 
         if($dsplans != null) {
@@ -1161,8 +1160,37 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
             ->get();
 
-        $station['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
-        $station['mfbox_type'] = FactoryBoxType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+        // 发货人、车牌号
+        $strSenderName = '';
+        $strCarNum = '';
+
+//        $station['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+        $aryBoxType = array();
+
+        foreach ($station['station_plan'] as $dp) {
+            $bExist = false;
+
+            // 是否已在数组里
+            foreach ($aryBoxType as $bx) {
+                if ($bx['box']->id == $dp->product->box->id) {
+                    $bExist = true;
+                    break;
+                }
+            }
+
+            // 添加到数组
+            if (!$bExist) {
+                $aryBoxType[] = array(
+                    'box' => $dp->product->box,
+                    'count' => $dp->box_count,
+                );
+            }
+
+            $strSenderName = $dp->sender_name;
+            $strCarNum = $dp->car_number;
+        }
+
+        $station['mfbox_type'] = $aryBoxType;
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '打印出库单', SysLog::SYSLOG_OPERATION_VIEW);
@@ -1179,6 +1207,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             'station_name'      =>$station_name,
             'station_number'    =>$station_number,
             'address'           =>$address,
+
+            'sender_name'       =>$strSenderName,
+            'car_number'        =>$strCarNum,
 //            'station_plan'=>$station_plan,
 //            'mfbottle_type'=>$mfbottle_type,
         ]);
@@ -1193,6 +1224,58 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         // 没有指定的奶站、搜索
         return $this->showDayinchukuchanWithStation($request, 0);
+    }
+
+    /**
+     * 保存打印出库单内容
+     * @param Request $request
+     * @return mixed
+     */
+    public function saveOutStock(Request $request) {
+
+        $nStationId = $request->input('station_id');
+        $strSenderName = $request->input('sender_name');
+        $strCarNum = $request->input('car_num');
+        $aryBoxData = $request->input('box_data');
+
+        // 添加是否已保存的标记
+        foreach ($aryBoxData as $index => $boxData) {
+            $boxData['saved'] = false;
+            $aryBoxData[$index] = $boxData;
+        }
+
+        // 查询奶站生产计划数据
+        $dsplans = DSProductionPlan::where('station_id', $nStationId)
+            ->where('produce_end_at', getPrevDateString())
+            ->where('status', '>', DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
+            ->where('status', '!=', DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
+            ->get();
+
+        foreach ($dsplans as $dp) {
+            // 保存发货人、车牌号、状态
+            $dp->sender_name = $strSenderName;
+            $dp->car_number = $strCarNum;
+            $dp->status = DSProductionPlan::DSPRODUCTION_SEND_PRINTED;
+
+            // 保存瓶装
+            foreach ($aryBoxData as $index => $boxData) {
+                // 不考虑已保存的
+                if ($boxData['saved']) {
+                    continue;
+                }
+
+                if ($boxData['id'] == $dp->product->box->id) {
+                    $dp->box_count = $boxData['count'];
+
+                    $boxData['saved'] = true;
+                    $aryBoxData[$index] = $boxData;
+                }
+            }
+
+            $dp->save();
+        }
+
+        return Response::json(['status' => 'success']);
     }
 
     /**
