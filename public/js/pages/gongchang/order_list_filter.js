@@ -21,6 +21,9 @@ $('button[data-action="show_selected"]').click(function () {
     var f_order_start_date = $('#filter_order_start_date').val();
     var f_order_end_date = $('#filter_order_end_date').val();
 
+    // 订单状态
+    var f_status = $('#filter_status').val();
+
     //show only rows in filtered table that contains the above field value
     var filter_rows = [];
     var i = 0;
@@ -88,6 +91,15 @@ $('button[data-action="show_selected"]').click(function () {
             tr.attr("data-show-8", "0");
         }
 
+        // 状态比较
+        if ((typeof(f_status) == "undefined") ||
+            (f_status != "none" && o_status == f_status) ||
+            (f_status == "none")) {
+            tr.attr("data-show-9", "1");
+        } else {
+            tr.attr("data-show-9", "0");
+        }
+
         if ((f_order_start_date == "" && f_order_end_date == "") || (!o_ordered)) {
             tr.attr("data-show-10", "1");
         } else if (f_order_start_date == "" && f_order_end_date != "") {
@@ -126,7 +138,17 @@ $('button[data-action="show_selected"]').click(function () {
             }
         }
 
-        if ((tr.attr("data-show-1") == "1" ) && (tr.attr("data-show-2") == "1") && (tr.attr("data-show-3") == "1") && (tr.attr("data-show-4") == "1" ) && (tr.attr("data-show-5") == "1" ) && (tr.attr("data-show-6") == "1" ) && (tr.attr("data-show-7") == "1" ) && (tr.attr("data-show-8") == "1" ) && (tr.attr("data-show-10") == "1" )) {
+        if ((tr.attr("data-show-1") == "1") &&
+            (tr.attr("data-show-2") == "1") &&
+            (tr.attr("data-show-3") == "1") &&
+            (tr.attr("data-show-4") == "1") &&
+            (tr.attr("data-show-5") == "1") &&
+            (tr.attr("data-show-6") == "1") &&
+            (tr.attr("data-show-7") == "1") &&
+            (tr.attr("data-show-8") == "1") &&
+            (tr.attr("data-show-9") == "1") &&
+            (tr.attr("data-show-10") == "1")) {
+
             //tr.removeClass('hide');
 
             filter_rows[i] = $(tr)[0].outerHTML;
