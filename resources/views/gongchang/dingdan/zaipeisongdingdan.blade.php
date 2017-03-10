@@ -24,6 +24,7 @@
                 <!-- 筛选选择项 -->
                 @include('gongchang.dingdan.orderlistfilter', [
                     'showState' => false,
+                    'showEndDate' => true,
                 ])
 
                 <div class="feed-element">

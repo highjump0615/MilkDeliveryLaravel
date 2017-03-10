@@ -14,7 +14,6 @@ $(document).ready(function () {
         calendarWeeks: false,
         autoclose: true,
         clearBtn:true,
-        startDate: new Date(),
     });
 });
 

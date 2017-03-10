@@ -98,12 +98,21 @@
     </div>
     @endif
 
-    <div class="feed-element form-group" id="data_range_select">
-        <label class="col-md-2 control-label">下单日期:</label>
-        <div class="input-daterange input-group col-md-4" id="datepicker">
+    <div class="col-md-6 feed-element form-group" id="data_range_select">
+        <label class="col-md-3 control-label">下单日期:</label>
+        <div class="input-daterange input-group col-md-8" id="datepicker">
             <input type="text" id="filter_order_start_date" class="input-sm form-control" name="start"/>
             <span class="input-group-addon">至</span>
             <input type="text" id="filter_order_end_date" class="input-sm form-control" name="end"/>
         </div>
     </div>
+
+    @if ($showEndDate)
+    <div class="form-group" id="date_select">
+        <label class="col-lg-1 control-label" style="padding-top:5px;">到期日期:</label>
+        <div class="input-group date col-lg-2 single_date">
+            <input type="text" class="form-control" id="end_date" /><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        </div>
+    </div>
+    @endif
 </div>

@@ -24,6 +24,9 @@ $('button[data-action="show_selected"]').click(function () {
     // 订单状态
     var f_status = $('#filter_status').val();
 
+    // 到期日期
+    var f_end_date = $('#end_date').val();
+
     //show only rows in filtered table that contains the above field value
     var filter_rows = [];
     var i = 0;
@@ -41,6 +44,9 @@ $('button[data-action="show_selected"]').click(function () {
         o_type = tr.find('td.o_type').html().toString();
         o_paytype = tr.find('td.o_paytype').html().toString();
         o_ordered = tr.find('td.o_ordered').html().toString();
+
+        // 到期日期
+        o_end = tr.find('td.o_end').html();
 
         //status
         o_status = tr.find('td.o_status').data('status');
@@ -138,6 +144,14 @@ $('button[data-action="show_selected"]').click(function () {
             }
         }
 
+        // 到期日期比较
+        if (typeof(f_end_date) == "undefined" ||
+            o_end.includes(f_end_date)) {
+            tr.attr("data-show-11", "1");
+        } else {
+            tr.attr("data-show-11", "0");
+        }
+
         if ((tr.attr("data-show-1") == "1") &&
             (tr.attr("data-show-2") == "1") &&
             (tr.attr("data-show-3") == "1") &&
@@ -147,7 +161,8 @@ $('button[data-action="show_selected"]').click(function () {
             (tr.attr("data-show-7") == "1") &&
             (tr.attr("data-show-8") == "1") &&
             (tr.attr("data-show-9") == "1") &&
-            (tr.attr("data-show-10") == "1")) {
+            (tr.attr("data-show-10") == "1") &&
+            (tr.attr("data-show-11") == "1")) {
 
             //tr.removeClass('hide');
 
