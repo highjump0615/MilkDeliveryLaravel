@@ -72,7 +72,7 @@
 								<tr id="id{{$pl->id}}">
 									<td>{{$i}}</td>
 									<td>{{$pl['out_date']}}</td>
-									<td id="name{{$pl->id}}">{{$pl->name}}</td>
+									<td id="name{{$pl->id}}">{{$pl->simple_name}}</td>
 									<td>瓶</td>
 									<td class="ordered_count sales_val" id="ordered_count{{$pl->id}}">{{$pl->total_count}}</td>
 
