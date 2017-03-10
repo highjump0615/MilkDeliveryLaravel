@@ -1105,11 +1105,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     /**
      * 打开打印出库单
      * @param Request $request
+     * @param $stationId int 奶站id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showDayinchukuchan(Request $request){
+    public function showDayinchukuchanWithStation(Request $request, $stationId) {
 
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         // 页面信息
         $child = 'naizhanpeisong';
@@ -1130,10 +1131,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $address = '';
         }
 
-        $current_date = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $current_date->format('Y-m-d');
-        $current_date->add(\DateInterval::createFromDateString('yesterday'));
-        $produced_date = $current_date->format('Y-m-d');
+        $current_date_str = getCurDateString();
+        $produced_date = getPrevDateString();
 
         $input_date_str = $request->input('date');
         if($input_date_str != null){
@@ -1144,23 +1143,26 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $input_date_str = $current_date_str;
         }
 
-        $station = DeliveryStation::where('factory_id',$current_factory_id)
-            ->where('is_deleted',0)
-            ->where('status',Factory::FACTORY_STATUS_ACTIVE)
-            ->where('address','LIKE','%'.$address.'%')
-            ->where('name','LIKE','%'.$station_name.'%')
-            ->where('number','LIKE','%'.$station_number.'%')
-            ->get(['id','name']);
-
-        foreach ($station as $st){
-            $st['station_plan'] = DSProductionPlan::where('station_id', $st->id)
-                ->where('produce_end_at', $produced_date)
-                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
-                ->get();
-
-            $st['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
-            $st['mfbox_type'] = FactoryBoxType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+        if ($stationId > 0) {
+            $station = DeliveryStation::find($stationId);
         }
+        else {
+            $station = DeliveryStation::where('factory_id', $current_factory_id)
+                ->where('is_deleted', 0)
+                ->where('status', Factory::FACTORY_STATUS_ACTIVE)
+                ->where('address', 'LIKE', '%' . $address . '%')
+                ->where('name', 'LIKE', '%' . $station_name . '%')
+                ->where('number', 'LIKE', '%' . $station_number . '%')
+                ->first(['id', 'name']);
+        }
+
+        $station['station_plan'] = DSProductionPlan::where('station_id', $station->id)
+            ->where('produce_end_at', $produced_date)
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
+            ->get();
+
+        $station['mfbottle_type'] = FactoryBottleType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+        $station['mfbox_type'] = FactoryBoxType::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '打印出库单', SysLog::SYSLOG_OPERATION_VIEW);
@@ -1180,6 +1182,17 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 //            'station_plan'=>$station_plan,
 //            'mfbottle_type'=>$mfbottle_type,
         ]);
+    }
+
+    /**
+     * 打开打印出库单
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showDayinchukuchan(Request $request){
+
+        // 没有指定的奶站、搜索
+        return $this->showDayinchukuchanWithStation($request, 0);
     }
 
     /**

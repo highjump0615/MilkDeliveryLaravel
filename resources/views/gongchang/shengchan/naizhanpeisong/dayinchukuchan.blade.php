@@ -62,7 +62,7 @@
 					</div>
 				</div>
 				<div class="ibox float-e-margins">
-					@foreach($station as $st)
+
                     <div class="ibox-content col-md-12">
 						{{--<div class="col-md-1">--}}
 							{{--<input type="checkbox" checked class="i-checks" name="input[]">--}}
@@ -74,7 +74,7 @@
 							<table class="table table-bordered" id="table1">
 								<thead class="gray-bg">
 									<tr>
-										<th colspan="3">{{$st->name}}</th>
+										<th colspan="3">{{$station->name}}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -97,18 +97,18 @@
 										<td>货品</td>
 										<td colspan="2">发货数量</td>
 									</tr>
-									@foreach($st->station_plan as $sp)
+									@foreach($station->station_plan as $sp)
 									<tr>
 										<td>{{$sp->product_name}}</td>
 										<td colspan="2">{{$sp->actual_count}}</td>
 									</tr>
 									@endforeach
 									<?php $i=0; ?>
-									@foreach($st->mfbox_type as $bt)
+									@foreach($station->mfbox_type as $bt)
 										<?php $i++; ?>
 									<tr>
 										@if($i == 1)
-										<td rowspan="{{count($st->mfbox_type)}}">奶筐</td>
+										<td rowspan="{{count($station->mfbox_type)}}">奶筐</td>
 										@endif
 										<td width="20%">{{$bt->name}}</td>
 										<td width="30%" contenteditable="true"></td>
@@ -118,7 +118,7 @@
 							</table>
 						</div>
                     </div>
-					@endforeach
+
                 </div>
 				<div class="col-md-offset-5 col-md-2" style="padding:15px">
 					<button id="return" class="btn btn-success" style="width: 70%"><i class="fa fa-reply"></i></button>

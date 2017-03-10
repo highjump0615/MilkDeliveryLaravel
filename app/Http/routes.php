@@ -224,6 +224,7 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren', 'DSProductionPlanCtrl@showNaizhanshouhuoquerenPage');
     /*show dayinchukuchan Page*/
     Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan', 'DSProductionPlanCtrl@showDayinchukuchan');
+    Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/{stationId}', 'DSProductionPlanCtrl@showDayinchukuchanWithStation');
     /*Show milkstation Plan table*/
     Route::get('/gongchang/shengchan/naizhanjihuashenhe', 'DSProductionPlanCtrl@showPlanTableinFactory');
     /*Determine product counts*/

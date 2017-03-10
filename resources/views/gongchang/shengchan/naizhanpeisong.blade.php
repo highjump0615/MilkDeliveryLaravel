@@ -120,7 +120,7 @@
 								<td rowspan="{{count($di->station_plan)}}">
 									@if($ds->status > \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
 										<button class="btn btn-success"
-												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'"
+												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/'.$di->id)}}'"
 												id="detail{{$i}}"
 												type="button" >打印出库单</button>
 									@else
@@ -128,7 +128,7 @@
 												class="btn btn-success btn-md determine_count"
 												value="{{$i}}" id="detail{{$i}}">发货确认</button>
 										<button class="btn btn-success"
-												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name='.$di->name)}}'"
+												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/'.$di->id)}}'"
 												id="f_detail{{$i}}"
 												type="button" >打印出库单</button>
 									@endif
