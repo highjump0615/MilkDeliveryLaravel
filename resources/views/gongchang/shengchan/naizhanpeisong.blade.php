@@ -122,7 +122,13 @@
 										<button class="btn btn-success"
 												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/'.$di->id)}}'"
 												id="detail{{$i}}"
-												type="button" >打印出库单</button>
+												type="button" >
+											@if ($ds->status == \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
+												查看出库单
+											@else
+												打印出库单
+											@endif
+										</button>
 									@else
 										<button type="button"
 												class="btn btn-success btn-md determine_count"
