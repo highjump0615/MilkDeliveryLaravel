@@ -21,8 +21,15 @@ function getCurDateString() {
  * 获取昨日日期
  * @return string
  */
-function getPrevDateString() {
+function getPrevDateString($strDate = null) {
+
+    // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+    if (!empty($strDate)) {
+        $dateCurrent = getDateFromString($strDate);
+    }
+
     $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
     $strDate = $dateCurrent->format('Y-m-d');
 

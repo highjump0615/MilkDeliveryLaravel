@@ -124,9 +124,7 @@ class DSProductionPlanCtrl extends Controller
             $currentDateStr = getCurDateString();
         }
 
-        $currentDate = getDateFromString($currentDateStr);
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getNextDateString($currentDateStr);
 
         $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
             ->where('produce_start_at',$currentDate_str)
@@ -1229,7 +1227,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $current_station_id = $this->getCurrentStationId();
         $current_factory_id = $this->getCurrentFactoryId(false);
 
-        $current_date_str = getPrevDateString();
+        $currentDateStr = $request->input('current_date');
+        if (empty($currentDateStr)) {
+            $currentDateStr = getCurDateString();
+        }
+
+        $current_date_str = getPrevDateString($currentDateStr);
 
         $child = 'qianshoujihua';
         $parent = 'shengchan';
@@ -1277,9 +1280,15 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             'bottle_refund' =>$bottle_refund,
             'box_refund'    =>$box_refund,
             'sent_status'   =>$received_count,
+            'current_date'  =>$currentDateStr,
         ]);
     }
 
+    /**
+     * 奶站签收 - 数量
+     * @param Request $request
+     * @return int
+     */
     public function confirm_Plan_count(Request $request){
 
         $station_id = $this->getCurrentStationId();
@@ -1287,7 +1296,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $confirm_count = $request->input('confirm_count');
 
-        $current_date_str = getPrevDateString();
+        $current_date_str = getPrevDateString($request->input('date'));
 
         $dsplan = DSProductionPlan::where('station_id',$station_id)
             ->where('produce_end_at',$current_date_str)
@@ -1305,6 +1314,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         return count($dsplan);
     }
 
+    /**
+     * 奶站签收 - 返厂平框
+     * @param Request $request
+     * @return mixed
+     */
     public function refund_BB(Request $request){
 
         $current_station_id = $this->getCurrentStationId();
@@ -1313,8 +1327,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $object_type = $request->input('object_type');
         $return_to_factory = $request->input('return_to_factory');
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $current_date_str = $currentDate->format('Y-m-d');
+        $current_date_str = $request->input('date');
 
         // 奶瓶
         if($types == 1){
