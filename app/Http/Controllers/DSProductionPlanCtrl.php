@@ -119,8 +119,12 @@ class DSProductionPlanCtrl extends Controller
         $current_page = 'tijiaojihua';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $currentDateStr = $request->input('current_date');
+        if (empty($currentDateStr)) {
+            $currentDateStr = getCurDateString();
+        }
 
+        $currentDate = getDateFromString($currentDateStr);
         $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
         $currentDate_str = $currentDate->format('Y-m-d');
 
@@ -191,8 +195,8 @@ class DSProductionPlanCtrl extends Controller
             }
 
             // 计算出库日期
-            $current_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-            $strOutDate = $current_date->format('Y-m-d');
+            $dateCurrent = getDateFromString($currentDateStr);
+            $strOutDate = $dateCurrent->format('Y-m-d');
 
             $nDuration = $pl->production_period/24 + 1;
 
@@ -203,43 +207,35 @@ class DSProductionPlanCtrl extends Controller
         }
 
         return view('naizhan.shengchan.jihuaguanli.tijiaojihua',[
+            // 菜单关联信息
             'pages'                     =>$pages,
             'child'                     =>$child,
             'parent'                    =>$parent,
             'current_page'              =>$current_page,
+
+            // 页面内容
             'product_list'              =>$product_list,
             'current_station_status'    =>$current_station,
             'is_sent'                   =>$is_sent,
+            'current_date'              =>$currentDateStr,
         ]);
     }
 
     /**
-     * 提交计划
+     * 添加奶站计划
      * @param Request $request
-     * @return mixed
+     * @param $addNotification bool 是否添加通知
+     * @return double 自营业务余额
      */
-    public function storeTijiaojihuaPlan(Request $request) {
+    private function addStationPlan(Request $request, $addNotification = false) {
 
         $current_station_id = $this->getCurrentStationId();
+        $produce_start_at = getNextDateString($request->input('date'));
+        $dataPlan = $request->input('plan_data');
 
-        $produce_start_at = getNextDateString();
-        $current_date_str = getCurDateString();
+        $delivery_station = DeliveryStation::find($current_station_id);
 
-        $milkmandeliveryplans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('produce_at',$produce_start_at)->get();
-        foreach ($milkmandeliveryplans as $mp){
-            if($mp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED){
-                $mp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
-                $checkOrders = Order::find($mp->order_id);
-                if($checkOrders->status == Order::ORDER_PASSED_STATUS){
-                    $checkOrders->status = Order::ORDER_ON_DELIVERY_STATUS;
-                    $checkOrders->save();
-                }
-                $mp->save();
-            }
-        }
-
-        $table_info = json_decode($request->getContent(),true);
-        foreach ($table_info as $ti){
+        foreach ($dataPlan as $ti){
             $product_id = $ti['product_id'];
             $order_count = $ti['order_count'];
             $retail = $ti['retail'];
@@ -252,7 +248,7 @@ class DSProductionPlanCtrl extends Controller
 
             $production_period = Product::find($product_id)->production_period;
 
-            $product_price = ProductPrice::priceTemplateFromAddress($product_id, DeliveryStation::find($current_station_id)->address);
+            $product_price = ProductPrice::priceTemplateFromAddress($product_id, $delivery_station->address);
 
             if($product_price == null)
                 $current_product_price = 0;
@@ -288,8 +284,6 @@ class DSProductionPlanCtrl extends Controller
         //
         // 添加账单历史
         //
-        $delivery_station = DeliveryStation::find($current_station_id);
-
         $transaction_history_info = DB::select(DB::raw("select sum(retail * settle_product_price) as retail_amount, sum(test_drink * settle_product_price) as test_amount , 
 sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle_product_price) as channel_amount
                 from dsproductionplan where produce_start_at = :produce_start_at and station_id = :station_id"),
@@ -339,38 +333,78 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
             $delivery_station->business_credit_balance = $delivery_station->business_credit_balance - $th->retail_amount - $th->test_amount -$th->group_amount -$th->channel_amount;
             $delivery_station->save();
-            $business_balance = $delivery_station->business_credit_balance;
         }
 
-        // 添加奶站通知
-        $notification = new NotificationsAdmin();
-        $notification->sendToStationNotification($current_station_id,
-            DSNotification::CATEGORY_TRANSACTION,
-            "您本次提交的订单计划",
-            "您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
+        if ($addNotification) {
+            // 添加奶站通知
+            $notification = new NotificationsAdmin();
+            $notification->sendToStationNotification($current_station_id,
+                DSNotification::CATEGORY_TRANSACTION,
+                "您本次提交的订单计划",
+                "您本次提交的订单计划，已从自营账户中扣款".$sent_amount."元。");
 
-        // 添加奶厂通知
-        $notification->sendToFactoryNotification($delivery_station->factory_id,
-            FactoryNotification::CATEGORY_PRODUCE,
-            "奶站已提交了今天的生产计划",
-            $delivery_station->name . "奶站已提交了今天的生产计划。");
+            // 添加奶厂通知
+            $notification->sendToFactoryNotification($delivery_station->factory_id,
+                FactoryNotification::CATEGORY_PRODUCE,
+                "奶站已提交了今天的生产计划",
+                $delivery_station->name . "奶站已提交了今天的生产计划。");
 
-        // 添加系统日志
-        $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_STATION, '计划管理', SysLog::SYSLOG_OPERATION_SUBMIT_PLAN);
+        }
+
+        return $delivery_station->business_credit_balance;
+    }
+
+    /**
+     * 提交计划
+     * @param Request $request
+     * @return mixed
+     */
+    public function storeTijiaojihuaPlan(Request $request) {
+
+        $current_station_id = $this->getCurrentStationId();
+
+        $produce_start_at = getNextDateString($request->input('date'));
+
+        $milkmandeliveryplans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('produce_at',$produce_start_at)->get();
+        foreach ($milkmandeliveryplans as $mp){
+            if($mp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED){
+                $mp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
+                $checkOrders = Order::find($mp->order_id);
+                if($checkOrders->status == Order::ORDER_PASSED_STATUS){
+                    $checkOrders->status = Order::ORDER_ON_DELIVERY_STATUS;
+                    $checkOrders->save();
+                }
+                $mp->save();
+            }
+        }
+
+        $business_balance = $this->addStationPlan($request, true);
 
         return Response::json(['business_balance'=>$business_balance]);
     }
 
+    /**
+     * 修改提交计划
+     * @param Request $request
+     * @return mixed
+     */
     public function modifyTijiaojihuaPlan(Request $request) {
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
 
-        $produce_start_at = getNextDateString();
+        $current_station_id = $this->getCurrentStationId();
+
+        $produce_start_at = getNextDateString($request->input('date'));
         $current_date_str = getCurDateString();
 
-        $current_dsdelivery_plans = DSProductionPlan::where('produce_start_at',$produce_start_at)->where('station_id',$current_station_id)->get();
-        foreach ($current_dsdelivery_plans as $cd){
-            $cd->delete();
-        }
+        // 删除已有的计划记录
+        DSProductionPlan::where('produce_start_at',$produce_start_at)
+            ->where('station_id',$current_station_id)
+            ->delete();
+
+        //
+        // 返还自营账户金额
+        //
         $refund_money = DSBusinessCreditBalanceHistory::whereDate('created_at', '=', $current_date_str)
             ->where('station_id',$current_station_id)
             ->where('io_type',DSBusinessCreditBalanceHistory::DSBCBH_OUT)
@@ -386,99 +420,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $delivery_transation->business_credit_balance = $delivery_transation->business_credit_balance + $refund_amount;
         $delivery_transation->save();
 
-        $table_info = json_decode($request->getContent(),true);
-        foreach ($table_info as $ti){
-            $product_id = $ti['product_id'];
-            $order_count = $ti['order_count'];
-            $retail = $ti['retail'];
-            $test_drink = $ti['test_drink'];
-            $group_sale = $ti['group_sale'];
-            $channel_sale = $ti['channel_sale'];
-            $subtotal_count = $ti['subtotal_count'];
-            $subtotal_money = $ti['subtotal_money'];
-            $status = $ti['status'];
-
-            $production_period = Product::find($product_id)->production_period;
-            $product_price = ProductPrice::priceTemplateFromAddress($product_id, DeliveryStation::find($current_station_id)->address);
-
-            if($product_price == null)
-                $current_product_price = 0;
-            else
-                $current_product_price = $product_price->settle_price;
-
-            if($production_period == 24){
-                $current_date=$produce_start_at;
-            }
-            elseif ($production_period > 24){
-                $produce_period = strval($production_period/24 - 1);
-                $date = str_replace('-','/',$produce_start_at);
-                $current_date = date('Y-m-d',strtotime($date."+".$produce_period."days"));
-            }
-
-            $dsproduction_plan = new DSProductionPlan;
-            $dsproduction_plan->station_id = $current_station_id;
-            $dsproduction_plan->product_id = $product_id;
-            $dsproduction_plan->order_count = $order_count;
-            $dsproduction_plan->retail = $retail;
-            $dsproduction_plan->test_drink = $test_drink;
-            $dsproduction_plan->group_sale = $group_sale;
-            $dsproduction_plan->channel_sale = $channel_sale;
-            $dsproduction_plan->subtotal_count = $subtotal_count;
-            $dsproduction_plan->subtotal_money = $subtotal_money;
-            $dsproduction_plan->status = $status;
-            $dsproduction_plan->settle_product_price = $current_product_price;
-            $dsproduction_plan->produce_start_at = $produce_start_at;
-            $dsproduction_plan->produce_end_at = $current_date;
-            $dsproduction_plan->save();
-        }
-
-        $transaction_history_info = DB::select(DB::raw("select sum(retail * settle_product_price) as retail_amount, sum(test_drink * settle_product_price) as test_amount , 
-sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle_product_price) as channel_amount
-                from dsproductionplan where produce_start_at = :produce_start_at and station_id = :station_id"),
-            array('produce_start_at'=>$produce_start_at, 'station_id'=>$current_station_id));
-        foreach ($transaction_history_info as $th){
-            if($th->retail_amount !=null){
-                $balancehistory = new DSBusinessCreditBalanceHistory;
-                $balancehistory->station_id = $current_station_id;
-                $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_STATION_RETAIL_BUSINESS;
-                $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
-                $balancehistory->amount = $th->retail_amount;
-                $balancehistory->return_amount = 0;
-                $balancehistory->save();
-            }
-            if($th->test_amount !=null){
-                $balancehistory = new DSBusinessCreditBalanceHistory;
-                $balancehistory->station_id = $current_station_id;
-                $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_TRY_TO_DRINK_OR_GIFT;
-                $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
-                $balancehistory->amount = $th->test_amount;
-                $balancehistory->return_amount = 0;
-                $balancehistory->save();
-            }
-            if($th->group_amount !=null){
-                $balancehistory = new DSBusinessCreditBalanceHistory;
-                $balancehistory->station_id = $current_station_id;
-                $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_GROUP_BUY_BUSINESS;
-                $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
-                $balancehistory->amount = $th->group_amount;
-                $balancehistory->return_amount = 0;
-                $balancehistory->save();
-            }
-            if($th->channel_amount !=null){
-                $balancehistory = new DSBusinessCreditBalanceHistory;
-                $balancehistory->station_id = $current_station_id;
-                $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_CHANNEL_SALES_OPERATIONS;
-                $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
-                $balancehistory->amount = $th->channel_amount;
-                $balancehistory->return_amount = 0;
-                $balancehistory->save();
-            }
-
-            $delivery_transation = DeliveryStation::find($current_station_id);
-            $delivery_transation->business_credit_balance = $delivery_transation->business_credit_balance - $th->retail_amount - $th->test_amount -$th->group_amount -$th->channel_amount;
-            $delivery_transation->save();
-            $business_balance = $delivery_transation->business_credit_balance;
-        }
+        $business_balance = $this->addStationPlan($request);
 
         return Response::json(['business_balance'=>$business_balance]);
     }
