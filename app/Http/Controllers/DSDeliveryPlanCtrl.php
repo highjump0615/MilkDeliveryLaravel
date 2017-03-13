@@ -111,6 +111,11 @@ class DSDeliveryPlanCtrl extends Controller
 
             $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($planProduct, $cc->changed_plan_count));
 
+            // 如果是没签收，订单数量的累加
+            if (empty($planProduct->station_id)) {
+                $planProduct->order_count += $cc->plan_count;
+            }
+
             // 添加到主数组
             $planResult[$index] = $planProduct;
         }
