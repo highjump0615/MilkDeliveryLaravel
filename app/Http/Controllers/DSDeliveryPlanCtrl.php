@@ -172,7 +172,7 @@ class DSDeliveryPlanCtrl extends Controller
             'parent'                =>$parent,
             'current_page'          =>$current_page,
 
-            'is_received'           =>$nReceivedCount,
+            'is_received'           =>true, // 不管签不签收操作都是正常
             'dsproduction_plans'    =>$planResult,
             'is_distributed'        =>$is_distributed,
             'changed_plans'         =>$changed_plans,
