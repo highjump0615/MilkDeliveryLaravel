@@ -6,15 +6,6 @@ var date = new Date();
 firstm = new Date(date.getFullYear(), date.getMonth(), 1);
 lastm = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-$('#insert_io_type').change(function () {
-    if ($(this).val() == "{{\App\Model\FinanceModel\DSBusinessCreditBalanceHistory::DSBCBH_OUT}}") {
-        $('#insert_receipt_number').prop("disabled", true);
-    }
-    else {
-        $('#insert_receipt_number').prop("disabled", false);
-    }
-});
-
 $(document).ready(function () {
     $('#data_range_select .input-daterange').datepicker({
         keyboardNavigation: false,
