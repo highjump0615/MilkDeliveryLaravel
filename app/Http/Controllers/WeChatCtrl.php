@@ -2086,14 +2086,7 @@ class WeChatCtrl extends Controller
             $wechat_user_id = $wechat_user->id;
 
             session(['wechat_user_id' => $wechat_user_id]);
-
-        } else {
-
-            $factory_id = session('factory_id');
-            $factory = Factory::find($factory_id);
-            $wechat_user_id = session('wechat_user_id');
         }
-
 
         $wechat_user_id = session('wechat_user_id');
 
@@ -2118,7 +2111,7 @@ class WeChatCtrl extends Controller
             'carts' => $carts,
             'cartn' => $cartn,
             'total_count' => $total_count,
-            'total_amount' => $total_amount,
+            'total_amount' => round($total_amount, 2),
             'cart_ids' => $cart_ids,
         ]);
     }
