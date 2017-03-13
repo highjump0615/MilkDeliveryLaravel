@@ -16,95 +16,13 @@
         </div>
         <div class="row wrapper">
             <div class="wrapper-content">
-                <div class="feed-element">
-                    <div class="vertical-align">
-                        <label class="col-md-1 control-label">收货人:</label>
-                        <div class="col-md-2"><input type="text" placeholder="" class="form-control" value=""
-                                                     id="filter_customer"></div>
-                        <label class="col-md-1 control-label">电话:</label>
-                        <div class="col-md-2"><input type="text" placeholder="" class="form-control" value=""
-                                                     id="filter_phone"></div>
-                        <label class="col-md-1 control-label">奶站:</label>
-                        <div class="col-md-2">
-                            <select id="filter_station" class="chosen-select form-control" style="height:35px;"
-                                    tabindex="2">
-                                <option value="none"></option>
-                                @if (isset($factory) and ($factory->deliveryStations))
-                                    @foreach($factory->deliveryStations as $station)
-                                        <option value="{{$station->name}}">{{$station->name}}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        </div>
-                        <label class="col-md-1 control-label">订单性质:</label>
-                        <div class="col-md-2">
-                            <select id="filter_delivery_property" class="chosen-select form-control"
-                                    style="height:35px;" tabindex="2">
-                                <option value="none"></option>
-                                @if (isset($order_properties))
-                                    @foreach($order_properties as $orderproperty)
-                                        <option value="{{$orderproperty->name}}">{{$orderproperty->name}}</option>
-                                    @endforeach
-                                @else
-                                    <option value="1">新单</option>
-                                    <option value="2">续单</option>
-                                @endif
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="feed-element">
-                    <div class="vertical-align">
-                        <label class="col-md-1 control-label">订单编号:</label>
-                        <div class="col-md-2"><input type="text" placeholder="" class="form-control" value=""
-                                                     id="filter_number"></div>
-                        <label class="col-md-1 control-label">征订员:</label>
-                        <div class="col-md-2"><input id="filter_order_checker" type="text" placeholder=""
-                                                     class="form-control" value=""></div>
-                        <label class="col-md-1 control-label">订单类型:</label>
-                        <div class="col-md-2">
-                            <select data-placeholder="" id="filter_term_kind" class="chosen-select form-control"
-                                    style="height:35px;" tabindex="2">
-                                <option value="none"></option>
-                                @if ( isset($factory) and ($factory->factory_order_types) )
-                                    @foreach($factory->factory_order_types as $fot)
-                                        <option value="{{$fot->order_type_name}}">{{$fot->order_type_name}}</option>
-                                    @endforeach
-                                @else
-                                    <option value="月单">月单</option>
-                                    <option value="季单">季单</option>
-                                    <option value="半年单">半年单</option>
-                                @endif
-                            </select>
-                        </div>
-                        <label class="col-md-1 control-label">支付:</label>
-                        <div class="col-md-2">
-                            <select data-placeholder="" id="filter_payment_type" class="chosen-select form-control"
-                                    style="height:35px;" tabindex="2">
-                                <option value="none"></option>
-                                @if ( isset($payment_types))
-                                    @foreach($payment_types as $pt)
-                                        <option value="{{$pt->name}}">{{$pt->name}}</option>
-                                    @endforeach
-                                @else
-                                    <option value="微信">微信</option>
-                                    <option value="现金">现金</option>
-                                    <option value="奶卡">奶卡</option>
-                                @endif
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="feed-element">
-                    <div class="feed-element form-group" id="data_range_select">
-                        <label class="col-md-1 control-label" style="margin-right: 15px;">下单日期:</label>
-                        <div class="input-daterange input-group col-md-3" id="datepicker">
-                            <input type="text" id="filter_order_start_date" class="input-sm form-control" name="start"/>
-                            <span class="input-group-addon">至</span>
-                            <input type="text" id="filter_order_end_date" class="input-sm form-control" name="end"/>
-                        </div>
-                    </div>
-                </div>
+
+                <!-- 筛选选择项 -->
+                @include('gongchang.dingdan.orderlistfilter', [
+                    'showState' => false,
+                    'showEndDate' => false,
+                ])
+
                 <div class="feed-element">
                     <div class="col-md-2 col-md-offset-10 button-div">
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
@@ -219,5 +137,6 @@
     </div>
 @endsection
 @section('script')
+    <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
     <script src="<?=asset('js/pages/naizhan/order_select_export_print.js') ?>"></script>
 @endsection
