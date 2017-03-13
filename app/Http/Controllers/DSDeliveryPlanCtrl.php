@@ -62,7 +62,7 @@ class DSDeliveryPlanCtrl extends Controller
             ->orderby('product_id')
             ->get();
 
-        $nReceivedCount = count($DSProduction_plans);
+//        $nReceivedCount = count($DSProduction_plans);
         $is_distributed = 0;
 
         $changed_counts = MilkManDeliveryPlan::where('station_id',$current_station_id)
@@ -70,13 +70,6 @@ class DSDeliveryPlanCtrl extends Controller
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get();
-
-//        // 查询已配送完的配送订单
-//        $deliver_finished_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-//            ->where('deliver_at',$deliver_date_str)
-//            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-//            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-//            ->get();
 
         // DSProductionPlan有可能不包括当天配送的所有数据、因为有配送变化量等，于是手工设置
         $planResult = array();
@@ -458,17 +451,52 @@ class DSDeliveryPlanCtrl extends Controller
 
         $current_station_id = $this->getCurrentStationId();
 
-        // 配送日期
-        $deliver_date_str = getCurDateString();
-
-        $delivery_plans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->get();
-
         $milk_mans = MilkMan::where('station_id',$current_station_id)->get();
 
         if($milk_mans->first() == null){
             return redirect()->route('naizhan_peisongliebiao')->with('page_status','没有配送员!');
         }
 
+        // 配送日期
+        $deliver_date_str = getCurDateString();
+
+        //
+        // 查询有效的产品
+        //
+
+        // 当日查询
+        $delivery_plans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->get();
+
+        // 如果当日没有信息，查询以前的
+        if ($delivery_plans->count() == 0) {
+            //
+            // 获取每个品种的最新的库存数据
+            //
+            $delivery_plans = DSDeliveryPlan::where('station_id', $current_station_id)
+                ->where('deliver_at', '<', $deliver_date_str)
+                ->groupby('product_id')
+                ->get([DB::raw('max(id) as id')]);
+
+            $aryId = array();
+            foreach ($delivery_plans as $dp) {
+                array_push($aryId, $dp->id);
+            }
+
+            $delivery_plans = DSDeliveryPlan::whereIn('id', $aryId)->get();
+            foreach ($delivery_plans as $dp) {
+                $dp->remain = $dp->remain_final;
+
+                // 初始化自营数量
+                $dp->retail = 0;
+                $dp->group_sale = 0;
+                $dp->channel_sale = 0;
+                $dp->test_drink = 0;
+            }
+        }
+
+        //
+        // 查询已经发货的自营出库任务
+        //
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
             ->where('type', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
@@ -547,116 +575,6 @@ class DSDeliveryPlanCtrl extends Controller
             'parent'                    =>$parent,
             'current_page'              =>$current_page,
 
-            'delivery_plans'            =>$delivery_plans,
-            'streets'                   =>$street,
-            'milk_man'                  =>$milk_mans,
-            'current_district'          =>$show_district,
-            'addr_district'             =>$addr_district,
-            'province'                  =>$province,
-            'milkman_delivery_plans'    =>$res,
-        ]);
-    }
-
-    public function showZiyingdingdan_deprecated(Request $request){
-
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
-
-        $child = 'peisongguanli';
-        $parent = 'shengchan';
-        $current_page = 'ziyingdingdan';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-
-        $delivery_plans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->get();
-        $total_remain_product_count = 0;
-
-        foreach ($delivery_plans as $dp){
-
-            $milkman_planed_count = 0;
-            $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                ->where('deliver_at',$deliver_date_str)
-                ->where('type',"!=", 1)
-                ->get();
-
-            foreach($milkman_delivery_plans as $md) {
-                if($md->order_product->product->id == $dp->product_id){
-                    $milkman_planed_count += $md->delivery_count;
-                }
-            }
-
-            $dp['rest_amount'] = $dp->test_drink + $dp->group_sale + $dp->channel_sale - $milkman_planed_count;
-            $total_remain_product_count += $dp['rest_amount'];
-        }
-
-//        if($total_remain_product_count == 0){
-//            return redirect()->route('naizhan_peisongliebiao')->with('page_status','你已经添加自营配送任务!');
-//        }
-
-        $milk_mans = MilkMan::where('station_id',$current_station_id)->get();
-//        if($delivery_plans->first() == null){
-//            return redirect()->route('naizhan_peisongliebiao')->with('page_status','没有自营计划量!');
-//        }
-
-        if($milk_mans->first() == null){
-            return redirect()->route('naizhan_peisongliebiao')->with('page_status','没有配送员!');
-        }
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->where('type',"!=", 1)->get()->groupBy(function($sort){return $sort->order_id;});
-        $res = array();
-        foreach($milkman_delivery_plans as $o=>$dps_by_order) {
-            $res[$o] = SelfOrder::find($o);
-            $products = array();
-            $is_changed = 0;
-            $delivery_type = 1;
-            $milk_man = '';
-            foreach($dps_by_order as $dp) {
-                $name = $dp->order_product->product->simple_name;
-                $count = $dp->delivery_count;
-                $products[] = $name.'*'.$count;
-                if($dp->plan_count != $dp->changed_plan_count)
-                    $is_changed = 1;
-                $delivery_type = $dp->type;
-                $milk_man = $dp->milkman->name;
-            }
-            $res[$o]['product'] = implode(',', $products);
-            $res[$o]['changed'] = $is_changed;
-            $res[$o]['delivery_type'] = $delivery_type;
-            $res[$o]['milkman_name'] = $milk_man;
-        }
-        $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
-
-        $street = array();
-        $i = 0;
-        foreach ($dsdeliveryarea as $da){
-            $flag = 0;
-            $cur_addr = explode(" ",$da->address);
-            if($i == 0){
-                $street[$i] = $cur_addr[3];
-                $i++;
-            }
-            for($j = 0; $j < $i; $j++){
-                if($street[$j] == $cur_addr[3]){
-                    $flag = 1;
-                }
-            }
-            if($flag == 0){
-                $street[$i] = $cur_addr[3];
-                $i++;
-            }
-        }
-
-        $current_district = DeliveryStation::find($current_station_id)->address;
-        $current_district = explode(" ",$current_district);
-        $show_district = $current_district[0].$current_district[1].$current_district[2];
-        $addr_district = $current_district[0].' '.$current_district[1].' '.$current_district[2];
-        $province = ProvinceData::all();
-
-        return view('naizhan.shengchan.peisongguanli.ziyingdingdan',[
-            'pages'                     =>$pages,
-            'child'                     =>$child,
-            'parent'                    =>$parent,
-            'current_page'              =>$current_page,
             'delivery_plans'            =>$delivery_plans,
             'streets'                   =>$street,
             'milk_man'                  =>$milk_mans,
