@@ -67,3 +67,52 @@ $(document).on('click','.determine_count',function(e){
         }
     });
 });
+
+
+/**
+ * 保存实际生产量
+ */
+$(document).on('click','#but_save',function () {
+
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+        }
+    });
+
+    $('#but_save').prop("disabled",true);
+
+    var table_info = [];
+
+    $('#current_status tr:not(:first,:last)').each(function(){
+        var strId = $(this).attr('id');
+        var strRealCount = $(this).find('td:eq(3)').html();
+
+        if (parseInt(strRealCount) >= 0) {
+            var formData = {
+                id: parseInt(strId),
+                count: parseInt(strRealCount),
+            };
+
+            table_info.push(formData);
+        }
+    });
+
+    // 调用api
+    $.ajax({
+        type: 'POST',
+        url: API_URL + 'gongchang/shengchan/naizhanpeisong/save',
+        contentType: 'json',
+        processData: false,
+        data: JSON.stringify(table_info),
+        success: function (data) {
+            $('#but_save').prop("disabled", false);
+        },
+        error: function (data) {
+            $('#but_save').prop("disabled", false);
+
+            show_err_msg('Error:', data);
+            console.log('Error:', data);
+        }
+    });
+});

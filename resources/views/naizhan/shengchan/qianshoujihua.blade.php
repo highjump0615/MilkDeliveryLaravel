@@ -1,5 +1,9 @@
 @extends('naizhan.layout.master')
 
+@section('css')
+	<link href="<?=asset('css/pages/naizhan/qianshoujihua.css') ?>" rel="stylesheet">
+@endsection
+
 @section('content')
 	@include('naizhan.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -22,7 +26,14 @@
 			@endif
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
-						<label style="font-size:20px;">录入实际签收订单：</label>
+						<div class="input-header">
+							<label style="font-size:20px;">录入实际签收订单：</label>
+							<div class="input-group date">
+								<input type="text" class="form-control" value="{{$current_date}}" id="search_date">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							</div>
+						</div>
+
                         <table id="confrim_arrived_product" class="table footable table-bordered">
                             <thead style="background-color:#33cccc;">
 								<tr>
@@ -136,6 +147,7 @@
 @endsection
 
 @section('script')
+	<script src="<?=asset('js/pages/naizhan/qianshoujihua.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/shengchan_qianshoujihua_ajax.js') ?>"></script>
 @endsection
