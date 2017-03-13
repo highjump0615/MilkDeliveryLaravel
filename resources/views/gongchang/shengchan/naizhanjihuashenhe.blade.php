@@ -1,5 +1,6 @@
 @extends('gongchang.layout.master')
 @section('css')
+	<link href="<?=asset('css/pages/gongchang/floatingtop.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -19,6 +20,8 @@
 				<input type="hidden" id="current_factory_id" value="{{$current_factory_id}}">
 				<!--Table-->
                 <div class="ibox float-e-margins">
+					<div class="floating">
+
                     <div class="ibox-content">
 						<div id="alert_view" style="display: none">
 							<p style="font-size:20px; color:white; background-color:#ff0000;"> 请解决待处理状态!</p>
@@ -68,6 +71,8 @@
 							</tfoot>
                         </table>
                     </div>
+
+					</div>
                 </div>
 				<div class="col-md-12">
 					<label>上报记录</label>
@@ -174,4 +179,5 @@
 @section('script')
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/shengchan_naizhanjihuashenhe_ajax.js') ?>"></script>
+	<script src="<?=asset('js/pages/gongchang/floatingtop.js') ?>"></script>
 @endsection
