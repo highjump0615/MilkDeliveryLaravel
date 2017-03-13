@@ -57,13 +57,10 @@ $(document).ready(function(){
 });
 
 function get_product_id(){
-    var $datarows = $('#distribute tr.product_id_tr');
-    $datarows.each(function(){
-        $(this).find('.product_id').each(function(i){
-            var current_id = $(this).attr('value');
-            product_id[i]=current_id;
-        });
-    })
+    var $datarows = $('#distribute tr.product_tr');
+    $datarows.each(function(i){
+        product_id[i] = $(this).find('.product_id').attr('value');
+    });
 }
 
 /**
