@@ -21,8 +21,15 @@ function getCurDateString() {
  * 获取昨日日期
  * @return string
  */
-function getPrevDateString() {
+function getPrevDateString($strDate = null) {
+
+    // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+    if (!empty($strDate)) {
+        $dateCurrent = getDateFromString($strDate);
+    }
+
     $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
     $strDate = $dateCurrent->format('Y-m-d');
 
@@ -33,10 +40,26 @@ function getPrevDateString() {
  * 获取明日日期
  * @return string
  */
-function getNextDateString() {
+function getNextDateString($strDate = null) {
+
+    // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+    if (!empty($strDate)) {
+        $dateCurrent = getDateFromString($strDate);
+    }
+
     $dateCurrent->add(\DateInterval::createFromDateString('tomorrow'));
     $strDate = $dateCurrent->format('Y-m-d');
 
     return $strDate;
+}
+
+/**
+ * 日期string转DateTime
+ * @param $string
+ * @return bool|DateTime
+ */
+function getDateFromString($string) {
+    return DateTime::createFromFormat('Y-m-d', $string);
 }

@@ -24,7 +24,12 @@
 						<div class="col-md-2">
 							 <label style="font-size:20px;">填报计划：</label>
 						</div>
-						<div class="col-lg-7"></div>
+						<div class="col-lg-7">
+							<div class="input-group date col-sm-4">
+								<input type="text" class="form-control" value="{{$current_date}}" id="search_date">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							</div>
+						</div>
 						<label id="balance" class="col-lg-3" style="font-size:20px; color:white; background-color:#ff0000;">自营业务余额：{{$current_station_status->business_credit_balance}}</label>
 					</div>
 				</div>
@@ -72,7 +77,7 @@
 								<tr id="id{{$pl->id}}">
 									<td>{{$i}}</td>
 									<td>{{$pl['out_date']}}</td>
-									<td id="name{{$pl->id}}">{{$pl->name}}</td>
+									<td id="name{{$pl->id}}">{{$pl->simple_name}}</td>
 									<td>瓶</td>
 									<td class="ordered_count sales_val" id="ordered_count{{$pl->id}}">{{$pl->total_count}}</td>
 
@@ -133,6 +138,7 @@
 @endsection
 
 @section('script')
+	<script src="<?=asset('js/pages/naizhan/tijiaojihua.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/shengchan_tijiaoajax.js') ?>"></script>
 @endsection
