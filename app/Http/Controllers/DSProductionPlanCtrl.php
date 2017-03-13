@@ -1298,17 +1298,47 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $current_date_str = getPrevDateString($request->input('date'));
 
+        //
+        // 更新奶站计划
+        //
         $dsplan = DSProductionPlan::where('station_id',$station_id)
             ->where('produce_end_at',$current_date_str)
             ->where('product_id',$product_id)
             ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_SENT)
-            ->get()
             ->first();
 
         if ($dsplan != null){
             $dsplan->confirm_count = $confirm_count;
             $dsplan->status = DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED;
             $dsplan->save();
+
+            //
+            // 添加/更新库存数据
+            //
+
+            // 添加/更新当日库存数据
+            $dsdp = DSDeliveryPlan::getDeliveryPlanGenerated($station_id, $product_id, $request->input('date'));
+
+            if (empty($dsdp)) {
+                $dsdp = new DSDeliveryPlan;
+                $dsdp->station_id = $station_id;
+                $dsdp->deliver_at = $request->input('date');
+                $dsdp->product_id = $product_id;
+            }
+
+            $dsdp->remain += $confirm_count;
+            $dsdp->save();
+
+            // 更新最新库存数据
+            $dsdpLatest = DSDeliveryPlan::where('station_id', $station_id)
+                ->where('product_id', $product_id)
+                ->orderby('deliver_at', 'desc')
+                ->first();
+
+            if ($dsdpLatest->id != $dsdp->id) {
+                $dsdpLatest->remain += $confirm_count;
+                $dsdpLatest->save();
+            }
         }
 
         return count($dsplan);
