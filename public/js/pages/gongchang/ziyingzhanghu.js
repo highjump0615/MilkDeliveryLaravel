@@ -24,7 +24,7 @@ $('#self_business_history_form').on('submit', function (e) {
     console.log(sendData);
 
     $.ajax({
-        type: "GET",
+        type: "POST",
         url: API_URL + "gongchang/caiwu/ziyingzhanghu/add_self_business_history",
         data: sendData,
         success: function (data) {
