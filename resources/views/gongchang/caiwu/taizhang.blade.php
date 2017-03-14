@@ -28,6 +28,10 @@
             width: 100%;
         }
 
+        .operation a {
+            width: 100%;
+        }
+
     </style>
 @endsection
 
@@ -65,20 +69,23 @@
 
             <!-- 奶厂操作 -->
             @if (!$is_station)
-            <div class="ibox-content col-md-12">
+            <div class="ibox-content col-md-12 operation">
                 <div class="col-md-2">
-                    <a data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button"
-                       style="width:100%;">奶站现金订单收款</a>
+                    <a id="add-odder" data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button">奶站现金订单收款</a>
                 </div>
                 &nbsp;
                 <div class="col-md-2">
                     <a href="{{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/')}}"
-                       class="btn btn-lg btn-success" type="button" style="width:100%;">其他奶站转账</a>
+                       class="btn btn-lg btn-success" type="button">其他奶站转账</a>
                 </div>
                 &nbsp;
                 <div class="col-md-2">
                     <a href="{{URL::to('/gongchang/caiwu/taizhang/naikakuanzhuanzhang')}}"
-                       class="btn btn-lg btn-success" type="button" style="width:100%;">奶卡款转账</a>
+                       class="btn btn-lg btn-success" type="button">奶卡款转账</a>
+                </div>
+                &nbsp;
+                <div class="col-md-2">
+                    <a id="add-self" data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button">自营收款</a>
                 </div>
             </div>
             @endif

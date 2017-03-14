@@ -42,7 +42,7 @@
                             </thead>
                             <tbody>
 							@foreach($delivery_plans as $ds)
-								<tr>
+								<tr value="{{$ds->product_id}}">
 									<td>{{$ds->product_name}}</td>
 									<td>{{$ds->remain}}</td>
 									<td id="retail{{$ds->product_id}}">{{$ds->retail}}</td>
