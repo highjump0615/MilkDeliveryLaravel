@@ -1,3 +1,8 @@
+/**
+ * 添加收款类型
+ * @type {number} 1:现金订单，2:自营收款
+ */
+var nAddType = 0;
 
 $(document).ready(function () {
     // 显示modal事件
@@ -5,6 +10,20 @@ $(document).ready(function () {
         $(this).find('input').val('');
         $(this).find('textarea').val('');
     });
+});
+
+/**
+ * 点击现金收款
+ */
+$(document).on('click', '#add-odder', function() {
+    nAddType = 1;
+});
+
+/**
+ * 点击自营收款
+ */
+$(document).on('click', '#add-self', function() {
+    nAddType = 2;
 });
 
 $('#insert_order_receipt_form').on('submit', function (e) {
@@ -15,12 +34,18 @@ $('#insert_order_receipt_form').on('submit', function (e) {
     // 禁止确定按钮，一遍防止两次点击
     $(submit).attr('disabled', 'disabled');
 
+    var strUrl = API_URL + "gongchang/caiwu/taizhang/insert_money_order_received";
+
+    if (nAddType == 2) {
+        strUrl = API_URL + "gongchang/caiwu/ziyingzhanghu/add_self_business_history";
+    }
+
     var sendData = $('#insert_order_receipt_form').serializeArray();
     console.log(sendData);
 
     $.ajax({
         type: "POST",
-        url: API_URL + "gongchang/caiwu/taizhang/insert_money_order_received",
+        url: strUrl,
         data: sendData,
         success: function (data) {
             console.log(data);

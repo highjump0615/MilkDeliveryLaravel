@@ -57,13 +57,10 @@ $(document).ready(function(){
 });
 
 function get_product_id(){
-    var $datarows = $('#distribute tr.product_id_tr');
-    $datarows.each(function(){
-        $(this).find('.product_id').each(function(i){
-            var current_id = $(this).attr('value');
-            product_id[i]=current_id;
-        });
-    })
+    var $datarows = $('#distribute tr.product_tr');
+    $datarows.each(function(i){
+        product_id[i] = $(this).find('.product_id').attr('value');
+    });
 }
 
 /**
@@ -198,9 +195,9 @@ function calc_total(){
         $(this).html(sum_totals[i]);
     });
 
-    // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - 可配送数量合计 + 配送业务实际配送数量
+    // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - (配送业务实际配送数量 - 可配送数量合计)
     $('#distribute td.remain_sum').each(function(i) {
-        remain_amount[i] = produced_totals[i] - sum_totals[i]/* - order_totals[i] + delivered_total[i]*/;
+        remain_amount[i] = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
         $(this).html(remain_amount[i]);
     });
 }
