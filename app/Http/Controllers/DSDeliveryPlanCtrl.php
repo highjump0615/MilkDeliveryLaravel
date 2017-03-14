@@ -810,20 +810,9 @@ class DSDeliveryPlanCtrl extends Controller
         $current_page = 'jinripeisongdan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        // 配送任务根据配送员分组
-        $milkman_delivery_plans_all = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at', $deliver_date_str)
-            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
-            ->with(array('order' => function($query) {
-                $query->orderBy('delivery_time');
-                $query->orderBy('address');
-            }))
-            ->get();
-
         $milkman_info = array();
 
-        $deliveryPlan = $milkman_delivery_plans_all->first();
+        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
 
         // 只有生成了配送列表之后才显示今日配送单
         if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id)) {
@@ -840,9 +829,16 @@ class DSDeliveryPlanCtrl extends Controller
             ]);
         }
 
-        $milkman_delivery_plans = $milkman_delivery_plans_all->groupBy(function ($sort) {
-            return $sort->milkman_id;
-        });
+        // 配送任务根据配送员分组
+        $milkman_delivery_plans = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
+            ->with(array('order' => function($query) {
+                $query->orderBy('delivery_time');
+                $query->orderBy('address');
+            }))
+            ->get()
+            ->groupBy(function ($sort) {
+                return $sort->milkman_id;
+            });
 
         foreach ($milkman_delivery_plans as $m => $dps_by_milkman) {
             // 变化量统计数据
@@ -960,6 +956,19 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     /**
+     * 获取查询当日配送明细的条件
+     * @param $stationId
+     * @param $deliverAt
+     * @return mixed
+     */
+    private function getMilkmanDeliveryQuery($stationId, $deliverAt) {
+        return MilkManDeliveryPlan::where('station_id', $stationId)
+            ->where('deliver_at', $deliverAt)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED]);
+    }
+
+    /**
      * 打开配送反录页面
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -983,15 +992,8 @@ class DSDeliveryPlanCtrl extends Controller
         $current_page = 'peisongfanru';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-        // 查询配送明细
-        $queryDeliveryPlan = MilkManDeliveryPlan::where('station_id', $current_station_id)
-            ->where('deliver_at', $deliver_date_str)
-            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED]);
-
         // 是否已生成配送列表？
-        $milkman_delivery_plans = $queryDeliveryPlan->get();
-        $deliveryPlan = $milkman_delivery_plans->first();
+        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
 
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
@@ -1019,7 +1021,8 @@ class DSDeliveryPlanCtrl extends Controller
         //
 
         // 查询
-        $deliveryPlanById = $queryDeliveryPlan->distinct()->get(['milkman_id']);
+        $deliveryPlanById = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
+            ->distinct()->get(['milkman_id']);
 
         $aryMilkmanId = array();
         foreach ($deliveryPlanById as $dp) {
@@ -1049,7 +1052,7 @@ class DSDeliveryPlanCtrl extends Controller
             ->where('time',$deliver_date_str)
             ->get(['count','bottle_type']);
 
-        $queryDeliveryPlan->where('milkman_id',$current_milkman);
+        $queryDeliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->where('milkman_id',$current_milkman);
         $milkman_delivery_plans = $queryDeliveryPlan->get();
 
         //
