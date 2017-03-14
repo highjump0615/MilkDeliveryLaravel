@@ -257,7 +257,7 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //show self account balance
     Route::get('/gongchang/caiwu/ziyingzhanghu/{station_id}', 'FinanceCtrl@show_self_account_in_gongchang');
-    Route::get('api/gongchang/caiwu/ziyingzhanghu/add_self_business_history', 'FinanceCtrl@add_self_business_history');
+    Route::post('api/gongchang/caiwu/ziyingzhanghu/add_self_business_history', 'FinanceCtrl@add_self_business_history');
 
     //show delivery status between other stations
     Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang', 'FinanceCtrl@show_transaction_between_other_station_in_gongchang');
