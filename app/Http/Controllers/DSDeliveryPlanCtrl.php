@@ -1198,7 +1198,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString())
             ->where('station_id', $this->getCurrentStationId())
-            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED)
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
             ->get();
 
         $dCostReturnTotal = 0;
@@ -1206,6 +1206,11 @@ class DSDeliveryPlanCtrl extends Controller
             // 没有配送此奶品，默认配送量是0
             if (!isset($aryReceiveCount[strval($pi->product_id)])) {
                 $aryReceiveCount[strval($pi->product_id)] = 0;
+            }
+
+            // 没有发货就当成0计算
+            if (empty($pi->actual_count)) {
+                $pi->actual_count = 0;
             }
 
             // 自营订单实际扣款
