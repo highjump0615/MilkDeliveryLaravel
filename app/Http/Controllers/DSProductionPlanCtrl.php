@@ -1316,28 +1316,39 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             // 添加/更新库存数据
             //
 
-            // 添加/更新当日库存数据
-            $dsdp = DSDeliveryPlan::getDeliveryPlanGenerated($station_id, $product_id, $request->input('date'));
+            // 获取今日以前最近的
+            $dsdpLatest = DSDeliveryPlan::where('station_id', $station_id)
+                ->where('product_id', $product_id)
+                ->where('deliver_at', '<=', $request->input('date'))
+                ->orderby('deliver_at', 'desc')
+                ->first();
 
-            if (empty($dsdp)) {
+            if (empty($dsdpLatest) || $dsdpLatest->deliver_at != $request->input('date')) {
+                // 添加/更新当日库存数据
                 $dsdp = new DSDeliveryPlan;
                 $dsdp->station_id = $station_id;
                 $dsdp->deliver_at = $request->input('date');
                 $dsdp->product_id = $product_id;
+
+                if (!empty($dsdpLatest)) {
+                    $dsdp->remain = $dsdpLatest->remain_final;
+                }
+
+                $dsdpLatest = $dsdp;
             }
 
-            $dsdp->remain += $confirm_count;
-            $dsdp->save();
+            $dsdpLatest->remain += $confirm_count;
+            $dsdpLatest->save();
 
-            // 更新最新库存数据
-            $dsdpLatest = DSDeliveryPlan::where('station_id', $station_id)
+            // 更新最新库存数据，有可能是今日以后或今日
+            $dsdpLatestNew = DSDeliveryPlan::where('station_id', $station_id)
                 ->where('product_id', $product_id)
                 ->orderby('deliver_at', 'desc')
                 ->first();
 
-            if ($dsdpLatest->id != $dsdp->id) {
-                $dsdpLatest->remain += $confirm_count;
-                $dsdpLatest->save();
+            if ($dsdpLatestNew->id != $dsdpLatest->id) {
+                $dsdpLatestNew->remain += $confirm_count;
+                $dsdpLatestNew->save();
             }
         }
 

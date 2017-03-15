@@ -131,7 +131,6 @@ class DSDeliveryPlanCtrl extends Controller
         $prevDeliveryPlans = DSDeliveryPlan::where('station_id', $current_station_id)
             ->where('remain', '>', 0)
             ->where('deliver_at', '<', $deliver_date_str)
-            ->orderby('deliver_at', 'desc')
             ->distinct()
             ->get(['product_id']);
 
@@ -212,7 +211,6 @@ class DSDeliveryPlanCtrl extends Controller
             ->where('station_id', $current_station_id)
             ->where('deliver_at', '<', $deliver_date_str)
             ->orderby('deliver_at', 'desc')
-            ->get()
             ->first();
 
         if ($delivery_plans != null){
@@ -420,18 +418,27 @@ class DSDeliveryPlanCtrl extends Controller
         //
         // 查询有效的产品的库存信息
         //
+
+        // 首先，获取产品类型
         $delivery_plans = DSDeliveryPlan::where('station_id', $current_station_id)
             ->where('deliver_at', '<=', $deliver_date_str)
-            ->groupby('product_id')
-            ->get([DB::raw('max(id) as id')]);
+            ->distinct()
+            ->get(['product_id']);
 
-        $aryId = array();
+        // 然后，获取该产品的库存数据
+        $deliveryPlansResult = array();
+
         foreach ($delivery_plans as $dp) {
-            array_push($aryId, $dp->id);
+            $dpProduct = DSDeliveryPlan::where('station_id', $current_station_id)
+                ->where('deliver_at', '<=', $deliver_date_str)
+                ->where('product_id', $dp->product_id)
+                ->orderby('deliver_at', 'desc')
+                ->first();
+
+            $deliveryPlansResult[] = $dpProduct;
         }
 
-        $delivery_plans = DSDeliveryPlan::whereIn('id', $aryId)->get();
-        foreach ($delivery_plans as $dp) {
+        foreach ($deliveryPlansResult as $dp) {
             if ($dp->deliver_at == $deliver_date_str) {
                 continue;
             }
@@ -538,7 +545,7 @@ class DSDeliveryPlanCtrl extends Controller
             'parent'                    =>$parent,
             'current_page'              =>$current_page,
 
-            'delivery_plans'            =>$delivery_plans,
+            'delivery_plans'            =>$deliveryPlansResult,
             'streets'                   =>$street,
             'milk_man'                  =>$milk_mans,
             'current_district'          =>$show_district,
