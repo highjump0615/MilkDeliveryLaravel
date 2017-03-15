@@ -1,5 +1,6 @@
 #total_produce td.gray-bg input {
     width: 70%;
+    text-align: center;
 }
 
 #total_produce td.gray-bg .btn {

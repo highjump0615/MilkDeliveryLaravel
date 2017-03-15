@@ -1,0 +1,19 @@
+#date_select {
+    padding-top: 10px;
+    background-color: white;
+}
+
+#date_select label {
+    margin-bottom: 0;
+    margin-right: 20px;
+    margin-left: 20px;
+    line-height: 30px;
+}
+
+#date_select .date {
+    width: 200px;
+}
+
+.floating .ibox-content {
+    border: none;
+}
