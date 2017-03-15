@@ -92,7 +92,10 @@ $(document).on('click','.cancel',function(e){
     });
 });
 
-
+/**
+ * 生产取消
+ * @param butObj
+ */
 function cancel_product(butObj) {
 
     var id = butObj.val();
@@ -131,36 +134,39 @@ function cancel_product(butObj) {
     });
 }
 
-$(document).on('click','.produce_determine',function (e) {
-    var station_id = $(this).val();
+/**
+ * 决定奶站生产或拒绝
+ * @param obj Object 按钮
+ * @param apiUrl
+ * @param stateResultStr String 成功后调用的函数
+ */
+function determineStationAction(obj, apiUrl, stateResultStr) {
+    var station_id = $(obj).val();
 
-    var store_url = API_URL + 'gongchang/shengchan/naizhanjihuashenhe/determine_station_plan';
     $('#alert_view').hide();
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
-    e.preventDefault();
+    });
+
+    var tr = $(obj).closest('tr');
 
     var store_formData = {
         station_id: station_id,
-    }
-    console.log(store_formData);
-
-    var tr = $(this).closest('tr');
+        date: tr.find('td:eq(3)').html()
+    };
 
     var store_type = "POST"; //for creating new resource
 
     $.ajax({
-
         type: store_type,
-        url: store_url,
+        url: apiUrl,
         data: store_formData,
         dataType: 'json',
         success: function (data) {
-            console.log(data);
-            var new_status='<td class="status'+station_id+'">正常</td>';
+
+            var new_status='<td class="status'+station_id+'">' + stateResultStr + '</td>';
             $('#plan_sent').find('td.status'+station_id+'').each(function () {
                 $('.status'+station_id+'').replaceWith(new_status);
             });
@@ -173,6 +179,34 @@ $(document).on('click','.produce_determine',function (e) {
             console.log('Error:', data);
         }
     });
+}
+
+/**
+ * 点击同意生产
+ */
+$(document).on('click','.produce_determine',function (e) {
+
+    e.preventDefault();
+
+    determineStationAction(
+        this,
+        API_URL + 'gongchang/shengchan/naizhanjihuashenhe/determine_station_plan',
+        "正常"
+    );
+});
+
+/**
+ * 点击拒绝生产
+ */
+$(document).on('click','.produce_cancel',function (e) {
+
+    e.preventDefault();
+
+    determineStationAction(
+        this,
+        API_URL + 'gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan',
+        "生产取消"
+    );
 });
 
 $(document).ready(function() {
@@ -181,5 +215,18 @@ $(document).ready(function() {
         var sum = parseInt($(this).find('#plan_count').text());
         var change_amount = parseInt($(this).find("td").eq(3).html());
         $(this).find("td").eq(4).html(sum+change_amount);
-    })
+    });
+
+    // 初始化日期范围选择
+    $('#date_select .date').datepicker({
+        keyboardNavigation: false,
+        forceParse: false,
+        autoclose: true,
+        calendarWeeks: false,
+        clearBtn: true
+    }).on('changeDate', function(e) {
+        // 用新的日期刷新页面
+        var strDate = $('#search_date').val();
+        window.location.href = SITE_URL + "gongchang/shengchan/naizhanjihuashenhe?date=" + strDate;
+    });
 });
