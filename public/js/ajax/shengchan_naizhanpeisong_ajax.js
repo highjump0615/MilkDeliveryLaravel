@@ -41,7 +41,8 @@ $(document).on('click','.determine_count',function(e){
             var formData = {
                 actual_count: strCount,
                 product_id: id,
-                station_id: station_id
+                station_id: station_id,
+                date: $('#search_date').val()
             };
             console.log(formData);
             var type = "PUT";
@@ -58,7 +59,7 @@ $(document).on('click','.determine_count',function(e){
                     console.log(data);
                     $('#f_detail'+order+'').show();
                     $('#detail'+order+'').hide();
-                    $('#detail'+order+'').parent().parent().find('td:eq(13)').html('已发货');
+                    $('#detail'+order+'').parent().parent().find('td:eq(14)').html('已发货');
                 },
                 error: function (data) {
                     console.log('Error:', data);

@@ -842,6 +842,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      */
     public function saveProducedCount(Request $request) {
 
+        // 在session保存日期
+        $strDate = $request->session()->get('date');
+        if (empty($strDate)) {
+            return Response::json(null, 400);
+        }
+
         // 解析上传的参数数组
         $table_info = json_decode($request->getContent(),true);
 
@@ -851,7 +857,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
             // 保存 & 更新数据库
             FactoryProductionPlan::where('product_id', $product_id)
-                ->where('end_at', getPrevDateString())
+                ->where('end_at', getPrevDateString($strDate))
                 ->update(['real_count' => $real_count]);
         }
 
@@ -871,8 +877,16 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $current_page = 'naizhanpeisong';
         $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
 
-        $deliver_date_str = getCurDateString();
-        $current_date_str = getPrevDateString();
+        // 获取时间段
+        $deliver_date_str = $request->input('date');
+        if (empty($deliver_date_str)) {
+            $deliver_date_str = getCurDateString();
+        }
+
+        // 在session保存日期
+        $request->session()->put('date', $deliver_date_str);
+
+        $current_date_str = getPrevDateString($deliver_date_str);
 
         $products = Product::where('factory_id',$current_factory_id)
             ->where('is_deleted',0)
@@ -984,6 +998,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             'parent'                    =>$parent,
             'current_page'              =>$current_page,
 
+            'current_date'              =>$deliver_date_str,
+
             // 奶站信息
             'DeliveryStations_info'     =>$stations,
 
@@ -1009,7 +1025,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $dsplans = DSProductionPlan::where('station_id',$current_station_id)
             ->where('product_id',$product_id)
-            ->where('produce_end_at', getPrevDateString())
+            ->where('produce_end_at', getPrevDateString($request->input('date')))
             ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
             ->first();
 
