@@ -3,15 +3,17 @@
  */
 
 $(document).ready(function() {
+    var divParent = $('div.floating');
+    var divContent = divParent.find('.ibox-content');
+    var nTop = divContent.position().top;
+
     /**
      * 滚动事件
      */
     $(window).scroll(function() {
-        var divParent = $('div.floating');
-        var divContent = divParent.find('.ibox-content');
 
         // 挡住了内容
-        if ($(this).scrollTop() > 180) {
+        if ($(this).scrollTop() > nTop) {
             divParent.height(divContent.height());
 
             // 添加浮层
