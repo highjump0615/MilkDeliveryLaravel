@@ -1,6 +1,7 @@
 @extends('gongchang.layout.master')
 @section('css')
 	<link href="<?=asset('css/pages/gongchang/floatingtop.css') ?>" rel="stylesheet">
+	<link href="<?=asset('css/pages/gongchang/naizhanjihuashenhe.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -51,7 +52,6 @@
 										@if($p->isfactory_ordered == 0)
 										<input type="text" id="produce_amount{{$p->id}}" value="">
 										<button type="button" class="btn btn-primary btn-sm validate" id="validate{{$p->id}}" value="{{$p->id}}">生产确认</button>
-										<button type="button" class="btn btn-danger btn-sm cancel" id="cancel{{$p->id}}" value="{{$p->id}}">生产取消</button>
 										@elseif($p->isfactory_ordered == 1)
 										{{$p->produce_count}}
 										@else

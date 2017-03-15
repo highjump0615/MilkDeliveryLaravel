@@ -1178,6 +1178,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $strCarNum = $request->input('car_num');
         $aryBoxData = $request->input('box_data');
 
+        // 如果没输入奶框数据，写成空数组，以便保证程序的正常运行
+        if (empty($aryBoxData)) {
+            $aryBoxData = array();
+        }
+
         // 添加是否已保存的标记
         foreach ($aryBoxData as $index => $boxData) {
             $boxData['saved'] = false;
