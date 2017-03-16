@@ -223,12 +223,12 @@ class MilkCardCtrl extends Controller
                     'status'=>'failed',
                     'msg' => '密码错了'
                 ]);
-            } else if($card->pay_status == 1) {
+            } else if($card->pay_status == MilkCard::MILKCARD_PAY_STATUS_ACTIVE) {
                 return response()->json([
                     'status'=>'failed',
                     'msg' => '卡已经用了'
                 ]);
-            } else if($card->sale_status == 0) {
+            } else if($card->sale_status == MilkCard::MILKCARD_SALES_OFF) {
                 return response()->json([
                     'status'=>'failed',
                     'msg' => '此卡未领用'
@@ -237,9 +237,10 @@ class MilkCardCtrl extends Controller
         }
 
         return response()->json([
-            'status'=>'success',
-            'balance'=>$card->balance,
-            'product'=>$card->product,
+            'status'    =>'success',
+            'id'        =>$card->id,
+            'balance'   =>$card->balance,
+            'product'   =>$card->product,
         ]);
     }
 }
