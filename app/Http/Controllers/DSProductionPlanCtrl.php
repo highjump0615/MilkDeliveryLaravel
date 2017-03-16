@@ -1278,14 +1278,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $dsplans = DSProductionPlan::where('station_id', $nStationId)
             ->where('produce_end_at', getPrevDateString())
             ->where('status', '>', DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
-            ->where('status', '!=', DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
             ->get();
 
         foreach ($dsplans as $dp) {
             // 保存发货人、车牌号、状态
             $dp->sender_name = $strSenderName;
             $dp->car_number = $strCarNum;
-            $dp->status = DSProductionPlan::DSPRODUCTION_SEND_PRINTED;
 
             // 保存瓶装
             foreach ($aryBoxData as $index => $boxData) {

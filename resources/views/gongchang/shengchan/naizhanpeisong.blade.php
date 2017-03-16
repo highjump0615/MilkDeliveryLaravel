@@ -135,7 +135,8 @@
 												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/' . $di->id . '?date=' . $current_date)}}'"
 												id="detail{{$i}}"
 												type="button" >
-											@if ($ds->status == \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
+											<!-- sender_name为null意味着还没打印了出库单 -->
+											@if (isset($ds->sender_name))
 												查看出库单
 											@else
 												打印出库单
