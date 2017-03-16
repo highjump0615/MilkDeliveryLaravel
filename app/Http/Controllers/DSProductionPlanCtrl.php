@@ -1408,7 +1408,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('produce_end_at',$current_date_str)
             ->where('product_id',$product_id)
             ->where('status',DSProductionPlan::DSPRODUCTION_PRODUCE_SENT)
-            ->get()
             ->first();
 
         if ($dsplan != null){
@@ -1440,7 +1439,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $bottle_refund = DSBottleRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('bottle_type',$object_type)
-                ->get()
                 ->first();
 
             if($bottle_refund != null){
@@ -1462,7 +1460,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $box_refund = DSBoxRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('box_type',$object_type)
-                ->get()
                 ->first();
 
             if($box_refund != null){
