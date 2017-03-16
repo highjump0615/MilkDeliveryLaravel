@@ -17,51 +17,7 @@
 
 @extends('gongchang.layout.master')
 @section('css')
-    <style>
-        select, input {
-            /*height: 35px;*/
-            width: 100%;
-        }
-
-        .statics input {
-            height: 30px;
-            border: 0;
-        }
-
-        .section-name label {
-            height: 30px;
-            line-height: 30px;
-        }
-
-        .switchery {
-            width: 60px;
-        }
-
-        #product_table tr td {
-            padding: 2px;
-        }
-
-        #product_table label {
-            line-height: 35px;
-        }
-
-        .one_p_amount, .avg {
-            border: 0;
-            height: 30px;
-            max-width: 50px;
-        }
-
-        #product_table tr td .col-sm-5, #product_table tr td .col-sm-7,
-        #product_table tr td .col-sm-4, #product_table tr td .col-sm-8,
-        #product_table tr td .col-sm-6, #product_table tr td .col-sm-2,
-        #product_table tr td .col-sm-5, #product_table tr td .col-sm-1 {
-            padding: 0;
-        }
-
-        input.tip-input {
-            text-align: center;
-        }
-    </style>
+    <link href="<?=asset('css/pages/order_input.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -312,17 +268,22 @@
                         </div>
                         <div class="col-md-2">
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
-                                   type="checkbox" data-toggle="modal" data-target="#card_info"
+                                   type="checkbox"
                                    @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif
-                                    @if ($is_edit || isset($station)) readonly @endif
                             />
                             <input type="hidden" name="card_check_success" id="card_check_success" value="1">
                         </div>
 
-                        <div class="col-md-4" id="form-card-panel" style="@if (!(isset($order) && $order->order_by_milk_card)) display:none @endif">
-                            奶卡号:<label id="form-card-id">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->number}} @endif</label> &nbsp;
-                            金额:<label id="form-card-balance">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->balance}} @endif</label>
-                            商品:<label id="form-card-product">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->product}} @endif</label>
+                        <button type="button"
+                                class="btn btn-sm btn-success pull-left"
+                                data-toggle="modal" href="#card_info"
+                                @if ($is_edit || isset($station)) disabled @endif>
+                            添加奶卡
+                        </button>
+
+                        <div id="form-card-panel">
+                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;金额:</span>
+                            <span id="form-card-balance"></span>
                         </div>
                     </div>
 
@@ -685,7 +646,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label>验证码:</label>
-                                        <input required type="password" name="card_code" id="card_code" autocomplete="off">
+                                        <input required type="text" name="card_code" id="card_code" autocomplete="off">
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-md-offset-2">
@@ -694,7 +655,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-white verify-card">确定</button>
-                                <button type="button" class="btn btn-white cancel-card">取消</button>
+                                <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
                             </div>
                         </div>
                     </div>

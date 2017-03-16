@@ -373,62 +373,7 @@ $(document).on('click', 'button.remove_one_product', function () {
     }
     else {
         show_warning_msg('至少要有一种奶品');
-        return;
     }
-});
-
-// Card Verfiy
-$('.verify-card').click(function () {
-    var card_id = $('#card_id').val();
-    var card_code = $('#card_code').val();
-
-    $.ajax({
-        type: "POST",
-        url: API_URL + "gongchang/dingdan/dingdanluru/verify_card",
-        data: {
-            'card_id': card_id,
-            'card_code': card_code,
-        },
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var balance = data.balance;
-                var product = data.product;
-                console.log("balance:" + balance);
-
-                $('#card_info').modal('hide');
-
-                $('#card_msg').hide();
-                $('#card_msg').text('');
-
-                $('#form-card-id').text(card_id);
-                $('#form-card-balance').text(balance);
-                $('#form-card-product').text(product);
-                $('#form-card-panel').show();
-                $('#card_check_success').val(1);
-
-
-            } else {
-                console.log(data.msg);
-                $('#card_msg').text(data.msg);
-                $('#card_msg').show();
-                $('#form-card-panel').hide();
-                $('#card_check_success').val(0);
-                
-            }
-        },
-        error: function (data) {
-            console.log(data);
-            $('#form-card-panel').hide();
-        }
-    });
-});
-
-$('.cancel-card').click(function () {
-    $('#milk_card_check').trigger('click');
-    $('#form-card-panel').hide();
-    $('#card_info').modal('hide');
-    $('#card_check_success').val(1);
 });
 
 function init_product_lines() {

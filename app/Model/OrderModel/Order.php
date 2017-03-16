@@ -908,11 +908,12 @@ class Order extends Model
     }
 
     /**
-     * 获取奶卡
-     * @return MilkCard
+     * 获取奶卡总金额
+     * @return
      */
-    public function milkcard(){
-        return $this->belongsTo('App\Model\FactoryModel\MilkCard', 'milk_card_id', 'number');
+    public function getMilkcardValue() {
+        $nValue = $this->hasMany('App\Model\FactoryModel\MilkCard', 'order_id')->sum('balance');
+        return $nValue;
     }
 
     public function getMilkBoxInstallLabelAttribute()

@@ -2616,10 +2616,6 @@ class OrderCtrl extends Controller
             $order = Order::find($order_id);
         }
 
-        //init
-        $milk_card_id = null;
-        $milk_card_code = null;
-
         //insert customer info
         $customer_id = $request->input('customer_id');
 
@@ -2651,8 +2647,6 @@ class OrderCtrl extends Controller
         $receipt_path = $request->input('receipt_path');
 
         //Order amount for remaingng, acceptable
-        $remaining_amount = $request->input('remaining');
-        $acceptable_amount = $request->input('acceptable_amount');
         $total_amount = $request->input('total_amount');
 
         $delivery_time = $request->input('delivery_noon');
@@ -2670,34 +2664,7 @@ class OrderCtrl extends Controller
         $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
 
         if ($order_by_milk_card == 1) {
-
             $payment_type = PaymentType::PAYMENT_TYPE_CARD;
-
-            // 奶卡只在录入订单时处理
-            if (!$order) {
-                $milk_card_id = $request->input('card_id');
-                $milk_card_code = $request->input('card_code');
-
-                $milk_card = MilkCard::where('number', $milk_card_id)
-                    ->where('password', $milk_card_code)
-                    ->where('sale_status', MilkCard::MILKCARD_SALES_ON)
-                    ->where('pay_status', MilkCard::MILKCARD_PAY_STATUS_INACTIVE)
-                    ->get()
-                    ->first();
-
-                if (!$milk_card) {
-                    return response()->json(['status' => 'fail', 'message' => '奶卡卡号和验证码不正确.']);
-                }
-
-                //balance check
-                if ($milk_card->balance < $total_amount) {
-                    return response()->json(['status' => 'fail', 'message' => '订单金额已超过奶卡金额，不足于支付']);
-                }
-                else {
-                    $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
-                    $milk_card->save();
-                }
-            }
         }
 
         //check for 10% of delivery credit balance
@@ -2746,11 +2713,6 @@ class OrderCtrl extends Controller
             $order->ordered_at = $ordered_at;
 
             $order->order_by_milk_card = $order_by_milk_card;
-            if ($order_by_milk_card) {
-                $order->milk_card_id = $milk_card_id;
-                $order->milk_card_code = $milk_card_code;
-            }
-
             $order->payment_type = $payment_type;
 
             $order->total_amount = $total_amount;
@@ -2810,6 +2772,17 @@ class OrderCtrl extends Controller
             $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order->id);
             //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
             $order->save();
+
+            // 奶卡只在录入订单时处理
+            if ($payment_type == PaymentType::PAYMENT_TYPE_CARD) {
+                $aryMilkCardId = explode(',', $request->input('card_id'));
+
+                MilkCard::whereIn('id', $aryMilkCardId)
+                    ->update([
+                        'order_id' => $order->id,
+                        'pay_status' => MilkCard::MILKCARD_PAY_STATUS_ACTIVE,
+                    ]);
+            }
         }
 
         //save order products
@@ -2862,55 +2835,21 @@ class OrderCtrl extends Controller
                 $op->total_count);
         }
 
-//        //set flag on first order delivery plan
-//        $plans = $order->first_delivery_plans;
-//        if($plans)
-//        {
-//            foreach($plans as $plan)
-//            {
-//                $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-//                $plan->save();
-//            }
-//        }
-
         // save customer
         $customer = Customer::find($customer_id);
         $customer->station_id = $delivery_station_id;
         $customer->milkman_id = $milkman_id;
-
-//            if ($acceptable_amount < 0) {
-//                $customer->remain_amount = -$acceptable_amount;
-//            }
-//            else {
-//                $customer->remain_amount = 0;
-//            }
         $customer->save();
 
+        //
         //Caiwu Related
+        //
 
         //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
         if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
 
             $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
             $station->save();
-
-//                //add calc history if this is the money order
-//                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
-//                $dsdelivery_history->station_id = $station_id;
-//                if ($station_id == $delivery_station_id)
-//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY;
-//                else
-//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION;
-//
-//                $dsdelivery_history->io_type = DSDeliveryCreditBalanceHistory::DSDCBH_IO_TYPE_IN;
-//
-//                if ($acceptable_amount > 0)
-//                    $dsdelivery_history->amount = $acceptable_amount;
-//                else
-//                    $dsdelivery_history->amount = $total_amount;
-//
-//                $dsdelivery_history->time = $today;
-//                $dsdelivery_history->save();
         }
 
         // 添加系统日志
@@ -3901,7 +3840,7 @@ class OrderCtrl extends Controller
 
             // 新订单通过把卡余额加到客户账户余额
             if ($order->status == Order::ORDER_NEW_WAITING_STATUS && $order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
-                $remain_from_card = $order->milkcard->balance - $order->total_amount;
+                $remain_from_card = $order->getMilkcardValue() - $order->total_amount;
 
                 $customer = $order->customer;
                 $customer->remain_amount += $remain_from_card;
