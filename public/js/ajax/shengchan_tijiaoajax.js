@@ -135,7 +135,12 @@ function send_plan() {
             console.log(data);
         },
         error: function (data) {
+            var jsonError = data.responseJSON;
+            show_err_msg(jsonError.message);
             console.log('Error:', data);
+
+            // 恢复按钮
+            $('.confirm_submit').prop("disabled", false);
         }
     });
 }
@@ -221,7 +226,12 @@ function modify_plan() {
             console.log(data);
         },
         error: function (data) {
+            var jsonError = data.responseJSON;
+            show_err_msg(jsonError.message);
             console.log('Error:', data);
+
+            // 恢复按钮
+            $('.modify').prop("disabled",false);
         }
     });
 }
