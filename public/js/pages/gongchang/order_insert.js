@@ -1,3 +1,5 @@
+var g_aryCardId = [];
+
 //First set the Address list
 $('.province_list').on('change', function () {
 
@@ -346,22 +348,27 @@ $('#order_form').on('submit', function (e) {
         }
     }
 
-    $('#order_form button[type="submit"]').prop('disabled', true);
-
     var sendData = $('#order_form').serializeArray();
 
-    if ($('[data-target="#card_info"]').prop("checked")) {
-        //milk card check
-        var card_id = $('#card_id').val();
-        var card_code = $('#card_code').val();
+    if ($('input[name="milk_card_check"]').prop("checked")) {
 
-        sendData.push({'name': 'card_id', 'value': card_id});
-        sendData.push({'name': 'card_code', 'value': card_code});
+        // 检查奶卡金额足够
+        var nTotalValue = getCardValue();
+        var dOrderValue = parseFloat($('#acceptable_amount').val());
+
+        if (nTotalValue < dOrderValue) {
+            show_err_msg("订单金额已超过奶卡金额，不足于支付");
+            return;
+        }
+
+        sendData.push({'name': 'card_id', 'value': g_aryCardId});
     } else {
         sendData.push({'name': 'milk_card_check', 'value': 'off'});
     }
 
     var milkman_id = $('#station_list option:selected').data('milkman');
+
+    $('#order_form button[type="submit"]').prop('disabled', true);
 
     sendData.push({'name': 'milkman_id', 'value': milkman_id});
 
@@ -375,7 +382,7 @@ $('#order_form').on('submit', function (e) {
     // API链接
     var strApiUrl, strUrlAfter;
 
-    var strApiUrl = API_URL + 'gongchang/dingdan/dingdanluru/insert_order';
+    strApiUrl = API_URL + 'gongchang/dingdan/dingdanluru/insert_order';
     if (gbIsStation) {
         strApiUrl = API_URL + 'naizhan/dingdan/dingdanluru/insert_order';
     }
@@ -421,5 +428,104 @@ $('#order_form').on('submit', function (e) {
             console.log(data);
             $('#order_form button[type="submit"]').prop('disabled', false);
         }
+    });
+});
+
+// Card Verfiy
+$('.verify-card').click(function () {
+    var card_id = $('#card_id').val();
+    var card_code = $('#card_code').val();
+
+    $.ajax({
+        type: "POST",
+        url: API_URL + "gongchang/dingdan/dingdanluru/verify_card",
+        data: {
+            'card_id': card_id,
+            'card_code': card_code,
+        },
+        success: function (data) {
+            console.log(data);
+            if (data.status == 'success') {
+                var nId = parseInt(data.id);
+
+                // 检查该奶卡是否已选择
+                if ($.inArray(nId, g_aryCardId) >= 0) {
+                    setCardModalNotice("已选择了这张卡")
+                    return;
+                }
+
+                // 累加奶卡面值
+                var balance = parseInt(data.balance);
+                var nTotalValue = getCardValue();
+                nTotalValue += balance;
+                $('#form-card-balance').html(nTotalValue);
+
+                // 奶卡id添加到数组
+                g_aryCardId.push(nId);
+
+                $('#card_info').modal('hide');
+
+                setCardModalNotice('');
+
+                $('#form-card-id').text(card_id);
+
+                $('#form-card-panel').show();
+                $('#card_check_success').val(1);
+
+                // 打开奶卡开关
+                var objSwitch = $('#milk_card_check');
+                if (!objSwitch.is(':checked')) {
+                    $('#milk_card_check').trigger('click');
+                }
+            }
+            else {
+                console.log(data.msg);
+
+                setCardModalNotice(data.msg);
+                $('#card_check_success').val(0);
+            }
+        },
+        error: function (data) {
+            console.log(data);
+            $('#form-card-panel').hide();
+        }
+    });
+});
+
+/**
+ * 显示/隐藏奶卡modal的提示
+ * @param msg
+ */
+function setCardModalNotice(msg) {
+    var objMsg = $('#card_msg');
+    if (msg.length > 0) {
+        objMsg.show();
+    }
+    else {
+        objMsg.hide();
+    }
+
+    objMsg.text(msg);
+}
+
+/**
+ * 获取奶卡金额
+ * @returns {Number}
+ */
+function getCardValue() {
+    var nTotalValue = parseInt($('#form-card-balance').html());
+    if (isNaN(nTotalValue)) {
+        nTotalValue = 0;
+    }
+
+    return nTotalValue;
+}
+
+$(document).ready(function () {
+    // 显示奶卡modal事件 
+    $('#card_info').on('hidden.bs.modal', function () {
+        $('#card_id').val('');
+        $('#card_code').val('');
+        setCardModalNotice('');
     });
 });
