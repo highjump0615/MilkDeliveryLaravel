@@ -40,11 +40,6 @@ class DSProductionPlan extends Model
      */
     const DSPRODUCTION_PRODUCE_RECEIVED = 7;
 
-    /**
-     * 已打印出库单
-     */
-    const DSPRODUCTION_SEND_PRINTED = 8;
-
     protected $table = 'dsproductionplan';
 
     public $timestamps = false;

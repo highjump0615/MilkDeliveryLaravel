@@ -36,14 +36,34 @@ use App\Http\Controllers\Controller;
 
 class DSProductionPlanCtrl extends Controller
 {
+    /**
+     * 奶厂是否已确认生产计划
+     * @param $date
+     * @return bool
+     */
+    private function isStationPlanAccepted($date) {
+        $nStationId = $this->getCurrentStationId();
+        $strDateStart = getNextDateString($date);
+
+        $nCount = DSProductionPlan::where('station_id', $nStationId)
+            ->where('produce_start_at', $strDateStart)
+            ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED])
+            ->count();
+
+        return $nCount > 0 ? true : false;
+    }
+
+    /**
+     * 打开计划管理页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showJihuaguanlinPage(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
         $start_date = $end_date = $request->input('current_date');
 
-        $produce_Date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $produce_Date->add(\DateInterval::createFromDateString('tomorrow'));
-        $produce_start_date = $produce_Date->format('Y-m-d');
+        $produce_start_date = getNextDateString();
 
         // 默认是今天倒数5天
         if ($start_date == '') {
@@ -85,14 +105,11 @@ class DSProductionPlanCtrl extends Controller
             }
         }
 
-        // 是否已经提交
-        $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
-            ->where('produce_start_at', $produce_start_date)
-            ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])
-            ->get());
-
+        //
+        // 查看是否已经提交
+        //
         $alert_message='';
-        if($is_passed > 0){
+        if ($this->isStationPlanAccepted(getCurDateString())) {
             $alert_message = '计划已经被牛奶厂接受。';
         }
 
@@ -110,9 +127,14 @@ class DSProductionPlanCtrl extends Controller
         ]);
     }
 
+    /**
+     * 打开提交计划页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public  function showTijiaojihuaPage(Request $request){
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
         $current_station = DeliveryStation::find($current_station_id);
         $current_station_addr = $current_station->address;
@@ -127,28 +149,16 @@ class DSProductionPlanCtrl extends Controller
             $currentDateStr = getCurDateString();
         }
 
-        $currentDate_str = getNextDateString($currentDateStr);
-
-        $is_passed = count(DSProductionPlan::where('station_id',$current_station_id)
-            ->where('produce_start_at',$currentDate_str)
-            ->wherebetween('status',[DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL,DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED])
-            ->get());
-
-        $is_sent = count(
-            DSProductionPlan::where(function($query) use ($current_station_id, $currentDate_str) {
-                $query->where('station_id',$current_station_id);
-                $query->where('produce_start_at',$currentDate_str);
-                $query->where('status',DSProductionPlan::DSPRODUCTION_SENT_PLAN);
-            })->orWhere(function($query) use ($current_station_id, $currentDate_str) {
-                $query->where('status',DSProductionPlan::DSPRODUCTION_PENDING_PLAN);
-                $query->where('produce_start_at',$currentDate_str);
-                $query->where('station_id',$current_station_id);
-            })->get()
-        );
-
-        if($is_passed > 0){
+        // 如果计划已接受，跳转到计划管理页面
+        if ($this->isStationPlanAccepted($currentDateStr)){
             return redirect()->route('naizhan_shengchan_jihuaguanli')->with('alert_message','计划已经被牛奶厂接受。');
         }
+
+        $currentDate_str = getNextDateString($currentDateStr);
+
+        $is_sent = DSProductionPlan::where('station_id',$current_station_id)
+            ->where('produce_start_at',$currentDate_str)
+            ->count();
 
         $product_list = Product::where('is_deleted','0')->get();
 
@@ -172,7 +182,6 @@ class DSProductionPlanCtrl extends Controller
                     ->where('produce_at',$currentDate_str)
                     ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
                     ->where('order_product_id',$op->id)
-                    ->get()
                     ->first();
 
                 if($plan == null){
@@ -189,7 +198,6 @@ class DSProductionPlanCtrl extends Controller
                 $current_delivery_plans = DSProductionPlan::where('produce_start_at', $currentDate_str)
                     ->where('station_id', $current_station_id)
                     ->where('product_id', $pl->id)
-                    ->get()
                     ->first();
 
                 $pl["ds_info"] = $current_delivery_plans;
@@ -364,6 +372,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      */
     public function storeTijiaojihuaPlan(Request $request) {
 
+        // 如果计划已接受，直接退出，不刷新点击确定会出现这种情况
+        if ($this->isStationPlanAccepted($request->input('date'))){
+            return Response::json(['message' => '计划已经被牛奶厂接受。'], 400);
+        }
+
         $current_station_id = $this->getCurrentStationId();
 
         $produce_start_at = getNextDateString($request->input('date'));
@@ -392,6 +405,11 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      * @return mixed
      */
     public function modifyTijiaojihuaPlan(Request $request) {
+
+        // 如果计划已接受，直接退出，不刷新点击确定会出现这种情况
+        if ($this->isStationPlanAccepted($request->input('date'))){
+            return Response::json(['message' => '计划已经被牛奶厂接受。'], 400);
+        }
 
         $current_station_id = $this->getCurrentStationId();
 
@@ -1278,14 +1296,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $dsplans = DSProductionPlan::where('station_id', $nStationId)
             ->where('produce_end_at', getPrevDateString())
             ->where('status', '>', DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
-            ->where('status', '!=', DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
             ->get();
 
         foreach ($dsplans as $dp) {
             // 保存发货人、车牌号、状态
             $dp->sender_name = $strSenderName;
             $dp->car_number = $strCarNum;
-            $dp->status = DSProductionPlan::DSPRODUCTION_SEND_PRINTED;
 
             // 保存瓶装
             foreach ($aryBoxData as $index => $boxData) {
@@ -1354,7 +1370,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $received_count = 0;
         foreach ($dsplan as $dp){
             if ($dp->status == DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED) {
-                $received_count += $dp->confirm_count;
+                $received_count++;
             }
         }
 
@@ -1465,7 +1481,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $bottle_refund = DSBottleRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('bottle_type',$object_type)
-                ->get()
                 ->first();
 
             if($bottle_refund != null){
@@ -1487,7 +1502,6 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $box_refund = DSBoxRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('box_type',$object_type)
-                ->get()
                 ->first();
 
             if($box_refund != null){
