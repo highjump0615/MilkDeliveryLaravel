@@ -1354,7 +1354,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $received_count = 0;
         foreach ($dsplan as $dp){
             if ($dp->status == DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED) {
-                $received_count += $dp->confirm_count;
+                $received_count++;
             }
         }
 
