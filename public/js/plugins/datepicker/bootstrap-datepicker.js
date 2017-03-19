@@ -480,6 +480,17 @@
             this.o.bottleNum = num;
         },
 
+        // 获取数量的总和
+        getTotalCount: function() {
+            var nCountSum = 0;
+
+            for (var i = 0; i < this.bottles.length; i++) {
+                nCountSum += parseInt(this.bottles[i].num);
+            }
+
+            return nCountSum;
+        },
+
         // 设置初始数量
         setInitValue:function(dayvalues){
             dayvalues = dayvalues.split(',');
