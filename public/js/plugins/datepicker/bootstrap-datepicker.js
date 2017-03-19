@@ -58,7 +58,7 @@
                 var val = d && d.valueOf();
                 for (var i = 0, l = this.length; i < l; i++)
                 {
-                    if (this[i].date == val)
+                    if (this[i].date == val || this[i].date.valueOf() == val)
                         return i;
                 }
                 return -1;
@@ -488,16 +488,19 @@
                 for(var i =0; i< dayvalues.length; i++)
                 {
                     var datevalue = dayvalues[i].split(':');
-                    var date = datevalue[0];
-                    if(date.charAt(0) === '0')
-                        date = date.substr(1);
-                    var value = datevalue[1];
 
-                    var new_day = parseInt(date, 10) || 1;
-                    var new_year = this.viewDate.getUTCFullYear();
-                    var new_month = this.viewDate.getUTCMonth();
+                    //
+                    // string转Date (2017-03-25)
+                    //
+                    var strDate = datevalue[0].split('-');
+
+                    var new_year = parseInt(strDate[0]);
+                    var new_month = parseInt(strDate[1]) - 1;
+                    var new_day = parseInt(strDate[2]);
 
                     var new_date = UTCDate(new_year, new_month, new_day);
+
+                    var value = datevalue[1];
 
                     this.dates[i] = new_date;
                     this.bottles[i] = new bottle(new_date, value);
@@ -510,7 +513,7 @@
                         $(td).append('<input class="tip-input" name="date_bottle_number" data-date="'+ new_date +'" value="'+value+'"/>');
                     }
                 }
-                console.log(this.bottles);
+                this.fill();
             } else {
 
                 for(var i =0; i< dayvalues.length; i++)
@@ -682,13 +685,13 @@
 
             for( var i = 0; i< length; i++)
             {
-                var d = (this.dates[i]).getUTCDate();
+                var d = DPGlobal.formatDate(this.dates[i], format, lang);
                 if(this.o.class=="week_calendar")
                 {
                     d = this.dates[i].getUTCDay();
                 }
                 var b= this.bottles[i].num;
-                // var one = DPGlobal.formatDate(d, format, lang)+this.o.multibottleSeparator+b;
+                // var one = DPGlobal.formatDate(this.dates[i], this.o.format, lang)+this.o.multibottleSeparator+b;
                 var one = d+this.o.multibottleSeparator+b;
                 if(i==length-1)
                     result += one;
@@ -984,7 +987,27 @@
 
                 clsName = $.unique(clsName);
 
-                html.push('<td data-date = "'+ prevMonth.getUTCDate() + '" class="' + clsName.join(' ') + '"' + (tooltip ? ' title="' + tooltip + '"' : '') + '>' + '<label class="date">'+prevMonth.getUTCDate()+'</label>' + '</td>');
+                var strHtml = '<td data-date = "'+ prevMonth.getUTCDate() + '" class="' + clsName.join(' ') + '"' + (tooltip ? ' title="' + tooltip + '"' : '') + '>' + '<label class="date">'+prevMonth.getUTCDate()+'</label>';
+
+                // 初始化随心送的日期表
+                if (this.o.class.toString().includes("month_calendar")) {
+                    // 查询已选择的瓶数
+                    var ix= this.bottles.contains(prevMonth);
+
+                    if (ix >= 0) {
+                        var bnum = this.bottles[ix].num;
+
+                        if (this.o.class.toString().includes('only_show')) {
+                            strHtml += '<input disabled class="tip-input" name="date_bottle_number" data-date="'+ prevMonth +'" value="' + bnum + '"/>';
+                        }
+                        else {
+                            strHtml += '<input class="tip-input" name="date_bottle_number" data-date="'+ prevMonth +'" value="' + bnum + '"/>';
+                        }
+                    }
+                }
+
+                strHtml += '</td>';
+                html.push(strHtml);
 
                 if (prevMonth.getUTCDay() === this.o.weekEnd) {
                     html.push('</tr>');
