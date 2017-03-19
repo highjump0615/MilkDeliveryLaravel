@@ -278,6 +278,34 @@ $('#customer_form').on("submit", function (e) {
     });
 });
 
+/**
+ * 随心送时确保总数量的匹配
+ * @returns {boolean} true 数量跟配送日期的数量的和一只
+ */
+function isFreeOrderValid() {
+    var bRes = true;
+
+    $('#product_table tbody tr.one_product').each(function () {
+        var type = parseInt($(this).find('.order_delivery_type').val());
+
+        // 只考虑随心送的奶品
+        if (type != 4) {
+            return true;
+        }
+
+        var nOrderCount = $(this).find('.picker').datepicker('getTotalCount');
+        var nTotalCount = parseInt($(this).find('select.one_product_total_count_select').val());
+
+        // 数量不匹配, 退出
+        if (nOrderCount != nTotalCount) {
+            bRes = false;
+            return false;
+        }
+    });
+
+    return bRes;
+}
+
 //Insert Order
 $('#order_form').on('submit', function (e) {
 
@@ -295,7 +323,7 @@ $('#order_form').on('submit', function (e) {
     $('#product_table tbody tr').each(function(){
         if(check_input_empty_for_one_product(this))
             empty_tr = true;
-    })
+    });
     if (empty_tr)
     {
         show_warning_msg('请填写产品的所有字段');
@@ -334,16 +362,22 @@ $('#order_form').on('submit', function (e) {
         });
 
         if (nTotalBottleNum < nMinBottleNum) {
-            show_err_msg("订单数量总合得符合订单类型条件")
+            show_err_msg("订单数量总合得符合订单类型条件");
             return;
         }
     }
+
+    // 随心送选择日期的数量总和是否总数量相同
+    // if (!isFreeOrderValid()) {
+    //     show_err_msg("随心送配送规则的总数量和该奶品的数量不匹配");
+    //     return;
+    // }
 
     // 订单修改，更改后金额不能超过订单余额
     if (gbIsEdit) {
         var fRemainCost = $('#remaining_after').val();
         if (fRemainCost < 0) {
-            show_err_msg("更改后金额不能超过订单余额")
+            show_err_msg("更改后金额不能超过订单余额");
             return;
         }
     }
