@@ -450,7 +450,7 @@ $('.verify-card').click(function () {
 
                 // 检查该奶卡是否已选择
                 if ($.inArray(nId, g_aryCardId) >= 0) {
-                    setCardModalNotice("已选择了这张卡")
+                    setCardModalNotice("已选择了这张卡");
                     return;
                 }
 
