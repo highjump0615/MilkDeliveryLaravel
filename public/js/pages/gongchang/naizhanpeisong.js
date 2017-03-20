@@ -1,11 +1,15 @@
 
 $(document).ready(function() {
-    $('#date_2 .input-group.date').datepicker({
-        todayBtn: "linked",
+    $('#date_select .date').datepicker({
         keyboardNavigation: false,
         forceParse: false,
+        autoclose: true,
         calendarWeeks: false,
-        autoclose: true
+        clearBtn: true
+    }).on('changeDate', function(e) {
+        // 用新的日期刷新页面
+        var strDate = $('#search_date').val();
+        window.location.href = SITE_URL + "gongchang/shengchan/naizhanpeisong?date=" + strDate;
     });
 
     $('.footable').footable();
@@ -15,12 +19,6 @@ $(document).ready(function() {
 
         calcRemainAfter(id);
         calcRemaining(this);
-    });
-
-    // 隐藏打印出库单按钮
-    $('#by_station tr:not(:first,:last)').each(function() {
-        var order = $(this).attr('order');
-        $('#f_detail'+order+'').hide();
     });
 });
 
