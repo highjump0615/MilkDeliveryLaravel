@@ -201,15 +201,19 @@ class MilkCardCtrl extends Controller
 
     }
 
+    /**
+     * 奶卡验证
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function verify_card(Request $request) {
 
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $card_id = $request->input('card_id');
         $card_code = $request->input('card_code');
 
-        $card = MilkCard::where('number', $card_id)->where('factory_id', $current_factory_id)->get()->first();
-
+        $card = MilkCard::where('number', $card_id)->where('factory_id', $current_factory_id)->first();
 
         if($card == null) {
             return response()->json([
