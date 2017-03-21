@@ -1332,7 +1332,7 @@
             if (!which || which === 'view')
                 this.viewDate = date && new Date(date);
 
-            //this.fill();
+            this.fill();
             this.setValue();
             this._trigger('changeDate');
             var element;
@@ -1361,7 +1361,7 @@
             if (!which || which === 'view')
                 this.viewDate = date && new Date(date);
 
-            //this.fill();
+            this.fill();
             this.setBValue();
             this._trigger('changeDate');
             var element;
