@@ -12,7 +12,7 @@ function multiexplode ($delimiters,$string) {
  */
 function getCurDateString() {
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
 }
@@ -21,10 +21,17 @@ function getCurDateString() {
  * 获取昨日日期
  * @return string
  */
-function getPrevDateString() {
+function getPrevDateString($strDate = null) {
+
+    // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+    if (!empty($strDate)) {
+        $dateCurrent = getDateFromString($strDate);
+    }
+
     $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
 }
@@ -33,10 +40,35 @@ function getPrevDateString() {
  * 获取明日日期
  * @return string
  */
-function getNextDateString() {
+function getNextDateString($strDate = null) {
+
+    // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+
+    if (!empty($strDate)) {
+        $dateCurrent = getDateFromString($strDate);
+    }
+
     $dateCurrent->add(\DateInterval::createFromDateString('tomorrow'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
+}
+
+/**
+ * 日期string转DateTime
+ * @param $string
+ * @return bool|DateTime
+ */
+function getDateFromString($string) {
+    return DateTime::createFromFormat('Y-m-d', $string);
+}
+
+/**
+ * DateTime转string
+ * @param $date DateTime
+ * @return mixed
+ */
+function getStringFromDate($date) {
+    return $date->format('Y-m-d');
 }
