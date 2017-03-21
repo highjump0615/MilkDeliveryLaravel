@@ -1001,7 +1001,8 @@
                 var strHtml = '<td data-date = "'+ prevMonth.getUTCDate() + '" class="' + clsName.join(' ') + '"' + (tooltip ? ' title="' + tooltip + '"' : '') + '>' + '<label class="date">'+prevMonth.getUTCDate()+'</label>';
 
                 // 初始化随心送的日期表
-                if (this.o.class.toString().includes("month_calendar")) {
+                if (this.o.class.toString().includes("month_calendar") ||
+                    this.o.class.toString().includes("week_calendar")) {
                     // 查询已选择的瓶数
                     var ix= this.bottles.contains(prevMonth);
 
