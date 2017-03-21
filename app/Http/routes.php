@@ -220,10 +220,15 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/shengchan/naizhanpeisong', 'DSProductionPlanCtrl@showNaizhanpeisongPage');
     /*update actual_count for real produce - naizhan*/
     Route::put('api/gongchang/shengchan/naizhanpeisong', 'DSProductionPlanCtrl@updateNaizhanPlanTable');
+
     /*Show Naizhanshouhuoqueren page*/
     Route::get('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren', 'DSProductionPlanCtrl@showNaizhanshouhuoquerenPage');
     /*show dayinchukuchan Page*/
     Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan', 'DSProductionPlanCtrl@showDayinchukuchan');
+    Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/{stationId}', 'DSProductionPlanCtrl@showDayinchukuchanWithStation');
+    /* 保存出库单内容 */
+    Route::post('api/gongchang/shengchan/naizhanpeisong/dayinchukuchan/save', 'DSProductionPlanCtrl@saveOutStock');
+
     /*Show milkstation Plan table*/
     Route::get('/gongchang/shengchan/naizhanjihuashenhe', 'DSProductionPlanCtrl@showPlanTableinFactory');
     /*Determine product counts*/
@@ -234,6 +239,8 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/determine_station_plan', 'DSProductionPlanCtrl@determineStationPlan');
     /*Production Plan cancel*/
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan', 'DSProductionPlanCtrl@cancelStationPlan');
+    /* 保存实际生产量 */
+    Route::post('api/gongchang/shengchan/naizhanpeisong/save', 'DSProductionPlanCtrl@saveProducedCount');
     /*Gongchang Finance*/
 
     //Finance First page: stations account info page

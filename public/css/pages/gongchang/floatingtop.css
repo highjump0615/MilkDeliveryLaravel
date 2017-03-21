@@ -1,0 +1,27 @@
+
+@media (min-width: 768px) {
+    .fixedintop {
+        position: fixed;
+        top: 0px;
+        width: 100%;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        padding-right: 220px;
+        z-index: 100;
+    }
+}
+
+.fixedintop .table {
+    margin-bottom: 0px;
+}
+
+@media (max-width: 768px) {
+    .fixedintop {
+        position: fixed;
+        top: 0px;
+        width: 100%;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        z-index: 100;
+    }
+}

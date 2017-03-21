@@ -17,7 +17,7 @@ function setPlanData() {
             if(!isNaN(plan_val)&& plan_val.length!==0){
                 sum+=parseFloat(plan_val,2);
             }
-        })
+        });
 
         var ordered_count = parseInt($(this).find('.ordered_count').text());
 
@@ -110,7 +110,7 @@ function send_plan() {
                 group_sale: $('#group' + id + '').text(),
                 channel_sale: $('#channel' + id + '').text(),
                 subtotal_count: $('#subtotal_count' + id + '').text(),
-                subtotal_money: $('#subtotal_price' + id + '').text(),
+                subtotal_money: $('#subtotal_price' + id + '').text()
             };
             table_info[i] = formData;
             i++;
@@ -118,14 +118,16 @@ function send_plan() {
     });
 
     var type = "POST"; //for creating new resource
-    var my_url = url;
+    var dataParam = {
+        date: $('#search_date').val(),
+        plan_data: table_info
+    };
 
     $.ajax({
         type: type,
-        url: my_url,
-        contentType: 'json',
-        processData: false,
-        data: JSON.stringify(table_info),
+        url: url,
+        dataType: 'json',
+        data: dataParam,
         success: function (data) {
             $('.confirm_submit').hide();
             $('.modify').show();
@@ -133,7 +135,12 @@ function send_plan() {
             console.log(data);
         },
         error: function (data) {
+            var jsonError = data.responseJSON;
+            show_err_msg(jsonError.message);
             console.log('Error:', data);
+
+            // 恢复按钮
+            $('.confirm_submit').prop("disabled", false);
         }
     });
 }
@@ -151,32 +158,30 @@ $(document).on('click','.modify',function(e){
             confirmButtonClass: "btn-success",
             confirm: function () {
                 modify_plan();
-                return;
             },
             cancel: function () {
-                return;
             }
         });
         status = 2;
     }else {
         modify_plan();
     }
-})
+});
 
 function modify_plan() {
     used_money = $('#total_amount').text() - $('#total_ordered_money').val();
     var status = 1;
     if(used_money > parseFloat(limit_money,2)){
-
         status = 2;
     }
+
     var url = API_URL + 'naizhan/shengchan/tijiaojihua/modify';
 
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
-    })
+    });
 
 
     $('.modify').prop("disabled",true);
@@ -197,22 +202,23 @@ function modify_plan() {
                 channel_sale: $('#channel' + id + '').text(),
                 subtotal_count: $('#subtotal_count' + id + '').text(),
                 subtotal_money: $('#subtotal_price' + id + '').text(),
-            }
+            };
             table_info[i] = formData;
             i++;
         }
-    })
+    });
 
     var type = "POST"; //for creating new resource
-    var my_url = url;
+    var dataParam = {
+        date: $('#search_date').val(),
+        plan_data: table_info
+    };
 
     $.ajax({
-
         type: type,
-        url: my_url,
-        contentType: 'json',
-        processData: false,
-        data: JSON.stringify(table_info),
+        url: url,
+        dataType: 'json',
+        data: dataParam,
         success: function (data) {
             $('.confirm_submit').hide();
             $('.modify').prop("disabled",false);
@@ -220,7 +226,12 @@ function modify_plan() {
             console.log(data);
         },
         error: function (data) {
+            var jsonError = data.responseJSON;
+            show_err_msg(jsonError.message);
             console.log('Error:', data);
+
+            // 恢复按钮
+            $('.modify').prop("disabled",false);
         }
     });
 }

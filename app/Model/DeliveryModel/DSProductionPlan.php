@@ -40,7 +40,6 @@ class DSProductionPlan extends Model
      */
     const DSPRODUCTION_PRODUCE_RECEIVED = 7;
 
-
     protected $table = 'dsproductionplan';
 
     public $timestamps = false;
@@ -150,5 +149,13 @@ class DSProductionPlan extends Model
     public function getSelfOrderMoney() {
         $nCount = $this->retail + $this->test_drink + $this->group_sale + $this->channel_sale;
         return $nCount * $this->settle_product_price;
+    }
+
+    /**
+     * 获取产品信息
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function product() {
+        return $this->belongsTo('App\Model\ProductModel\Product');
     }
 }
