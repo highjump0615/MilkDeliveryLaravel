@@ -132,9 +132,6 @@
 @section('script')
 	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
    
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
-
 	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js') ?>"></script>
 
 @endsection
