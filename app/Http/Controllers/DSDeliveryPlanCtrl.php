@@ -194,11 +194,14 @@ class DSDeliveryPlanCtrl extends Controller
         $planProduct["changed_plan_count"] += $planCount;
 
         // 查看配送任务是否已经生成了
-        $delivery_plans = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $planProduct->product_id);
+        $delivery_plans = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $planProduct->product_id, false);
 
         // 已调配
         if ($delivery_plans != null){
-            $is_distributed = 1;
+            if (!empty($delivery_plans->generated)) {
+                $is_distributed = 1;
+            }
+
             $planProduct["dp_retail"] = $delivery_plans->retail;
             $planProduct["dp_test_drink"] = $delivery_plans->test_drink;
             $planProduct["dp_group_sale"] = $delivery_plans->group_sale;
@@ -248,26 +251,24 @@ class DSDeliveryPlanCtrl extends Controller
         $currentDate_str = getCurDateString();
 
         $product_id = $request->input('product_id');
-        $retail = $request->input('retail');
-        $test_drink = $request->input('test_drink');
-        $group_sale = $request->input('group_sale');
-        $channel_sale = $request->input('channel_sale');
         $remain = $request->input('remain');
 
-        // 如果已生成配送单信息，退出
-        if (DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product_id)) {
-            return;
+        //
+        // 生成今日配送单
+        //
+        $delivery_distribution = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product_id, false);
+
+        if (!$delivery_distribution) {
+            $delivery_distribution = new DSDeliveryPlan;
+            $delivery_distribution->station_id = $current_station_id;
+            $delivery_distribution->deliver_at = $currentDate_str;
+            $delivery_distribution->product_id = $product_id;
+            $delivery_distribution->remain = $remain;
         }
 
-        $delivery_distribution = new DSDeliveryPlan;
-        $delivery_distribution->station_id = $current_station_id;
-        $delivery_distribution->deliver_at = $currentDate_str;
-        $delivery_distribution->product_id = $product_id;
-        $delivery_distribution->retail = $retail;
-        $delivery_distribution->test_drink = $test_drink;
-        $delivery_distribution->group_sale = $group_sale;
-        $delivery_distribution->channel_sale = $channel_sale;
-        $delivery_distribution->remain = $remain;
+        // 写入生成配送单标志
+        $delivery_distribution->generated = 1;
+
         $delivery_distribution->save();
     }
 
@@ -587,7 +588,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         foreach ($aryProduct as $product) {
             // 如果已生成配送单信息，退出
-            if (DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product['id'])) {
+            if (DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product['id'], false)) {
                 return Response::json(['status'=>"success"]);
             }
 
@@ -657,7 +658,7 @@ class DSDeliveryPlanCtrl extends Controller
             $milkman_delivery_plans->save();
 
             // 更新
-            $deliveryPlan = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product_id[$i], $deliver_date_str);
+            $deliveryPlan = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product_id[$i], $deliver_date_str, false);
             if ($deliveryPlan) {
                 $deliveryPlan->increaseSelfDelivery($type, $product_count[$i]);
             }
@@ -735,7 +736,7 @@ class DSDeliveryPlanCtrl extends Controller
         $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
 
         // 只有生成了配送列表之后才显示今日配送单
-        if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id)) {
+        if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true)) {
             $strAlertMsg = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
 
             return view('naizhan.shengchan.jinripeisongdan',[
@@ -917,7 +918,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
-            ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, $deliver_date_str))) {
+            ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true, $deliver_date_str))) {
 
             $aryView = [
                 'pages'                     =>$pages,
@@ -1163,7 +1164,7 @@ class DSDeliveryPlanCtrl extends Controller
                 //
                 // 更新库存数据
                 //
-                $deliveryPlan = DSDeliveryPlan::getDeliveryPlanGenerated($nStationId, $milkmandeliverys->getProductId(), $deliver_date_str);
+                $deliveryPlan = DSDeliveryPlan::getDeliveryPlanGenerated($nStationId, $milkmandeliverys->getProductId(), false, $deliver_date_str);
                 if ($deliveryPlan) {
                     $deliveryPlan->remain -= $delivered_count;
                     $deliveryPlan->save();
