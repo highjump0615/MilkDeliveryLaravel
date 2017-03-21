@@ -8,6 +8,7 @@ use App\Model\OrderModel\OrderType;
 use App\Model\ProductModel\Product;
 use App\Model\DeliveryModel\DeliveryType;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use DateTime;
 
 class OrderProduct extends Model
 {
@@ -177,7 +178,7 @@ class OrderProduct extends Model
         $day_count_array = explode(':', $strCustomDate);
         $day = trim($day_count_array[0]);
 
-        return (int)$day;
+        return $day;
     }
 
     /**
@@ -236,12 +237,32 @@ class OrderProduct extends Model
             $strCustom = rtrim($this->custom_order_dates, ',');
             $aryStrCustom = explode(',', $strCustom);
 
-            $nIndex = $this->getCustomDateIndexFromDate($dateDeliver);
+            // 按周送
+            if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
+                $nIndex = $this->getCustomDateIndexFromDate($dateDeliver);
 
-            foreach ($aryStrCustom as $strCustom) {
-                if ($this->getCustomDateIndex($strCustom) == $nIndex) {
-                    $nTypeCount = $this->getCustomDateCount($strCustom);
-                    break;
+                foreach ($aryStrCustom as $strCustom) {
+                    if ((int)$this->getCustomDateIndex($strCustom) == $nIndex) {
+                        $nTypeCount = $this->getCustomDateCount($strCustom);
+                        break;
+                    }
+                }
+            }
+            // 随心送
+            else {
+                // 先从配送规则获取
+                for ($i = 0; $i < count($aryStrCustom); $i++) {
+                    $strCustom = $aryStrCustom[$i];
+
+                    if ($this->getCustomDateIndex($strCustom) == $dateDeliver) {
+                        $nTypeCount = $this->getCustomDateCount($strCustom);
+                        break;
+                    }
+                }
+
+                // 配送规则里找不着，返回剩余数量
+                if ($i >= count($aryStrCustom)) {
+                    $nTypeCount = $this->total_count;
                 }
             }
         }
@@ -263,39 +284,53 @@ class OrderProduct extends Model
             return $dateDeliverNew;
         }
 
-        // 获取年月日
-        $aryDateTemp = explode('-', $date);
-
-        // 计算本月天数
-        $nMaxDay = date('t', strtotime($aryDateTemp[0] . '-' . $aryDateTemp[1] . '-01'));
-        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
-            $nMaxDay = 7;
-        }
-
         $aryDate = $this->getCustomDateIndexArray();
 
-        // 到下个配送日的间隔
-        $nIntervalDay = 0;
+        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
+            $nMaxDay = 7;
 
-        // 当前索引
-        $nIndex = $this->getCustomDateIndexFromDate($date);
-        $nIntervalDay = $nMaxDay - $nIndex + $aryDate[0];
+            // 当前索引
+            $nIndex = $this->getCustomDateIndexFromDate($date);
 
-        // 获取下一个索引
-        for ($i = 0; $i < count($aryDate); $i++) {
-            // 超过最大范围，查看下一个索引
-            if ($aryDate[$i] > $nMaxDay) {
-                continue;
+            // 到下个配送日的间隔
+            $nIntervalDay = $nMaxDay - $nIndex + (int)$aryDate[0];
+
+            // 获取下一个索引
+            for ($i = 0; $i < count($aryDate); $i++) {
+                $nDateIndex = (int)$aryDate[$i];
+
+                // 超过最大范围，查看下一个索引
+                if ($nDateIndex > $nMaxDay) {
+                    continue;
+                }
+
+                if ($nDateIndex >= $nIndex) {
+                    $nIntervalDay = $nDateIndex - $nIndex;
+                    break;
+                }
             }
 
-            if ($aryDate[$i] >= $nIndex) {
-                $nIntervalDay = $aryDate[$i] - $nIndex;
-                break;
+            // 算出配送日期
+            $dateDeliverNew = date('Y-m-d', strtotime($date . "+" . $nIntervalDay . " days"));
+        }
+        else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {
+            $dateCurrent = getDateFromString($date);
+
+            // 获取下一个日期
+            for ($i = 0; $i < count($aryDate); $i++) {
+                $dtIndex = getDateFromString($aryDate[$i]);
+
+                if ($dtIndex >= $dateCurrent) {
+                    $dateDeliverNew = getStringFromDate($dtIndex);
+                    break;
+                }
+            }
+
+            // 规则里找不着，默认是最后的第二天
+            if ($i >= count($aryDate)) {
+                $dateDeliverNew = getNextDateString($aryDate[count($aryDate)-1]);
             }
         }
-
-        // 算出配送日期
-        $dateDeliverNew = date('Y-m-d', strtotime($date . "+" . $nIntervalDay . " days"));
 
         return $dateDeliverNew;
     }
