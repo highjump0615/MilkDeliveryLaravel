@@ -68,9 +68,11 @@ class DSDeliveryPlan extends Model
      * 今日该奶站该产品的配送列表是否已生成
      * @param $stationid
      * @param $productid
+     * @param $checkGenerated bool 检查真正生成了今日配送单
+     * @param $deliverDate string 配送日期
      * @return mixed
      */
-    public static function getDeliveryPlanGenerated($stationid, $productid = 0, $deliverDate = null) {
+    public static function getDeliveryPlanGenerated($stationid, $productid = 0, $checkGenerated = true, $deliverDate = null) {
         $date = $deliverDate;
 
         if (!$date) {
@@ -81,6 +83,11 @@ class DSDeliveryPlan extends Model
 
         if ($productid > 0) {
             $deliveryPlan->where('product_id', $productid);
+        }
+
+        // 检查是否真正生成了今日配送单
+        if ($checkGenerated) {
+            $deliveryPlan->where('generated', '>', 0);
         }
 
         return $deliveryPlan->first();
