@@ -100,6 +100,12 @@ class UserCtrl extends Controller
     /*Delete & Update user-info using ajax*/
     public function updateAccount(Request $request, $user_id)
     {
+        // 默认角色是奶厂超级管理员
+        $nRole = $request->input('user_role_id');
+        if (empty($nRole)) {
+            $nRole = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
+        }
+
         $user = User::find($user_id);
         $user->name = $request->input('name');
         if($request->input('password')!=null){
@@ -107,7 +113,7 @@ class UserCtrl extends Controller
         }
         $user->nick_name = $request->input('nick_name');
         $user->status = $request->input('status');
-        $user->user_role_id = $request->input('user_role_id');
+        $user->user_role_id = $nRole;
 
         $user->save();
 
