@@ -295,7 +295,8 @@ $('#order_form').on('submit', function (e) {
     $('#product_table tbody tr').each(function(){
         if(check_input_empty_for_one_product(this))
             empty_tr = true;
-    })
+    });
+
     if (empty_tr)
     {
         show_warning_msg('请填写产品的所有字段');
@@ -521,6 +522,16 @@ function getCardValue() {
     return nTotalValue;
 }
 
+/**
+ * 使用/禁用票据号
+ * @param enabled
+ */
+function enableReceipt(enabled) {
+    $('#receipt_number').prop('disabled', enabled);
+    $('#reset_camera').prop('disabled', enabled);
+    $('#capture_camera').prop('disabled', enabled);
+}
+
 $(document).ready(function () {
     // 显示奶卡modal事件 
     $('#card_info').on('hidden.bs.modal', function () {
@@ -528,4 +539,15 @@ $(document).ready(function () {
         $('#card_code').val('');
         setCardModalNotice('');
     });
+
+    var objSwitch = document.querySelector('#milk_card_check');
+    objSwitch.onchange = function() {
+        // 如果是奶卡订单，不使用票据号
+        if (objSwitch.checked) {
+            enableReceipt(true);
+        }
+        else {
+            enableReceipt(false);
+        }
+    }
 });
