@@ -63,7 +63,7 @@ $(document).ready(function () {
     // 初始化配送规则有关的日历
     $('#product_table').find('tbody > tr').each(function() {
         initBottleNumCalendar($(this));
-    })
+    });
 
     //Create Switchery
     if (Array.prototype.forEach) {
@@ -502,11 +502,24 @@ function initBottleNumCalendar(tr) {
                 initValue: initNum,
                 startDate: '2016-11-13',
                 endDate: '2016-11-19',
-                class:'week_calendar',
+                class:'week_calendar'
             });
         }
         else {
-            console.log(id);
+            //
+            // 决定开启日期
+            //
+            var input = tr.find('.start_at');
+            var dateVal = new Date($(input).val());
+
+            // 默认选择第一天
+            var dateStart = getStartDate();
+
+            // 修改要改成以保存的, 过了保存的时期，只能选择今天
+            if ($(input).val().length > 0 && dateVal > dateStart) {
+                dateStart = dateVal;
+            }
+
             //show monthday
             $(pick).datepicker({
                 multidate: true,
@@ -518,9 +531,8 @@ function initBottleNumCalendar(tr) {
                 showNum: true,
                 bottleNum: nBottleNum,
                 initValue: initNum,
-                startDate: firstm,
-                endDate: lastm,
-                class:'month_calendar',
+                startDate: dateStart,
+                class:'month_calendar'
             });
         }
 
