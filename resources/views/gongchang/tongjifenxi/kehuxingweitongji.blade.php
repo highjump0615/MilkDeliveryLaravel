@@ -1,6 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-	<link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -284,6 +283,5 @@
 @endsection
 
 @section('script')
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
 	<script src="<?=asset('js/pages/gongchang/kehuxingweitongji.js') ?>"></script>
 @endsection

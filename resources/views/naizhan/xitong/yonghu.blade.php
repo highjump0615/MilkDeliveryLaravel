@@ -1,7 +1,8 @@
 @extends('naizhan.layout.master')
+
 @section('css')
-	<link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
 @endsection
+
 @section('content')
 	@include('naizhan.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -160,11 +161,8 @@
 @endsection
 
 @section('script')
-   	<!-- Switchery -->
-   	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
 	<script src="<?=asset('js/plugins/confirm/jquery.confirm.min.js') ?>"></script>
-	<!--Get API_URL-->
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
+
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/pages/naizhan/useradminajax.js') ?>"></script>
 @endsection

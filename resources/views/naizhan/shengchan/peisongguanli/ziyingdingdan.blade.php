@@ -1,6 +1,5 @@
 @extends('naizhan.layout.master')
 @section('css')
-	<link href="<?=asset('css/plugins/iCheck/custom.css')?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -140,7 +139,6 @@
 								@foreach($delivery_plans as $dp)
 									<tr id="{{$dp->product_id}}">
 										<td class="col-md-6"><label>{{$dp->product_name}}</label>
-											{{--&nbsp;<input type="checkbox" checked class="i-checks"\>--}}
 										</td>
 										<td classs="col-md-6">
 											<label class="col-lg-4">数量</label>
@@ -266,8 +264,6 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
-
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/naizhan_ziyingdingdan_ajax.js') ?>"></script>
 @endsection

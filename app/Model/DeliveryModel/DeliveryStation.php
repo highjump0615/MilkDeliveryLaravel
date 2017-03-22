@@ -50,7 +50,6 @@ class DeliveryStation extends Authenticatable
 
     protected $appends = [
         'total_count',
-//        'delivery_area',
         'received_order_money',
         'receivable_order_money',
         'orders_in_month',
@@ -62,7 +61,6 @@ class DeliveryStation extends Authenticatable
         'money_orders_really_got_sum',
         'money_orders_of_others',
         'money_orders_of_mine',
-        'money_not_received_start_of_month',
 
         //Wechat
         'wechat_orders',
@@ -550,11 +548,12 @@ class DeliveryStation extends Authenticatable
     public function getWechatOrdersReallyGotAttribute()
     {
         $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
+        $last_m = getCurDateString();
 
         $orders = Order::where('delivery_station_id', $this->id)
             ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->where('ordered_at', '<=', $last_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -680,14 +679,41 @@ class DeliveryStation extends Authenticatable
             ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
             ->whereMonth('created_at', '=', date('m'))
             ->whereYear('created_at', '=', date('Y'))
-            ->selectRaw('sum(amount) as sum')
             ->get()
-            ->first();
+            ->sum('amount');
 
-        if($res)
-            return $res['sum'];
-        else
-            return 0;
+        return $res;
+    }
+
+    /**
+     * 计算期初没收款的金额
+     * @return int
+     */
+    public function getMoneyNotReceivedStartOfMonth(){
+        $first_m = date('Y-m-01');
+
+        $orders = Order::where('station_id', $this->id)
+            ->where('ordered_at', '<', $first_m)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->where(function($query){
+                    $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                })
+            ->get();
+
+        $order_total = $this->getSumOfOrders($orders);
+
+        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('time', '<', $first_m)
+            ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)
+            ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
+            ->get();
+
+        $received_total = $this->getSumOfHistories($calc_histories);
+
+        return $order_total - $received_total;
     }
 
     //get money orders
@@ -756,6 +782,10 @@ class DeliveryStation extends Authenticatable
         return $totalCount;
     }
 
+    /**
+     * 获取配送范围
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function delivery_area()
     {
         return $this->hasMany('App\Model\DeliveryModel\DSDeliveryArea', 'station_id', 'id');
@@ -764,6 +794,45 @@ class DeliveryStation extends Authenticatable
     public function factory()
     {
         return $this->belongsTo('App\Model\FactoryModel\Factory');
+    }
+
+    /**
+     * 获取配送范围根据街道分组
+     * @return mixed
+     */
+    public function getDeliveryAreaGrouped() {
+        $deliveryarea = DSDeliveryArea::where('station_id', $this->id)
+            ->get()
+            ->groupBy(function($area){
+                $addr = $area->address;
+                $addrs = explode(" ", $addr);
+                return $addrs[0].$addrs[1].$addrs[2].$addrs[3];
+            });
+
+        return $deliveryarea;
+    }
+
+    /**
+     * 获取配送范围街道小区信息
+     * @return array
+     */
+    public function getDeliveryStreetVillage() {
+
+        $aryStreet = array();
+
+        foreach ($this->delivery_area as $area) {
+
+            $addr = $area->address;
+            $addrs = explode(" ", $addr);
+
+            if (!isset($aryStreet[$addrs[3]])) {
+                $aryStreet[$addrs[3]] = array();
+            }
+
+            array_push($aryStreet[$addrs[3]], $addrs[4]);
+        }
+
+        return $aryStreet;
     }
 
     /**
@@ -820,7 +889,7 @@ class DeliveryStation extends Authenticatable
         return $sum;
     }
 
-    public function getSumOfHistoreis($histories)
+    public function getSumOfHistories($histories)
     {
         $total = 0;
         foreach ($histories as $his) {
@@ -836,7 +905,7 @@ class DeliveryStation extends Authenticatable
 
         $money_orders_really_got_sum = $this->money_orders_really_got_sum;
 
-        $receivable = $money_orders_sum - $money_orders_really_got_sum + $this->money_not_received_start_of_month;
+        $receivable = $money_orders_sum - $money_orders_really_got_sum + $this->getMoneyNotReceivedStartOfMonth();
 
         return $receivable;
     }
@@ -1080,5 +1149,17 @@ class DeliveryStation extends Authenticatable
     public function addSelfOrderAccount($amount) {
         $this->business_credit_balance += $amount;
         $this->save();
+    }
+
+    public function getChangeStartDate() {
+        // 正常是返回当天
+        $dateStart = getCurDateString();
+
+        // 已生成配送列表，返回第二天
+        if (DSDeliveryPlan::getDeliveryPlanGenerated($this->id)) {
+            $dateStart = getNextDateString();
+        }
+
+        return $dateStart;
     }
 }

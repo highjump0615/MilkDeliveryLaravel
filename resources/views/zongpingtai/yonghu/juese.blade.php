@@ -226,10 +226,7 @@
 @section('script')
 	<meta name="_token" content="{!! csrf_token() !!}" />
 	<script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
-	<!--Get API_URL-->
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
-	<!--Treeview for permission table-->
-	<script type="text/javascript" src="<?=asset('js/plugins/added/treetable.js') ?>"></script>
+
 	<!--Apply Ajax for Role_name table-->
 	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/jueseajax.js') ?>"></script>
 	<!--Apply Ajax for Permission table-->
@@ -240,12 +237,6 @@
 	<script>
 
         $(document).ready(function(){
-//            $('.i-checks').iCheck({
-//                checkboxClass: 'icheckbox_square-green',
-//
-//            });
-
-			$('.table').treeTable();
 			var role_id = $('#user_role_id').val();
 			$('#role'+role_id+'').addClass('active').siblings().removeClass('active');
         });
@@ -261,7 +252,7 @@
 			else {
 				$('.childicheck1').prop('checked',false);
 			}
-		})
+		});
 		$('.childicheck1').change(function () {
 			if($(this).is(':checked')){
 				$('#parenticheck1').prop('checked',true);
@@ -272,12 +263,12 @@
 					if($(this).is(':checked')){
 						i++;
 					}
-				})
+				});
 				if(i==0){
 					$('#parenticheck1').prop('checked',false);
 				}
 			}
-		})
+		});
 
 		$('#parenticheck2').change(function () {
 			if($(this).is(':checked')){

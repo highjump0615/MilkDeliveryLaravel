@@ -1,7 +1,6 @@
 @extends('weixin.layout.master')
 @section('title','首页')
 @section('css')
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
 @endsection
 @section('content')
     <header>
@@ -96,8 +95,6 @@
 @endsection
 
 @section('script')
-    <!-- Swiper JS -->
-    <script src="<?=asset('weixin/js/swiper.min.js')?>"></script>
 
     <!-- Initialize Swiper -->
     <script>

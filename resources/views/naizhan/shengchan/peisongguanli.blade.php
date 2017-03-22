@@ -303,7 +303,7 @@
 										<td>{{$cp->order->number}}</td>
 										<td>{{$cp->order->customer->name}}</td>
 										<td>{{trim($cp->order->address," ")}}</td>
-										<td>{{$cp->order_product->product->name}}</td>
+										<td>{{$cp->order_product->product->simple_name}}</td>
 										<td>{{$cp->plan_count}}</td>
 										<td>{{$cp->changed_plan_count}}</td>
 										@if($is_distributed!=1)
@@ -362,8 +362,6 @@
 @endsection
 
 @section('script')
-	<!--Get API_URL-->
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/naizhan_peisongguanli_ajax.js') ?>"></script>
 

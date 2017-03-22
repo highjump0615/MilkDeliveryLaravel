@@ -28,10 +28,10 @@
                     <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan') }}">账务结算</a>
                 </li>
                 <li>
-                    <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang') }}">账单转账</a>
+                    <a href="">账单转账</a>
                 </li>
                 <li class="active">
-                    <a href="{{ url('zongpingtai/caiwu/zhangwujiesuan/lishizhuanzhangjiru') }}"><strong>历史转账记录</strong></a>
+                    <a href=""><strong>历史转账记录</strong></a>
                 </li>
             </ol>
         </div>

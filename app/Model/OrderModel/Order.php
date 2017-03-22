@@ -231,10 +231,24 @@ class Order extends Model
         return $remain;
     }
 
+    /**
+     * 重写获取status字段
+     * @return int
+     */
+    public function getStatusAttribute(){
+        $nStatus = $this->attributes['status'];
+
+        // 假装设置STOPPED状态
+        if ($this->isStopped()) {
+            $nStatus = Order::ORDER_STOPPED_STATUS;
+        }
+
+        return $nStatus;
+    }
+
     public function setStatusAttribute($value){
-        $now = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $this->attributes['status'] = $value;
-        $this->attributes['status_changed_at'] = $now->format('Y-m-d');
+        $this->attributes['status_changed_at'] = getCurDateString();
     }
 
     /**
@@ -244,7 +258,10 @@ class Order extends Model
     public function getHasStoppedAttribute()
     {
         // 只考虑没过期的
-        if (strtotime('today') > strtotime($this->restart_at)) {
+        $dateCurrent = date(getCurDateString());
+        $dateRestart = date(getCurDateString());
+
+        if ($dateCurrent > $dateRestart) {
             return false;
         }
 
@@ -258,6 +275,8 @@ class Order extends Model
 
     public function getStatusNameAttribute()
     {
+        $status_name="待审核";
+
         switch($this->status)
         {
             case $this::ORDER_NEW_WAITING_STATUS:
@@ -284,7 +303,6 @@ class Order extends Model
                 $status_name="退订";
                 break;
             default:
-                $status_name="待审核";
                 break;
         }
 
@@ -339,11 +357,23 @@ class Order extends Model
             return false;
         }
 
-        if (strtotime($this->stop_at) <= strtotime('today')  && strtotime('today') <= strtotime($this->restart_at)) {
+        $dateCurrent = date(getCurDateString());
+        $dateStop = date($this->stop_at);
+        $dateRestart = date($this->restart_at);
+
+        if ($dateStop <= $dateCurrent && $dateCurrent < $dateRestart) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * 获取暂停订单
+     * @return QueryBuiler
+     */
+    public static function queryStopped() {
+        return Order::where('stop_at', '<=', getCurDateString())->where('restart_at', '>', getCurDateString());
     }
 
     public function getDeliveryPlansSentToProductionPlanAttribute()
@@ -450,7 +480,7 @@ class Order extends Model
                 // 不显示订单修改导致取消的明细
                 ->where(function($query) {
                     $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
                 })
                 ->orderBy('deliver_at')
                 ->get();
@@ -740,11 +770,24 @@ class Order extends Model
         return $addr_id;
     }
 
-
+    /**
+     * 获取配送员id
+     * @return int|null
+     */
     public function getMilkmanIdAttribute()
     {
-        //$addr_id = $this->addr_id;
+        return $this->milkman->id;
+    }
 
+    /**
+     * 获取配送员
+     * @return
+     */
+    public function getMilkmanAttribute()
+    {
+        //
+        // 抽取地址信息
+        //
         $addr_to_xiaoqu = "";
 
         $addr_list = multiexplode(' ', $this->address);
@@ -757,51 +800,21 @@ class Order extends Model
         }
         $addr_to_xiaoqu = trim($addr_to_xiaoqu);
 
-        if($addr_to_xiaoqu)
-        {
-            $mda = MilkManDeliveryArea::where('address', $addr_to_xiaoqu)->get()->first();
-            if(!$mda)
-            {
-                return null;
-            }
-            $milkman_id = $mda->milkman_id;
-            return $milkman_id;
-        } else {
-            return 0;
-        }
-    }
-
-    public function getMilkmanPhoneAttribute()
-    {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman->phone;
-        } else
-            return "";
-    }
-
-    public function getMilkmanAttribute()
-    {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman;
-        } else
+        if (empty($addr_to_xiaoqu)) {
             return null;
+        }
+
+        // 获取配送员
+        return $this->deliveryStation->get_milkman_of_address($addr_to_xiaoqu);
     }
 
-
+    /**
+     * 获取配送员名称
+     * @return mixed
+     */
     public function getMilkmanNameAttribute()
     {
-        $milkman_id = $this->milkman_id;
-        if($milkman_id)
-        {
-            $milkman = MilkMan::find($milkman_id);
-            return $milkman->name;
-        }
+        return $this->milkman->name;
     }
 
     public function getAllOrderTypesAttribute()
@@ -895,11 +908,12 @@ class Order extends Model
     }
 
     /**
-     * 获取奶卡
-     * @return MilkCard
+     * 获取奶卡总金额
+     * @return
      */
-    public function milkcard(){
-        return $this->belongsTo('App\Model\FactoryModel\MilkCard', 'milk_card_id', 'number');
+    public function getMilkcardValue() {
+        $nValue = $this->hasMany('App\Model\FactoryModel\MilkCard', 'order_id')->sum('balance');
+        return $nValue;
     }
 
     public function getMilkBoxInstallLabelAttribute()

@@ -40,7 +40,6 @@ class MilkManDeliveryPlan extends Model
 
     protected $appends = [
         'plan_price',
-        'station_id',
         'product_name',
         'product_simple_name',
         'status_name',
@@ -118,17 +117,6 @@ class MilkManDeliveryPlan extends Model
         return $plan_price;
     }
 
-    public function getStationIdAttribute(){
-        $station = Order::find($this->order_id);
-        if($station == null){
-            return null;
-        }
-        else{
-            return $station->station_id;
-        }
-    }
-    //
-
     public function order(){
         if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             return $this->belongsTo('App\Model\OrderModel\Order', 'order_id', 'id');
@@ -184,11 +172,12 @@ class MilkManDeliveryPlan extends Model
     public function setCount($value) {
 
         $this->changed_plan_count = $value;
-        $this->delivery_count = $value;
 
         // 已提交生产计划才算是修改
-        if ($this->status < MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
+        if ($this->status > MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING &&
+            $this->status < MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT) {
             $this->plan_count = $value;
+            $this->delivery_count = $value;
         }
 
         $this->save();
@@ -232,6 +221,9 @@ class MilkManDeliveryPlan extends Model
         $strDateProduce = str_replace('-','/', $this->produce_at);
         $dateSubmit = date('Y-m-d',strtotime($strDateProduce."-1 days"));
         $datetimeSubmit = DateTime::createFromFormat('Y-m-j', $dateSubmit);
+
+        // 默认是通过状态
+        $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
 
         // 提交日期已过
         if ($dateCurrent > $datetimeSubmit) {
@@ -280,7 +272,7 @@ class MilkManDeliveryPlan extends Model
             if ($this->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING) {
                 $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
                 $this->determineStatus();
-                $this->save();
+                $this->setCount($this->changed_plan_count);
             }
         }
         else {
@@ -303,8 +295,8 @@ class MilkManDeliveryPlan extends Model
         }
         else {
             // 配送时间已过的不能修改
-            $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-            $dateDeliver = DateTime::createFromFormat('Y-m-j', $this->deliver_at);
+            $dateCurrent = date(getCurDateString());
+            $dateDeliver = date($this->deliver_at);
 
             if ($dateCurrent > $dateDeliver) {
                 $editAvailable = false;

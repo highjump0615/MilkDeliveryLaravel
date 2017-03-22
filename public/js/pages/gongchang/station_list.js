@@ -174,10 +174,10 @@ $('button[data-action = "export_csv"]').click(function () {
 
     var i = 0;
     if (od != "none") {
-        data_export('origin_table');
+        data_export('origin_table', 0, '', 0, 0);
     }
     else if (fd != "none") {
-        data_export('filter_table');
+        data_export('filter_table', 0, '', 0, 0);
     }
 });
 

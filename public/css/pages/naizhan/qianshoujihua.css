@@ -1,0 +1,12 @@
+.input-header {
+    margin-bottom: 15px;
+}
+
+.input-header label {
+    float: left;
+    margin-right: 30px;
+}
+
+.input-header .date {
+    width: 200px;
+}

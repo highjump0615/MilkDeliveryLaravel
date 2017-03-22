@@ -1,13 +1,9 @@
 @extends('weixin.layout.master')
 @section('title','产品更改')
 @section('css')
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
-    <link rel="stylesheet" href="<?=asset('weixin/css/swiper.min.css')?>">
-    <link href="<?=asset('font-awesome/css/font-awesome.css') ?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css')?>" rel="stylesheet">
-
 @endsection
+
 @section('content')
 
     <header>

@@ -278,10 +278,13 @@ class ProductCtrl extends Controller
         }
     }
 
+    /**
+     * 打开添加奶品页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_insert_product()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         $province = $factory->factory_provinces;
@@ -296,14 +299,17 @@ class ProductCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.jichuxinxi.shangpin.naipinluru', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'province' => $province,
-            'categories' => $categories,
-            'product_basket_specs' => $product_basket_specs,
-            'bottle_types' => $bottle_types,
+            // 页面信息
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            // 数据
+            'province'              => $province,
+            'categories'            => $categories,
+            'product_basket_specs'  => $product_basket_specs,
+            'bottle_types'          => $bottle_types
         ]);
     }
 
@@ -477,12 +483,15 @@ class ProductCtrl extends Controller
         }
     }
 
+    /**
+     * 打开奶品信息页面
+     * @param $product_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_detail_product($product_id)
     {
-
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-
+        $factory_id = $this->getCurrentFactoryId(true);
+        $factory = Factory::find($factory_id);
         $product = Product::find($product_id);
 
         $child = 'shangpin';
@@ -490,7 +499,7 @@ class ProductCtrl extends Controller
         $current_page = 'shangpinxiangqing';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        $provinces = ProvinceData::all();
+        $provinces = $factory->factory_provinces;
 
         $templates = ProductPrice::where('product_id', $product_id)->get();
         foreach ($templates as $template) {
@@ -527,7 +536,7 @@ class ProductCtrl extends Controller
 
         $categories = ProductCategory::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
         $bottle_types = FactoryBottleType::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
-        $product_basket_specs = FactoryBoxType::where('is_deleted', 0)->get();
+        $product_basket_specs = FactoryBoxType::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
 
         $dest_dir = url('/img/product/logo/');
 
@@ -555,23 +564,25 @@ class ProductCtrl extends Controller
         else
             $file4_path = "";
 
-
         return view('gongchang.jichuxinxi.shangpin.shangpinxiangqing', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'product' => $product,
-            'price_template' => $templates,
-            'new_count' => count($templates),
-            'provinces' => $provinces,
-            'categories' => $categories,
-            'bottle_types' => $bottle_types,
-            'product_basket_specs' => $product_basket_specs,
-            'file1' => $file1_path,
-            'file2' => $file2_path,
-            'file3' => $file3_path,
-            'file4' => $file4_path,
+            // 页面信息
+            'pages'                 => $pages,
+            'child'                 => $child,
+            'parent'                => $parent,
+            'current_page'          => $current_page,
+
+            // 数据
+            'product'               => $product,
+            'price_template'        => $templates,
+            'new_count'             => count($templates),
+            'provinces'             => $provinces,
+            'categories'            => $categories,
+            'bottle_types'          => $bottle_types,
+            'product_basket_specs'  => $product_basket_specs,
+            'file1'                 => $file1_path,
+            'file2'                 => $file2_path,
+            'file3'                 => $file3_path,
+            'file4'                 => $file4_path,
         ]);
 
     }

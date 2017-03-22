@@ -290,7 +290,7 @@ $(document).on('change', '#area_street_list', function () {
 
                 $(delivery_table).find('.i-checks').iCheck({
                     checkboxClass: 'icheckbox_square-green',
-                    radioClass: 'iradio_square-green',
+                    radioClass: 'iradio_square-green'
                 });
 
             },
@@ -470,7 +470,7 @@ function show_chosen() {
         '.chosen-select-no-single' : {disable_search_threshold:10},
         '.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
         '.chosen-select-width'     : {width:"95%"}
-    }
+    };
 
     for (var selector in config) {
         $(selector).trigger("chosen:updated");

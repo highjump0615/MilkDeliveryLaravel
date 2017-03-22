@@ -69,5 +69,5 @@ $(document).ready(function() {
  */
 $('button[data-action = "export_csv"]').click(function () {
 
-    data_export('table_syslog', gnUserTypeAdmin, '后台日志');
+    data_export('table_syslog', gnUserTypeAdmin, '后台日志', 0, 0);
 });

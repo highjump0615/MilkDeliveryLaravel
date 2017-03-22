@@ -1,8 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
-    <!-- FooTable -->
-    <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')

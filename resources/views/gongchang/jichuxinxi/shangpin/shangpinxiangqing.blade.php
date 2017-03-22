@@ -2,7 +2,6 @@
 
 @section('css')
 
-    <link href="<?=asset('css/plugins/select2/select2.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">
 
     <style>
@@ -531,7 +530,6 @@
 
     <!-- Chosen -->
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/plugins/select2/select2.full.min.js') ?>"></script>
 
     <!-- UE Editor -->
     <script type="text/javascript" charset="utf-8" src="<?=asset('ueditor/ueditor.config.js')?>"></script>

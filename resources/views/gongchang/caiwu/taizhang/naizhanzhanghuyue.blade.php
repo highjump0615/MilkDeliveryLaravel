@@ -295,7 +295,7 @@
             autoclose: true,
             clearBtn: true,
             startDate: firstm,
-            endDate: lastm,
+            endDate: lastm
         });
 
         $('#calc_history_form').on('submit', function (e) {

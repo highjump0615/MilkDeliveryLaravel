@@ -65,7 +65,6 @@
                                            class="btn btn-success btn-outline" style="width:100%;">查看账户概况</a>
                                     </div>
                                 </div>
-                                <label class="gray-bg col-md-12" style="padding:5px;">公众号活跃度</label>
                             </div>
                             <div class="ibox float-e-margins">
                                 <div class="ibox-content">

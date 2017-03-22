@@ -388,15 +388,14 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
     display: none !important;
 }
 
-.month_calendar table tbody tr td.disabled.day {
-    visibility: hidden;
-}
-
-.month_calendar .datepicker-switch{
-    display: none !important;
-}
-
-.month_calendar .datepicker-days table thead tr:first-child,
 .week_calendar .datepicker-days table thead tr:first-child{
     display:none;
+}
+
+/**
+奶站今日配送单和配送返录页面上的提示
+ */
+.redalert {
+    color: red;
+    font-size: 18px;
 }

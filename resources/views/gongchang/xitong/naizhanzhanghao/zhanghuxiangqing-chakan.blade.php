@@ -1,6 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
     @include('gongchang.theme.sidebar')
@@ -169,5 +168,4 @@
 @endsection
 
 @section('script')
-    <script src="<?=asset('js/plugins/iCheck/icheck.min.js') ?>"></script>
 @endsection

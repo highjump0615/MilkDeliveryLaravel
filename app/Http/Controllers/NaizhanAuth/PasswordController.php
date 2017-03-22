@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\GongchangAuth;
+namespace App\Http\Controllers\NaizhanAuth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ResetsPasswords;

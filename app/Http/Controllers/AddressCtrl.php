@@ -342,44 +342,6 @@ class AddressCtrl extends Controller
         return chr(255) . chr(254) . mb_convert_encoding($str, 'UTF-16LE', 'UTF-8');
     }
 
-    public function export(Request $request)
-    {
-        if ($request->ajax()) {
-            $fuser = Auth::guard('gongchang')->user();
-            $factory_id = $fuser->factory_id;
-
-            $streets = Address::where('level', 4)->where('factory_id', $factory_id)->get();
-
-            $rows = array();
-            foreach ($streets as $street) {
-                $province_name = $street->province->name;
-                $city_name = $street->city->name;
-                $district_name = $street->district->name;
-                $street_name = $street->name;
-                $xiaoqu_name = $street->sub_addresses_str;
-                array_push($rows, array($province_name, $city_name, $district_name, $street_name, $xiaoqu_name));
-            }
-
-            Excel::create('addresslist', function ($excel) use ($rows) {
-
-                $excel->sheet('Sheet1', function ($sheet) use ($rows) {
-
-                    //$sheet->appendRow(array('序号', '省', '市', '区', '街道', '小区'));
-                    foreach ($rows as $row) {
-                        $sheet->appendRow($row);
-                    }
-                });
-
-            })->store('xls', 'exports');
-
-            // 添加系统日志
-            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EXPORT);
-
-            return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/addresslist.xls']);
-        }
-
-    }
-
     /*
      * Get all cities in Province
      * in: Province_Name
@@ -475,28 +437,8 @@ class AddressCtrl extends Controller
     {
         if ($request->ajax()) {
 
-
-            $fid = $sid = null;
-
-            $fuser = Auth::guard('gongchang')->user();
-            if($fuser)
-            {
-                $fid = $fuser->factory_id;
-            }
-            else
-            {
-                $station_id = Auth::guard('naizhan')->user()->station_id;
-                $suser = DeliveryStation::find($station_id);
-
-                if($suser)
-                {
-                    $sid = $suser->id;
-                    $station = DeliveryStation::find($sid);
-                    $fid = $station->factory_id;
-                } else {
-                    return response()->json(['status'=>'fail']);
-                }
-            }
+            $fid = $sid = 0;
+            $this->getFactoryStationId($fid, $sid);
 
             $province = $request->input('province');
             $city = $request->input('city');
@@ -508,15 +450,15 @@ class AddressCtrl extends Controller
                 return response()->json(['status' => 'fail']);
 
             $districts = $city->getSubActiveAddresses();
-
             $district_names = array();
+
+            // 添加区信息
             foreach ($districts as $district) {
                 $district_names[] = $district->name;
             }
 
             return response()->json(['status' => 'success', 'district' => $district_names]);
         }
-
     }
 
    // province, city, district -> [street id, street_name]
@@ -524,27 +466,9 @@ class AddressCtrl extends Controller
     {
         if ($request->ajax()) {
 
-            $fid = $sid = null;
-
-            $fuser = Auth::guard('gongchang')->user();
-            if($fuser)
-            {
-                $fid = $fuser->factory_id;
-            }
-            else
-            {
-                $station_id = Auth::guard('naizhan')->user()->station_id;
-                $suser = DeliveryStation::find($station_id);
-
-                if($suser)
-                {
-                    $sid = $suser->id;
-                    $station = DeliveryStation::find($sid);
-                    $fid = $station->factory_id;
-                } else {
-                    return response()->json(['status'=>'fail']);
-                }
-            }
+            // 获取奶站、奶厂信息
+            $fid = $sid = 0;
+            $this->getFactoryStationId($fid, $sid);
 
             $province = $request->input('province');
             $city = $request->input('city');
@@ -558,10 +482,34 @@ class AddressCtrl extends Controller
                 return response()->json(['status' => 'fail']);
 
             $streets = $district->getSubActiveAddresses();
-
             $street_array = array();
-            foreach ($streets as $street) {
-                $street_array[] = [$street->id, $street->name];
+
+            // 获取奶站信息
+            if ($sid > 0) {
+                $aryStreet = DeliveryStation::find($sid)->getDeliveryStreetVillage();
+            }
+
+            // 奶站需要排序
+            if (isset($aryStreet)) {
+                // 首先，添加奶站配送范围的街道
+                foreach ($streets as $street) {
+                    if (in_array($street->name, array_keys($aryStreet))) {
+                        array_push($street_array, [$street->id, $street->name]);
+                    }
+                }
+
+                // 然后，添加剩下的街道
+                foreach ($streets as $street) {
+                    if (!in_array($street->name, array_keys($aryStreet))) {
+                        array_push($street_array, [$street->id, $street->name]);
+                    }
+                }
+            }
+            // 奶厂直接添加所有的信息
+            else {
+                foreach ($streets as $street) {
+                    array_push($street_array, [$street->id, $street->name]);
+                }
             }
 
             return response()->json(['status' => 'success', 'streets' => $street_array]);
@@ -578,23 +526,53 @@ class AddressCtrl extends Controller
             $street = Address::find($street_id);
             $street_name = $street->name;
 
-            if ($street) {
-                $xiaoqus = $street->getSubActiveAddresses();
-
-                if ($xiaoqus->count() == 0)
-                    return response()->json(['status' => 'fail']);
-
-                $xiaoqus_data = [];
-                foreach ($xiaoqus as $xiaoqu) {
-                    $xiaoqus_data[] = [$xiaoqu->id, $xiaoqu->name];
-                }
-
-                return response()->json(['status' => 'success', 'xiaoqus' => $xiaoqus_data, 'current_street' => $street_name]);
-
-                //return response()->json(['status'=>'success', 'streets'=> $streets]);
-            } else {
+            if (!$street) {
                 return response()->json(['status' => 'fail']);
             }
+
+            $xiaoqus = $street->getSubActiveAddresses();
+
+            if ($xiaoqus->count() == 0)
+                return response()->json(['status' => 'fail']);
+
+            $xiaoqus_data = [];
+
+            // 获取奶站、奶厂信息
+            $fid = $sid = 0;
+            $this->getFactoryStationId($fid, $sid);
+
+            // 获取奶站信息
+            if ($sid > 0) {
+                $aryStreet = DeliveryStation::find($sid)->getDeliveryStreetVillage();
+                if (array_key_exists($street_name, $aryStreet)) {
+                    $aryVillage = $aryStreet[$street_name];
+                }
+            }
+
+            // 奶站需要排序
+            if (isset($aryVillage)) {
+                // 首先，添加奶站配送范围的街道
+                foreach ($xiaoqus as $xiaoqu) {
+                    if (in_array($xiaoqu->name, $aryVillage)) {
+                        array_push($xiaoqus_data, [$xiaoqu->id, $xiaoqu->name]);
+                    }
+                }
+
+                // 然后，添加剩下的街道
+                foreach ($xiaoqus as $xiaoqu) {
+                    if (!in_array($xiaoqu->name, $aryVillage)) {
+                        array_push($xiaoqus_data, [$xiaoqu->id, $xiaoqu->name]);
+                    }
+                }
+            }
+            // 奶厂直接添加所有的信息
+            else {
+                foreach ($xiaoqus as $xiaoqu) {
+                    array_push($xiaoqus_data, [$xiaoqu->id, $xiaoqu->name]);
+                }
+            }
+
+            return response()->json(['status' => 'success', 'xiaoqus' => $xiaoqus_data, 'current_street' => $street_name]);
         }
     }
 

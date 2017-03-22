@@ -19,7 +19,7 @@
 			<div class="wrapper-content">
 
 				@if(isset($alert_msg) != 0)
-					<label style="color: red; font-size: 18px;">{{$alert_msg}}</label>
+					<label class="redalert">{{$alert_msg}}</label>
 				@endif
 			
 				<div class="ibox-content">
@@ -29,13 +29,13 @@
 							<div class="col-lg-8">
 								<select data-placeholder="" id="milkman_name" class="form-control chosen-select" style="width:100%;" tabindex="2">
 									@foreach($milkman_info as $mi)
-										<option value="{{$mi['milkman_name']}}">{{$mi['milkman_name']}}</option>
+										<option value="{{$mi['milkman_id']}}">{{$mi['milkman_name']}}</option>
 									@endforeach
 								</select>
 							</div>	
 						</div>
 						<div class="col-md-4 col-md-offset-2">
-							<button type="button" class="btn btn-success btn-m-d">筛选</button>
+							{{--<button type="button" class="btn btn-success btn-m-d">筛选</button>--}}
 							{{--&nbsp;--}}
 							{{--<a href="">导出</a>--}}
 							&nbsp;
@@ -48,7 +48,7 @@
 
 				<div id="deliver_info">
 				@foreach($milkman_info as $mi)
-				<div id="{{$mi['milkman_name']}}" class="milkman_plans">
+				<div id="milkman{{$mi['milkman_id']}}" class="milkman_plans">
 				<div class="feed-element">
 					<div class="col-lg-4">
 						<label class="col-lg-4">配送员:</label>
@@ -106,7 +106,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table class="table footable table-bordered">
+                        <table class="table table-bordered">
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
@@ -165,60 +165,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript">
-		$(document).ready(function(){
-			/**
-			 * 计算配送统计的合计
-			 */
-			$('.delivery_amount tr:not(:first)').each(function(){
-				var plan_sale=0;
-				var test_drink=0;
-				var group_sale=0;
-				var channel_sale=0;
-				var store_sale=0;
-
-				if(!isNaN(parseInt($(this).find('td:eq(1)').text()))){
-					plan_sale = parseInt($(this).find('td:eq(1)').text());
-				}
-				if(!isNaN(parseInt($(this).find('td:eq(2)').text()))){
-					test_drink = parseInt($(this).find('td:eq(2)').text());
-				}
-				if(!isNaN(parseInt($(this).find('td:eq(3)').text()))){
-					group_sale = parseInt($(this).find('td:eq(3)').text());
-				}
-				if(!isNaN(parseInt($(this).find('td:eq(4)').text()))){
-					channel_sale = parseInt($(this).find('td:eq(4)').text());
-				}
-				if(!isNaN(parseInt($(this).find('td:eq(5)').text()))){
-					store_sale = parseInt($(this).find('td:eq(5)').text());
-				}
-				$(this).find('td:eq(6)').html(plan_sale + test_drink + group_sale + channel_sale + store_sale);
-			})
-		});
-
-		$(document).on('change','#milkman_name',function () {
-			$('.milkman_plans').hide();
-			var currentMilkman = $('#milkman_name option:selected').text();
-			$('#'+currentMilkman+'').show();
-		})
-
-		$('button[data-action = "print"]').click(function () {
-
-			var sendData = [];
-
-			var printContents;
-
-			printContents = document.getElementById("deliver_info").outerHTML;
-			var originalContents = document.body.innerHTML;
-			document.body.innerHTML = printContents;
-
-			window.print();
-			document.body.innerHTML = originalContents;
-			location.reload();
-		});
-
-		$('#return').click(function () {
-			window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
-		})
-	</script>
+	<script src="<?=asset('js/pages/naizhan/jinripeisongdan.js') ?>"></script>
 @endsection
