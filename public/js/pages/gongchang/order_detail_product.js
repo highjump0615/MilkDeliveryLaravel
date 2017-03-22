@@ -1,7 +1,4 @@
 
-var firstm = new Date(gDateToday.getFullYear(), gDateToday.getMonth(), 1);
-var lastm = new Date(gDateToday.getFullYear(), gDateToday.getMonth() + 1, 0);
-
 $(document).ready(function (){
 
     // 初始化配送规则日历
@@ -58,8 +55,6 @@ function initBottleNumCalendar(tr) {
                 showNum: true,
                 bottleNum: nBottleNum,
                 initValue: initNum,
-                startDate: firstm,
-                endDate: lastm,
                 class:'month_calendar only_show',
             });
 

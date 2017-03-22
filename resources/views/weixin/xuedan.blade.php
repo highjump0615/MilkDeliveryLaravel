@@ -1,10 +1,9 @@
 @extends('weixin.layout.master')
 @section('title','续单')
 @section('css')
-
     <link href="<?=asset('css/fullcalendar.min.css')?> " rel='stylesheet'/>
-    <link rel="stylesheet" href="<?=asset('css/swiper.min.css')?>">
 @endsection
+
 @section('content')
     <header>
         @if(isset($type))

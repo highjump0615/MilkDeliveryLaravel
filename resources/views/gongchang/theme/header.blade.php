@@ -41,10 +41,6 @@
 </div>
 
 <!-- 保存当前时间 -->
-<?php
-	$s_timeCurrent = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s');
-?>
-
 <script language="JavaScript">
-	var s_timeCurrent = "{{$s_timeCurrent}}";
+	var s_timeCurrent = "{{getCurDateString()}}";
 </script>

@@ -203,7 +203,7 @@ class FinanceCtrl extends Controller
         //Really orders received wechat
         $wechat_orders_really_got = $station->wechat_orders_really_got;
         $wechat_orders_really_got_count = count($wechat_orders_really_got);
-        $wechat_orders_really_got_sum = $this->getSumOfOrders($wechat_orders_really_got);
+        $wechat_orders_really_got_sum = $this->calcOrderTransferAmount($wechat_orders_really_got);
 
 
         //CARD ORDERS
@@ -1623,8 +1623,6 @@ class FinanceCtrl extends Controller
     //N10: Card Transaction First Page
     public function show_orders_for_card_transaction_in_naizhan()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
         $station_id = Auth::guard('naizhan')->user()->station_id;
         $station = DeliveryStation::find($station_id);
 

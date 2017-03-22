@@ -54,11 +54,6 @@ $(document).ready(function () {
     firstday = startofweek();
     lastday = endofweek();
 
-    // 解析当前服务器的时间 (2014-08-12 09:25:24)
-    var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
-    time = time.split(':');
-    dateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
-
     firstm = new Date(dateToday.getFullYear(), dateToday.getMonth(), 1);
     lastm = new Date(dateToday.getFullYear(), dateToday.getMonth() + 1, 0);
 
@@ -68,7 +63,7 @@ $(document).ready(function () {
     // 初始化配送规则有关的日历
     $('#product_table').find('tbody > tr').each(function() {
         initBottleNumCalendar($(this));
-    })
+    });
 
     //Create Switchery
     if (Array.prototype.forEach) {
@@ -95,7 +90,7 @@ $(document).ready(function () {
         set_avg_count(this);
     });
 
-    verifyPhone();
+    // verifyPhone();
 });
 
 //Show Camera function
@@ -378,62 +373,7 @@ $(document).on('click', 'button.remove_one_product', function () {
     }
     else {
         show_warning_msg('至少要有一种奶品');
-        return;
     }
-});
-
-// Card Verfiy
-$('.verify-card').click(function () {
-    var card_id = $('#card_id').val();
-    var card_code = $('#card_code').val();
-
-    $.ajax({
-        type: "POST",
-        url: API_URL + "gongchang/dingdan/dingdanluru/verify_card",
-        data: {
-            'card_id': card_id,
-            'card_code': card_code,
-        },
-        success: function (data) {
-            console.log(data);
-            if (data.status == 'success') {
-                var balance = data.balance;
-                var product = data.product;
-                console.log("balance:" + balance);
-
-                $('#card_info').modal('hide');
-
-                $('#card_msg').hide();
-                $('#card_msg').text('');
-
-                $('#form-card-id').text(card_id);
-                $('#form-card-balance').text(balance);
-                $('#form-card-product').text(product);
-                $('#form-card-panel').show();
-                $('#card_check_success').val(1);
-
-
-            } else {
-                console.log(data.msg);
-                $('#card_msg').text(data.msg);
-                $('#card_msg').show();
-                $('#form-card-panel').hide();
-                $('#card_check_success').val(0);
-                
-            }
-        },
-        error: function (data) {
-            console.log(data);
-            $('#form-card-panel').hide();
-        }
-    });
-});
-
-$('.cancel-card').click(function () {
-    $('#milk_card_check').trigger('click');
-    $('#form-card-panel').hide();
-    $('#card_info').modal('hide');
-    $('#card_check_success').val(1);
 });
 
 function init_product_lines() {
@@ -484,7 +424,7 @@ function initStartDateCalendar() {
         // 修改要改成以保存的, 过了保存的时期，只能选择今天
         if ($(input).val().length > 0 && dateVal > dateStart) {
             $(this).datepicker('setDate', dateVal);
-            $(this).datepicker('setStartDate', dateVal);
+            // $(this).datepicker('setStartDate', dateVal);
         }
         else {
             // 默认选择第一天
@@ -498,8 +438,7 @@ function initStartDateCalendar() {
  * @returns {Date}
  */
 function getStartDate() {
-    var able_date = new Date();
-    $.extend(able_date, dateToday);
+    var able_date = new Date(dateToday);
 
     // 只有新订单才考虑3天后的问题
     if (!gbIsEdit && gnOrderId == 0) {
@@ -563,11 +502,24 @@ function initBottleNumCalendar(tr) {
                 initValue: initNum,
                 startDate: '2016-11-13',
                 endDate: '2016-11-19',
-                class:'week_calendar',
+                class:'week_calendar'
             });
         }
         else {
-            console.log(id);
+            //
+            // 决定开启日期
+            //
+            var input = tr.find('.start_at');
+            var dateVal = new Date($(input).val());
+
+            // 默认选择第一天
+            var dateStart = getStartDate();
+
+            // 修改要改成以保存的, 过了保存的时期，只能选择今天
+            if ($(input).val().length > 0 && dateVal > dateStart) {
+                dateStart = dateVal;
+            }
+
             //show monthday
             $(pick).datepicker({
                 multidate: true,
@@ -579,9 +531,8 @@ function initBottleNumCalendar(tr) {
                 showNum: true,
                 bottleNum: nBottleNum,
                 initValue: initNum,
-                startDate: firstm,
-                endDate: lastm,
-                class:'month_calendar',
+                startDate: dateStart,
+                class:'month_calendar'
             });
         }
 

@@ -280,15 +280,8 @@ $(document).ready(function(){
 //				$(this).find('td:eq(5)').html(test_drink+group_sale+channel_sale);
 //			})
 
-    $('.i-checks').iCheck({
-        checkboxClass: 'icheckbox_square-green',
-        radioClass: 'iradio_square-green',
-    });
-
     if ($('.street_list').val() != "none")
         $('.street_list').trigger('change');
-
-//			$('.table').treeTable();
 
     showAddNotice(true);
 });

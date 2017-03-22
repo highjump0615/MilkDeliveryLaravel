@@ -74,8 +74,6 @@ Route::get('/gongchang', function () {
     return view('gongchang.auth.login');
 });
 
-Route::get('/update-order-status', 'OrderCtrl@update_order_status');
-
 Route::group(['middleware' => ['gongchang']], function () {
 
     //get all product names
@@ -128,7 +126,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/jichuxinxi/dizhiku/update', 'AddressCtrl@update');
     Route::post('api/gongchang/jichuxinxi/dizhiku/delete_address', 'AddressCtrl@delete_address');
     Route::post('api/gongchang/jichuxinxi/dizhiku/setflag', 'AddressCtrl@setflag');
-    Route::get('api/gongchang/jichuxinxi/dizhiku/export', 'AddressCtrl@export');
 
     //GongChang/Jichuxinxi/Shangpin
     Route::get('/gongchang/jichuxinxi/shangpin', 'ProductCtrl@show_product_list')->name('show_product_list');
@@ -223,10 +220,15 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/shengchan/naizhanpeisong', 'DSProductionPlanCtrl@showNaizhanpeisongPage');
     /*update actual_count for real produce - naizhan*/
     Route::put('api/gongchang/shengchan/naizhanpeisong', 'DSProductionPlanCtrl@updateNaizhanPlanTable');
+
     /*Show Naizhanshouhuoqueren page*/
     Route::get('/gongchang/shengchan/naizhanpeisong/naizhanshouhuoqueren', 'DSProductionPlanCtrl@showNaizhanshouhuoquerenPage');
     /*show dayinchukuchan Page*/
     Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan', 'DSProductionPlanCtrl@showDayinchukuchan');
+    Route::get('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/{stationId}', 'DSProductionPlanCtrl@showDayinchukuchanWithStation');
+    /* 保存出库单内容 */
+    Route::post('api/gongchang/shengchan/naizhanpeisong/dayinchukuchan/save', 'DSProductionPlanCtrl@saveOutStock');
+
     /*Show milkstation Plan table*/
     Route::get('/gongchang/shengchan/naizhanjihuashenhe', 'DSProductionPlanCtrl@showPlanTableinFactory');
     /*Determine product counts*/
@@ -237,6 +239,8 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/determine_station_plan', 'DSProductionPlanCtrl@determineStationPlan');
     /*Production Plan cancel*/
     Route::post('api/gongchang/shengchan/naizhanjihuashenhe/cancel_station_plan', 'DSProductionPlanCtrl@cancelStationPlan');
+    /* 保存实际生产量 */
+    Route::post('api/gongchang/shengchan/naizhanpeisong/save', 'DSProductionPlanCtrl@saveProducedCount');
     /*Gongchang Finance*/
 
     //Finance First page: stations account info page
@@ -888,6 +892,11 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
 });
 
+Route::get('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
+Route::post('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
+Route::get('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
+Route::post('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
+
 
 Route::group(['prefix'=>'/weixin'], function(){
     /* home page */
@@ -908,10 +917,6 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* shopping cart */
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
-	Route::get('/weixinservice', 'Weixin\WeChatsCtrl@index');
-	Route::post('/weixinservice', 'Weixin\WeChatsCtrl@index');
-	Route::get('/createMenus', 'Weixin\WeChatsCtrl@createMenus');
-	Route::post('/createMenus', 'Weixin\WeChatsCtrl@createMenus');
     Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
     Route::post('/gouwuche/api/make_wop_group', 'WeChatCtrl@make_wop_group');
     Route::post('/gouwuche/api/delete_selected_wop', 'WeChatCtrl@delete_selected_wop');

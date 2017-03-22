@@ -116,7 +116,8 @@ class OrderCtrl extends Controller
 
                     $deliver_at = $this->get_deliver_at_day($deliver_at, $interval);
                     $daynums = $this->days_in_month($deliver_at);
-                } else {
+                }
+                else {
                     //get avaiable key value > current_key
                     $old_key = $key;
 
@@ -1902,7 +1903,7 @@ class OrderCtrl extends Controller
      * @param $start_date
      * @param $end_date
      * @param $order_id
-     * @param $includeEnd 是否包括结束那天
+     * @param $forRestart 是否包括结束那天
      * @return \Illuminate\Http\JsonResponse
      */
     private function pauseOrder($start_date, $end_date, $order, $forRestart) {
@@ -1931,7 +1932,7 @@ class OrderCtrl extends Controller
                 $qb = MilkManDeliveryPlan::onlyTrashed()
                     ->where('order_product_id', $op->id)
                     ->where('deliver_at', '>=', $dateStopStart)
-                    ->where('deliver_at', '<=', $order->restart_at);
+                    ->where('deliver_at', '<=', $order->order_stop_end_date);
 
                 // 计算多余量
                 $nCountPlus = $qb->sum('changed_plan_count');
@@ -1939,18 +1940,27 @@ class OrderCtrl extends Controller
                 // 恢复这期间的配送明细
                 $qb->restore();
             }
+        }
 
+        // 暂停时间设置
+        $strRestartDate = $end_date;
+        if (!$forRestart) {
+            $last = new DateTime($end_date);
+            $last_date = $last->modify('+1 day');
+            $strRestartDate = $last_date->format('Y-m-d');
+        }
+
+        $order->stop_at = $start_date;
+        $order->restart_at = $strRestartDate;
+        $order->save();
+
+        foreach ($order_products as $op) {
             //
             // 重新规划配送明细
             //
-            if ($forRestart) {
-                $end_date = $end->modify('-1 day');
-                $end_date = $end_date->format('Y-m-d');
-            }
-
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
                 ->where('deliver_at', '>=', $start_date)
-                ->where('deliver_at', '<=', $end_date);
+                ->where('deliver_at', '<', $strRestartDate);
 
             // 计算多余量
             $nCountExtra = $qb->sum('changed_plan_count');
@@ -1961,15 +1971,6 @@ class OrderCtrl extends Controller
             // 调整配送明细
             $op->processExtraCount(null, $nCountExtra - $nCountPlus);
         }
-
-        // 暂停时间设置
-        $last = new DateTime($end_date);
-        $last_date = $last->modify('+1 day');
-        $restart_date = $last_date->format('Y-m-d');
-
-        $order->stop_at = $start_date;
-        $order->restart_at = $restart_date;
-        $order->save();
 
         return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
     }
@@ -2615,10 +2616,6 @@ class OrderCtrl extends Controller
             $order = Order::find($order_id);
         }
 
-        //init
-        $milk_card_id = null;
-        $milk_card_code = null;
-
         //insert customer info
         $customer_id = $request->input('customer_id');
 
@@ -2650,8 +2647,6 @@ class OrderCtrl extends Controller
         $receipt_path = $request->input('receipt_path');
 
         //Order amount for remaingng, acceptable
-        $remaining_amount = $request->input('remaining');
-        $acceptable_amount = $request->input('acceptable_amount');
         $total_amount = $request->input('total_amount');
 
         $delivery_time = $request->input('delivery_noon');
@@ -2669,34 +2664,7 @@ class OrderCtrl extends Controller
         $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
 
         if ($order_by_milk_card == 1) {
-
             $payment_type = PaymentType::PAYMENT_TYPE_CARD;
-
-            // 奶卡只在录入订单时处理
-            if (!$order) {
-                $milk_card_id = $request->input('card_id');
-                $milk_card_code = $request->input('card_code');
-
-                $milk_card = MilkCard::where('number', $milk_card_id)
-                    ->where('password', $milk_card_code)
-                    ->where('sale_status', MilkCard::MILKCARD_SALES_ON)
-                    ->where('pay_status', MilkCard::MILKCARD_PAY_STATUS_INACTIVE)
-                    ->get()
-                    ->first();
-
-                if (!$milk_card) {
-                    return response()->json(['status' => 'fail', 'message' => '奶卡卡号和验证码不正确.']);
-                }
-
-                //balance check
-                if ($milk_card->balance < $total_amount) {
-                    return response()->json(['status' => 'fail', 'message' => '订单金额已超过奶卡金额，不足于支付']);
-                }
-                else {
-                    $milk_card->pay_status = MilkCard::MILKCARD_PAY_STATUS_ACTIVE;
-                    $milk_card->save();
-                }
-            }
         }
 
         //check for 10% of delivery credit balance
@@ -2745,11 +2713,6 @@ class OrderCtrl extends Controller
             $order->ordered_at = $ordered_at;
 
             $order->order_by_milk_card = $order_by_milk_card;
-            if ($order_by_milk_card) {
-                $order->milk_card_id = $milk_card_id;
-                $order->milk_card_code = $milk_card_code;
-            }
-
             $order->payment_type = $payment_type;
 
             $order->total_amount = $total_amount;
@@ -2809,6 +2772,17 @@ class OrderCtrl extends Controller
             $order->number = $this->order_number($factory_id, $station_id, $customer_id, $order->id);
             //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
             $order->save();
+
+            // 奶卡只在录入订单时处理
+            if ($payment_type == PaymentType::PAYMENT_TYPE_CARD) {
+                $aryMilkCardId = explode(',', $request->input('card_id'));
+
+                MilkCard::whereIn('id', $aryMilkCardId)
+                    ->update([
+                        'order_id' => $order->id,
+                        'pay_status' => MilkCard::MILKCARD_PAY_STATUS_ACTIVE,
+                    ]);
+            }
         }
 
         //save order products
@@ -2861,55 +2835,21 @@ class OrderCtrl extends Controller
                 $op->total_count);
         }
 
-//        //set flag on first order delivery plan
-//        $plans = $order->first_delivery_plans;
-//        if($plans)
-//        {
-//            foreach($plans as $plan)
-//            {
-//                $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-//                $plan->save();
-//            }
-//        }
-
         // save customer
         $customer = Customer::find($customer_id);
         $customer->station_id = $delivery_station_id;
         $customer->milkman_id = $milkman_id;
-
-//            if ($acceptable_amount < 0) {
-//                $customer->remain_amount = -$acceptable_amount;
-//            }
-//            else {
-//                $customer->remain_amount = 0;
-//            }
         $customer->save();
 
+        //
         //Caiwu Related
+        //
 
         //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
         if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
 
             $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
             $station->save();
-
-//                //add calc history if this is the money order
-//                $dsdelivery_history = new DSDeliveryCreditBalanceHistory;
-//                $dsdelivery_history->station_id = $station_id;
-//                if ($station_id == $delivery_station_id)
-//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY;
-//                else
-//                    $dsdelivery_history->type = DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION;
-//
-//                $dsdelivery_history->io_type = DSDeliveryCreditBalanceHistory::DSDCBH_IO_TYPE_IN;
-//
-//                if ($acceptable_amount > 0)
-//                    $dsdelivery_history->amount = $acceptable_amount;
-//                else
-//                    $dsdelivery_history->amount = $total_amount;
-//
-//                $dsdelivery_history->time = $today;
-//                $dsdelivery_history->save();
         }
 
         // 添加系统日志
@@ -3177,7 +3117,8 @@ class OrderCtrl extends Controller
                 'status'        => 'fail',
                 'message'       => '奶站没有配送员.',
                 'station_name'  => $station->name,
-                'station_id'    => $station->id
+                'station_id'    => $station->id,
+                'date_start'    => $station->getChangeStartDate()
             ]);
         }
 
@@ -3207,7 +3148,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
             }
             else {
@@ -3242,7 +3184,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $delivery_station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
 
             }
@@ -3269,7 +3212,8 @@ class OrderCtrl extends Controller
                     'station_name'  => $station_name,
                     'station_id'    => $delivery_station_id,
                     'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount
+                    'remain_amount' => $remain_amount,
+                    'date_start'    => $station->getChangeStartDate()
                 ]);
             }
         }
@@ -3320,7 +3264,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'weitongguodingdan';
@@ -3357,7 +3301,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
 			->get();
 
         $child = 'weitongguo';
@@ -3388,11 +3332,10 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $orders = Order::queryStopped()
+            ->where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>=', getCurDateString())
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zantingdingdan';
@@ -3423,11 +3366,10 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $orders = Order::queryStopped()
+            ->where('is_deleted', "0")
             ->where('delivery_station_id', $this->getCurrentStationId())
-            ->where('stop_at', '<=', getCurDateString())
-            ->where('restart_at', '>=', getCurDateString())
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zantingliebiao';
@@ -3461,7 +3403,8 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         $child = 'zaipeisongdingdan';
         $parent = 'dingdan';
@@ -3494,7 +3437,7 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('delivery_station_id', $station_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'zaipeisong';
@@ -3651,7 +3594,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_FINISHED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         //find total amount according to payment type
@@ -3692,7 +3635,7 @@ class OrderCtrl extends Controller
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
             ->where('delivery_station_id', $station_id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $order_properties = OrderProperty::get()->all();
@@ -3719,7 +3662,6 @@ class OrderCtrl extends Controller
     public
     function show_passed_dingdan_in_gongchang()
     {
-
         $fuser = Auth::guard('gongchang')->user();
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
@@ -3727,7 +3669,8 @@ class OrderCtrl extends Controller
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
             ->where('status', Order::ORDER_PASSED_STATUS)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -3800,9 +3743,8 @@ class OrderCtrl extends Controller
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
             })
             ->where('factory_id', $factory_id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();//add time condition
-
 
         $child = 'daishenhedingdan';
         $parent = 'dingdan';
@@ -3898,7 +3840,7 @@ class OrderCtrl extends Controller
 
             // 新订单通过把卡余额加到客户账户余额
             if ($order->status == Order::ORDER_NEW_WAITING_STATUS && $order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
-                $remain_from_card = $order->milkcard->balance - $order->total_amount;
+                $remain_from_card = $order->getMilkcardValue() - $order->total_amount;
 
                 $customer = $order->customer;
                 $customer->remain_amount += $remain_from_card;
@@ -3987,7 +3929,7 @@ class OrderCtrl extends Controller
                 $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $child = 'daishenhe';
@@ -4017,7 +3959,8 @@ class OrderCtrl extends Controller
 
         $orders = Order::where('is_deleted', "0")
             ->where('factory_id', $factory_id)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -4079,7 +4022,7 @@ class OrderCtrl extends Controller
                 $query->where('station_id', $station_id);
                 $query->orWhere('delivery_station_id', $station_id);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         //find total amount according to payment type
@@ -4130,7 +4073,11 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->orderBy('id', 'desc')->where('factory_id', $factory_id)->get();//add time condition
+        $orders = Order::where('is_deleted', "0")
+            ->orderBy('updated_at', 'desc')
+            ->where('factory_id', $factory_id)
+            ->get();//add time condition
+
         $order_properties = OrderProperty::get()->all();
         $payment_types = PaymentType::get()->all();
 
@@ -4195,7 +4142,10 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->orderBy('id', 'desc')->where('factory_id', $factory_id)->get();//add time condition
+        $orders = Order::where('is_deleted', "0")
+            ->orderBy('updated_at', 'desc')
+            ->where('factory_id', $factory_id)
+            ->get();//add time condition
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -4774,32 +4724,6 @@ class OrderCtrl extends Controller
 
             return response()->json(['status' => 'success', 'order_product_price' => $one_order_product_total_price]);
         }
-    }
-
-    public function update_order_status()
-    {
-        $now = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $now->format('Y-m-d');
-
-        Order::where('status', Order::ORDER_STOPPED_STATUS)
-            ->where('restart_at', $today)
-            ->update([
-                'status' => Order::ORDER_ON_DELIVERY_STATUS,
-                'stop_at' => '',
-                'restart_at' => '',
-                'status_changed_at' => (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s'),
-            ]);
-
-        Order::where('stop_at', $today)
-            ->where(function ($query) {
-                $query->where('status', Order::ORDER_PASSED_STATUS);
-                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-            })->update([
-                'status' => Order::ORDER_STOPPED_STATUS,
-                'status_changed_at' => (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s'),
-            ]);
-
-        return $today;
     }
 
     //MODULE

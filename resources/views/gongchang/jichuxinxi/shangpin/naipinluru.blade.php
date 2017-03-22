@@ -4,7 +4,6 @@
 
     <!-- Multi Select Combo -->
     <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/select2/select2.min.css') ?>" rel="stylesheet">
 
     <style>
 
@@ -408,9 +407,6 @@
 @endsection
 
 @section('script')
-
-    <!-- Switch control -->
-    <script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
 
     <!-- Chosen -->
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>

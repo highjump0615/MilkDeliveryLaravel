@@ -60,7 +60,7 @@
                     </div>
 -->
                     <label class="col-md-offset-3 col-md-1 control-label text-right" style="padding-top:5px;">日期:</label>
-                    <div class="col-md-3">
+                    <div class="col-md-3 data_range_select">
                         <div class="input-daterange input-group">
                             <input id="filter_start_date" type="text" class="input-md form-control" name="start"/>
                             <span class="input-group-addon">至</span>
@@ -111,7 +111,7 @@
                                 <th data-sort-ignore="true">时间</th>
                                 <th data-sort-ignore="true">客户名</th>
                                 <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">交易号</th>
+                                <th data-sort-ignore="true">订单号</th>
                                 <th data-sort-ignore="true">收款方</th>
                                 <th data-sort-ignore="true">状态</th>
                             </tr>
@@ -152,7 +152,7 @@
                                 <th data-sort-ignore="true">时间</th>
                                 <th data-sort-ignore="true">客户名</th>
                                 <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">交易号</th>
+                                <th data-sort-ignore="true">订单号</th>
                                 <th data-sort-ignore="true">收款方</th>
                                 <th data-sort-ignore="true">状态</th>
                             </tr>

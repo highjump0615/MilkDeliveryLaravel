@@ -268,7 +268,7 @@
                     console.log(data);
                     $(order_bt).prop('disabled', false);
                     show_warning_msg("操作失败");
-                },
+                }
             })
         });
 

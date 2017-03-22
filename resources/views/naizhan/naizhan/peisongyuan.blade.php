@@ -2,7 +2,6 @@
 
 @section('css')
     <link href="<?=asset('css/plugins/chosen/chosen.css')?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/iCheck/custom.css')?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -50,10 +49,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2" style="padding-top:5px;">
-                            <button type="button" class="btn btn-success btn-m-d" data-action="show_selected">筛选
-                            </button>
-                            &nbsp;
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-success btn-m-d" data-action="show_selected">筛选</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="print">打印</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="export_csv">导出</button>
                         </div>
@@ -141,8 +138,7 @@
                         <p style="color: #ff0000">无法删除配送员!</p>
                     </div>
                     <div class="ibox-content">
-                        <table id="peisongyuan" class="table footable table-bordered" data-page-size="10"
-                               data-limit-navigation="5">
+                        <table id="peisongyuan" class="table footable table-bordered tbl_data" data-page-size="10" data-limit-navigation="5">
                             <thead>
                             <tr>
                                 <th data-sort-ignore="true">顺序</th>
@@ -159,18 +155,14 @@
                             <?php $i = 0; ?>
                             @foreach($milkmans as $mm)
                                 <?php $i++; ?>
-                                <tr id="peisongyuan{{$mm->id}}">
+                                <tr class="row-hover-light-blue" data-target="{{$mm->id}}" id="peisongyuan{{$mm->id}}">
                                     <td>{{$i}}</td>
                                     <td class="name">{{$mm->name}}</td>
                                     {{--<td>Y036521</td>--}}
                                     <td>{{$mm->phone}}</td>
                                     <td class="number">{{$mm->number}}</td>
-                                    <td class="area"><a
-                                                href="{{ url('/naizhan/naizhan/fanwei-chakan/'.$mm->id) }}">{{$mm->street}}</a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ url('/naizhan/naizhan/fanwei-chakan/'.$mm->id) }}">{{$mm->xiaoqi}}</a>
-                                    </td>
+                                    <td class="area">{{$mm->street}}</td>
+                                    <td>{{$mm->xiaoqi}}</td>
                                     <td>
                                         <button class="btn btn-sm btn-success modify" data-toggle="modal" href="#modal-form" value="{{$mm->id}}">修改</button>
                                         &nbsp;
@@ -188,7 +180,7 @@
                             </tfoot>
                         </table>
 
-                        <table id="filtered_table" class="table footable table-bordered" style="display: none"
+                        <table id="filtered_table" class="table footable table-bordered tbl_data" style="display: none"
                                data-page-size="10" data-limit-navigation="5">
                             <thead>
                             <tr>
@@ -260,8 +252,6 @@
 @section('script')
 
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/plugins/iCheck/icheck.min.js')?>"></script>
-    <script src="<?=asset('js/global.js')?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
 
 @endsection

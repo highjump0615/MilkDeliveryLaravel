@@ -24,11 +24,6 @@ function clearhistory() {
 
 $(document).ready(function(){
 
-    $('.i-checks').iCheck({
-        checkboxClass: 'icheckbox_square-green',
-        radioClass: 'iradio_square-green',
-    });
-
     $('.kv-fa').rating({
         theme: 'krajee-fa',
         filledStar: '<i class="fa fa-star"></i>',

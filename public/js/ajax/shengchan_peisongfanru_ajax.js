@@ -1,16 +1,29 @@
 var current_row_number;
 
-
-$(document).on('change','#milkman_name',function(){
+/**
+ * 日期、配送员筛选
+ */
+function filterMilkmanDate() {
     var milkman_id = $('#milkman_name option:selected').val();
     var current_date = $('#search_date').val();
-    window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
+
+    // 日期筛选
+    var strUrl = SITE_URL+"naizhan/shengchan/peisongfanru?current_date="+current_date + "";
+
+    // 配送员筛选
+    if (parseInt(milkman_id) > 0) {
+        strUrl += "&milkman_id=" + milkman_id + "";
+    }
+
+    window.location.href = strUrl;
+}
+
+$(document).on('change','#milkman_name',function(){
+    filterMilkmanDate();
 });
 
 $(document).on('change','#date_select',function(){
-    var milkman_id = $('#milkman_name option:selected').val();
-    var current_date = $('#search_date').val();
-    window.location.href = SITE_URL+"naizhan/shengchan/peisongfanru?milkman_id="+milkman_id+"&current_date="+current_date+"";
+    filterMilkmanDate();
 });
 
 $(document).on('click','#save',function(){

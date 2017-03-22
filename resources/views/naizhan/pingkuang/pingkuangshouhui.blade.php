@@ -7,7 +7,7 @@
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
 				<li class="active">
-					<a href="{{ url('naizhan/pingkuang')}}">瓶框管理</a>
+					<a href="">瓶框管理</a>
 				</li>
 				<li class="active">
 					<strong>瓶框收回记录</strong>
@@ -143,6 +143,5 @@
 	</div>
 @endsection
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/pingkuangshouhui.js') ?>"></script>
 @endsection

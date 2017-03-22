@@ -7,7 +7,7 @@
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
 				<li class="active">
-					<a href="{{ url('naizhan/kehu')}}">客户管理</a>
+					<a href="">客户管理</a>
 				</li>
 				<li class="active">
 					<strong>客户档案</strong>
@@ -192,6 +192,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
 	<script type="text/javascript" src="<?=asset('js/pages/naizhan/kehu_admin.js')?>"></script>
 @endsection

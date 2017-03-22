@@ -11,6 +11,8 @@ $('#insert_order_receipt_form').on('submit', function (e) {
     e.preventDefault();
 
     var submit = $(this).find('button[type="submit"]');
+
+    // 禁止确定按钮，一遍防止两次点击
     $(submit).attr('disabled', 'disabled');
 
     var sendData = $('#insert_order_receipt_form').serializeArray();
@@ -35,11 +37,17 @@ $('#insert_order_receipt_form').on('submit', function (e) {
                     show_err_msg(data.message);
                 $('#insert_order').modal("hide");
             }
+
+            // 恢复确定按钮
+            $(submit).removeAttr('disabled');
         },
         error: function (data) {
             console.log(data);
             show_err_msg("在插入订单信息，发生错误");
             $('#insert_order').modal("hide");
+
+            // 恢复确定按钮
+            $(submit).removeAttr('disabled');
         }
     })
 });

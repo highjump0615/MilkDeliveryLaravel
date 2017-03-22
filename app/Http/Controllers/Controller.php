@@ -41,6 +41,27 @@ class Controller extends BaseController
     }
 
     /**
+     * 获取奶站和奶厂id
+     * For API
+     * @param $fid
+     * @param $sid
+     */
+    public function getFactoryStationId(&$fid, &$sid) {
+        $fuser = Auth::guard('gongchang')->user();
+        if($fuser)
+        {
+            $fid = $fuser->factory_id;
+        }
+
+        $suser = Auth::guard('naizhan')->user();
+        if($suser)
+        {
+            $sid = $suser->station_id;
+            $fid = $suser->factory_id;
+        }
+    }
+
+    /**
      * 获取当前用户
      * @return null
      */

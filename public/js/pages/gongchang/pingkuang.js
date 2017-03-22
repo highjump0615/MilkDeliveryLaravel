@@ -135,5 +135,5 @@ $('button[data-action = "print"]').click(function () {
 });
 
 $('button[data-action = "export_csv"]').click(function () {
-    data_export('table1', gnUserTypeFactory, '瓶框库存管理');
+    data_export('table1', gnUserTypeFactory, '瓶框库存管理', 0, 0);
 });

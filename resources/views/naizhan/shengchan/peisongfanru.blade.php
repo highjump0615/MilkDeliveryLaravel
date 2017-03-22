@@ -54,8 +54,10 @@
 
 				<div class="ibox float-e-margins">
 
-					@if($is_todayrefund)
-					<label style="color: red; font-size: 18px;">你已经完成了反录</label>
+					@if (isset($alert_msg))
+						<label class="redalert">{{$alert_msg}}</label>
+					@elseif ($is_todayrefund)
+						<label class="redalert">你已经完成了反录</label>
 					@endif
 
                     <div class="ibox-content">
@@ -138,47 +140,51 @@
                             </tbody>
                         </table>
 
-                        <div class="col-md-8 col-md-offset-4" style="padding-right: 0;">
-                        	<div class="col-md-2">
-                        		<p>奶瓶回收数量:</p>
-                        	</div>
-                        	<div class="col-md-10" style="padding-right: 0;">
-								<table id="refund_bottle" class="table table-bordered">
-									<thead>
-									<tr>
-										<th data-sort-ignore="true">奶瓶型</th>
-										<th data-sort-ignore="true">数量</th>
-									</tr>
-									</thead>
-									<tbody>
-									@if($deliver_date == $current_date && !$is_todayrefund)
-										@foreach($bottle_types as $bt)
-											<tr id="{{$bt->bottle_type}}">
-												<td>{{\App\Model\FactoryModel\FactoryBottleType::find($bt->bottle_type)->name}}</td>
-												<td id="{{$bt->bottle_type}}" contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"></td>
-											</tr>
-										@endforeach
-									@else
-										@foreach($milkman_bottle_refunds as $mb)
-											<tr>
-												<td>{{$mb->bottle_name}}</td>
-												<td id="{{$mb->count}}">{{$mb->count}}</td>
-											</tr>
-										@endforeach
-									@endif
-									</tbody>
-								</table>
-                        	</div>
-                        </div>
-						</div>
-						@if($deliver_date == $current_date && !$is_todayrefund)
-						<div style="text-align: center;">
-							<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
-						</div>
-						@else
-						<div style="text-align: center;">
-							<button id="return" class="btn btn-success btn-m-d" style="width: 200px;">查看今日配送列表</button>
-						</div>
+						@if (count($delivery_info) > 0)
+
+							<div class="col-md-8 col-md-offset-4" style="padding-right: 0;">
+								<div class="col-md-2">
+									<p>奶瓶回收数量:</p>
+								</div>
+								<div class="col-md-10" style="padding-right: 0;">
+									<table id="refund_bottle" class="table table-bordered">
+										<thead>
+										<tr>
+											<th data-sort-ignore="true">奶瓶型</th>
+											<th data-sort-ignore="true">数量</th>
+										</tr>
+										</thead>
+										<tbody>
+										@if($deliver_date == $current_date && !$is_todayrefund)
+											@foreach($bottle_types as $bt)
+												<tr id="{{$bt->bottle_type}}">
+													<td>{{\App\Model\FactoryModel\FactoryBottleType::find($bt->bottle_type)->name}}</td>
+													<td id="{{$bt->bottle_type}}" contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"></td>
+												</tr>
+											@endforeach
+										@else
+											@foreach($milkman_bottle_refunds as $mb)
+												<tr>
+													<td>{{$mb->bottle_name}}</td>
+													<td id="{{$mb->count}}">{{$mb->count}}</td>
+												</tr>
+											@endforeach
+										@endif
+										</tbody>
+									</table>
+								</div>
+							</div>
+							</div>
+							@if($deliver_date == $current_date && !$is_todayrefund)
+							<div style="text-align: center;">
+								<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
+							</div>
+							@else
+							<div style="text-align: center;">
+								<button id="return" class="btn btn-success btn-m-d" style="width: 200px;">查看今日配送列表</button>
+							</div>
+							@endif
+
 						@endif
                     </div>
                 </div>
@@ -188,7 +194,6 @@
 	</div>
 @endsection
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/global.js') ?>"></script>
 	<!--Save & Cancel Information-->
 	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js') ?>"></script>
 @endsection

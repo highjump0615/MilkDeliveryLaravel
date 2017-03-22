@@ -142,10 +142,10 @@ $('button[data-action = "export_csv"]').click(function () {
     var fd = $('#filter_table').css('display');
 
     if (od != "none") {
-        data_export('order_table', gnUserTypeStation, '自营账户记录');
+        data_export('order_table', gnUserTypeStation, '自营账户记录', 0, 0);
     }
     else if (fd != "none") {
-        data_export('filter_table', gnUserTypeStation, '自营账户记录');
+        data_export('filter_table', gnUserTypeStation, '自营账户记录', 0, 0);
     }
 });
 

@@ -2,22 +2,8 @@
 
 @section('css')
     <!-- Multi Select Combo -->
-    <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">
-    <link href="<?=asset('css/plugins/select2/select2.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/multiselect/style.css') ?>" rel="stylesheet">
     <style>
-        .chosen-container-td .chosen-select {
-            width: 650px;
-        }
-
-        .chosen-container-td .chosen-container-multi .chosen-choices {
-            border: none;
-        }
-
-        .chosen-container-td .chosen-container {
-            width: 100%;
-        }
-
         .footable tr td {
             background: white;
         }
@@ -220,9 +206,6 @@
 @endsection
 
 @section('script')
-    <!-- Chosen -->
-    <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
-    <script src="<?=asset('js/plugins/select2/select2.full.min.js') ?>"></script>
     <script src="<?=asset('js/plugins/multiselect/multiselect.min.js') ?>"></script>
 
     <script>
@@ -332,7 +315,6 @@
                     delete_delivery_area(button);
                 },
                 cancel: function () {
-                    return;
                 }
             });
         });
@@ -435,13 +417,11 @@
                     {
                         $('#add_modal_form').modal('hide');
                         location.reload();
-                    } else {
-                        return;
                     }
                 },
                 error: function (data) {
                     console.log(data);
-                },
+                }
             })
         });
 

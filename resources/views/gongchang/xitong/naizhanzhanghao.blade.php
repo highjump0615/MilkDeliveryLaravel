@@ -60,7 +60,7 @@
                             <label class="col-md-5 text-right">区域:</label>
                             <div class="col-md-7">
                                 <select required id="filter_province" name="province"
-                                        class="province_list form-control col-md-3" style="width: 150px;">
+                                        class="province_list form-control col-md-3">
                                     <option value="none">全部</option>
                                     @if (isset($provinces))
                                         @foreach($provinces as $province)
@@ -114,7 +114,7 @@
                                 <td class="o_type" data-id="{{$station->station_type}}">{{$station->type_name}}</td>
                                 <td>{{$station->last_used_ip}}</td>
                                 <td><input type="checkbox" class="js-switch"
-                                           @if($station->status == \App\Model\DeliveryModel\DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)checked @endif />
+                                           @if($station->getUser()->status == \App\Model\UserModel\User::USER_STATUS_ACTIVE)checked @endif />
                                 </td>
                                 <td>
                                     <button data-sid="{{$station->id}}" class="edit_station btn-success btn btn-sm">修改</button>

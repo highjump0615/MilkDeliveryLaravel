@@ -19,6 +19,7 @@ $(document).on('click','.confirm_values',function(e){
         var strCount = $('#product'+id+'').val().replace(/\s+/g, '');
 
         var formData = {
+            date: $('#search_date').val(),
             confirm_count: strCount,
             product_id: id,
             station_id: station_id
@@ -62,6 +63,7 @@ $(document).on('click','.confirm_values',function(e){
         var object_type = $(this).attr('object_type');
         var types = $(this).attr('types');
         var formData = {
+            date: $('#search_date').val(),
             types: types,
             object_type: object_type,
             return_to_factory: $('#'+types+''+object_type+'').val(),

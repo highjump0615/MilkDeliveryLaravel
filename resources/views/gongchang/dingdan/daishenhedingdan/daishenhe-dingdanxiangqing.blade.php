@@ -1,6 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/pages/order_detail_product.css')?>" rel="stylesheet">
     <style>
         #save_sub_addr {
@@ -250,9 +249,7 @@
     <script type="text/javascript">
 
         // 解析当前服务器的时间 (2014-08-12 09:25:24)
-        var time = s_timeCurrent.replace(/-/g,':').replace(' ',':');
-        time = time.split(':');
-        var gDateToday = new Date(time[0], (time[1]-1), time[2], time[3], time[4], time[5]);
+        var gDateToday = new Date(s_timeCurrent);
 
         $('#pass_order').click(function () {
             var pass_bt = $(this);

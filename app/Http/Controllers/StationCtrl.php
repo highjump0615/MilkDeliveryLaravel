@@ -29,19 +29,13 @@ class StationCtrl extends Controller
         $parent = 'naizhan';
         $current_page = 'jibenziliao';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         $dsinfo = DeliveryStation::find($current_station_id);
         $billing_bank = Bank::find($dsinfo->billing_bank_id);
         $freepay_bank = Bank::find($dsinfo->freepay_bank_id);
 
-        $deliveryarea = DSDeliveryArea::where('station_id',$current_station_id)->get()->groupBy(function($area){
-            $addr = $area->address;
-            $addrs = explode(" ", $addr);
-            return $addrs[0].$addrs[1].$addrs[2].$addrs[3];
-        });
-
         $dsinfo["billing_bank"] = $billing_bank;
         $dsinfo["freepay_bank"] = $freepay_bank;
-        $dsinfo["deliveryarea"] = $deliveryarea;
 
         $provinces = ProvinceData::all();
 

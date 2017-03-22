@@ -7,7 +7,7 @@
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
 				<li class="active">
-					<a href="{{ url('naizhan/pingkuang')}}">瓶框管理</a>
+					<a href="">瓶框管理</a>
 				</li>
 				<li class="active">
 					<strong>瓶框统计</strong>

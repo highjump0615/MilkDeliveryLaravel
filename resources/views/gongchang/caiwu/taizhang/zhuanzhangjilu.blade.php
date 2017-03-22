@@ -32,7 +32,7 @@
                             <input type="text" class="input-sm form-control" name="end" id="filter_end_date"/>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-7">
                         <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>
                         <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>

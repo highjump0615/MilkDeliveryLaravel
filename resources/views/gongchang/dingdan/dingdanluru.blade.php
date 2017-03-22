@@ -17,51 +17,7 @@
 
 @extends('gongchang.layout.master')
 @section('css')
-    <style>
-        select, input {
-            /*height: 35px;*/
-            width: 100%;
-        }
-
-        .statics input {
-            height: 30px;
-            border: 0;
-        }
-
-        .section-name label {
-            height: 30px;
-            line-height: 30px;
-        }
-
-        .switchery {
-            width: 60px;
-        }
-
-        #product_table tr td {
-            padding: 2px;
-        }
-
-        #product_table label {
-            line-height: 35px;
-        }
-
-        .one_p_amount, .avg {
-            border: 0;
-            height: 30px;
-            max-width: 50px;
-        }
-
-        #product_table tr td .col-sm-5, #product_table tr td .col-sm-7,
-        #product_table tr td .col-sm-4, #product_table tr td .col-sm-8,
-        #product_table tr td .col-sm-6, #product_table tr td .col-sm-2,
-        #product_table tr td .col-sm-5, #product_table tr td .col-sm-1 {
-            padding: 0;
-        }
-
-        input.tip-input {
-            text-align: center;
-        }
-    </style>
+    <link href="<?=asset('css/pages/order_input.css') ?>" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -240,13 +196,13 @@
                     </div>
 
                     <!-- 微信订单修改不显示票据号 -->
-                    @if (!(isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
+                    @if (!($is_edit && isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">票据号:</label>
                         <div class="col-md-3">
                             <input required type="text" name="receipt_number" class="form-control"
                                    id="receipt_number"
-                                   @if (isset($order)) value="{{$order->receipt_number}}" @endif/>
+                                   @if (isset($order) && $is_edit) value="{{$order->receipt_number}}" @endif/>
                         </div>
                         <div class="col-md-4">
                             <button type="button" class="btn btn-outline btn-success" style="display:none;"
@@ -275,7 +231,11 @@
                     </div>
                     @endif
 
-                    <input type="hidden" required name="customer_id" id="customer_id"/>
+                    <input type="hidden"
+                           required
+                           name="customer_id"
+                           id="customer_id"
+                           @if (isset($order)) value="{{$order->customer_id}}" @endif />
                 </div>
 
                 <!--Order Info -->
@@ -308,17 +268,22 @@
                         </div>
                         <div class="col-md-2">
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
-                                   type="checkbox" data-toggle="modal" data-target="#card_info"
+                                   type="checkbox"
                                    @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif
-                                    @if ($is_edit || isset($station)) readonly @endif
                             />
                             <input type="hidden" name="card_check_success" id="card_check_success" value="1">
                         </div>
 
-                        <div class="col-md-4" id="form-card-panel" style="@if (!(isset($order) && $order->order_by_milk_card)) display:none @endif">
-                            奶卡号:<label id="form-card-id">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->number}} @endif</label> &nbsp;
-                            金额:<label id="form-card-balance">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->balance}} @endif</label>
-                            商品:<label id="form-card-product">@if (isset($order) && $order->order_by_milk_card) {{$order->milkcard->product}} @endif</label>
+                        <button type="button"
+                                class="btn btn-sm btn-success pull-left"
+                                data-toggle="modal" href="#card_info"
+                                @if ($is_edit || isset($station)) disabled @endif>
+                            添加奶卡
+                        </button>
+
+                        <div id="form-card-panel">
+                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;金额:</span>
+                            <span id="form-card-balance"></span>
                         </div>
                     </div>
 
@@ -399,221 +364,18 @@
 
                                 <!-- 奶品信息 -->
                                 <tbody>
-
                                 @if (isset($order_products)) 
                                     <!-- 订单修改 -->
                                     @foreach ($order_products as $op)
-                                        <tr id="first_data" class="one_product">
-                                            <td>
-                                                <select required class="form-control order_product_id"
-                                                        name="order_product_id[]"
-                                                        style="height:34px;">
-                                                    @if (isset($products))
-                                                        @foreach ($products as $product)
-                                                            @if($op->product_id == $product->id)
-                                                                <option value="{{$product->id}}" selected>{{$product->simple_name}}</option>
-                                                            @else
-                                                                <option value="{{$product->id}}">{{$product->simple_name}}</option>
-                                                            @endif
-                                                        @endforeach
-                                                    @else
-                                                        <option value="none">这家工厂没有注册的产品</option>
-                                                    @endif
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select required class="form-control factory_order_type"
-                                                        name="factory_order_type[]">
-                                                    @if (isset($factory_order_types))
-                                                        @foreach ($factory_order_types as $fot)
-                                                            @if($op->order_type == $fot->order_type)
-                                                                <option value="{{$fot->order_type}}" selected
-                                                                        data-content="{{$fot->id}}">{{$fot->order_type_name}}</option>
-                                                            @else
-                                                                <option value="{{$fot->order_type}}"
-                                                                        data-content="{{$fot->id}}">{{$fot->order_type_name}}</option>
-                                                            @endif
-                                                        @endforeach
-                                                    @else
-                                                        <option value="none">没有订单类型</option>
-                                                    @endif
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <div>
-                                                    <input required name="one_product_total_count[]"
-                                                           class="one_product_total_count form-control"
-                                                           type="number"
-                                                           min="1"
-                                                           value="@if (!$is_edit && isset($order)){{$op->total_count}}@else{{$op->remain_count}}@endif"
-                                                           style="padding-left: 2px;"/>
-                                                    <select class="one_product_total_count_select control hidden form-control">
-                                                        @if(isset($products_count_on_fot))
-                                                            @foreach($products_count_on_fot as $pcof)
-                                                                @if($op->order_type == $pcof['fot'])
-                                                                    <option data-otid="{{$pcof['fot']}}" selected
-                                                                            value="{{$pcof['pcfot']}}">{{$pcof['pcfot']}}</option>
-                                                                @else
-                                                                    <option data-otid="{{$pcof['fot']}}"
-                                                                            value="{{$pcof['pcfot']}}">{{$pcof['pcfot']}}</option>
-                                                                @endif
-                                                            @endforeach
-                                                        @endif
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group date single_date">
-                                                    <input required type="text" class="form-control start_at" name="start_at[]" value="{{$op->start_at}}"><span
-                                                            class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <select required class="form-control order_delivery_type " name="order_delivery_type[]">
-                                                    @if (isset($order_delivery_types))
-                                                        @foreach ($order_delivery_types as $odt)
-                                                            @if ($op->delivery_type == $odt->delivery_type)
-                                                                <option value="{{$odt->delivery_type}}" selected
-                                                                        data-content="{{$odt->id}}">{{$odt->name}}</option>
-                                                            @else
-                                                                <option value="{{$odt->delivery_type}}"
-                                                                        data-content="{{$odt->id}}">{{$odt->name}}</option>
-                                                            @endif
-                                                        @endforeach
-                                                    @else
-                                                        <option value="">没有配送规则</option>
-                                                    @endif
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <div class="bottle_number">
-                                                    <input type="number" min="1" required name="order_product_count_per[]"
-                                                           class="form-control order_product_count_per" value="{{$op->count_per_day}}"
-                                                           style="display:inline-block;">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <!-- 天天送、隔日送就不显示选择日期的 -->
-                                                <div class="calendar_show" style="@if ($op->delivery_type < 3 ) display: none; @endif">
-                                                    <div class="input-group date picker">
-                                                        <input type="text" class="form-control delivery_dates" name="delivery_dates[]"
-                                                               value="{{$op->custom_order_dates}}">
-                                                        <span class="input-group-addon">
-                                                            <i class="fa fa-calendar"></i>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <label class="control-label product_count_per_day" style="padding-top: 7px;">
-                                                    <input type="text" required name="avg[]" class="avg" readonly value="1.0"/>
-                                                </label>
-                                            </td>
-                                            <td>
-                                                <label class="control-label total_amount_per_product" style="padding-top: 7px;">
-                                                    <input type="text" required name="one_p_amount[]" class="one_p_amount" readonly/>
-                                                </label>
-                                            </td>
-                                            <td>
-                                                <button type="button" class="remove_one_product"><i class="fa fa-trash-o" aria-hidden="true"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        <!-- 筛选选择项 -->
+                                        @include('gongchang.dingdan.dingdanluru.addproduct', [
+                                            'order_product' => $op,
+                                        ])
                                     @endforeach
                                 @else
                                     <!-- 订单录入 -->
                                     <tr id="first_data" class="one_product">
-                                        <td>
-                                            <select required class="form-control order_product_id"
-                                                    name="order_product_id[]"
-                                                    style="height:34px;">
-                                                @if (isset($products))
-                                                    @foreach ($products as $product)
-                                                        <option value="{{$product->id}}">{{$product->simple_name}}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="none">这家工厂没有注册的产品</option>
-                                                @endif
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select required class="form-control factory_order_type"
-                                                    name="factory_order_type[]">
-                                                @if (isset($factory_order_types))
-                                                    @foreach ($factory_order_types as $fot)
-                                                        <option value="{{$fot->order_type}}"
-                                                                data-content="{{$fot->id}}">{{$fot->order_type_name}}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="none">没有订单类型</option>
-                                                @endif
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <input required name="one_product_total_count[]"
-                                                       class="one_product_total_count form-control"
-                                                       type="number" min="1" value="30"
-                                                       style="padding-left: 2px;"/>
-                                                <select class="one_product_total_count_select control hidden form-control">
-                                                    @if(isset($products_count_on_fot))
-                                                        @foreach($products_count_on_fot as $pcof)
-                                                            <option data-otid="{{$pcof['fot']}}"
-                                                                    value="{{$pcof['pcfot']}}">{{$pcof['pcfot']}}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </select>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group date single_date">
-                                                <input required type="text" class="form-control start_at" name="start_at[]"><span
-                                                        class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <select required class="form-control order_delivery_type " name="order_delivery_type[]">
-                                                @if (isset($order_delivery_types))
-                                                    @foreach ($order_delivery_types as $odt)
-                                                        <option value="{{$odt->delivery_type}}"
-                                                                data-content="{{$odt->id}}">{{$odt->name}}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="">没有配送规则</option>
-                                                @endif
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div class="bottle_number">
-                                                <input type="number" min="1" required name="order_product_count_per[]"
-                                                       class="form-control order_product_count_per" value="1"
-                                                       style="display:inline-block;">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="calendar_show" style="display: none;">
-                                                <div class="input-group date picker">
-                                                    <input type="text" class="form-control delivery_dates" name="delivery_dates[]">
-                                                        <span class="input-group-addon">
-                                                            <i class="fa fa-calendar"></i>
-                                                        </span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <label class="control-label product_count_per_day" style="padding-top: 7px;">
-                                                <input type="text" required name="avg[]" class="avg" readonly value="1.0"/>
-                                            </label>
-                                        </td>
-                                        <td>
-                                            <label class="control-label total_amount_per_product" style="padding-top: 7px;">
-                                                <input type="text" required name="one_p_amount[]" class="one_p_amount" readonly/>
-                                            </label>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="remove_one_product"><i class="fa fa-trash-o" aria-hidden="true"></i>
-                                            </button>
-                                        </td>
+                                        @include('gongchang.dingdan.dingdanluru.addproduct')
                                     </tr>
                                 @endif
                                 </tbody>
@@ -681,7 +443,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label>验证码:</label>
-                                        <input required type="password" name="card_code" id="card_code" autocomplete="off">
+                                        <input required type="text" name="card_code" id="card_code" autocomplete="off">
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-md-offset-2">
@@ -690,7 +452,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-white verify-card">确定</button>
-                                <button type="button" class="btn btn-white cancel-card">取消</button>
+                                <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
                             </div>
                         </div>
                     </div>
@@ -704,24 +466,8 @@
 
 @endsection
 
-<!-- 奶站订单录入，获取配送范围地址 -->
-<?php
-
-if (isset($station)) {
-    $strStreet = "";
-    $strVillage = "";
-    if (count($station->delivery_area) > 0) {
-        $strStreet = $station->delivery_area[0]->street_name;
-        $strVillage = $station->delivery_area[0]->village_name;
-    }
-}
-
-?>
-
-
 @section('script')
     <script type="text/javascript" src="<?=asset('webcam/webcam.min.js') ?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
 
     <script language="JavaScript">
 
@@ -749,25 +495,30 @@ if (isset($station)) {
             gbIsStation = true;
         @endif
 
+        @if ($is_edit && isset($order))
+            dateToday = new Date("{{$order->deliveryStation->getChangeStartDate()}}");
+        @else
+            dateToday = new Date(s_timeCurrent);
+        @endif
+
         @if (isset($order))
             city_name = "{{$order->getAddrCity()}}";
             district_name = "{{$order->getAddrDistrict()}}";
             street_name = "{{$order->getAddrStreet()}}";
             village_name = "{{$order->getAddrVillage()}}";
         @elseif (isset($station))
-            city_name = "{{$station->city}}";
-            district_name = "{{$station->district}}";
-            station_street = "{{$strStreet}}";
-            station_village = "{{$strVillage}}";
+            city_name = "{{$station->city_name}}";
+            district_name = "{{$station->district_name}}";
         @endif
 
         @if(isset($gap_day))
         var gap_day = parseInt("{{$gap_day}}");
         @endif
 
-        var copy_tr_data = copy_tr_data = $("#first_data").html();
+        var copy_tr_data = $("#first_data").html();
 
     </script>
 
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_insert.js') ?>"></script>
 @endsection
