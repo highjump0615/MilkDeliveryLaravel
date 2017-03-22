@@ -108,10 +108,9 @@ function setcalender(days,weekday,thismonth){
                             "<p>";
                     }
 
-                    strHtml += "   <img src='"+errimg+"'>" +
+                    strHtml += "<img src='"+errimg+"'>" +
                         "</p>" +
-                        "</div>" +
-                        "<input type='hidden' name='date[date" + thismonth + "_" + a + "]' class='date" + thismonth + "_" + a + "'  value=''>";
+                        "</div>";
 
                     jQuery(".data_table tbody tr").eq(j).find("td").eq(i).html(strHtml);
                     jQuery(".data_table tbody tr").eq(j).find("td").eq(i).addClass("usedate");
@@ -139,7 +138,6 @@ function thishtmls(datet,at){
     var number_add= $("#date"+datet+"_"+at).text();
     number_add++;
     $("#date"+datet+"_"+at).text(number_add);
-    $(".date"+datet+"_"+at).val(number_add);
 
     return number_add;
 }
@@ -168,7 +166,6 @@ function del(datedel,adel){
     //减少数量
     var number_del=$("#date"+datedel+"_"+adel).text();
     $("#date"+datedel+"_"+adel).text('0');
-    $(".date"+datedel+"_"+adel).val('0');
 }
 
 /**
