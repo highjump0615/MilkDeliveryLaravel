@@ -206,6 +206,25 @@ function isSelectedDate(year, month, date) {
     return nIndex;
 }
 
+/**
+ * 构成随心送规则数据
+ * @returns {string}
+ */
+function getFormattedFreeOrderData() {
+    var strResult = '';
+    var i = 0, l = garyBottle.length;
+
+    for (i = 0; i < l; i++) {
+        strResult += garyBottle[i].getFormattedValue();
+
+        if (i < l - 1) {
+            strResult += ',';
+        }
+    }
+
+    return strResult;
+}
+
 $(document).ready(function() {
 
     initdata();

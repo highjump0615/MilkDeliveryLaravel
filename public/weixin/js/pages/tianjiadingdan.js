@@ -99,6 +99,8 @@ function makeFormData() {
 
     var count = 0;
     var custom_date = "";
+
+    // 天天送
     if (($('#dnsel_item0')).css('display') != "none") {
         count = $('#dnsel_item0 input').val();
         if (!count) {
@@ -106,8 +108,8 @@ function makeFormData() {
             return null;
         }
         send_data.append('count_per', count);
-
     }
+    // 隔日送
     else if (($('#dnsel_item1')).css('display') != "none") {
         count = $('#dnsel_item1 input').val();
         if (!count) {
@@ -115,8 +117,8 @@ function makeFormData() {
             return null;
         }
         send_data.append('count_per', count);
-
     }
+    // 按周送
     else if (($('#dnsel_item2')).css('display') != "none") {
         //week dates
         custom_date = week.get_submit_value();
@@ -125,16 +127,17 @@ function makeFormData() {
             return null;
         }
         send_data.append('custom_date', custom_date);
-
     }
+    // 随心送
     else {
-        //month dates
-        custom_date = calen.get_submit_value();
-        if (!custom_date) {
+        var strFreeOrderData = getFormattedFreeOrderData();
+
+        if (strFreeOrderData.length == 0) {
             show_warning_msg('请填写产品的所有字段');
             return null;
         }
-        send_data.append('custom_date', custom_date);
+
+        send_data.append('custom_date', strFreeOrderData);
     }
 
     var start_at = $('#start_at').val();
