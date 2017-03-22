@@ -14,10 +14,6 @@ var selectday=thisday;
 
 var garyBottle = [];
 
-window.onload=function(){
-    initdata();
-};
-
 function initdata(){
     //日期初始填充
     jQuery(".selectdate").val(thisyear+"年"+thismonth+"月");
@@ -94,16 +90,30 @@ function setcalender(days,weekday,thismonth){
                 jQuery(".data_table tbody tr").eq(0).find("td").eq(i).removeClass("usedate");
             }else{
                 if(a<=days){
-                    jQuery(".data_table tbody tr").eq(j).find("td").eq(i).html("" +
-                        "<p>"+a+"</p>" +
-                        "<div class='bottlecount'>" +
-                        "<span id='date"+thismonth+'_'+a+"' style='display:none; font-size:20px;'>0</span>" +
-                        "<p style='display:none;'>" +
-                        "   <img src='"+errimg+"'>" +
+                    //
+                    // 查询该日期的数量
+                    //
+                    var nIndex = isSelectedDate(thisyear, thismonth, a);
+                    var strHtml = "<p>"+a+"</p><div class='bottlecount'>";
+
+                    //
+                    // 初始化数量
+                    //
+                    if (nIndex < 0) {
+                        strHtml += "<span id='date" + thismonth + "_" + a + "' style='display:none; font-size:20px;'>0</span>" +
+                            "<p style='display:none;'>";
+                    }
+                    else {
+                        strHtml += "<span id='date" + thismonth + "_" + a + "' style='font-size:20px;'>" + garyBottle[nIndex].num + "</span>" +
+                            "<p>";
+                    }
+
+                    strHtml += "   <img src='"+errimg+"'>" +
                         "</p>" +
                         "</div>" +
-                        "<input type='hidden' name='date[date"+thismonth+'_'+a+"]' class='date"+thismonth+'_'+a+"'  value=''>"
-                    );
+                        "<input type='hidden' name='date[date" + thismonth + "_" + a + "]' class='date" + thismonth + "_" + a + "'  value=''>";
+
+                    jQuery(".data_table tbody tr").eq(j).find("td").eq(i).html(strHtml);
                     jQuery(".data_table tbody tr").eq(j).find("td").eq(i).addClass("usedate");
                     a++;
                 }else{
@@ -176,7 +186,33 @@ function showBottleCount(container, show) {
     });
 }
 
+/**
+ * 该日期是否已选择
+ * @param year
+ * @param month
+ * @param date
+ * @returns {number}
+ */
+function isSelectedDate(year, month, date) {
+    var dateNew = new Date(year, month - 1, date);
+
+    // 查看是否已存在
+    var l = garyBottle.length;
+    var i = 0, nIndex = -1;
+    for (i = 0; i < l; i++) {
+        if (Date.parse(garyBottle[i].date) - Date.parse(dateNew) == 0) {
+            nIndex = i;
+            break;
+        }
+    }
+
+    return nIndex;
+}
+
 $(document).ready(function() {
+
+    initdata();
+
     var strSelector = '.data_table tbody td';
 
     /**
@@ -189,9 +225,19 @@ $(document).ready(function() {
         // 显示数量和取消按钮
         showBottleCount($(this), true);
 
-        // var dateNew = UTCDate(thisyear, thismonth, nDate);
+        var nCount = thishtmls(thismonth, nDate);
 
-        thishtmls(thismonth, nDate);
+        // 查看是否已存在
+        var nIndex = isSelectedDate(thisyear, thismonth, nDate);
+        var dateNew = new Date(thisyear, thismonth - 1, nDate);
+
+        // 如果不存在，添加新的
+        if (nIndex < 0) {
+            garyBottle.push(new bottle(dateNew, nCount));
+        }
+        else {
+            garyBottle[nIndex].num = nCount;
+        }
     });
 
     /**
