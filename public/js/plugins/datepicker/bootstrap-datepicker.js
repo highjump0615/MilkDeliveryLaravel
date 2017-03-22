@@ -41,12 +41,6 @@
         };
     }
 
-    //bottle object
-    var bottle = function (date, num){
-        this.date = date;
-        this.num = num;
-    };
-
     var BottleArray = (function () {
         var extras = {
             get: function (i) {

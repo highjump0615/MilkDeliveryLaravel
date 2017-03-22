@@ -698,6 +698,10 @@
             </form>
         </div>
     </div>
+
+    <!-- 添加奶瓶object js, 这个要比datepicker早加载 -->
+    <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
+
 @endsection
 
 <!-- 奶站订单录入，获取配送范围地址 -->

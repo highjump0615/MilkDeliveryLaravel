@@ -2,9 +2,9 @@
 @section('title','产品详情')
 @section('css')
     <link rel="stylesheet" href="<?=asset('weixin/css/fullcalendar.min.css')?>">
-    <link href="<?=asset('css/plugins/datepicker/datepicker3.css')?>" rel="stylesheet">
-
+    <link rel="stylesheet" href="<?=asset('weixin/css/pages/freeorder_calendar.css')?>">
 @endsection
+
 @section('content')
 
     <header>
@@ -126,8 +126,77 @@
 
         <!-- 随心送 -->
         <div class="dnsel_item" id="dnsel_item3">
-            <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="calendar">
-            </table>
+             <div class="calender">
+				  <div class="selectmouth">
+					  <p style="text-align:right" class="lastmonth" onclick="lastmonth()">< < <</p>
+					  <p><input type="text" class="selectdate" value="2017年3月" readonly=readonly /></p>
+					  <p class="nextmonth" onclick="nextmonth()">> > ></p>
+				  </div>
+					<table class="data_table" cellspacing="0px">
+						<thead>
+							<tr>
+								<td>日</td><td>一</td><td>二</td><td>三</td><td>四</td><td>五</td><td>六</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+				 </div>
+
         </div>
 
         <div class="dnsli clearfix">
@@ -207,6 +276,13 @@
     <script src="<?=asset('weixin/js/myweek.js')?>"></script>
 
     <script type="text/javascript">
+    var errimg= "<?=asset('weixin/images/sb.png') ?>";
+    </script>
+
+    <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
+    <script src="<?=asset('weixin/js/freeorder_calendar.js')?>"></script>
+
+    <script type="text/javascript">
         var calen, week;
 
         var obj = $('#uecontent');
@@ -269,7 +345,7 @@
             var swiper = new Swiper('.swiper-container', {
                 pagination: '.swiper-pagination',
                 paginationClickable: true,
-                spaceBetween: 30,
+                spaceBetween: 30
             });
 
                     @if(isset($gap_day))
