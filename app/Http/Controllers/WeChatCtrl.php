@@ -306,7 +306,7 @@ class WeChatCtrl extends Controller
         if ($request->has('start'))
             $start = true;
 
-        $wechat_user_id = session('wechat_user_id');
+        $wechat_user_id = $this->getCurrentUserIdW();
         if (!$wechat_user_id)
             abort(403);
 
@@ -527,7 +527,7 @@ class WeChatCtrl extends Controller
 
 
                     //address
-                    $address = session('address');
+                    $address = $this->getAddress();
 
                     if ($current_product_count < 90) {
                         $order_type = OrderType::ORDER_TYPE_MONTH;
@@ -538,7 +538,7 @@ class WeChatCtrl extends Controller
                     }
 
                     //get all active product of this factory (product, price, count by remain amount)
-                    $factory_id = session('factory_id');
+                    $factory_id = $this->getCurrentFactoryIdW($request);
                     $factory = Factory::find($factory_id);
                     $products = [];
                     if ($factory) {
@@ -705,7 +705,7 @@ class WeChatCtrl extends Controller
             $custom_date = rtrim($custom_date, ',');
         }
 
-        $address = session('address');
+        $address = $this->getAddress();
         $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
 
         $total_amount = $total_count * $product_price;
@@ -964,7 +964,7 @@ class WeChatCtrl extends Controller
         $date = $date_time->format('Y-m-d');
 
         //get plans for the date
-        $wechat_user_id = session('wechat_user_id');
+        $wechat_user_id = $this->getCurrentUserIdW();
         if (!$wechat_user_id)
             abort(403);
 
@@ -1099,7 +1099,7 @@ class WeChatCtrl extends Controller
         $order = Order::find($order_id);
         $comment = $order->comment;
 
-        $wechat_user_id = session('wechat_user_id');
+        $wechat_user_id = $this->getCurrentUserIdW();
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->count();
 
         if ($order) {
@@ -1125,7 +1125,7 @@ class WeChatCtrl extends Controller
         $phone1 = $factory->service_phone;
         $phone2 = $factory->return_phone;
 
-        $wechat_user_id = session('wechat_user_id');
+        $wechat_user_id = $this->getCurrentUserIdW($factory);
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->count();
 
         return view('weixin.toushu', [
@@ -1236,7 +1236,7 @@ class WeChatCtrl extends Controller
     //get retail price of product based on address
     public function get_retail_price_of_product($product_id)
     {
-        $address = session('address');
+        $address = $this->getAddress();
         if ($address) {
             $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
         } else {
@@ -1301,7 +1301,7 @@ class WeChatCtrl extends Controller
     public function zhifuchenggong(Request $request)
     {
         $order_id = $request->input('order');
-        $wechat_user_id = session('wechat_user_id');
+        $wechat_user_id = $this->getCurrentUserIdW();
         if (!$wechat_user_id)
             abort(403);
         $wechat_user = WechatUser::find($wechat_user_id);
@@ -1535,7 +1535,7 @@ class WeChatCtrl extends Controller
 
     public function deleteAddress(Request $request)
     {
-        $wxuser_id = session('wechat_user_id');
+        $wxuser_id = $this->getCurrentUserIdW();
         $address_id = $request->input('address');
 
         $address = WechatAddress::find($address_id);
@@ -1566,8 +1566,8 @@ class WeChatCtrl extends Controller
 
     public function reset_wechat_order_product_price()
     {
-        $wxuser_id = session('wechat_user_id');
-        $new_address = session('address');
+        $wxuser_id = $this->getCurrentUserIdW();
+        $new_address = $this->getAddress();
 
         $wops = WechatOrderProduct::where('wxuser_id', $wxuser_id)->get()->all();
 
@@ -1582,14 +1582,14 @@ class WeChatCtrl extends Controller
 
     public function selectAddress(Request $request)
     {
-        $wxuser_id = session('wechat_user_id');
+        $wxuser_id = $this->getCurrentUserIdW();
         $address_id = $request->input('address');
         $group_id = session('group_id');
 
         WechatAddress::where('wxuser_id', $wxuser_id)->update(['primary' => 0]);
 
         //check wheter selected address and session_address
-        $session_addr = session('address');
+        $session_addr = $this->getAddress();
 
         $address = WechatAddress::find($address_id);
         if ($address) {
@@ -2190,12 +2190,7 @@ class WeChatCtrl extends Controller
                 $custom_date = rtrim($custom_date, ',');
             }
 
-            $wxuser_id = session('wechat_user_id');
-
-            $factory_id = session('factory_id');
-            $factory = Factory::find($factory_id);
-
-            $address = session('address');
+            $address = $this->getAddress();
 
             $product_price = $this->get_product_price_by_order_type($order_type, $product_id, $address);
 
@@ -2231,8 +2226,8 @@ class WeChatCtrl extends Controller
     //make order by group
     public function make_order_by_group(Request $request)
     {
-        $factory_id = session('factory_id');
-        $wxuser_id = session('wechat_user_id');
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $wxuser_id = $this->getCurrentUserIdW();
         $wechat_user = WechatUser::find($wxuser_id);
 
         $comment = $request->input('comment');
@@ -2245,7 +2240,7 @@ class WeChatCtrl extends Controller
             return response()->json(['status' => 'err_stop', 'message' => '地址和电话号码不存在.']);
 
         //check session address and primary address
-        $addr = session('address');
+        $addr = $this->getAddress();
         $order_address = $addr_obj->address;
 
         if (strpos($order_address, $addr) === false) {
@@ -2350,8 +2345,8 @@ class WeChatCtrl extends Controller
     //make order based on crated wechat order products
     public function make_order_from_wopids(Request $request)
     {
-        $factory_id = session('factory_id');
-        $wxuser_id = session('wechat_user_id');
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $wxuser_id = $this->getCurrentUserIdW();
         $wechat_user = WechatUser::find($wxuser_id);
 
         $wopids = $request->input('wopids');
@@ -2490,7 +2485,7 @@ class WeChatCtrl extends Controller
     //Show Xuedan page
     public function show_xuedan(Request $request)
     {
-        $wxuser_id = session('wechat_user_id');
+        $wxuser_id = $this->getCurrentUserIdW();
 
         $order_id = $request->input('order');
         $order = Order::find($order_id);
@@ -2802,7 +2797,7 @@ class WeChatCtrl extends Controller
     {
         session(['loggedin' => false]);
         //set wxuser's customer id as null
-        $wxuser_id = session('wechat_user_id');
+        $wxuser_id = $this->getCurrentUserIdW();
         $wxuser = WechatUser::find($wxuser_id);
         if ($wxuser) {
             $wxuser->customer_id = null;
@@ -2818,8 +2813,10 @@ class WeChatCtrl extends Controller
     {
         $phone = $request->input('phone_number');
         $code = $this->generate_verify_code();
-        $wxuser_id = session('wechat_user_id');
+
+        $wxuser_id = $this->getCurrentUserIdW();
         $wxuser = WechatUser::find($wxuser_id);
+
         //if customer not exist for this wxuser, fail
         $customer = Customer::where('phone', $phone)->first();
 
@@ -2849,7 +2846,7 @@ class WeChatCtrl extends Controller
         $phone_number = $request->input('phone_number');
         $code = $request->input('code');
 
-        $wxuser_id = session('wechat_user_id');
+        $wxuser_id = $this->getCurrentUserIdW();
         $wxuser = WechatUser::find($wxuser_id);
 
         $customer = Customer::where('phone', $phone_number)->first();
