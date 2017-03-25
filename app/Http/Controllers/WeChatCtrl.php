@@ -1622,6 +1622,74 @@ class WeChatCtrl extends Controller
 
     }
 
+    /**
+     * 获取奶品信息，提供给给添加订单和编辑订单页面使用
+     * @param Factory $factory
+     * @param Product $product
+     * @return array
+     */
+    private function getProductPageInfo(Factory $factory, Product $product)
+    {
+        //Product image
+        $dest_dir = url('/img/product/logo/');
+        $dest_dir = str_replace('\\', '/', $dest_dir);
+        $dest_dir .= '/';
+
+        if ($product->photo_url1)
+            $file1_path = $dest_dir . ($product->photo_url1);
+        else
+            $file1_path = "";
+        if ($product->photo_url2)
+            $file2_path = $dest_dir . ($product->photo_url2);
+        else
+            $file2_path = "";
+        if ($product->photo_url3)
+            $file3_path = $dest_dir . ($product->photo_url3);
+        else
+            $file3_path = "";
+        if ($product->photo_url4)
+            $file4_path = $dest_dir . ($product->photo_url4);
+        else
+            $file4_path = "";
+
+        //product price with id and session addresss
+        $address = $this->getAddress($factory);
+
+        $pp = ProductPrice::priceTemplateFromAddress($product->id, $address);
+        if (!$pp) {
+            $pp = ProductPrice::where('product_id', $product->id)->first();
+        }
+
+        $month_price = $pp->month_price;
+        $season_price = $pp->season_price;
+        $half_year_price = $pp->half_year_price;
+
+        //show reviews
+        $reviews = array();
+        $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
+
+        foreach ($all_review as $review) {
+            $order_id = $review->order_id;
+            $order = Order::find($order_id);
+            foreach ($order->order_products as $op) {
+                if ($op->product_id == $product->id) {
+                    array_push($reviews, $review);
+                    break;
+                }
+            }
+        }
+
+        return ['product' => $product,
+            'file1' => $file1_path,
+            'file2' => $file2_path,
+            'file3' => $file3_path,
+            'file4' => $file4_path,
+            'month_price' => $month_price,
+            'season_price' => $season_price,
+            'half_year_price' => $half_year_price,
+            'reviews' => $reviews,
+        ];
+    }
 
     //add one product in cart
     public function tianjiadingdan(Request $request)
@@ -1632,78 +1700,17 @@ class WeChatCtrl extends Controller
         $product_id = $request->input("product");
         $product = Product::find($product_id);
 
+        $aryResBase = $this->getProductPageInfo($factory, $product);
+
         if ($request->has('previous')) {
             $previous = $request->input('previous');
         } else {
             $previous = "none";
         }
 
-        //Product image
-        $dest_dir = url('/img/product/logo/');
-
-        $dest_dir = str_replace('\\', '/', $dest_dir);
-
-        $dest_dir .= '/';
-
-        if ($product->photo_url1)
-            $file1_path = $dest_dir . ($product->photo_url1);
-        else
-            $file1_path = "";
-
-        if ($product->photo_url2)
-            $file2_path = $dest_dir . ($product->photo_url2);
-        else
-            $file2_path = "";
-
-        if ($product->photo_url3)
-            $file3_path = $dest_dir . ($product->photo_url3);
-        else
-            $file3_path = "";
-
-        if ($product->photo_url4)
-            $file4_path = $dest_dir . ($product->photo_url4);
-        else
-            $file4_path = "";
-
-        //product price with id and session addresss
-        $address = $this->getAddress($factory);
-
-        $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
-
-
-        if ($pp) {
-            $month_price = $pp->month_price;
-            $season_price = $pp->season_price;
-            $half_year_price = $pp->half_year_price;
-        } else {
-            $pp = ProductPrice::where('product_id', $product_id)->first();
-            $month_price = $pp->month_price;
-            $season_price = $pp->season_price;
-            $half_year_price = $pp->half_year_price;
-        }
-
-
         //gap day
         $gap_day = $factory->gap_day;
         $factory_order_types = $factory->factory_order_types;
-
-        //show reviews
-        $reviews = array();
-
-        $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
-
-        if ($all_review) {
-            foreach ($all_review as $review) {
-                $order_id = $review->order_id;
-                $order = Order::find($order_id);
-                foreach ($order->order_products as $op) {
-                    if ($op->product_id == $product_id) {
-                        array_push($reviews, $review);
-                        break;
-                    }
-                }
-            }
-        }
 
         $today = getCurDateString();
 
@@ -1712,62 +1719,33 @@ class WeChatCtrl extends Controller
 
             if ($request->has('type')) {
                 $type = $request->input('type');
-                return view('weixin.tianjiadingdan', [
-                    "product" => $product,
-                    'file1' => $file1_path,
-                    'file2' => $file2_path,
-                    'file3' => $file3_path,
-                    'file4' => $file4_path,
-                    'month_price' => $month_price,
-                    'season_price' => $season_price,
-                    'half_year_price' => $half_year_price,
+                return view('weixin.tianjiadingdan', array_merge($aryResBase, [
                     'gap_day' => $gap_day,
                     'factory_order_types' => $factory_order_types,
-                    'reviews' => $reviews,
                     'today' => $today,
                     'previous' => $previous,
                     'order_id' => $order_id,
                     'type' => $type,
-                ]);
+                ]));
 
             } else {
-                return view('weixin.tianjiadingdan', [
-                    "product" => $product,
-                    'file1' => $file1_path,
-                    'file2' => $file2_path,
-                    'file3' => $file3_path,
-                    'file4' => $file4_path,
-                    'month_price' => $month_price,
-                    'season_price' => $season_price,
-                    'half_year_price' => $half_year_price,
+                return view('weixin.tianjiadingdan', array_merge($aryResBase, [
                     'gap_day' => $gap_day,
                     'factory_order_types' => $factory_order_types,
-                    'reviews' => $reviews,
                     'today' => $today,
                     'previous' => $previous,
                     'order_id' => $order_id,
-                ]);
-
+                ]));
             }
 
         } else {
-            return view('weixin.tianjiadingdan', [
-                "product" => $product,
-                'file1' => $file1_path,
-                'file2' => $file2_path,
-                'file3' => $file3_path,
-                'file4' => $file4_path,
-                'month_price' => $month_price,
-                'season_price' => $season_price,
-                'half_year_price' => $half_year_price,
+            return view('weixin.tianjiadingdan', array_merge($aryResBase, [
                 'gap_day' => $gap_day,
                 'factory_order_types' => $factory_order_types,
-                'reviews' => $reviews,
                 'today' => $today,
                 'previous' => $previous,
-            ]);
+            ]));
         }
-
     }
 
     /*
@@ -2022,47 +2000,7 @@ class WeChatCtrl extends Controller
         $wechat_order_product_id = $request->input('wechat_opid');
         $wop = WechatOrderProduct::find($wechat_order_product_id);
 
-        $address = $this->getAddress($factory);
-
-        $product = $wop->product;
-        $product_id = $product->id;
-
-        //Product image
-        $dest_dir = url('/img/product/logo/');
-
-        $dest_dir = str_replace('\\', '/', $dest_dir);
-
-        $dest_dir .= '/';
-
-        if ($product->photo_url1)
-            $file1_path = $dest_dir . ($product->photo_url1);
-        else
-            $file1_path = "";
-
-        if ($product->photo_url2)
-            $file2_path = $dest_dir . ($product->photo_url2);
-        else
-            $file2_path = "";
-
-        if ($product->photo_url3)
-            $file3_path = $dest_dir . ($product->photo_url3);
-        else
-            $file3_path = "";
-
-        if ($product->photo_url4)
-            $file4_path = $dest_dir . ($product->photo_url4);
-        else
-            $file4_path = "";
-
-        $pp = ProductPrice::priceTemplateFromAddress($product_id, $address);
-
-        if (!$pp) {
-            $pp = ProductPrice::where('product_id', $product_id)->first();
-        }
-
-        $month_price = $pp->month_price;
-        $season_price = $pp->season_price;
-        $half_year_price = $pp->half_year_price;
+        $aryResBase = $this->getProductPageInfo($factory, $wop->product);
 
         //gap day
         $gap_day = $factory->gap_day;
@@ -2078,25 +2016,7 @@ class WeChatCtrl extends Controller
             $order_day_num = $ord_ctrl->get_number_of_days_for_wechat_product($wop->id);
         }
 
-        //show reviews
-        $reviews = array();
-
-        $all_review = Review::where('status', Review::REVIEW_STATUS_PASSED)->get()->all();
-
-        foreach ($all_review as $review) {
-            $order_id = $review->order_id;
-            $order = Order::find($order_id);
-            foreach ($order->order_products as $op) {
-                if ($op->product_id == $product_id) {
-                    array_push($reviews, $review);
-                    break;
-                }
-            }
-
-        }
-
-        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $today_date->format('Y-m-d');
+        $today = getCurDateString();
 
         $from = $request->input('from');
         if ($from == "queren") {
@@ -2104,69 +2024,42 @@ class WeChatCtrl extends Controller
 
             if ($request->has('for')) {
                 //from xuedan
-                return view('weixin.bianjidingdan', [
-                    "product" => $product,
-                    'file1' => $file1_path,
-                    'file2' => $file2_path,
-                    'file3' => $file3_path,
-                    'file4' => $file4_path,
-                    'month_price' => $month_price,
-                    'season_price' => $season_price,
-                    'half_year_price' => $half_year_price,
+                return view('weixin.bianjidingdan', array_merge($aryResBase, [
                     'gap_day' => $gap_day,
                     'factory_order_types' => $factory_order_types,
                     'wop' => $wop,
                     'group_id' => $group_id,
                     'order_day_num' => $order_day_num,
-                    'reviews' => $reviews,
                     'today' => $today,
                     'previous' => 'queren',
                     'for' => "xuedan",
-                ]);
+                ]));
             } else {
                 //from queren dingdan
 
-                return view('weixin.bianjidingdan', [
-                    "product" => $product,
-                    'file1' => $file1_path,
-                    'file2' => $file2_path,
-                    'file3' => $file3_path,
-                    'file4' => $file4_path,
-                    'month_price' => $month_price,
-                    'season_price' => $season_price,
-                    'half_year_price' => $half_year_price,
+                return view('weixin.bianjidingdan', array_merge($aryResBase, [
                     'gap_day' => $gap_day,
                     'factory_order_types' => $factory_order_types,
                     'wop' => $wop,
                     'group_id' => $group_id,
                     'order_day_num' => $order_day_num,
-                    'reviews' => $reviews,
                     'today' => $today,
                     'previous' => 'queren',
-                ]);
+                ]));
             }
 
 
         } else if ($from == "gouwuche") {
 
             //from gouwuche
-            return view('weixin.bianjidingdan', [
-                "product" => $product,
-                'file1' => $file1_path,
-                'file2' => $file2_path,
-                'file3' => $file3_path,
-                'file4' => $file4_path,
-                'month_price' => $month_price,
-                'season_price' => $season_price,
-                'half_year_price' => $half_year_price,
+            return view('weixin.bianjidingdan', array_merge($aryResBase, [
                 'gap_day' => $gap_day,
                 'factory_order_types' => $factory_order_types,
                 'wop' => $wop,
                 'order_day_num' => $order_day_num,
-                'reviews' => $reviews,
                 'today' => $today,
                 'previous' => 'gouwuche',
-            ]);
+            ]));
         }
 
     }
