@@ -13,6 +13,8 @@ var thisday1=mydate1.getDate();
 var selectday=thisday;
 
 var garyBottle = [];
+// 获取订购天数函数
+var gfnOrderDayCount;
 
 function initdata(){
     //日期初始填充
@@ -254,6 +256,9 @@ $(document).ready(function() {
         else {
             garyBottle[nIndex].num = nCount;
         }
+
+        // 计算订购天数
+        calcOrderDayCount();
     });
 
     /**
@@ -268,7 +273,54 @@ $(document).ready(function() {
 
         del(thismonth, nDate);
 
+        // 从数组里删除
+        var nIndex = isSelectedDate(thisyear, thismonth, nDate);
+        garyBottle.splice(nIndex, 1);
+
+        // 计算订购天数
+        calcOrderDayCount();
+
         // 防止父元素的点击事件
         return false;
     });
 });
+
+/**
+ * 初始化奶瓶数量
+ * @param strData 日期:数量的组合
+ */
+function initBottleCount(strData, fnCalcOrderDate) {
+    // 转成数组
+    var strArray = strData.replace(/,\s*$/, "");
+    var data_array = strArray.split(',');
+
+    for(var i =0; i< data_array.length; i++)
+    {
+        var day_val = data_array[i];
+        var strDate = day_val.split(":")[0];
+        var nCount = parseInt(day_val.split(":")[1]);
+
+        var aryDate = strDate.split("-");
+        var nYear = parseInt(aryDate[0]);
+        var nMonth = parseInt(aryDate[1]);
+        var nDay = parseInt(aryDate[2]);
+
+        var dateNew = new Date(nYear, nMonth - 1, nDay);
+
+        // 添加到主数组
+        garyBottle.push(new bottle(dateNew, nCount));
+    }
+
+    initdata();
+
+    gfnOrderDayCount = fnCalcOrderDate;
+}
+
+/**
+ * 计算订购天数
+ */
+function calcOrderDayCount() {
+    if (gfnOrderDayCount) {
+        gfnOrderDayCount(garyBottle.length);
+    }
+}

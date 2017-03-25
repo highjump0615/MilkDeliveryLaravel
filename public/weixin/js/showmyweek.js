@@ -117,13 +117,16 @@ function showmyweek2(id, change_func)
                 if($(this).is(":first-child"))
                 {
                     $(this).html(parseInt($(this).html())+1);
-                    change_func();
                 }
                 else
                 {
                     $(this).parent().html("");
+                }
+
+                if (change_func) {
                     change_func();
                 }
+
                 return false;
             });
         }
