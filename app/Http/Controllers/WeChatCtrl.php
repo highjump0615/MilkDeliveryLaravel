@@ -1976,18 +1976,16 @@ class WeChatCtrl extends Controller
 
     }
 
+    /**
+     * 生成groupd id
+     * @return int
+     */
     public function get_new_group_id()
     {
-        $result = 0;
+        $nGroupId = WechatOrderProduct::max('group_id');
+        $nGroupId += 1;
 
-        $wops = WechatOrderProduct::all();
-        foreach ($wops as $wop) {
-            if ($wop->group_id > $result) {
-                $result = $wop->group_id;
-            }
-        }
-        $result += 1;
-        return $result;
+        return $nGroupId;
     }
 
     //edit one product in cart
@@ -2228,6 +2226,7 @@ class WeChatCtrl extends Controller
             PaymentType::PAYMENT_TYPE_WECHAT,
             0,
             null,
+            $comment,
             $aryProductId,
             $aryOrderType,
             $aryTotalCount,
