@@ -2564,6 +2564,7 @@ class OrderCtrl extends Controller
                                       $payment_type,
                                       $order_by_milk_card,
                                       $card_id,
+                                      $comment,
                                       // OrderProducts
                                       $product_ids,
                                       $order_types,
@@ -2638,6 +2639,8 @@ class OrderCtrl extends Controller
 
             $order->order_by_milk_card = $order_by_milk_card;
             $order->payment_type = $payment_type;
+
+            $order->comment = $comment;
 
             $order->total_amount = $total_amount;
 
@@ -2866,6 +2869,7 @@ class OrderCtrl extends Controller
             $payment_type,
             $order_by_milk_card,
             $request->input('card_id'),
+            null,   // 备注
             $request->input('order_product_id'),
             $request->input('factory_order_type'),
             $request->input('one_product_total_count'),
