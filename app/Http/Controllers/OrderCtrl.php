@@ -62,6 +62,9 @@ class OrderCtrl extends Controller
     const NOT_EXIST_MILKMAN = 3;
     const NOT_EXIST_PRICE = 4;
 
+    const ERR_SUCESS = 0;
+    const ERR_CREDIT_BALANCE_NOT_ENOUGH = 1;
+
     //get only when wechat  product's delivery type ==3 or 4.
     function get_number_of_days_for_wechat_product($wop_id)
     {
@@ -2511,92 +2514,88 @@ class OrderCtrl extends Controller
     }
 
     /**
-     * 录入/修改订单
-     * @param Request $request
-     * @param $backend_type 后台用户权限
-     * @return \Illuminate\Http\JsonResponse
+     * 录入/修改核心
+     * @param $factory_id
+     * @param $station_id
+     * @param $order_id
+     * @param $customer_id
+     * @param $phone
+     * @param $address
+     * @param $order_property_id
+     * @param $milkman_id
+     * @param $delivery_station_id
+     * @param $order_checker_id
+     * @param $receipt_number
+     * @param $receipt_path
+     * @param $total_amount
+     * @param $delivery_time
+     * @param $order_start_at
+     * @param $milk_box_install
+     * @param $payment_type
+     * @param $order_by_milk_card
+     * @param $card_id
+     * @param $product_ids
+     * @param $order_types
+     * @param $total_counts
+     * @param $total_amounts
+     * @param $product_prices
+     * @param $delivery_types
+     * @param $avgs
+     * @param $product_start_ats
+     * @param $delivery_dates
+     * @return int
      */
-    function insert_order(Request $request, $backend_type) {
-
-        // 默认操作是添加
-        $nOperation = SysLog::SYSLOG_OPERATION_ADD;
-
+    public function insert_order_core($factory_id,
+                                      $station_id,
+                                      $order_id,
+                                      $customer_id,
+                                      $phone,
+                                      $address,
+                                      $order_property_id,
+                                      $milkman_id,
+                                      $delivery_station_id,
+                                      $order_checker_id,
+                                      $receipt_number,
+                                      $receipt_path,
+                                      $total_amount,
+                                      $delivery_time,
+                                      $order_start_at,
+                                      $milk_box_install,
+                                      $payment_type,
+                                      $order_by_milk_card,
+                                      $card_id,
+                                      // OrderProducts
+                                      $product_ids,
+                                      $order_types,
+                                      $total_counts,
+                                      $total_amounts,
+                                      $product_prices,
+                                      $delivery_types,
+                                      $avgs,
+                                      $product_start_ats,
+                                      $delivery_dates,
+                                      $count_per_days,
+                                      // 结果Order
+                                      &$orderRes) {
         $order = null;
-        $factory_id = $station_id = 0;
-
-        if ($this->factory) {
-            $factory_id = $this->factory->id;
-        }
-        if ($this->station) {
-            $station_id = $this->station->id;
-        }
 
         // 获取今日日期
-        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $today_date->format('Y-m-d');
-        $today = date_create($today);
-
-        // 录入订单还是修改订单
-        $order_id = $request->input('order_id');
-        if ($order_id) {
-            $order = Order::find($order_id);
-        }
-
-        //insert customer info
-        $customer_id = $request->input('customer_id');
-
-        if (empty($customer_id) && $order) {
-            $customer_id = $order->customer_id;
-        }
-
-        $phone = $request->input('phone');
-        $address = $request->input('c_province') . ' ' . $request->input('c_city') . ' ' . $request->input('c_district') . ' ' . $request->input('c_street') . ' ' . $request->input('c_xiaoqu') . ' ' . $request->input('c_sub_addr');
-
-        //whether this is new order or old order
-        $order_property_id = $request->input('order_property');
-
-        //station info
-        $milkman_id = $request->input('milkman_id');
-        $delivery_station_id = $request->input('station');
+        $today = getCurDateString();
+        $ordered_at = date_create($today);
 
         // 如果是奶厂订单，配送奶站就是录入奶站
         if ($station_id == 0) {
             $station_id = $delivery_station_id;
         }
 
-        if (!$milkman_id) {
-            return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
-        }
-
-        $order_checker_id = $request->input('order_checker');
-        $receipt_number = $request->input('receipt_number');
-        $receipt_path = $request->input('receipt_path');
-
-        //Order amount for remaingng, acceptable
-        $total_amount = $request->input('total_amount');
-
-        $delivery_time = $request->input('delivery_noon');
-
-        //order info
-        $order_start_at = $request->input('order_start_at');
-        $order_start_at = date_create($order_start_at);
-
-        $ordered_at = $today;
-
-        $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
-        $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
-
-        // 奶卡订单录入
-        $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
-
-        if ($order_by_milk_card == 1) {
-            $payment_type = PaymentType::PAYMENT_TYPE_CARD;
+        if ($order_id) {
+            $order = Order::find($order_id);
         }
 
         //check for 10% of delivery credit balance
         $station = DeliveryStation::find($station_id);
 
-        if (!$order_by_milk_card) {
+        if ($payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             // 以下情况下要查询配送信用余额
             // 1. 新订单
             // 2. 新订单未通过的情况
@@ -2609,8 +2608,7 @@ class OrderCtrl extends Controller
 
             if (!$order || ($order && !$order->isNewPassed())) {
                 if ($remain_cost < ($station->init_delivery_credit_amount / 10)) {
-
-                    return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
+                    return OrderCtrl::ERR_CREDIT_BALANCE_NOT_ENOUGH;
                 }
             }
         }
@@ -2701,7 +2699,7 @@ class OrderCtrl extends Controller
 
             // 奶卡只在录入订单时处理
             if ($payment_type == PaymentType::PAYMENT_TYPE_CARD) {
-                $aryMilkCardId = explode(',', $request->input('card_id'));
+                $aryMilkCardId = explode(',', $card_id);
 
                 MilkCard::whereIn('id', $aryMilkCardId)
                     ->update([
@@ -2712,37 +2710,36 @@ class OrderCtrl extends Controller
         }
 
         //save order products
-        $count = count($request->input('order_product_id'));
+        $count = count($product_ids);
 
         for ($i = 0; $i < $count; $i++) {
-            $pid = $request->input('order_product_id')[$i];
-            $otype = $request->input('factory_order_type')[$i];
-            $total_count = $request->input('one_product_total_count')[$i];
-            $one_amount = $request->input('one_p_amount')[$i];
-            $product_price = $this->get_product_price_by_cid($pid, $otype, $customer_id);
-            $delivery_type = $request->input('order_delivery_type')[$i];
-            $avg = $request->input('avg')[$i];
-            $product_start_at = $request->input('start_at')[$i];
-
             //
             // 创建OderProduct
             //
             $op = new OrderProduct;
             $op->order_id = $order->id;
-            $op->product_id = $pid;
-            $op->order_type = $request->input('factory_order_type')[$i];
-            $op->delivery_type = $delivery_type;
+            $op->product_id = $product_ids[$i];
+            $op->order_type = $order_types[$i];
+            $op->delivery_type = $delivery_types[$i];
+
+            if (empty($product_prices)) {
+                $product_price = $this->get_product_price_by_cid($op->product_id, $op->order_type, $customer_id);
+            }
+            else {
+                $product_price = $product_prices[$i];
+            }
             $op->product_price = $product_price;
-            $op->total_count = $total_count;
-            $op->total_amount = $one_amount;
-            $op->avg = $avg;
-            $op->start_at = $product_start_at;
 
-            $op->count_per_day = $request->input('order_product_count_per')[$i];
+            $op->total_count = $total_counts[$i];
+            $op->total_amount = $total_amounts[$i];
+            $op->avg = $avgs[$i];
+            $op->start_at = $product_start_ats[$i];
 
-            if ($delivery_type == DeliveryType::DELIVERY_TYPE_WEEK || $delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {   // 按周送、随心送
+            $op->count_per_day = $count_per_days[$i];
 
-                $custom_dates = $request->input('delivery_dates')[$i];
+            if ($op->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK || $op->delivery_type == DeliveryType::DELIVERY_TYPE_MONTH) {   // 按周送、随心送
+
+                $custom_dates = $delivery_dates[$i];
                 $result = rtrim($custom_dates, ',');
 
                 $op->custom_order_dates = $result;
@@ -2755,7 +2752,7 @@ class OrderCtrl extends Controller
             //
             $this->addMilkmanDeliveryPlan($milkman_id,
                 $delivery_station_id,
-                $product_start_at,
+                $op->start_at,
                 $op,
                 MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
                 $op->total_count);
@@ -2772,16 +2769,123 @@ class OrderCtrl extends Controller
         //
 
         //When order save, decrease the delivery credit balance and change milkcard status if this is card  order.
-        if ($status = Order::ORDER_NEW_WAITING_STATUS && !$order_by_milk_card) {
-
+        if ($status = Order::ORDER_NEW_WAITING_STATUS && $payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             $station->delivery_credit_balance = $station->delivery_credit_balance - $total_amount;
             $station->save();
+        }
+
+        $orderRes = $order;
+
+        return OrderCtrl::ERR_SUCESS;
+    }
+
+    /**
+     * 录入/修改订单
+     * @param Request $request
+     * @param $backend_type int 后台用户权限
+     * @return \Illuminate\Http\JsonResponse
+     */
+    function insert_order(Request $request, $backend_type) {
+
+        // 默认操作是添加
+        $nOperation = SysLog::SYSLOG_OPERATION_ADD;
+
+        $order = null;
+        $factory_id = $station_id = 0;
+
+        if ($this->factory) {
+            $factory_id = $this->factory->id;
+        }
+        if ($this->station) {
+            $station_id = $this->station->id;
+        }
+
+        // 录入订单还是修改订单
+        $order_id = $request->input('order_id');
+
+        //insert customer info
+        $customer_id = $request->input('customer_id');
+        if (empty($customer_id) && $order) {
+            $customer_id = $order->customer_id;
+        }
+
+        $phone = $request->input('phone');
+        $address = $request->input('c_province') . ' ' . $request->input('c_city') . ' ' . $request->input('c_district') . ' ' . $request->input('c_street') . ' ' . $request->input('c_xiaoqu') . ' ' . $request->input('c_sub_addr');
+
+        //whether this is new order or old order
+        $order_property_id = $request->input('order_property');
+
+        //station info
+        $milkman_id = $request->input('milkman_id');
+        $delivery_station_id = $request->input('station');
+
+        if (!$milkman_id) {
+            return response()->json(['status' => 'fail', 'message' => '找不到合适的配送员']);
+        }
+
+        $order_checker_id = $request->input('order_checker');
+        $receipt_number = $request->input('receipt_number');
+        $receipt_path = $request->input('receipt_path');
+
+        //Order amount for remaingng, acceptable
+        $total_amount = $request->input('total_amount');
+
+        $delivery_time = $request->input('delivery_noon');
+
+        //order info
+        $order_start_at = $request->input('order_start_at');
+        $order_start_at = date_create($order_start_at);
+
+        $milk_box_install = $request->input('milk_box_install') == "on" ? 1 : 0;
+        $payment_type = PaymentType::PAYMENT_TYPE_MONEY_NORMAL;
+
+        // 奶卡订单录入
+        $order_by_milk_card = $request->input('milk_card_check') == "on" ? 1 : 0;
+        if ($order_by_milk_card == 1) {
+            $payment_type = PaymentType::PAYMENT_TYPE_CARD;
+        }
+
+        $order = null;
+        $nResult = $this->insert_order_core(
+            $factory_id,
+            $station_id,
+            $order_id,
+            $customer_id,
+            $phone,
+            $address,
+            $order_property_id,
+            $milkman_id,
+            $delivery_station_id,
+            $order_checker_id,
+            $receipt_number,
+            $receipt_path,
+            $total_amount,
+            $delivery_time,
+            $order_start_at,
+            $milk_box_install,
+            $payment_type,
+            $order_by_milk_card,
+            $request->input('card_id'),
+            $request->input('order_product_id'),
+            $request->input('factory_order_type'),
+            $request->input('one_product_total_count'),
+            $request->input('one_p_amount'),
+            null,
+            $request->input('order_delivery_type'),
+            $request->input('avg'),
+            $request->input('start_at'),
+            $request->input('delivery_dates'),
+            $request->input('order_product_count_per'),
+            $order);
+
+        if ($nResult == OrderCtrl::ERR_CREDIT_BALANCE_NOT_ENOUGH) {
+            return response()->json(['status' => 'fail', 'message' => '该站应保持高于其交割信用余额10％的货币.']);
         }
 
         // 添加系统日志
         $this->addSystemLog($backend_type, '订单', $nOperation);
 
-        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        return response()->json(['status' => 'success', 'order_id' => $order->id]);
     }
 
     /**
@@ -3003,6 +3107,29 @@ class OrderCtrl extends Controller
     }
 
     /**
+     * 获取客户信息
+     * @param $phone
+     * @param $address
+     * @param $factoryId
+     * @return Customer
+     */
+    public function getCustomer($phone, $address, $factoryId) {
+        // 查看已存在的客户信息
+        $customer = Customer::where('phone', $phone)->where('factory_id', $factoryId)->first();
+
+        if (!$customer) {
+            $customer = new Customer;
+        }
+
+        $customer->address = $address;
+        $customer->is_deleted = 0;
+        $customer->factory_id = $factoryId;
+        $customer->phone = $phone;
+
+        return $customer;
+    }
+
+    /**
      * 添加客户信息
      * @return
      */
@@ -3048,101 +3175,32 @@ class OrderCtrl extends Controller
             ]);
         }
 
-        $ext_customer = Customer::where('phone', $phone)->where('factory_id', $this->factory->id)->get()->first();
-
-        if ($ext_customer) {
-            //there is already the customer
-            $address = $ext_customer->address;
-            if ($address == $addr && $ext_customer->is_deleted == 0) {
-                $id = $ext_customer->id;
-                if($ext_customer->has_not_order)
-                    $remain_amount = $ext_customer->remain_amount;
-                else
-                    $remain_amount=0;
-
-                $station_id = $ext_customer->station_id;
-                $milkman_id = $ext_customer->milkman_id;
-                $station = DeliveryStation::find($station_id);
-                $station_name = $station->name;
-                $ext_customer->is_deleted = 0;
-                $ext_customer->name = $name;
-                $ext_customer->save();
-
-                return response()->json([
-                    'status'        => 'success',
-                    'customer_id'   => $id,
-                    'station_name'  => $station_name,
-                    'station_id'    => $station_id,
-                    'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount,
-                    'date_start'    => $station->getChangeStartDate()
-                ]);
-            }
-            else {
-                //this customer has changed the address, so change ths station
-                $ext_customer->milkman_id = null;
-                $ext_customer->address = $addr;
-                $ext_customer->is_deleted = 1;
-                $ext_customer->name = $name;
-                $ext_customer->save();
-            }
-        }
+        // 设置客户信息
+        $customer = $this->getCustomer($phone, $addr, $this->factory->id);
 
         foreach ($station_milkman as $delivery_station_id => $milkman_id) {
             $station = DeliveryStation::find($delivery_station_id);
-            $station_name = $station->name;
 
-            if ($ext_customer) {
-                $ext_customer->station_id = $delivery_station_id;
-                $ext_customer->milkman_id = $milkman_id;
-                $ext_customer->is_deleted = 0;
-                $ext_customer->save();
-
-                $id = $ext_customer->id;
-                if($ext_customer->has_not_order)
-                    $remain_amount = $ext_customer->remain_amount;
-                else
-                    $remain_amount=0;
-
-                return response()->json([
-                    'status'        => 'success',
-                    'customer_id'   => $id,
-                    'station_name'  => $station_name,
-                    'station_id'    => $delivery_station_id,
-                    'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount,
-                    'date_start'    => $station->getChangeStartDate()
-                ]);
-
-            }
-            else {
-                $customer = new Customer;
-
-                $customer->name = $name;
-                $customer->phone = $phone;
-                $customer->address = $addr;
-                $customer->factory_id = $this->factory->id;
-                $customer->remain_amount = 0;
-                $customer->created_at = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-                $customer->station_id = $delivery_station_id;
-                $customer->milkman_id = $milkman_id;
-                $customer->is_deleted = 0;
-                $customer->save();
-
-                $id = $customer->id;
-                $remain_amount = 0;
-
-                return response()->json([
-                    'status'        => 'success',
-                    'customer_id'   => $id,
-                    'station_name'  => $station_name,
-                    'station_id'    => $delivery_station_id,
-                    'milkman_id'    => $milkman_id,
-                    'remain_amount' => $remain_amount,
-                    'date_start'    => $station->getChangeStartDate()
-                ]);
-            }
+            $customer->station_id = $delivery_station_id;
+            $customer->milkman_id = $milkman_id;
         }
+
+        $customer->name = $name;
+
+        // 新建的客户信息需要保存
+        if (empty($customer->id)) {
+            $customer->save();
+        }
+
+        return response()->json([
+            'status'        => 'success',
+            'customer_id'   => $customer->id,
+            'station_name'  => $station->name,
+            'station_id'    => $station->id,
+            'milkman_id'    => $customer->milkman_id,
+            'remain_amount' => $customer->remain_amount,
+            'date_start'    => $station->getChangeStartDate()
+        ]);
     }
 
     //add customer in gongchang
