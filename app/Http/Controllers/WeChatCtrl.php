@@ -2140,45 +2140,63 @@ class WeChatCtrl extends Controller
             return response()->json(['status' => 'err_stop', 'message' => '该地址不在所选区域，可在首页更改区域.']);
         }
 
-        $customer = Customer::where('phone', $addr_obj->phone)->first();
-
         $orderctrl = new OrderCtrl();
-        if (!$customer) {
-            //create new customer
-            $station = null;
-            //get station and milkman from factory and primary_address
-            $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
 
-            if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
-                return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围.']);
-            } else if ($station_milkman == OrderCtrl::NOT_EXIST_STATION) {
-                return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-            } else if ($station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
-                return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
-            }
+        //
+        // 决定奶站和配送员
+        //
+        $station = null;
+        $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
 
-            $customer = null;
-            foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-                //make new customer and change product price
-                $customer = new Customer;
-                $customer->phone = $addr_obj->phone;
-                $customer->name = $addr_obj->name;
-                $customer->address = $addr_obj->address . ' ' . $addr_obj->sub_address;
-                $customer->station_id = $delivery_station_id;
-                $customer->factory_id = $factory_id;
-                $customer->milkman_id = $milkman_id;
-                break;
-            }
-            if ($customer) {
-                $customer->save();
-            }
+        if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
+            return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围.']);
+        } else if ($station_milkman == OrderCtrl::NOT_EXIST_STATION) {
+            return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
+        } else if ($station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
+            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
         }
+
+        // 设置客户信息
+        $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
+        $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factory_id);
+
+        foreach ($station_milkman as $delivery_station_id => $milkman_id) {
+            $customer->station_id = $delivery_station_id;
+            $customer->milkman_id = $milkman_id;
+        }
+
+        $customer->name = $addr_obj->name;
+        $customer->save();
 
         $customer_id = $customer->id;
 
-        $wops = WechatOrderProduct::where('group_id', $group_id)->get()->all();
+        // OrderProducts
+        $aryProductId = [];
+        $aryOrderType = [];
+        $aryTotalCount = [];
+        $aryTotalAmount = [];
+        $aryProductPrice = [];
+        $aryDeliveryType = [];
+        $aryAvg = [];
+        $aryStartDate = [];
+        $aryDeliveryDate = [];
+        $aryCountPerDay = [];
+
+        $wops = WechatOrderProduct::where('group_id', $group_id)->get();
         $total_amount = 0;
         foreach ($wops as $wop) {
+            //wechat order product
+            $aryProductId[] = $wop->product_id;
+            $aryOrderType[] = $wop->order_type;
+            $aryTotalCount[] = $wop->total_count;
+            $aryTotalAmount[] = $wop->total_amount;
+            $aryProductPrice[] = $wop->product_price;
+            $aryDeliveryType[] = $wop->delivery_type;
+            $aryAvg[] = $wop->avg;
+            $aryStartDate[] = $wop->start_at;
+            $aryDeliveryDate[] = $wop->custom_order_dates;
+            $aryCountPerDay[] = $wop->count_per_day;
+
             $total_amount += $wop->total_amount;
         }
 
@@ -2186,53 +2204,49 @@ class WeChatCtrl extends Controller
 
         $order_checker = OrderCheckers::where('station_id', $station_id)->where('is_active', 1)->first();
 
-        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $today_date->format('Y-m-d');
-
         //start at: wechat order product's first deliver at
         $start_at = $wechat_user->order_start_at($group_id);
 
-        //make order
-        $order = new Order;
-        $order->factory_id = $factory_id;
-        $order->customer_id = $customer_id;
-        $order->phone = $addr_obj->phone;
-        $order->address = $addr_obj->address . ' ' . $addr_obj->sub_address;
-        $order->order_property_id = OrderProperty::ORDER_PROPERTY_NEW_ORDER;
-        $order->station_id = $station_id;
-        $order->order_checker_id = $order_checker->id;
-        $order->milk_box_install = ($customer->has_milkbox) ? 1 : 0;
-        $order->total_amount = $total_amount;
-        $order->remaining_amount = $total_amount;
-        $order->order_by_milk_card = 0;
-        $order->trans_check = 0;
-        $order->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-        $order->status = Order::ORDER_NEW_WAITING_STATUS;
-        $order->ordered_at = $today;
-        $order->start_at = $start_at;
-        $order->delivery_time = 1;//default
-        $order->flat_enter_mode_id = 2;//default
-        $order->delivery_station_id = $station_id;
-        $order->comment = $comment;
-        $order->save();
-
-        $order_id = $order->id;
-        $order->number = $orderctrl->order_number($factory_id, $station_id, $customer_id, $order_id);
-        //order's unique number: format (F_fid_S_sid_C_cid_O_orderid)
-        $order->save();
-
-        //make order products
-        $this->make_order_products_and_delivery_plan($order_id, $group_id, $orderctrl);
-
+        $order = null;
+        $orderctrl->insert_order_core(
+            $factory_id,
+            $station_id,
+            null,
+            $customer_id,
+            $addr_obj->phone,
+            $strAddress,
+            OrderProperty::ORDER_PROPERTY_NEW_ORDER,
+            $customer->milkman_id,
+            $station_id,
+            $order_checker->id,
+            null,
+            null,
+            $total_amount,
+            Order::ORDER_DELIVERY_TIME_MORNING,
+            $start_at,
+            ($customer->has_milkbox) ? 1 : 0,
+            PaymentType::PAYMENT_TYPE_WECHAT,
+            0,
+            null,
+            $aryProductId,
+            $aryOrderType,
+            $aryTotalCount,
+            $aryTotalAmount,
+            $aryProductPrice,
+            $aryDeliveryType,
+            $aryAvg,
+            $aryStartDate,
+            $aryDeliveryDate,
+            $aryCountPerDay,
+            $order);
 
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
         $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
-
         //if payment fails, delete order
-        return response()->json(['status' => 'success', 'order_id' => $order_id]);
+        return response()->json(['status' => 'success', 'order_id' => $order->id]);
     }
 
     //make order based on crated wechat order products
