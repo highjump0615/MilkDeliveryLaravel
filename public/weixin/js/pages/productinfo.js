@@ -3,13 +3,16 @@
  */
 
 var obj = $('#uecontent');
-obj.html(contentDetail);
+// 详细内容空间是否存在
+if (obj.length > 0) {
+    obj.html(contentDetail);
 
-$(obj).each(function () {
-    var $this = $(this);
-    var t = $this.text();
-    $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
-});
+    $(obj).each(function () {
+        var $this = $(this);
+        var t = $this.text();
+        $this.html(t.replace('&lt;', '<').replace('&gt;', '>'));
+    });
+}
 
 // 选择数量(月单、季单、半年单)
 $('select#order_type').change(function () {
@@ -97,22 +100,11 @@ function decrementCount(objButton) {
 }
 
 /**
- * 验证各项输入端
+ * 搭建基础提交数据
  * @returns {*}
  */
-function makeFormData() {
+function makeBaseFormData() {
     var send_data = new FormData();
-
-    //product_id
-    var product_id = $('#product_id').val();
-    send_data.append('product_id', product_id);
-
-    //order_type
-    var order_type = $('#order_type').val();
-    send_data.append('order_type', order_type);
-    //total_count
-    var total_count = $('#total_count').val();
-    send_data.append('total_count', total_count);
 
     var delivery_type = $('#delivery_type option:selected').data('value');
     send_data.append('delivery_type', delivery_type);
@@ -160,20 +152,44 @@ function makeFormData() {
         send_data.append('custom_date', strFreeOrderData);
     }
 
-    var start_at = $('#start_at').val();
-    if (!start_at) {
-        show_warning_msg("请选择起送时间");
-        return null;
-    }
+    return send_data;
+}
 
-    var start_time = new Date(start_at);
-    if(start_time < able_date)
-    {
-        show_warning_msg("选择"+default_start_date+"之后的日期.");
-        return null;
-    }
 
-    send_data.append('start_at', start_at);
+/**
+ * 验证各项输入端
+ * @returns {*}
+ */
+function makeFormData() {
+    var send_data = makeBaseFormData();
+
+    if (send_data != null) {
+        //product_id
+        var product_id = $('#product_id').val();
+        send_data.append('product_id', product_id);
+
+        //order_type
+        var order_type = $('#order_type').val();
+        send_data.append('order_type', order_type);
+        //total_count
+        var total_count = $('#total_count').val();
+        send_data.append('total_count', total_count);
+
+        var start_at = $('#start_at').val();
+        if (!start_at) {
+            show_warning_msg("请选择起送时间");
+            return null;
+        }
+
+        var start_time = new Date(start_at);
+        if(start_time < able_date)
+        {
+            show_warning_msg("选择"+default_start_date+"之后的日期.");
+            return null;
+        }
+
+        send_data.append('start_at', start_at);
+    }
 
     return send_data;
 }

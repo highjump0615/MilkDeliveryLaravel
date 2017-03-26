@@ -96,7 +96,7 @@ $('button#add_order').click(function () {
                     var strResultUrl = SITE_URL + "weixin/dingdanxiugai?order=" + order_id;
 
                     if (type.length) {
-                        strResultUrl += "type=" + type;
+                        strResultUrl += "&type=" + type;
                     }
 
                     window.location.href = strResultUrl;

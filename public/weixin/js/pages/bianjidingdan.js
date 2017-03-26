@@ -11,7 +11,7 @@ $(document).ready(function () {
     week = new showmyweek2("week", change_order_day_num);
 
     // 初始化订单奶品数据
-    init_wechat_order_product();
+    init_wechat_order_product(get_order_days_from_calendar);
 });
 
 /**
@@ -127,24 +127,6 @@ function get_available_week_index(array, start)
         }while(! array.hasOwnProperty(start));
 
         return start;
-    }
-}
-
-function init_wechat_order_product()
-{
-    var total_count = parseInt($('#total_count').val());
-
-    var strDeliveryType = '#delivery_type';
-    $(strDeliveryType).find('option[data-value="' + gnDeliveryType + '"]').prop('selected', true);
-    $(strDeliveryType).trigger('change');
-
-    if (gnDeliveryType == gnDeliveryTypeWeek) {
-        //show custom bottle count on week
-        week.custom_dates = $('#custom_order_dates').val();
-        week.set_custom_date();
-    }
-    else if (gnDeliveryType == gnDeliveryTypeFree){
-        initBottleCount($('#custom_order_dates').val(), get_order_days_from_calendar);
     }
 }
 
