@@ -395,6 +395,7 @@ function add_new_product_line() {
     //after add new product, caculate the product price automatically
     tr = $('#product_table tbody tr:last');
     $(tr).find('.factory_order_type').trigger('change');
+    $(tr).find('.order_delivery_type').trigger('change');
 
     initStartDateCalendar();
 }
