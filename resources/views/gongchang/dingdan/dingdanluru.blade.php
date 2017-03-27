@@ -374,9 +374,7 @@
                                     @endforeach
                                 @else
                                     <!-- 订单录入 -->
-                                    <tr id="first_data" class="one_product">
-                                        @include('gongchang.dingdan.dingdanluru.addproduct')
-                                    </tr>
+                                    @include('gongchang.dingdan.dingdanluru.addproduct')
                                 @endif
                                 </tbody>
                             </table>
