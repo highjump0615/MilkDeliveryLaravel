@@ -837,10 +837,6 @@ class WeChatCtrl extends Controller
     public function change_order(Request $request)
     {
         $order_id = $request->input('order_id');
-        $order = Order::find($order_id);
-        if (!$order) {
-            return resoponse()->json(['status' => 'fail', 'message' => '没有订单']);
-        }
 
         /*
         *   0: product_id
@@ -860,83 +856,85 @@ class WeChatCtrl extends Controller
             $cop = session('change_order_product');
             if (array_key_exists($order_id, $cop)) {
 
-                $factory_id = $order->factory_id;
-                $delivery_station_id = $order->delivery_station_id;
-                $milkman_id = $order->milkman_id;
-
-                $order_total_amount = $order->total_amount;
-                $order_remaining_amount = $order->remaining_amount;
-                $previous_done_amount = $order_total_amount - $order_remaining_amount;
-
+                // 订单修改
                 $order_ctrl = new OrderCtrl;
 
                 $cop_orders = $cop[$order_id];
 
-                //first remove all order products and delivery plans except of delivered
-                // from order in db
-                $order_ctrl->delete_all_order_products_and_delivery_plans_for_update_order($order);
+                // OrderProducts
+                $aryProductId = [];
+                $aryOrderType = [];
+                $aryTotalCount = [];
+                $aryTotalAmount = [];
+                $aryProductPrice = [];
+                $aryDeliveryType = [];
+                $aryAvg = [];
+                $aryStartDate = [];
+                $aryDeliveryDate = [];
+                $aryCountPerDay = [];
 
-                $changed_product_total_amount = 0;
-
+                $total_amount = 0;
                 foreach ($cop_orders as $index => $cop_order) {
+                    $nOrderType = $cop_order[10];
+                    $nTotalCount = $cop_order[3];
+                    $dTotalAmount = $cop_order[5];
 
-                    $pid = $cop_order[0];
-                    $order_type = $cop_order[10];
-                    $total_count = $cop_order[3];
-                    $one_amount = $cop_order[5];
-                    $product_price = $cop_order[4];
-                    $delivery_type = $cop_order[6];
+                    //wechat order product
+                    $aryProductId[] = $cop_order[0];
+                    $aryOrderType[] = $nOrderType;
+                    $aryTotalCount[] = $nTotalCount;
+                    $aryTotalAmount[] = $cop_order[5];
+                    $aryProductPrice[] = $cop_order[4];
+                    $aryDeliveryType[] = $cop_order[6];
 
-                    $changed_product_total_amount += $one_amount;
-
-                    if ($order_type == OrderType::ORDER_TYPE_MONTH)
-                        $avg = round($total_count / 30, 1);
-                    else if ($order_type == OrderType::ORDER_TYPE_SEASON)
-                        $avg = round($total_count / 90, 1);
+                    if ($nOrderType == OrderType::ORDER_TYPE_MONTH)
+                        $avg = round($nTotalCount / 30, 1);
+                    else if ($nOrderType == OrderType::ORDER_TYPE_SEASON)
+                        $avg = round($nTotalCount / 90, 1);
                     else
-                        $avg = round($total_count / 180, 1);
+                        $avg = round($nTotalCount / 180, 1);
 
-                    $product_start_at = $cop_order[9];
+                    $aryAvg[] = $avg;
+                    $aryStartDate[] = $cop_order[9];
+                    $aryDeliveryDate[] = $cop_order[8];
+                    $aryCountPerDay[] = $cop_order[7];
 
-                    $op = new OrderProduct;
-                    $op->order_id = $order_id;
-                    $op->product_id = $pid;
-                    $op->order_type = $order_type;
-                    $op->delivery_type = $delivery_type;
-                    $op->product_price = $product_price;
-                    $op->total_count = $total_count;
-                    $op->total_amount = $one_amount;
-                    $op->avg = $avg;
-                    $op->start_at = $product_start_at;
-
-                    $op->count_per_day = $cop_order[7];
-
-                    if ($delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY || $delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {   // 天天送、隔日送
-//                    $op->count_per_day = $request->input('order_product_count_per')[$i];
-                    } else {
-                        $custom_dates = $cop_order[8];
-                        $result = rtrim($custom_dates, ',');
-                        $op->custom_order_dates = $result;
-                    }
-
-                    $op->save();
-
-                    //establish plan
-                    $order_ctrl->establish_plan($op, $factory_id, $delivery_station_id, $milkman_id);
+                    $total_amount += $dTotalAmount;
                 }
 
-                //set flag on first order delivery plan
-                $plans = $order->first_delivery_plans;
-                if ($plans) {
-                    foreach ($plans as $plan) {
-                        $plan->flag = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER;
-                        $plan->save();
-                    }
-                }
-
-                $order->remaining_amount = $changed_product_total_amount;
-                $order->status = Order::ORDER_WAITING_STATUS;
-                $order->save();
+                $order = null;
+                $order_ctrl->insert_order_core(
+                    null,
+                    null,
+                    $order_id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    $total_amount,
+                    null,
+                    null,
+                    -1,
+                    PaymentType::PAYMENT_TYPE_WECHAT,
+                    0,
+                    null,
+                    null,
+                    $aryProductId,
+                    $aryOrderType,
+                    $aryTotalCount,
+                    $aryTotalAmount,
+                    $aryProductPrice,
+                    $aryDeliveryType,
+                    $aryAvg,
+                    $aryStartDate,
+                    $aryDeliveryDate,
+                    $aryCountPerDay,
+                    $order);
 
                 //notification
                 $customer = $order->customer;
@@ -944,16 +942,14 @@ class WeChatCtrl extends Controller
 
                 //notification to factory and wechat
                 $notification = new NotificationsAdmin;
-                $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer_name . "修改了订单, 请管理员尽快审核");
+                $notification->sendToFactoryNotification($order->factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer_name . "修改了订单, 请管理员尽快审核");
                 $notification->sendToWechatNotification($customer->id, '您的订单修改已提交，请耐心等待，客户将尽快核对您的订单信息！');
 
                 return response()->json(['status' => 'success']);
             }
-        } else {
-            return resoponse()->json(['status' => 'fail']);
         }
 
-
+        return response()->json(['status' => 'fail']);
     }
 
     //show change delivery plan on one date
