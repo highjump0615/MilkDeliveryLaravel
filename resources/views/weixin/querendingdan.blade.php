@@ -82,6 +82,8 @@
         @endif
     </div>
 
+    <!-- 本地版不支持支付 -->
+    @if (!App::environment('local'))
     <?php
 
     ini_set('date.timezone', 'Asia/Shanghai');
@@ -128,6 +130,7 @@
 
     $editAddress = $tools->GetEditAddressParameters();
     ?>
+    @endif
 
 @endsection
 @section('script')
