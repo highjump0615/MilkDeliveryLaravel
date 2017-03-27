@@ -1,0 +1,48 @@
+select, input {
+    /*height: 35px;*/
+    width: 100%;
+}
+
+.statics input {
+    height: 30px;
+    border: 0;
+}
+
+.section-name label {
+    height: 30px;
+    line-height: 30px;
+}
+
+.switchery {
+    width: 60px;
+}
+
+#product_table tr td {
+    padding: 2px;
+}
+
+#product_table label {
+    line-height: 35px;
+}
+
+.one_p_amount, .avg {
+    border: 0;
+    height: 30px;
+    max-width: 50px;
+}
+
+#product_table tr td .col-sm-5, #product_table tr td .col-sm-7,
+#product_table tr td .col-sm-4, #product_table tr td .col-sm-8,
+#product_table tr td .col-sm-6, #product_table tr td .col-sm-2,
+#product_table tr td .col-sm-5, #product_table tr td .col-sm-1 {
+    padding: 0;
+}
+
+input.tip-input {
+    text-align: center;
+}
+
+#form-card-panel {
+    display: none;
+    line-height: 32px;
+}
