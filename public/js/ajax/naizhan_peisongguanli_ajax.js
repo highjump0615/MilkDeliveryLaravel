@@ -197,7 +197,11 @@ function calc_total(){
 
     // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - (配送业务实际配送数量 - 可配送数量合计)
     $('#distribute td.remain_sum').each(function(i) {
-        remain_amount[i] = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+        remain_amount[i] = produced_totals[i] - sum_totals[i];
+        if (gbReported) {
+            remain_amount[i] = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+        }
+
         $(this).html(remain_amount[i]);
     });
 }
@@ -223,13 +227,15 @@ function save_distribute() {
     for(i = 0; i < count; i++){
         var id = $(this).attr('id');
         var station_id = $(this).attr('value');
+        var nRemain = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+
         var formData = {
             product_id: product_id[i],
             retail: retail_totals[i],
             test_drink: drink_totals[i],
             group_sale: group_totals[i],
             channel_sale: channel_totals[i],
-            remain: remain_amount[i]
+            remain: nRemain
         };
         console.log(formData);
 
