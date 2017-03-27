@@ -196,17 +196,7 @@ class OrderCtrl extends Controller
 
         $plan = MilkManDeliveryPlan::find($plan_id);
 
-        $order = Order::find($order_id);
-
-        $stop_at = $order->stop_at;
-        $restart_at = $order->restart_at;
-
-        $exist_stop = false;
-        if (($stop_at && $restart_at) || ($stop_at != "" && $restart_at != "") || ($stop_at != null && $restart_at != null) ) {
-            $exist_stop = true;
-        }
-
-        $origin = $plan->delivery_count;
+        $origin = $plan->changed_plan_count;
         $changed = $origin + $diff;
 
         /*
@@ -626,21 +616,18 @@ class OrderCtrl extends Controller
         ]);
     }
 
-    //get count of bottle to do
-    public
-    function get_rest_plans_count($oid, $pid)
+    /**
+     * 计算本配送明细后的数量的总和
+     * @param $oid
+     * @param $pid
+     * @return mixed
+     */
+    public function get_rest_plans_count($oid, $pid)
     {
-        $rest_with_this = 0;
-
-        $order = Order::find($oid);
-        if ($order) {
-            $udps = $order->unfinished_delivery_plans;
-            foreach ($udps as $udp) {
-                if ($udp->id >= $pid) {
-                    $rest_with_this += $udp->delivery_count;
-                }
-            }
-        }
+        $rest_with_this = MilkManDeliveryPlan::where('order_id', $oid)
+            ->where('id', '>=', $pid)
+            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->sum('changed_plan_count');
 
         return $rest_with_this;
     }
