@@ -241,6 +241,14 @@
 @endsection
 
 @section('script')
+
+	<script type="text/javascript">
+		var gbReported = false;
+		@if ($is_reported)
+            gbReported = true;
+		@endif
+	</script>
+
 	<!--Save & Update User Information-->
 	<script src="<?=asset('js/ajax/naizhan_peisongguanli_ajax.js') ?>"></script>
 
