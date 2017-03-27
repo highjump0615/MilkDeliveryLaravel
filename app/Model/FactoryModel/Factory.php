@@ -71,7 +71,7 @@ class Factory extends Model
         $result = "";
         foreach($provinces as $province)
         {
-            $city = Address::where('level',2)->where('factory_id', $this->id)->where('parent_id', $province->id)->get()->first();
+            $city = Address::where('level',2)->where('factory_id', $this->id)->where('parent_id', $province->id)->first();
             if($city)
             {
                 $result = $province->name.' '.$city->name;
@@ -79,10 +79,7 @@ class Factory extends Model
             }
         }
 
-        if($result)
-        {
-            return $result;
-        }
+        return $result;
     }
    
 
