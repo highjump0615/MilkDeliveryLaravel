@@ -447,17 +447,6 @@ class DSDeliveryPlanCtrl extends Controller
             // 如果不是今日的，初始化自营数量
             //
             $dp->remain = $dp->remain_final;
-
-            // 如果有签收数量，要加进去
-            $dsProductionPlan = DSProductionPlan::where('station_id', $current_station_id)
-                ->where('produce_end_at', getPrevDateString())
-                ->where('status', DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED)
-                ->where('product_id', $dp->product_id)
-                ->first();
-            if ($dsProductionPlan) {
-                $dp->remain += $dsProductionPlan->confirm_count;
-            }
-
             $dp->retail = 0;
             $dp->group_sale = 0;
             $dp->channel_sale = 0;
