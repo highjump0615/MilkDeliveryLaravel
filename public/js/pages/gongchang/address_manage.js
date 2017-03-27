@@ -339,6 +339,24 @@ $(document).ready(function () {
     });
 
     $('button[data-action = "export_csv"]').click(function () {
-        data_export('address_tb', gnUserTypeFactory, '地址库管理', 0, 1);
+
+        $.ajax({
+            type: 'GET',
+            url: API_URL + "gongchang/jichuxinxi/dizhiku/export",
+            success: function (data) {
+
+                console.log(data);
+
+                if (data.status == 'success') {
+                    var path = data.path;
+                    location.href = path;
+                }
+            },
+            error: function (data) {
+                //console.log(data);
+            }
+        })
     });
+
+
 });

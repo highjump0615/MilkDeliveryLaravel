@@ -2,6 +2,7 @@
 @section('css')
 	<link href="<?=asset('css/pages/gongchang/naizhanpeisong.css') ?>" rel="stylesheet">
 	<link href="<?=asset('css/pages/gongchang/floatingtop.css') ?>" rel="stylesheet">
+	<link href="<?=asset('css/pages/gongchang/topfilterbar.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 	@include('gongchang.theme.sidebar')
@@ -18,8 +19,17 @@
 			</ol>
 		</div>
 		<div class="row">
-<!--Table-->				
+			<!--Table-->
 			<div class="ibox float-e-margins">
+
+				<div id="date_select">
+					<label class="pull-left control-label">选择发货日期:</label>
+					<div class="input-group date">
+						<input type="text" class="form-control" value="{{$current_date}}" id="search_date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+					</div>
+				</div>
+
 				<div class="floating">
 					<div class="ibox-content">
 						<table class="footable table table-bordered" id="current_status" data-page-size="10">
@@ -73,12 +83,13 @@
 								<th data-sort-ignore="true">序号</th>
 								<th data-sort-ignore="true">区域</th>
 								<th data-sort-ignore="true">奶站名称</th>
+								<th data-sort-ignore="true">计划日期</th>
 								<th data-sort-ignore="true">奶品</th>
-								<th data-sort-ignore="true">计划订单(瓶)</th>
-								<th data-sort-ignore="true">站内零售（瓶）</th>
-								<th data-sort-ignore="true">试饮赠品（瓶）</th>
-								<th data-sort-ignore="true">团购业务（瓶）</th>
-								<th data-sort-ignore="true">渠道销售(瓶)</th>
+								<th data-sort-ignore="true">计划订单</th>
+								<th data-sort-ignore="true">站内零售</th>
+								<th data-sort-ignore="true">试饮赠品</th>
+								<th data-sort-ignore="true">团购业务</th>
+								<th data-sort-ignore="true">渠道销售</th>
 								<th data-sort-ignore="true">计划生产量</th>
 								<th data-sort-ignore="true">配送变化量</th>
 								<th data-sort-ignore="true">实际发货量</th>
@@ -99,6 +110,7 @@
 								<td rowspan="{{count($di->station_plan)}}">{{$di->area}}</td>
 								<td rowspan="{{count($di->station_plan)}}">{{$di->name}}</td>
 								@endif
+								<td>{{$ds->submit_at}}</td>
 								<td>{{$ds->product_name}}</td>
 								<td>{{$ds->order_count}}</td>
 								<td>{{$ds->retail}}</td>
@@ -120,10 +132,11 @@
 								<td rowspan="{{count($di->station_plan)}}">
 									@if($ds->status > \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_PRODUCE_FINNISHED)
 										<button class="btn btn-success"
-												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/'.$di->id)}}'"
+												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/' . $di->id . '?date=' . $current_date)}}'"
 												id="detail{{$i}}"
 												type="button" >
-											@if ($ds->status == \App\Model\DeliveryModel\DSProductionPlan::DSPRODUCTION_SEND_PRINTED)
+											<!-- sender_name为null意味着还没打印了出库单 -->
+											@if (isset($ds->sender_name))
 												查看出库单
 											@else
 												打印出库单
@@ -134,9 +147,10 @@
 												class="btn btn-success btn-md determine_count"
 												value="{{$i}}" id="detail{{$i}}">发货确认</button>
 										<button class="btn btn-success"
-												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/'.$di->id)}}'"
+												onclick="window.location='{{URL::to('/gongchang/shengchan/naizhanpeisong/dayinchukuchan/' . $di->id . '?date=' . $current_date)}}'"
 												id="f_detail{{$i}}"
-												type="button" >打印出库单</button>
+												type="button"
+												style="display: none;" >打印出库单</button>
 									@endif
 								</td>
 								@endif

@@ -48,46 +48,6 @@ function week_set_numbers()
     }
 }
 
-function showmyweek(id)
-{
-    this.id = id;
-    this.obj = $("#"+id);
-    this.custom_dates = "";
-    this.get_submit_value = week_get_numbers;
-    this.set_custom_date = week_set_numbers;
-
-    var arr = new Array("周日","周一","周二","周三","周四","周五","周六");
-
-    var header = "<tr>";
-    var data = "<tr height='62px'>";
-    for( var i=0; i<7; i++ )
-    {
-        header = header + "<th scope='col'>" + arr[i] + "</th>";
-        data = data + "<td data-dates='"+(i)+"'></td>";
-    }
-    $("#"+id).append(header);
-    $("#"+id).append(data);
-
-    $("table#week td").click(function(){
-        if($(this).children().length != 2)
-        {
-            $(this).html("<div class='psgzb_number'>1</div><div class='psgzb_remove'><img src='images/sb.png' width='20'></div>");
-            $(this).children().click(function(){
-                if($(this).is(":first-child"))
-                {
-                    $(this).html(parseInt($(this).html())+1);
-                }
-                else
-                {
-                    $(this).parent().html("");
-                }
-                return false;
-            });
-        }
-    });
-}
-
-
 function showmyweek2(id, change_func)
 {
     this.id = id;
@@ -117,13 +77,16 @@ function showmyweek2(id, change_func)
                 if($(this).is(":first-child"))
                 {
                     $(this).html(parseInt($(this).html())+1);
-                    change_func();
                 }
                 else
                 {
                     $(this).parent().html("");
+                }
+
+                if (change_func) {
                     change_func();
                 }
+
                 return false;
             });
         }
