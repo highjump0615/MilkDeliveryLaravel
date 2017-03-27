@@ -1317,32 +1317,4 @@ class DSDeliveryPlanCtrl extends Controller
 
         return Response::json(['status'=>"success"]);
     }
-
-    public function confirm(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
-
-        $current_milkman_id = $request->input('milkman_id');
-        $order_id = $request->input('order_id');
-        $type = $request->input('delivery_type');
-        $comment = $request->input('comment');
-        $status = 'fail';
-        $milkman_deliverys = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at',$deliver_date_str)->
-        where('milkman_id',$current_milkman_id)->where('order_id',$order_id)->where('type',$type)->get();
-        if($milkman_deliverys != null){
-            foreach ($milkman_deliverys as $md){
-                $md->comment = $comment;
-                $md->flag = 1;
-                $md->delivered_count = $md->delivery_count;
-                $md->save();
-                $changed_value = $md->delivered_count - $md->delivery_count;
-                $change_order = new OrderCtrl;
-                $change_order->change_delivery_plan_for_one_day($md->order_product_id,$changed_value,$deliver_date_str);
-                $status = 'success';
-            }
-        }
-        return Response::json(['status'=>$status]);
-    }
-    //
 }
