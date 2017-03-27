@@ -102,7 +102,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $planProduct["changed_plan_count"] = 0;
             }
 
-            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($planProduct, $cc->changed_plan_count));
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($planProduct, $cc));
 
             // 如果是没签收，订单数量的累加
             if (empty($planProduct->station_id)) {
@@ -121,7 +121,7 @@ class DSDeliveryPlanCtrl extends Controller
                 continue;
             }
 
-            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp, 0));
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp));
 
             // 添加到主数组
             $planResult[$dp->product_id] = $dp;
@@ -140,7 +140,7 @@ class DSDeliveryPlanCtrl extends Controller
                 continue;
             }
 
-            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp, 0));
+            $is_distributed = max($is_distributed, $this->calcPlanDataForProduct($dp));
 
             // 没有库存的，不用计算
             if ($dp->dp_remain_before <= 0) {
@@ -179,19 +179,15 @@ class DSDeliveryPlanCtrl extends Controller
     /**
      * 配送管理页面计算一种奶品的参数
      * @param $planProduct
-     * @param $planCount
+     * @param $deliveryPlan
      * @return int 是否已调配
      */
-    private function calcPlanDataForProduct(&$planProduct, $planCount) {
+    private function calcPlanDataForProduct(&$planProduct, MilkManDeliveryPlan $deliveryPlan = null) {
         // 是否已调配
         $is_distributed = 0;
 
         $current_station_id = $this->getCurrentStationId();
         $deliver_date_str = getCurDateString();
-        $currentDate_str = getPrevDateString();
-
-        // 合计总数量
-        $planProduct["changed_plan_count"] += $planCount;
 
         // 查看配送任务是否已经生成了
         $delivery_plans = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $planProduct->product_id, false);
@@ -207,6 +203,16 @@ class DSDeliveryPlanCtrl extends Controller
             $planProduct["dp_group_sale"] = $delivery_plans->group_sale;
             $planProduct["dp_channel_sale"] = $delivery_plans->channel_sale;
             $planProduct["dp_remain"] = $delivery_plans->remain_final;
+        }
+
+        // 合计总数量
+        if ($deliveryPlan) {
+            if ($is_distributed) {
+                $planProduct["changed_plan_count"] += $deliveryPlan->delivery_count;
+            }
+            else {
+                $planProduct["changed_plan_count"] += $deliveryPlan->changed_plan_count;
+            }
         }
 
         // 获取昨日库存量
