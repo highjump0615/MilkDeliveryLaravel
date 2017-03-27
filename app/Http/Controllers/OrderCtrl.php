@@ -2593,8 +2593,13 @@ class OrderCtrl extends Controller
             $order = Order::find($order_id);
         }
 
-        //check for 10% of delivery credit balance
-        $station = DeliveryStation::find($station_id);
+        if (empty($station_id) && $order) {
+            $station = $order->station;
+        }
+        else {
+            //check for 10% of delivery credit balance
+            $station = DeliveryStation::find($station_id);
+        }
 
         if ($payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             // 以下情况下要查询配送信用余额
@@ -2641,20 +2646,7 @@ class OrderCtrl extends Controller
             $order->payment_type = $payment_type;
 
             $order->comment = $comment;
-
             $order->total_amount = $total_amount;
-
-            /* Remain Amount
-             * when the customer's info is inputed, check the customer's remain amount.
-             * if the customer is new, then the remain amount is 0 ,else remain amount has been shown on insert order page.
-             * Order's remaining amount is the other concept with customer's amount.
-             * at first, remaining amount = total_amount and whenever each order delivery plan was finished,
-             * remaining_amount = remaining_amount - deliver plan amount.
-             * when the order was finished completely, the %remt = 0;
-             * if not, %remt is added to customer's remain amount.
-             * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
-             */
-            $order->remaining_amount = $total_amount;
             $order->trans_check = $trans_check;
         }
         else if (!$order->isNewPassed() && $order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
@@ -2667,31 +2659,76 @@ class OrderCtrl extends Controller
             }
 
             $order->total_amount = $total_amount;
-            $order->remaining_amount = $total_amount;
         }
 
-        $order->customer_id = $customer_id;
-        $order->phone = $phone;
-        $order->address = $address;
-        $order->order_property_id = $order_property_id;
-        $order->station_id = $station_id;
+        /* Remain Amount
+         * when the customer's info is inputed, check the customer's remain amount.
+         * if the customer is new, then the remain amount is 0 ,else remain amount has been shown on insert order page.
+         * Order's remaining amount is the other concept with customer's amount.
+         * at first, remaining amount = total_amount and whenever each order delivery plan was finished,
+         * remaining_amount = remaining_amount - deliver plan amount.
+         * when the order was finished completely, the %remt = 0;
+         * if not, %remt is added to customer's remain amount.
+         * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
+         */
+        $order->remaining_amount = $total_amount;
+
+        // 客户id
+        if (!empty($customer_id)) {
+            $order->customer_id = $customer_id;
+        }
+        // 电话
+        if (!empty($phone)) {
+            $order->phone = $phone;
+        }
+        // 地址
+        if (!empty($address)) {
+            $order->address = $address;
+        }
+        // 订单性质
+        if (!empty($order_property_id)) {
+            $order->order_property_id = $order_property_id;
+        }
+
+        if (!empty($station_id)) {
+            $order->station_id = $station_id;
+        }
+
         $order->receipt_number = $receipt_number;
         $order->receipt_path = $receipt_path;
-        $order->order_checker_id = $order_checker_id;
-        $order->milk_box_install = $milk_box_install;
+
+        // 征订员
+        if (!empty($order_checker_id)) {
+            $order->order_checker_id = $order_checker_id;
+        }
+
+        // 奶箱安装
+        if ($milk_box_install >= 0) {
+            $order->milk_box_install = $milk_box_install;
+        }
+
+        // 状态
         $order->status = $status;
-        $order->start_at = $order_start_at;
-        $order->delivery_time = $delivery_time;
+
+        // 订单开启时间
+        if (!empty($order_start_at)) {
+            $order->start_at = $order_start_at;
+        }
+
+        // 配送时间
+        if (!empty($delivery_time)) {
+            $order->delivery_time = $delivery_time;
+        }
         $order->flat_enter_mode_id = $flat_enter_mode_id;
-        $order->delivery_station_id = $delivery_station_id;
+
+        if (!empty($delivery_station_id)) {
+            $order->delivery_station_id = $delivery_station_id;
+        }
 
         $order->save();
 
         // 订单修改要删除以前的配送明细和奶品信息
         if ($order_id) {
-            // 操作是修改
-            $nOperation = SysLog::SYSLOG_OPERATION_EDIT;
-
             $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
         }
         // 新订单生成订单编号
@@ -2710,6 +2747,18 @@ class OrderCtrl extends Controller
                         'pay_status' => MilkCard::MILKCARD_PAY_STATUS_ACTIVE,
                     ]);
             }
+        }
+
+        // 配送员
+        $nMilkmanId = $milkman_id;
+        if (empty($nMilkmanId)) {
+            $nMilkmanId = $order->milkman_id;
+        }
+
+        // 配送奶站
+        $nDeliveryStationId = $delivery_station_id;
+        if (empty($nMilkmanId)) {
+            $nDeliveryStationId = $order->delivery_station_id;
         }
 
         //save order products
@@ -2753,8 +2802,8 @@ class OrderCtrl extends Controller
             //
             // 创建一个MilkmanDeliveryPlan, 之后自动生成
             //
-            $this->addMilkmanDeliveryPlan($milkman_id,
-                $delivery_station_id,
+            $this->addMilkmanDeliveryPlan($nMilkmanId,
+                $nDeliveryStationId,
                 $op->start_at,
                 $op,
                 MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
@@ -2762,10 +2811,12 @@ class OrderCtrl extends Controller
         }
 
         // save customer
-        $customer = Customer::find($customer_id);
-        $customer->station_id = $delivery_station_id;
-        $customer->milkman_id = $milkman_id;
-        $customer->save();
+        if (!empty($customer_id)) {
+            $customer = Customer::find($customer_id);
+            $customer->station_id = $delivery_station_id;
+            $customer->milkman_id = $nMilkmanId;
+            $customer->save();
+        }
 
         //
         //Caiwu Related
@@ -2805,6 +2856,10 @@ class OrderCtrl extends Controller
 
         // 录入订单还是修改订单
         $order_id = $request->input('order_id');
+        if (!empty($order_id)) {
+            // 操作是修改
+            $nOperation = SysLog::SYSLOG_OPERATION_EDIT;
+        }
 
         //insert customer info
         $customer_id = $request->input('customer_id');
