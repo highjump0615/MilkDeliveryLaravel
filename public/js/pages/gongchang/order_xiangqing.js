@@ -205,7 +205,6 @@ $('#cancel_order_bt').click(function () {
             cancel_order();
         },
         cancel: function () {
-            return;
         }
     });
 });
@@ -258,7 +257,6 @@ $('#postpone_order_bt').click(function () {
             postpone();
         },
         cancel: function () {
-            return;
         }
     });
 });

@@ -924,64 +924,6 @@ class Order extends Model
             return "不";
     }
 
-    function get_week_delivery_info($string)
-    {
-        /*convert weekday string to int:int
-         * data: "2016-09-28:5,2016-09-27:4,2016-09-29:1,2016-09-30:2"
-         * 09-26: monday = 0
-         * result: "1:4, 2:5, 3:1, 4:2"
-        */
-        $result = "";
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $date_count = $estring[$i];
-            $date_count_array = explode(':', $date_count);
-            $date = trim($date_count_array[0]);
-
-            $day = date('N', strtotime($date));
-
-            $count = trim($date_count_array[1]);
-            $ecstring[$day] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
-    }
-
-    function get_month_delivery_info($string)
-    {
-        /*convert weekday string to int:int
-         * data: "2016-09-28:5,2016-09-27:4,2016-09-13:1,2016-09-15:2,2016-09-23:3"
-         * result: "13:1,15:1,23:3,27:4,28:5"
-        */
-        $result = "";
-
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $date_count = $estring[$i];
-            $date_count_array = explode(':', $date_count);
-            $date = trim($date_count_array[0]);
-            $day = explode('-', $date)[2];
-            $count = trim($date_count_array[1]);
-            $ecstring[$day] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
-    }
-
     /**
      * 订单是否有效状态
      */
