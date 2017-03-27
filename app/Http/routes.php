@@ -197,9 +197,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
 
-    //Show Passed Orders
-    Route::get('/gongchang/dingdan/weiqinaidingdan', 'OrderCtrl@show_passed_dingdan_in_gongchang');
-
     //Show On Delivery Orders
     Route::get('/gongchang/dingdan/zaipeisongdingdan', 'OrderCtrl@show_on_delivery_dingdan_in_gongchang');
 
@@ -511,8 +508,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('/naizhan/dingdan/xudanliebiao', 'OrderCtrl@show_xudan_dingdan_liebiao_in_naizhan');
     //Show check waiting dingdan
     Route::get('/naizhan/dingdan/daishenhe', 'OrderCtrl@show_check_waiting_dingdan_in_naizhan');
-    //Show paseed dingdan
-    Route::get('/naizhan/dingdan/weiqinaidingdan', 'OrderCtrl@show_passed_dingdan_in_naizhan');
+
     //Show On Delivery Dingdan
     Route::get('/naizhan/dingdan/zaipeisong', 'OrderCtrl@show_on_delivery_dingdan_in_naizhan');
     //Show Stopped Dingdan
@@ -970,8 +966,6 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* xuedan */
     Route::get('/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
-    //make xudan based on created wechat order products
-    Route::post('/api/make_order_from_wopids', 'WeChatCtrl@make_order_from_wopids');
 
     /* change order */
     Route::get('/dingdanxiugai', 'WeChatCtrl@dingdanxiugai');
