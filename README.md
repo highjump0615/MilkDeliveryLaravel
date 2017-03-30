@@ -45,6 +45,7 @@ public/js/plugins/imgupload
 
 #### 2.2 后段开发 (Laravel框架 v5.2.45) 
 
+- 采用关系型数据库，数据表结构在[database目录](database)
 - [Laravel Excel插件](https://github.com/Maatwebsite/Laravel-Excel)
 - 微信支付PHP插件
   
