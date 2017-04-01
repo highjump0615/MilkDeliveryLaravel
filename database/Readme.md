@@ -1,4 +1,4 @@
-## Database Structure of Milk Delivery System
+# Database Structure of Milk Delivery System
 
 > 采用关系型数据库，下面是主要数据表的结构
 
@@ -422,7 +422,7 @@ delivery_time | tinyint | 1 | YES | 配送时间 | 1: 上午<br>2: 下午 | | 1
 previous_order_id | int | 11 | YES | 上回订单号 | 续单用 | |
 [delivery_station_id](#dtype) | int | 11 | YES | 配送奶站id | | | 5
 trans_check | tinyint | 1 | YES | 是否生成账单 | 1: 是<br>0: 否 | 0 |
-[transaction_id]() | int | 11 | YES | 账单id | | |
+[transaction_id](#trans) | int | 11 | YES | 账单id | | |
 number | varchar | 45 | YES | 编号 | | 0 | F1S5C189O325
 [factory_id](#factory) | int | 11 | YES | 奶厂id | | |
 is_deleted | tinyint | 1 | YES | 是否已删除 | 0: 未删除<br>1: 已删除 | 0 |
@@ -669,7 +669,7 @@ paid_at | datetime | | YES | 时间 | | |
 comment | datetime | | YES | 备注 | | |
 [payment_type](#ptype) | int | 11 | YES | 支付类型 | | |
 
-#### 54. dstransactions (账单)
+<h4 id="trans">54. dstransactions (账单)</h4>
 
 字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
 --- | ------- | ---- | --- | ----- | ---- | --- | ---
