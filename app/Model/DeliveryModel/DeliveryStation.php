@@ -46,8 +46,6 @@ class DeliveryStation extends Authenticatable
         'is_deleted',
     ];
 
-    public $timestamps = false;
-
     protected $appends = [
         'total_count',
         'received_order_money',

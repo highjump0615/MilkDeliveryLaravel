@@ -48,6 +48,7 @@ public/js/plugins/imgupload
 - 采用关系型数据库，数据表结构在[database目录](database)
 - [Laravel Excel插件](https://github.com/Maatwebsite/Laravel-Excel)
 - 微信支付PHP插件
+- 通过[亿美软通](http://www.emay.cn/)短信服务实现短信验证
   
 ## Need to Improve  
 - 提高加载地区列表速度
