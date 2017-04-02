@@ -1,3 +1,12 @@
+<?php
+
+$showOrderInfo = true;
+if (isset($previous) && $previous == "naipinxiugai") {
+    $showOrderInfo = false;
+}
+
+?>
+
 @extends('weixin.layout.master')
 @section('title','产品详情')
 @section('css')
@@ -16,17 +25,20 @@
         <h1>产品详情</h1>
     </header>
 
-    @include('weixin.productinfo')
+    @include('weixin.productinfo', [
+        'showOrderInfo' => $showOrderInfo,
+    ])
 
-    @if(!isset($order_id))
+    <!-- 奶品修改的选择奶品页面 -->
+    @if (!(isset($previous) && $previous == "naipinxiugai"))
     <div class="dnsbt clearfix">
-        <button id="make_order" class="dnsb1"><i class="fa fa-check-circle"></i> 立即订购</button>
-        <button id="submit_order" class="dnsb2"><i class="fa fa-cart-plus"></i> 加入购物车</button>
-    </div>
-    @elseif (isset($order_id))
-        <div class="dnsbt clearfix">
+        @if (!isset($order_id))
+            <button id="make_order" class="dnsb1"><i class="fa fa-check-circle"></i> 立即订购</button>
+            <button id="submit_order" class="dnsb2"><i class="fa fa-cart-plus"></i> 加入购物车</button>
+        @elseif (isset($order_id))
             <button id="add_order" data-order-id="{{$order_id}}" class="dnsb2"><i class="fa fa-plus-circle"></i> 加入订单</button>
-        </div>
+        @endif
+    </div>
     @endif
 
 @endsection
