@@ -1634,38 +1634,14 @@ class WeChatCtrl extends Controller
 
         $today = getCurDateString();
 
-        if ($request->has('order_id')) {
-            $order_id = $request->input('order_id');
-
-            if ($request->has('type')) {
-                $type = $request->input('type');
-                return view('weixin.tianjiadingdan', array_merge($aryResBase, [
-                    'gap_day' => $gap_day,
-                    'factory_order_types' => $factory_order_types,
-                    'today' => $today,
-                    'previous' => $previous,
-                    'order_id' => $order_id,
-                    'type' => $type,
-                ]));
-
-            } else {
-                return view('weixin.tianjiadingdan', array_merge($aryResBase, [
-                    'gap_day' => $gap_day,
-                    'factory_order_types' => $factory_order_types,
-                    'today' => $today,
-                    'previous' => $previous,
-                    'order_id' => $order_id,
-                ]));
-            }
-
-        } else {
-            return view('weixin.tianjiadingdan', array_merge($aryResBase, [
-                'gap_day' => $gap_day,
-                'factory_order_types' => $factory_order_types,
-                'today' => $today,
-                'previous' => $previous,
-            ]));
-        }
+        return view('weixin.tianjiadingdan', array_merge($aryResBase, [
+            'gap_day' => $gap_day,
+            'factory_order_types' => $factory_order_types,
+            'today' => $today,
+            'previous' => $previous,
+            'order_id' => $request->input('order_id'),
+            'type' => $request->input('type'),
+        ]));
     }
 
     /*

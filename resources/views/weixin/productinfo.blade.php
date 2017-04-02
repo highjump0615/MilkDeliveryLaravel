@@ -61,6 +61,7 @@ if (!empty($wop)) {
     <input type="hidden" id="group_id" value="{{$group_id}}"/>
 @endif
 
+    @if (!empty($showOrderInfo))
     <div class="dnsli clearfix">
         <div class="dnsti">订单类型：</div>
         <select class="dnsel" id="order_type">
@@ -90,9 +91,11 @@ if (!empty($wop)) {
     <div class="dnsli clearfix">
         <div class="ordrq">起送时间：<input class="qssj" id="start_at" name="start_at" type="date" value=""/></div>
     </div>
+    @endif
 
     <div class="dnsall">
 
+        @if (!empty($showOrderInfo))
         @if (!empty($showDayCount))
             <div class="dnsts">
                 订购天数：
@@ -101,6 +104,7 @@ if (!empty($wop)) {
                 </span> 天
                 <a class="cxsd" href="javascript:void(0);">重新设定</a>
             </div>
+        @endif
         @endif
 
         <div class="dnsli clearfix">

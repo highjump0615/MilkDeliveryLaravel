@@ -13,6 +13,7 @@
     </header>
 
     @include('weixin.productinfo', [
+        'showOrderInfo' => true,
         'showDayCount' => true,
     ])
 
