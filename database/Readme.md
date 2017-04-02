@@ -784,12 +784,12 @@ deleted_at | datetime | | YES | 删除时间 | | |
 created_at | datetime | | YES | 创建时间 | | | 2017-03-28 05:17:48
 updated_at | datetime | | YES | 更新时间 | | | 2017-03-28 05:17:48
 
-####65. wxreview (消息) 
+#### 65. wxreview (消息) 
 
 字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
 --- | ------- | ---- | --- | ----- | ---- | --- | ---
 [customer_id](#customer) | int | 50 | NO | 客户id | | |
-content | var | 1000 | NO | 内容 | | |
+content | varchar | 1000 | NO | 内容 | | |
 status | int | 2 | NO | 状态 | | |
 read | int | 11 | NO | 是否已读 | 0: 未读<br>1: 已读 | | 
 created_at | datetime | | YES | 创建时间 | | | 
