@@ -165,29 +165,20 @@
 
         function callpay() {
             if (typeof WeixinJSBridge == "undefined") {
-                if (document.addEventListener) {
-                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-                } else if (document.attachEvent) {
-                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-                }
-            } else {
+//                if (document.addEventListener) {
+//                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+//                } else if (document.attachEvent) {
+//                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+//                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+//                }
+
+                // 支付模块不存在, 当支付失败
+                window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
+            }
+            else {
                 jsApiCall();
             }
         }
-
-        window.onload = function () {
-            if (typeof WeixinJSBridge == "undefined") {
-                if (document.addEventListener) {
-                    document.addEventListener('WeixinJSBridgeReady', editAddress, false);
-                } else if (document.attachEvent) {
-                    document.attachEvent('WeixinJSBridgeReady', editAddress);
-                    document.attachEvent('onWeixinJSBridgeReady', editAddress);
-                }
-            } else {
-                editAddress();
-            }
-        };
 
         $(document).ready(function () {
                     @if(isset($message) && $message!="")
@@ -246,7 +237,6 @@
                 success: function (data) {
                     console.log(data);
                     if (data.status == 'success') {
-                        $(order_bt).prop('disabled', false);
                         order_id = data.order_id;
                         callpay();
                     } else if(data.status == "fail") {
