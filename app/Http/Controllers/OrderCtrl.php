@@ -499,12 +499,18 @@ class OrderCtrl extends Controller
     private $station;
 
     /**
+     * @param mixed $factory
+     */
+    public function setFactory($factoryId)
+    {
+        $this->factory = Factory::find($factoryId);
+    }
+
+    /**
      * 初始化奶厂订单参数
      */
     private function initShowFactoryPage() {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
-        $this->factory = Factory::find($factory_id);
+        $this->setFactory($this->getCurrentFactoryId(true));
 
         $this->order_property = OrderProperty::all();
 
@@ -516,10 +522,8 @@ class OrderCtrl extends Controller
      */
     private function initShowStationPage() {
 
-        $station_id = Auth::guard('naizhan')->user()->station_id;
-        $this->station = DeliveryStation::find($station_id);
-
-        $this->factory = Factory::find($this->station->factory_id);
+        $this->station = DeliveryStation::find($this->getCurrentStationId());
+        $this->setFactory($this->station->factory_id);
 
         $this->initBaseFromOrderInput();
     }
@@ -527,7 +531,7 @@ class OrderCtrl extends Controller
     /**
      * 初始化订单录入的基础信息
      */
-    private function initBaseFromOrderInput() {
+    public function initBaseFromOrderInput() {
         $this->order_property = OrderProperty::all();
 
         $this->products = $this->factory->active_products;
@@ -535,8 +539,7 @@ class OrderCtrl extends Controller
         $this->order_delivery_types = $this->factory->order_delivery_types;
         $this->delivery_stations = $this->factory->active_stations;//get only active stations
 
-        $this->province = Address::where('level', 1)->where('factory_id', $this->factory->id)
-            ->where('parent_id', 0)->where('is_active', 1)->where('is_deleted', 0)->get();
+        $this->province = Address::getProvinces($this->factory->id);
 
         $this->product_count_on_fot = [];
         foreach ($this->factory_order_types as $fot) {
