@@ -766,6 +766,10 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     // 数据库
     Route::get('/zongpingtai/xitong/shujuku','DatableCtrl@showDatable');
 
+    // 导入
+    Route::get('/zongpingtai/xitong/import','ImportCtrl@showImport');
+    Route::post('/zongpingtai/xitong/import/upload', 'ImportCtrl@uploadFile');
+
     Route::get('/zongpingtai/xitong/zhandiansheding', function (Request $request) {
         $child = 'zhandiansheding';
         $parent = 'xitong';
