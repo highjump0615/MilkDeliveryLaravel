@@ -227,7 +227,8 @@ class Address extends Model
         $province = Address::where('name', $province_name)->where('level', 1)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         if($province == null)
             return null;
@@ -241,7 +242,8 @@ class Address extends Model
             ->where('parent_id', $province->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
 
         if($city == null)
@@ -256,7 +258,8 @@ class Address extends Model
             ->where('parent_id', $city->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
 
         if($district == null)
@@ -271,7 +274,8 @@ class Address extends Model
             ->where('parent_id', $district->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         if($street == null)
             return null;
@@ -285,8 +289,52 @@ class Address extends Model
             ->where('parent_id', $street->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         return $xiaoqi;
+    }
+
+    /**
+     * 获取该奶厂所属省级地址
+     * @param $factoryId
+     * @return mixed
+     */
+    public static function getProvinces($factoryId) {
+        return Address::where('level', 1)
+            ->where('factory_id', $factoryId)
+            ->where('parent_id', 0)
+            ->where('is_active', 1)
+            ->where('is_deleted', 0)
+            ->get();
+    }
+
+    /**
+     * 获取上级地址
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function parent() {
+        return $this->belongsTo('App\Model\BasicModel\Address', 'parent_id', 'id');
+    }
+
+    /**
+     * 获取地址全名
+     * @return mixed|string
+     */
+    public function getFullName() {
+        $objAddress = $this;
+        $strFullName = $this->name;
+
+        // 获取上级地址
+        do {
+            $objAddress = $objAddress->parent;
+
+            if ($objAddress) {
+                $strFullName = $objAddress->name . " " . $strFullName;
+            }
+        }
+        while ($objAddress);
+
+        return $strFullName;
     }
 }

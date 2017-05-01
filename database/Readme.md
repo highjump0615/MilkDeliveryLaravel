@@ -261,7 +261,7 @@ phone | varchar | 45 | YES | 手机号 | | |
 [or_factory_id](#factory) | int | 11 | YES | 奶厂id | | | 1
 is_active | tinyint | 1 | YES | 状态 | 1: 使用<br>0: 停用 | | 1
 
-<h4 id="oproperty">25. orderproperty (订单属性)</h4>
+<h4 id="oproperty">25. orderproperty (订单性质)</h4>
 
 字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
 --- | ------- | ---- | --- | ----- | ---- | --- | ---
@@ -398,7 +398,7 @@ value | varchar | 255 | NO | 内容 | | |
 [customer_id](#customer) | int | 11 | NO | 客户id | | | 194 
 phone | varchar | 45 | YES | 电话 | | | 13300101001
 address | varchar | 255 | YES | 地址 | | | 北京 北京市 通州区 十里堡 十里堡新村 A-1-101
-[order_property_id](#oproperty) | int | 11 | YES | 订单属性 | | | 1 
+[order_property_id](#oproperty) | int | 11 | YES | 订单性质 | | | 1 
 [station_id](#station) | int | 11 | NO | 奶站id | | | 5
 receipt_number | varchar | 45 | YES | 票据号 | | | 8601010001 
 receipt_path | varchar | 45 | YES | 票据照片 | | |
