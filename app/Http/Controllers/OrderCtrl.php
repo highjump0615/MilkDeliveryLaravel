@@ -506,8 +506,6 @@ class OrderCtrl extends Controller
         $factory_id = $fuser->factory_id;
         $this->factory = Factory::find($factory_id);
 
-        $this->order_property = OrderProperty::all();
-
         $this->initBaseFromOrderInput();
     }
 
