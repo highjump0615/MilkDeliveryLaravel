@@ -11,6 +11,8 @@ namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
 use App\Model\BasicModel\PaymentType;
 use App\Model\DeliveryModel\DeliveryStation;
+use App\Model\DeliveryModel\MilkmanBottleRefund;
+use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\Factory;
 use App\Model\OrderModel\Order;
 use App\Model\OrderModel\OrderProduct;
@@ -25,6 +27,9 @@ use Excel;
 
 class ImportCtrl extends Controller
 {
+    private $mnFactoryId = 7;
+    private $mOrders = array();
+
     /**
      * 显示导入页面
      * @param Request $request
@@ -72,15 +77,22 @@ class ImportCtrl extends Controller
                     // 订单
                     if ($nColCount > 20) {
                         // 校验数据
-                        echo "verifying data ...<br>";
+                        echo "verifying order data ...<br>";
                         if ($this->importOrder($sheet)) {
                             // 导入
-                            echo "importing data ... <br>";
+                            echo "importing order data ... <br>";
                             $this->importOrder($sheet, false);
                         }
                     }
                     // 配送明细
                     else {
+                        // 校验数据
+                        echo "verifying delivery data ...<br>";
+                        if ($this->importDeliveryPlan($sheet)) {
+                            // 导入
+                            echo "importing delivery data ... <br>";
+                            $this->importDeliveryPlan($sheet, false);
+                        }
                     }
                 }
             });
@@ -97,15 +109,14 @@ class ImportCtrl extends Controller
      */
     private function importOrder($sheet, $checkData = true) {
 
-        $bResult = false;
+        $bResult = true;
 
         $aryData = $sheet->toArray();
 
         //
         // 加载基础信息
         //
-        $nFactoryId = 7;
-        $factory = Factory::find($nFactoryId);
+        $factory = Factory::find($this->mnFactoryId);
 
         $orderCtrl = new OrderCtrl();
 
@@ -116,15 +127,17 @@ class ImportCtrl extends Controller
         $stations = $factory->active_stations;
 
         // 加载地址
-        $villages = Address::where('factory_id', $nFactoryId)->where('level', 5)->get();
+        $villages = Address::where('factory_id', $this->mnFactoryId)->where('level', 5)->get();
 
         for ($i = 1; $i < count($aryData); $i++) {
             $row = $aryData[$i];
 
             // 显示log
-            echo '---------- Order ------------<br>';
-            echo implode(', ', $row);
-            echo '<br>';
+            if ($checkData) {
+                echo '---------- Order ------------<br>';
+                echo implode(', ', $row);
+                echo '<br>';
+            }
 
             // 序号
             $nSeq = $row[0];
@@ -196,6 +209,7 @@ class ImportCtrl extends Controller
             // 找不到小区信息, 失败
             if (!$village) {
                 echo '找不到小区信息: ' . $strSubAddr;
+                $bResult = false;
                 break;
             }
 
@@ -206,25 +220,28 @@ class ImportCtrl extends Controller
             $strFullAddr = $strFullVillageAddr . ' ' . $strSubAddr;
 
             $station = null;
-            $milkman = $orderCtrl->get_station_milkman_with_address_from_factory($nFactoryId, $strFullVillageAddr, $station);
+            $milkman = $orderCtrl->get_station_milkman_with_address_from_factory($this->mnFactoryId, $strFullVillageAddr, $station);
 
             if ($milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
                 echo '该地区没有覆盖可配送的范围: ' . $strFullVillageAddr;
+                $bResult = false;
                 break;
             }
             else if ($milkman == OrderCtrl::NOT_EXIST_STATION) {
                 echo '没有奶站: ' . $strFullVillageAddr;
+                $bResult = false;
                 break;
             }
             else if ($milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
                 echo '奶站没有配送员.';
+                $bResult = false;
                 break;
             }
 
             //
             // 设置客户信息
             //
-            $customer = $orderCtrl->getCustomer($strPhone, $strFullAddr, $nFactoryId);
+            $customer = $orderCtrl->getCustomer($strPhone, $strFullAddr, $this->mnFactoryId);
 
             foreach ($milkman as $delivery_station_id => $milkman_id) {
                 $customer->station_id = $delivery_station_id;
@@ -251,6 +268,7 @@ class ImportCtrl extends Controller
             // 找不到订单性质, 失败
             if ($nProperty == 0) {
                 echo '找不到订单性质, 失败';
+                $bResult = false;
                 break;
             }
 
@@ -276,6 +294,7 @@ class ImportCtrl extends Controller
             // 找不到征订员, 失败
             if ($nCheckerId == 0) {
                 echo '找不到征订员, 失败: ' . $strChecker;
+                $bResult = false;
                 break;
             }
 
@@ -285,6 +304,7 @@ class ImportCtrl extends Controller
             $dateInput = \DateTime::createFromFormat('Y-m-d', $strDateInput);
             if ($dateInput == false) {
                 echo '下单日期错误, 失败: ' . $strDateInput;
+                $bResult = false;
                 break;
             }
             $strDateInput = getStringFromDate($dateInput);
@@ -295,6 +315,7 @@ class ImportCtrl extends Controller
             $dateStart = \DateTime::createFromFormat('m-d-y', $strDateStart);
             if ($dateStart == false) {
                 echo '起送日期错误, 失败: ' . $strDateStart;
+                $bResult = false;
                 break;
             }
             $strDateStart = getStringFromDate($dateStart);
@@ -312,6 +333,7 @@ class ImportCtrl extends Controller
             // 找不到奶品, 失败
             if ($nProductId == 0) {
                 echo '找不到奶品, 失败: ' . $strProduct;
+                $bResult = false;
                 break;
             }
 
@@ -328,6 +350,7 @@ class ImportCtrl extends Controller
             // 找不到订单类型, 失败
             if ($nOrderType == 0) {
                 echo '找不到订单类型, 失败: ' . $strType;
+                $bResult = false;
                 break;
             }
 
@@ -344,10 +367,9 @@ class ImportCtrl extends Controller
             // 找不到配送规则, 失败
             if ($nDeliveryType == 0) {
                 echo '找不到配送规则, 失败: ' . $strDeliveryType;
+                $bResult = false;
                 break;
             }
-
-            $bResult = true;
 
             if ($checkData) {
                 // 只校验数据
@@ -360,7 +382,7 @@ class ImportCtrl extends Controller
             $dTotalAmount = $nCount * $dPrice;
             $order = new Order;
 
-            $order->factory_id = $nFactoryId;
+            $order->factory_id = $this->mnFactoryId;
             $order->ordered_at = $strDateInput;
 
             $order->order_by_milk_card = 0;
@@ -393,6 +415,8 @@ class ImportCtrl extends Controller
             $order->mnSeq = $nSeq;
             $order->setOrderNumber();
 
+            $this->mOrders[] = $order;
+
             //
             // 添加OrderProduct
             //
@@ -415,6 +439,166 @@ class ImportCtrl extends Controller
         }
 
         echo '<br>----------------------<br>';
+
+        return $bResult;
+    }
+
+    /**
+     * 导入配送明细信息
+     * @param $sheet
+     * @param bool $checkData
+     * @return bool
+     */
+    private function importDeliveryPlan($sheet, $checkData = true) {
+        $bResult = true;
+
+        $aryData = $sheet->toArray();
+
+        //
+        // 加载基础信息
+        //
+        $order = null;
+        $nMilkmanId = 0;
+
+        $strDateDeliver = null;
+        $nCountDeliver = 0;
+        $nCountDeliverSent = 0;
+
+        $nCountTotal = 0;
+        $nCountTotalSent = 0;
+
+        for ($i = 1; $i <= count($aryData); $i++) {
+            // 最后一行
+            if ($i == count($aryData)) {
+                $strDate = $strDateDeliver;
+                $nCount = 0;
+                $nCountSent = 0;
+            }
+            else {
+
+                $row = $aryData[$i];
+
+                if ($checkData) {
+                    // 显示log
+                    echo implode(', ', $row);
+                    echo '<br>';
+                }
+
+                if ($i == 1) {
+                    // 订单信息
+                    $nOrderSeq = intval($row[0]);
+
+                    foreach ($this->mOrders as $o) {
+                        if ($o->mnSeq == $nOrderSeq) {
+                            $order = $o;
+                        }
+                    }
+
+                    // 找不到订单信息, 失败
+                    if (!$order) {
+                        echo '找不到订单信息: ' . $nOrderSeq;
+                        $bResult = false;
+                        break;
+                    }
+
+                    $nMilkmanId = $order->milkman_id;
+                }
+
+                //
+                // 配送日期
+                //
+                $strDate = substr($row[4], 0, strlen("yyyy-mm-dd"));
+
+                // 数量
+                $nCount = intval($row[5]);
+
+                // 实际配送数量
+                $nCountSent = intval($row[6]);
+            }
+
+            //
+            // 配送日期, null是意味着用上面的日期
+            //
+            if (!empty($strDate)) {
+
+                // 03-13-17
+                $date = \DateTime::createFromFormat('m-d-y', $strDate);
+                if ($date == false) {
+                    // 2017-03-13
+                    $date = getDateFromString($strDate);
+
+                    if ($date == false) {
+                        echo '配送日期错误, 失败: ' . $date;
+                        $bResult = false;
+                        break;
+                    }
+                }
+
+                // 已有数据， 添加数据
+                if (!$checkData && $strDateDeliver) {
+
+                    foreach ($order->order_products as $op) {
+                        $dp = new MilkManDeliveryPlan;
+
+                        $dp->milkman_id = $nMilkmanId;
+                        $dp->station_id = $order->station_id;
+                        $dp->order_id = $order->id;
+                        $dp->order_product_id = $op->id;
+                        $dp->deliver_at = $strDateDeliver;
+                        $dp->produce_at = $op->getProductionDate($dp->deliver_at);
+
+                        if ($nCountDeliver == $nCountDeliverSent) {
+                            $dp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
+                        }
+                        else {
+                            $dp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
+                        }
+
+                        $dp->plan_count = $nCountDeliver;
+                        $dp->changed_plan_count = $nCountDeliver;
+                        $dp->delivery_count = $nCountDeliver;
+                        $dp->delivered_count = $nCountDeliverSent;
+
+                        $dp->product_price = $op->product_price;
+                        $dp->type = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER;
+
+                        $dp->save();
+                    }
+
+                    // 清空数量
+                    $nCountDeliver = 0;
+                    $nCountDeliverSent = 0;
+                }
+
+                $strDateDeliver = getStringFromDate($date);
+            }
+
+            // 累计一天的数量
+            $nCountDeliver += $nCount;
+            $nCountDeliverSent += $nCountSent;
+
+            // 累计总数量
+            $nCountTotal += $nCount;
+            $nCountTotalSent += $nCountSent;
+        }
+
+        //
+        // 更新订单状态
+        //
+        if (!$checkData && $order) {
+            foreach ($order->order_products as $op) {
+                $dRemain = ($nCountTotal - $nCountTotalSent) * $op->product_price;
+                $order->remaining_amount = $dRemain;
+
+                if ($dRemain == 0) {
+                    $order->status = Order::ORDER_FINISHED_STATUS;
+                }
+
+                $order->save();
+
+                break;
+            }
+        }
 
         return $bResult;
     }
