@@ -127,6 +127,9 @@ class Order extends Model
     private $mStrVillage;
     private $mStrHouseNumber;
 
+    // 序号，只在导入时使用
+    public $mnSeq;
+
     /**
      * 解析订单收货地址，以空格分隔的
      */
@@ -953,5 +956,18 @@ class Order extends Model
         }
 
         return $result;
+    }
+
+    /**
+     * 设置订单编号
+     * @param $needSave boolean
+     */
+    public function setOrderNumber($needSave = true)
+    {
+        $this->number = 'F' . $this->factory_id . 'S' . $this->station_id . 'C' . $this->customer_id . 'O' . $this->id;
+
+        if ($needSave) {
+            $this->save();
+        }
     }
 }
