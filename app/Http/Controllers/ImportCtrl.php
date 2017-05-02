@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
+use App\Model\BasicModel\Customer;
 use App\Model\BasicModel\PaymentType;
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
@@ -57,43 +58,55 @@ class ImportCtrl extends Controller
      */
     public function uploadFile(Request $request) {
 
+        $nType = $request->input('type');
+
         if ($request->hasFile('upload')){
 
             $file = $request->file('upload');
 
-            Excel::load($file, function ($reader) {
+            Excel::load($file, function ($reader) use ($nType) {
 
                 echo "Started import ...<br>";
 
-                $nSheetCount = $reader->getSheetCount();
+                // 订单数据导入
+                if ($nType == 0) {
+                    $nSheetCount = $reader->getSheetCount();
 
-                // 遍历sheet
-                for ($i = 0; $i < $nSheetCount; $i++) {
-                    $sheet = $reader->getSheet($i);
+                    // 遍历sheet
+                    for ($i = 0; $i < $nSheetCount; $i++) {
+                        $sheet = $reader->getSheet($i);
 
-                    // 通过column数量判断订单还是配送明细
-                    $nColCount = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
+                        // 通过column数量判断订单还是配送明细
+                        $nColCount = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
 
-                    // 订单
-                    if ($nColCount > 20) {
-                        // 校验数据
-                        echo "verifying order data ...<br>";
-                        if ($this->importOrder($sheet)) {
-                            // 导入
-                            echo "importing order data ... <br>";
-                            $this->importOrder($sheet, false);
+                        // 订单
+                        if ($nColCount > 20) {
+                            // 校验数据
+                            echo "verifying order data ...<br>";
+                            if ($this->importOrder($sheet)) {
+                                // 导入
+                                echo "importing order data ... <br>";
+                                $this->importOrder($sheet, false);
+                            } else {
+                                // 失败就终止
+                                break;
+                            }
+                        } // 配送明细
+                        else {
+                            // 校验数据
+                            echo "verifying delivery data ...<br>";
+                            if ($this->importDeliveryPlan($sheet)) {
+                                // 导入
+                                echo "importing delivery data ... <br>";
+                                $this->importDeliveryPlan($sheet, false);
+                            }
                         }
                     }
-                    // 配送明细
-                    else {
-                        // 校验数据
-                        echo "verifying delivery data ...<br>";
-                        if ($this->importDeliveryPlan($sheet)) {
-                            // 导入
-                            echo "importing delivery data ... <br>";
-                            $this->importDeliveryPlan($sheet, false);
-                        }
-                    }
+                }
+                // 客户数据导入
+                else if ($nType == 1) {
+                    $sheet = $reader->getSheet(0);
+                    $this->importCustomer($sheet);
                 }
             });
         }
@@ -600,6 +613,42 @@ class ImportCtrl extends Controller
             }
         }
 
+        echo '<br>----------------------<br>';
+
         return $bResult;
+    }
+
+    /**
+     * 导入客户信息；账户余额
+     * @param $sheet
+     */
+    private function importCustomer($sheet) {
+
+        $aryData = $sheet->toArray();
+
+        for ($i = 1; $i < count($aryData); $i++) {
+            $row = $aryData[$i];
+
+            echo implode(', ', $row);
+
+            // 手机号
+            $strPhone = strval($row[1]);
+
+            // 账户余额
+            $dBalance = doubleval($row[2]);
+
+            // 获取客户信息
+            $customer = Customer::where('factory_id', $this->mnFactoryId)->where('phone', $strPhone)->first();
+            if (!$customer) {
+                echo "  找不到客户信息！";
+                continue;
+            }
+
+            // 保存账户余额
+            $customer->remain_amount = $dBalance;
+            $customer->save();
+
+            echo "<br>";
+        }
     }
 }
