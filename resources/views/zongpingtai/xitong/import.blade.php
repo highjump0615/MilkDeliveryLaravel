@@ -26,31 +26,25 @@
                 <div class="ibox-content">
 
                     <div class="feed-element">
-                        <div class="col-md-3">
-                            <form id="upload-form" method="post" action="{{url('zongpingtai/xitong/import/upload')}}" enctype="multipart/form-data">
+                        <form id="upload-form" method="post" action="{{url('zongpingtai/xitong/import/upload')}}" enctype="multipart/form-data">
 
-                                <button type="button" class="btn btn-success btn-outline" id="csv_file_upload_btn">
-                                    数据导入
-                                </button>
+                            {{-- 导入数据类型 --}}
+                            <input type="hidden" name="type" id="input-type" value="0" />
 
-                                {{-- 只接受excel文件 --}}
-                                <input type="file" name="upload" id="csv_file_upload_input"
-                                       accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
-                            </form>
-                        </div>
+                            <button type="button" class="btn btn-success btn-outline" id="btn-order">
+                                订单数据导入
+                            </button>
+
+                            <button type="button" class="btn btn-success btn-outline" id="btn-customer">
+                                客户账户余额数据导入
+                            </button>
+
+                            {{-- 只接受excel文件 --}}
+                            <input type="file" name="upload" id="input-upload"
+                                   accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                        </form>
                     </div>
 
-                    @if(Session::has('status'))
-                        <div class="row">
-                            <div class="form-group">
-                                <div class="col-sm-10 col-sm-offset-1">
-                                    <div class="alert alert-success">
-                                        {{ Session::get('status') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -58,5 +52,5 @@
 @endsection
 
 @section('script')
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naika_admin.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/zongpingtai/import.js')?>"></script>
 @endsection
