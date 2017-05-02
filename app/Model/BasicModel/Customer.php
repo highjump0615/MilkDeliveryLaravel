@@ -22,7 +22,6 @@ class Customer extends Model
         'milkman_id',
         'factory_id',
         'remain_amount',
-        'remain_order_amount',
     ];
 
     protected $appends =[
@@ -33,6 +32,7 @@ class Customer extends Model
         'xiaoqu',
         'sub_addr',
         'has_milkbox',
+        'remain_order_amount',
         'remaining_bottle_count',
     ];
 
