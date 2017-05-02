@@ -83,6 +83,10 @@ class ImportCtrl extends Controller
                             echo "importing order data ... <br>";
                             $this->importOrder($sheet, false);
                         }
+                        else {
+                            // 失败就终止
+                            break;
+                        }
                     }
                     // 配送明细
                     else {
@@ -599,6 +603,8 @@ class ImportCtrl extends Controller
                 break;
             }
         }
+
+        echo '<br>----------------------<br>';
 
         return $bResult;
     }
