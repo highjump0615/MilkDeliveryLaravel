@@ -779,7 +779,14 @@ class Order extends Model
      */
     public function getMilkmanIdAttribute()
     {
-        return $this->milkman->id;
+        $milkman = $this->milkman;
+        $nId = 0;
+
+        if (!empty($milkman)) {
+            $nId = $milkman->id;
+        }
+
+        return $nId;
     }
 
     /**
@@ -817,7 +824,14 @@ class Order extends Model
      */
     public function getMilkmanNameAttribute()
     {
-        return $this->milkman->name;
+        $strName = null;
+        $milkman = $this->milkman;
+
+        if (!empty($milkman)) {
+            $strName = $milkman->name;
+        }
+
+        return $strName;
     }
 
     public function getAllOrderTypesAttribute()
