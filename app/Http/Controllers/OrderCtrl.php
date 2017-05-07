@@ -1105,7 +1105,7 @@ class OrderCtrl extends Controller
      * @param $status
      * @param $count
      */
-    private function addMilkmanDeliveryPlan($milkmanId, $stationId, $startAt, $orderProduct, $status, $count) {
+    public function addMilkmanDeliveryPlan($milkmanId, $stationId, $startAt, $orderProduct, $status, $count) {
         $dp = new MilkManDeliveryPlan;
 
         $dp->milkman_id = $milkmanId;
