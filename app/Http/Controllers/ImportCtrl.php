@@ -91,15 +91,6 @@ class ImportCtrl extends Controller
                                 // 失败就终止
                                 break;
                             }
-                        } // 配送明细
-                        else {
-                            // 校验数据
-                            echo "verifying delivery data ...<br>";
-                            if ($this->importDeliveryPlan($sheet)) {
-                                // 导入
-                                echo "importing delivery data ... <br>";
-                                $this->importDeliveryPlan($sheet, false);
-                            }
                         }
                     }
                 }
@@ -449,6 +440,16 @@ class ImportCtrl extends Controller
             $op->count_per_day = 1;
 
             $op->save();
+
+            //
+            // 创建一个MilkmanDeliveryPlan, 之后自动生成
+            //
+            $orderCtrl->addMilkmanDeliveryPlan($customer->milkman_id,
+                $station->id,
+                $op->start_at,
+                $op,
+                MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
+                $op->total_count);
         }
 
         echo '<br>----------------------<br>';
