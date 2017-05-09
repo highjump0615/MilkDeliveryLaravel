@@ -271,7 +271,7 @@ name | varchar | 455 | YES | 名称 | | | 新单
 
 字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
 --- | ------- | ---- | --- | ----- | ---- | --- | ---
-backend_type | int | 11 | YES | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶点 | | 2 
+backend_type | int | 11 | YES | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶站 | | 2 
 parent_page | int | 11 | YES | 上级菜单id | 0: 一级菜单 | | 0 
 name | varchar | 255 | YES | 名称 | | | 系统管理 
 order_no | int | 11 | YES | 排列顺序 | | | 1 
@@ -347,7 +347,7 @@ status | int | 11 | YES | 状态 | 1: ON<br>0: OFF | 1 |
 [station_id](#station) | int | 11 | YES | 奶站id | | | 3
 [user_role_id](#userrole) | int | 11 | NO | 角色id | | | 3
 nick_name | varchar | 255 | YES | 昵称 | | | 
-backend_type | int | 11 | NO | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶点 | |
+backend_type | int | 11 | NO | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶站 | |
 description | varchar | 1000 | YES | 描述 | | |
 remember_token | varchar | 225 | YES | | | |
 last_used_ip | varchar | 25 | YES | 上次登录IP地址 | | |
@@ -360,7 +360,7 @@ updated_at | datetime | | YES | 更新时间 | | | 2017-03-28 05:17:48
 字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
 --- | ------- | ---- | --- | ----- | ---- | --- | ---
 name | varchar | 45 | YES | 名称 | | | 
-backend_type | int | 11 | NO | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶点 | |
+backend_type | int | 11 | NO | 后台类型 | 1: 总平台<br>2: 奶厂<br>3: 奶站 | |
 [factory_id](#factory) | int | 11 | YES | 奶厂id | | |
 [station_id](#station) | int | 11 | NO | 奶站id | | |
 
