@@ -31,7 +31,7 @@
                             <tr>
                                 <td class="user">{{$fa->Name}}</td>
                                 <td class="phone">{{$fa->Comment}}</td>
-                                <td class="naizhan_count"><?php echo $fa->Auto_increment -1; ?></td>
+                                <td class="naizhan_count"><?php echo $fa->Rows; ?></td>
                             </tr>
                         @endforeach
                         </tbody>
