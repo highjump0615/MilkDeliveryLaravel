@@ -9,8 +9,11 @@
 namespace App\Http\Controllers;
 namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
+use App\Model\BasicModel\CityData;
 use App\Model\BasicModel\Customer;
+use App\Model\BasicModel\DistrictData;
 use App\Model\BasicModel\PaymentType;
+use App\Model\BasicModel\ProvinceData;
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
@@ -28,7 +31,7 @@ use Excel;
 
 class ImportCtrl extends Controller
 {
-    private $mnFactoryId = 7;
+    private $mnFactoryId = 1;
     private $mOrders = array();
 
     /**
@@ -98,6 +101,17 @@ class ImportCtrl extends Controller
                 else if ($nType == 1) {
                     $sheet = $reader->getSheet(0);
                     $this->importCustomer($sheet);
+                }
+                // 地址库数据导入
+                else if ($nType == 2) {
+                    $sheet = $reader->getSheet(0);
+
+                    echo "verifying address data ...<br>";
+                    if ($this->importAddress($sheet)) {
+                        // 导入
+                        echo "importing address data ... <br>";
+                        $this->importAddress($sheet, false);
+                    }
                 }
             });
         }
@@ -651,5 +665,193 @@ class ImportCtrl extends Controller
 
             echo "<br>";
         }
+    }
+
+    /**
+     * 导入地址库
+     * @param $sheet
+     * @return bool
+     */
+    private function importAddress($sheet, $checkData = true) {
+        $bResult = true;
+
+        $aryData = $sheet->toArray();
+
+        for ($i = 1; $i < count($aryData); $i++) {
+            $row = $aryData[$i];
+
+            if ($checkData) {
+                echo implode(', ', $row);
+                echo "<br>";
+            }
+
+            // 小区
+            $strVillage = $row[0];
+
+            // 省
+            $strProvince = $row[2];
+
+            // 市
+            $strCity = $row[3];
+
+            // 区
+            $strDistrict = $row[4];
+
+            // 街道
+            $strStreet = $row[5];
+
+            // 只校验数据
+            if ($checkData) {
+                //
+                // 校验省
+                //
+                $provinces = ProvinceData::where('name', 'LIKE', $strProvince . '%')->get();
+
+                if (count($provinces) == 0) {
+                    echo '!!! !!!!   找不到此省: ' . $strProvince;
+                    $bResult = false;
+                    break;
+                }
+                else if (count($provinces) > 1) {
+                    echo "!!! !!!!   发现多个省: ";
+                    foreach ($provinces as $pr) {
+                        echo $pr->name . ", ";
+                    }
+
+                    $bResult = false;
+                    break;
+                }
+
+                //
+                // 校验市
+                //
+                $cities = CityData::where('name', 'LIKE', $strCity . '%')->where('provincecode', $provinces[0]->code)->get();
+
+                if (count($cities) == 0) {
+                    echo '!!! !!!!   找不到此市: ' . $strCity;
+                    $bResult = false;
+                    break;
+                }
+                else if (count($cities) > 1) {
+                    echo "!!! !!!!   发现多个市: ";
+                    foreach ($cities as $ct) {
+                        echo $ct->name . ", ";
+                    }
+
+                    $bResult = false;
+                    break;
+                }
+
+                //
+                // 校验区
+                //
+                $districts = DistrictData::where('name', $strDistrict)->where('citycode', $cities[0]->code)->get();
+
+                if (count($districts) == 0) {
+                    echo '!!! !!!!   找不到此区: ' . $strDistrict;
+                    $bResult = false;
+                    break;
+                }
+                else if (count($districts) > 1) {
+                    echo "!!! !!!!   发现多个区: ";
+                    foreach ($districts as $dist) {
+                        echo $dist->name . ", ";
+                    }
+
+                    $bResult = false;
+                    break;
+                }
+
+                continue;
+            }
+
+            // 获取省
+            $provinceData = ProvinceData::where('name', 'LIKE', $strProvince . '%')->first();
+            $strProvince = $provinceData->name;
+
+            $province = Address::where('name', $strProvince)
+                ->where('level', Address::LEVEL_PROVINCE)
+                ->where('is_active', Address::ADDRESS_ACTIVE)
+                ->first();
+
+            if (!$province) {
+                $province = Address::create([
+                    'name' => $strProvince,
+                    'level' => Address::LEVEL_PROVINCE,
+                    'parent_id' => 0,
+                    'factory_id' => $this->mnFactoryId,
+                ]);
+            }
+
+            // 获取市
+            $cityData = CityData::where('name', 'LIKE', $strCity . '%')->where('provincecode', $provinceData->code)->first();
+            $strCity = $cityData->name;
+
+            $city = Address::where('name', $strCity)
+                ->where('level', Address::LEVEL_CITY)
+                ->where('parent_id', $province->id)
+                ->where('is_active', Address::ADDRESS_ACTIVE)
+                ->first();
+
+            if (!$city) {
+                $city = Address::create([
+                    'name' => $strCity,
+                    'level' => Address::LEVEL_CITY,
+                    'parent_id' => $province->id,
+                    'factory_id' => $this->mnFactoryId,
+                ]);
+            }
+
+            $district = Address::where('name', $strDistrict)
+                ->where('level', Address::LEVEL_DISTRICT)
+                ->where('parent_id', $city->id)
+                ->where('is_active', Address::ADDRESS_ACTIVE)
+                ->first();
+
+            if (!$district) {
+                $district = Address::create([
+                    'name' => $strDistrict,
+                    'level' => Address::LEVEL_DISTRICT,
+                    'parent_id' => $city->id,
+                    'factory_id' => $this->mnFactoryId,
+                ]);
+            }
+
+            // 获取街道
+            $street = Address::where('name', $strStreet)
+                ->where('level', Address::LEVEL_STREET)
+                ->where('parent_id', $district->id)
+                ->where('is_active', Address::ADDRESS_ACTIVE)
+                ->first();
+
+            if (!$street) {
+                $street = Address::create([
+                    'name' => $strStreet,
+                    'level' => Address::LEVEL_STREET,
+                    'parent_id' => $district->id,
+                    'factory_id' => $this->mnFactoryId,
+                ]);
+            }
+
+            // 获取小区
+            $village = Address::where('name', $strVillage)
+                ->where('level', Address::LEVEL_VILLAGE)
+                ->where('parent_id', $street->id)
+                ->where('is_active', Address::ADDRESS_ACTIVE)
+                ->first();
+
+            if (!$village) {
+                $village = Address::create([
+                    'name' => $strVillage,
+                    'level' => Address::LEVEL_VILLAGE,
+                    'parent_id' => $street->id,
+                    'factory_id' => $this->mnFactoryId,
+                ]);
+            }
+        }
+
+        echo '<br>----------------------<br>';
+
+        return $bResult;
     }
 }
