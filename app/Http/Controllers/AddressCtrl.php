@@ -572,7 +572,12 @@ class AddressCtrl extends Controller
                 }
             }
 
-            return response()->json(['status' => 'success', 'xiaoqus' => $xiaoqus_data, 'current_street' => $street_name]);
+            return response()->json([
+                'status' => 'success',
+                'xiaoqus' => $xiaoqus_data,
+                'current_street' => $street_name,
+                'street_id' => $street_id,
+            ]);
         }
     }
 
