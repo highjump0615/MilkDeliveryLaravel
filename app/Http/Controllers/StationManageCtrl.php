@@ -303,8 +303,21 @@ class StationManageCtrl extends Controller
             $user_pwd = $request->input('user_pwd');
             $user_repwd = $request->input('user_repwd');
 
-            // 奶站信息
-            $ds = new DeliveryStation;
+            $station_id = $request->input('station_id');
+
+            if ($station_id > 0) {
+                $ds = DeliveryStation::find($station_id);
+            }
+            else {
+                // 奶站信息
+                $ds = new DeliveryStation;
+
+                $ds->status = DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE;
+                $ds->calculation_balance = 0;
+
+                $ds->delivery_credit_balance = 0;
+                $ds->business_credit_balance = 0;
+            }
 
             $ds->name = $name;
             $ds->address = $addr;
@@ -313,8 +326,6 @@ class StationManageCtrl extends Controller
             $ds->factory_id = $factory_id;
             $ds->station_type = $type;
             $ds->payment_calc_type = $payment_calc_type;
-            $ds->status = DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE;
-            $ds->calculation_balance = 0;
 
             $ds->billing_account_name = $settle_account_name;
             $ds->billing_account_card_no = $settle_account_card;
@@ -323,54 +334,65 @@ class StationManageCtrl extends Controller
             $ds->freepay_account_card_no = $free_pay_card;
 
             $ds->init_delivery_credit_amount = $deliver_business_credit;
-            $ds->delivery_credit_balance = 0;
-
             $ds->init_business_credit_amount = $self_business_credit;
-            $ds->business_credit_balance = 0;
-
             $ds->init_guarantee_amount = $margin;
 
             $ds->save();
 
             $dsid = $ds->id;
-            $ds->number = $this->get_station_number($factory_id, $dsid);
-            $ds->save();
 
-            // 用户信息
-            $account = new User;
-            $account->name = $user_number;
-            $account->password = bcrypt($user_pwd);
-            $account->created_at = date("Y-m-d H:i:s");
-            $account->status = User::USER_STATUS_ACTIVE;
-            $account->backend_type = 3;
-            $account->user_role_id = UserRole::USERROLE_NAIZHAN_TOTAL_ADMIN;
-            $account->factory_id = $factory_id;
-            $account->station_id = $ds->id;
+            if ($station_id == 0) {
+                $ds->number = $this->get_station_number($factory_id, $dsid);
+                $ds->save();
+
+                // 用户信息
+                $account = new User;
+                $account->name = $user_number;
+                $account->created_at = date("Y-m-d H:i:s");
+                $account->status = User::USER_STATUS_ACTIVE;
+                $account->backend_type = 3;
+                $account->user_role_id = UserRole::USERROLE_NAIZHAN_TOTAL_ADMIN;
+                $account->factory_id = $factory_id;
+                $account->station_id = $ds->id;
+            }
+            else {
+                $account = $ds->getUser();
+            }
+
+            if ($user_pwd) {
+                $account->password = bcrypt($user_pwd);
+            }
+
             $account->save();
 
             //save delivery area ($dsid)
-            $area_count = count($request->input('area_xiaoqu'));
-            if ($area_count > 0) {
-                for ($i = 0; $i < $area_count; $i++) {
-                    $xiaoqu_id = $request->input('area_xiaoqu')[$i];
-                    $xiaoqu = Address::find($xiaoqu_id);
-                    if ($xiaoqu) {
-                        $address = $xiaoqu->full_address_name;
-                        $dsarea = new DSDeliveryArea;
-                        $dsarea->address = $address;
-                        $dsarea->station_id = $dsid;
-                        $dsarea->save();
-                    }
+            DSDeliveryArea::where('station_id', $dsid)->delete();
 
+            $area_count = count($request->input('area_xiaoqu'));
+            for ($i = 0; $i < $area_count; $i++) {
+                $xiaoqu_id = $request->input('area_xiaoqu')[$i];
+                $xiaoqu = Address::find($xiaoqu_id);
+                if ($xiaoqu) {
+                    $address = $xiaoqu->getFullName();
+                    $dsarea = new DSDeliveryArea;
+                    $dsarea->address = $address;
+                    $dsarea->address_id = $xiaoqu->id;
+                    $dsarea->station_id = $dsid;
+                    $dsarea->save();
                 }
             }
 
             // 添加系统日志
-            $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_ADD);
+            if ($station_id > 0) {
+                $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_EDIT);
+            }
+            else {
+                $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_ADD);
 
-            // 添加奶厂通知
-            $notification = new NotificationsAdmin();
-            $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_PRODUCE, "奶站已添加成功", $name . "奶站已添加成功。");
+                // 添加奶厂通知
+                $notification = new NotificationsAdmin();
+                $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_PRODUCE, "奶站已添加成功", $name . "奶站已添加成功。");
+            }
 
             return response()->json(['status' => 'success', 'sid' => $dsid]);
         }
@@ -415,102 +437,6 @@ class StationManageCtrl extends Controller
         }
     }
 
-    //Update Station
-    public function update_station(Request $request)
-    {
-        if ($request->ajax()) {
-            $fuser = Auth::guard('gongchang')->user();
-            $factory_id = $fuser->factory_id;
-
-            $name = $request->input('st_name');
-
-            $addr = ($request->input('select_province')) . ' ' . ($request->input('select_city')) . ' ' . ($request->input('select_district')) . ' ' . ($request->input('select_street_xiaoqu'));
-
-            $boss = $request->input('st_boss');
-
-            $phone = $request->input('st_phone');
-            $type = $request->input('st_type');
-
-            $payment_calc_type = $request->input('fee_settle');
-
-            $settle_account_name = $request->input('settle_account_name');
-            $settle_account_card = $request->input('settle_account_card');
-
-            $free_pay_name = $request->input('free_pay_name');
-            $free_pay_card = $request->input('free_pay_card');
-
-            $deliver_business_credit = $request->input('deliver_business_credit');
-            $self_business_credit = $request->input('self_business_credit');
-            $margin = $request->input('margin');
-
-            $user_number = $request->input('user_number');
-            $user_pwd = $request->input('user_pwd');
-            $user_repwd = $request->input('user_repwd');
-
-            $station_id = $request->input('station_id');
-
-            // 奶站信息
-            $ds = DeliveryStation::find($station_id);
-
-            $ds->name = $name;
-            $ds->address = $addr;
-            $ds->boss = $boss;
-            $ds->phone = $phone;
-            $ds->factory_id = $factory_id;
-            $ds->station_type = $type;
-            $ds->payment_calc_type = $payment_calc_type;
-
-            $ds->billing_account_name = $settle_account_name;
-            $ds->billing_account_card_no = $settle_account_card;
-
-            $ds->freepay_account_name = $free_pay_name;
-            $ds->freepay_account_card_no = $free_pay_card;
-
-            $ds->init_delivery_credit_amount = $deliver_business_credit;
-            $ds->init_business_credit_amount = $self_business_credit;
-            $ds->init_guarantee_amount = $margin;
-
-            $ds->save();
-
-            // 用户信息
-            $account = $ds->getUser();
-            $account->name = $user_number;
-
-            if ($user_pwd)
-                $account->password = bcrypt($user_pwd);
-
-            $account->save();
-
-            $dsid = $ds->id;
-
-            $dssa = DSDeliveryArea::where('station_id', $dsid)->get();
-            foreach ($dssa as $dsa) {
-                $dsa->delete();
-            }
-
-            $area_count = count($request->input('area_xiaoqu'));
-            for ($i = 0; $i < $area_count; $i++) {
-                $xiaoqu_id = $request->input('area_xiaoqu')[$i];
-                $xiaoqu = Address::find($xiaoqu_id);
-                if ($xiaoqu) {
-                    $address = $xiaoqu->full_address_name;
-                    $dsarea = new DSDeliveryArea;
-                    $dsarea->address = $address;
-                    $dsarea->station_id = $dsid;
-                    $dsarea->save();
-                }
-
-            }
-
-            $sid = $ds->id;
-
-            // 添加系统日志
-            $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站账户管理', SysLog::SYSLOG_OPERATION_EDIT);
-
-            return response()->json(['status' => 'success', 'sid' => $sid]);
-        }
-    }
-
     //Show change Station page
     public function show_change_station_page($station_id)
     {
@@ -529,55 +455,59 @@ class StationManageCtrl extends Controller
         $station_type = DSType::all();
         $calctype = DSPaymentCalcType::all();
 
-        $area_address = array();
+        //
+        // 提取配送范围的街道信息
+        //
+        $streets = array();
         $delivery_area = DSDeliveryArea::where('station_id', $station_id)->get();
-        $i = 0;
-        foreach ($delivery_area as $da) {
-            $flag = 0;
-            $cur_addr = explode(" ", $da->address);
-            if ($i == 0) {
-                $area_address[$i] = $cur_addr[3];
-                $i++;
-            }
-            for ($j = 0; $j < $i; $j++) {
-                if ($area_address[$j] == $cur_addr[3]) {
-                    $flag = 1;
+
+        $nIndexCurrent = -1;
+
+        foreach ($delivery_area as $address) {
+            // 获取街道信息
+            $village = $address->village;
+            $street = $village->parent;
+
+            // 街道是否已添加
+            $index = -1;
+            for ($i = 0; $i < count($streets); $i++) {
+                if ($streets[$i]['street']->id == $street->id) {
+                    $index = $i;
+                    break;
                 }
             }
-            if ($flag == 0) {
-                $area_address[$i] = $cur_addr[3];
-                $i++;
+
+            if ($index < 0) {
+                $streetObj = array();
+                $streetObj['child'] = array();
+                $streetObj['street'] = $street;
+
+                // 添加到主数组
+                $streets[] = $streetObj;
+
+                $nIndexCurrent++;
+                $index = $nIndexCurrent;
             }
-        }
-        $finial_area = array();
-        foreach ($area_address as $aa) {
-            $xiaoqu = array();
-            $get_xiaoqu = DSDeliveryArea::where('station_id', $station_id)->where('address', 'LIKE', '%' . " " . $aa . " " . '%')->get();
-            $l = 0;
-            foreach ($get_xiaoqu as $gx) {
-                $address = explode(' ', $gx->address);
-                $xiaoqu_id = $gx->id;
-                if (count($address) > 3) {
-                    $xiaoqu[$l]['id'] = $xiaoqu_id;
-                    $xiaoqu[$l]['name'] = $address[4];
-                    $l++;
-                }
-            }
-            $finial_area[$aa] = $xiaoqu;
+
+            // 更新所属小区
+            $streets[$index]['child'][] = $village;
         }
 
         $station['delivery_area'] = $delivery_area;
 
-        return view('gongchang.xitong.naizhanzhanghao.naizhanxiugai', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'province' => $province,
-            'station_type' => $station_type,
-            'calctype' => $calctype,
-            'station' => $station,
-            'delivery_area' => $finial_area,
+        return view('gongchang.xitong.naizhanzhanghao.tianjianaizhanzhanghu', [
+            // 菜单信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 页面数据
+            'province'      => $province,
+            'station_type'  => $station_type,
+            'calctype'      => $calctype,
+            'station'       => $station,
+            'delivery_area' => $streets,
         ]);
     }
 
@@ -657,13 +587,16 @@ class StationManageCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         return view('gongchang.xitong.naizhanzhanghao.tianjianaizhanzhanghu', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'province' => $province,
-            'station_type' => $station_type,
-            'calctype' => $calctype,
+            // 菜单信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 页面数据
+            'province'      => $province,
+            'station_type'  => $station_type,
+            'calctype'      => $calctype,
         ]);
     }
 

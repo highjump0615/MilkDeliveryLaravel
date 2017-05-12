@@ -11,6 +11,7 @@ class DSDeliveryArea extends Model
 
     protected $fillable =[
         'address',
+        'address_id',
         'station_id',
     ];
 
@@ -26,6 +27,14 @@ class DSDeliveryArea extends Model
     public function staion()
     {
     	return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
+    }
+
+    /**
+     * 获取地址对象
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function village() {
+        return $this->belongsTo('App\Model\BasicModel\Address', 'address_id');
     }
 
     /**
