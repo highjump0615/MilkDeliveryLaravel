@@ -389,12 +389,12 @@ class DSStatistics extends Controller
         foreach ($result as $date=>$rs){
             $customer_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('deliver_at', $date)->
             where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->
-            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->get()->groupby(function ($sort) {
+            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->groupby(function ($sort) {
                 return $sort->order_id;
             })->count();
 
             $channel_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('deliver_at',$date)->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->wherebetween('type', [2, 3])->get()->groupby(function ($sort) {
+            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->wherebetween('type', [2, 3])->groupby(function ($sort) {
                 return $sort->order_id;
             })->count();
 
@@ -464,12 +464,12 @@ class DSStatistics extends Controller
             $customer_delivers_products['milkman_name'] = MilkMan::find($mi->id)->name;
             $customer_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->wherebetween('deliver_at', [$start_date, $end_date])->
             where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id', $mi->id)->
-            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->get()->groupby(function ($sort) {
+            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->groupby(function ($sort) {
                 return $sort->order_id;
             })->count();
             $channel_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->wherebetween('deliver_at', [$start_date, $end_date])->
             where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id', $mi->id)->
-            wherebetween('type', [2, 3])->get()->groupby(function ($sort) {
+            wherebetween('type', [2, 3])->groupby(function ($sort) {
                 return $sort->order_id;
             })->count();
             $customer_delivers_products['orders_count'] = $customer_orders + $channel_orders;

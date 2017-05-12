@@ -268,7 +268,7 @@ class OrderCtrl extends Controller
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get()->first();
+            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->first();
 
             foreach ($plans as $plan) {
                 // 已生成配送列表
@@ -280,7 +280,7 @@ class OrderCtrl extends Controller
 
             // 没有今日的配送任务或今日配送列表已生成，于是暂停下一个配送任务
             if (!$plans) {
-                $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->get()->first();
+                $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', '>', $today)->first();
             }
 
             foreach ($plans as $plan) {

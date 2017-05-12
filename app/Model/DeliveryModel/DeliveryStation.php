@@ -249,10 +249,11 @@ class DeliveryStation extends Authenticatable
         foreach($milkmans as $milkman)
         {
             $milkman_id = $milkman->id;
-            $areas = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-                ->where('address', 'like', $address)->get()->first();
+            $area = MilkManDeliveryArea::where('milkman_id', $milkman_id)
+                ->where('address', 'like', $address)
+                ->first();
 
-            if($areas)
+            if ($area)
             {
                 $result_milkman = $milkman;
                 break;
@@ -418,10 +419,10 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
 
-        $count_orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->get()->count();
+        $count_orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->count();
 
         $count_orders_done_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)
-            ->where('status', Order::ORDER_FINISHED_STATUS)->get()->count();
+            ->where('status', Order::ORDER_FINISHED_STATUS)->count();
 
         $term_start_order_count = $count_orders_before-$count_orders_done_before;
 
@@ -840,7 +841,7 @@ class DeliveryStation extends Authenticatable
         $userinfo = User::where('backend_type','3')
             ->where('user_role_id', '200')
             ->where('station_id', $this->id)
-            ->get()->first();
+            ->first();
 
         return $userinfo;
     }

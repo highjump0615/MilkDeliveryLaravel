@@ -156,7 +156,7 @@ class Controller extends BaseController
                 //save wechat user id
                 $open_id = $codees['openid'];
 
-                $wechat_user = WechatUser::where('openid', $open_id)->get()->first();
+                $wechat_user = WechatUser::where('openid', $open_id)->first();
                 if (!$wechat_user) {
                     $wechat_user = new WechatUser;
                     $wechat_user->openid = $open_id;

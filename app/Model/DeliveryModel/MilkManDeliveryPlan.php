@@ -250,7 +250,6 @@ class MilkManDeliveryPlan extends Model
         // 获取下一个配送明细
         $deliverPlanNext = MilkManDeliveryPlan::where('order_product_id', $this->order_product_id)
             ->where('deliver_at', '>', $this->deliver_at)
-            ->get()
             ->first();
 
         // 切换两个配送明细的flag

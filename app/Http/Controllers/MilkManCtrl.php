@@ -142,7 +142,7 @@ class MilkManCtrl extends Controller
             $i++;
             $milkman_delivery_area = new MilkManDeliveryArea;
             $milkman_delivery_area->milkman_id = $milkman_id;
-            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)->where('address','LIKE','%'.$x.'%')->get()->first()->address;
+            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)->where('address','LIKE','%'.$x.'%')->first()->address;
             $milkman_delivery_area->order = $i;
             $milkman_delivery_area->save();
         }
@@ -248,7 +248,8 @@ class MilkManCtrl extends Controller
         $street_addr = $addr->full_address_name;
 
         $da = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-            ->where('address', 'LIKE', $street_addr.' %')->get()->first();
+            ->where('address', 'LIKE', $street_addr.' %')
+            ->first();
 
         if(!$da) {
             $xiaoqus = $addr->getSubAddresses();
@@ -342,7 +343,10 @@ class MilkManCtrl extends Controller
             $i++;
             $milkman_delivery_area = new MilkManDeliveryArea;
             $milkman_delivery_area->milkman_id = $milkman;
-            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)->where('address','LIKE','%'.$street." ".$x.'%')->get()->first()->address;
+            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)
+                ->where('address','LIKE','%'.$street." ".$x.'%')
+                ->first()
+                ->address;
             $milkman_delivery_area->order = $i;
             $milkman_delivery_area->save();
         }

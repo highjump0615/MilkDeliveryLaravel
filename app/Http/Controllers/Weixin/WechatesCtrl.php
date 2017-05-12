@@ -104,7 +104,6 @@ class WechatesCtrl extends Controller
 
 		$wxusers = WechatUser::where('openid', $jsoninfo['openid'])
             ->where('factory_id',$this->factoryid)
-            ->get()
             ->first();
 
 		if (empty($wxusers)) {

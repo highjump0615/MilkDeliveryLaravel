@@ -26,21 +26,21 @@ class DSTransactionPay extends Model
 
     public function getDeliveryStationNameAttribute()
     {
-        $trs = DSTransaction::where('transaction_pay_id', $this->id)->get()->first();
+        $trs = DSTransaction::where('transaction_pay_id', $this->id)->first();
         if($trs)
             return $trs->delivery_station_name;
     }
 
     public function getDeliveryStationIDAttribute()
     {
-        $trs = DSTransaction::where('transaction_pay_id', $this->id)->get()->first();
+        $trs = DSTransaction::where('transaction_pay_id', $this->id)->first();
         if($trs)
             return $trs->delivery_station_id;
     }
 
     public function getPayerAttribute()
     {
-        $trs = DSTransaction::where('transaction_pay_id', $this->id)->get()->first();
+        $trs = DSTransaction::where('transaction_pay_id', $this->id)->first();
         $station_id =$trs->station_id;
         $station = DeliveryStation::find($station_id);
         return $station->boss;

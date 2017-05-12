@@ -16,9 +16,9 @@ class YimeiSmsCtrl extends Controller
         $current_page = 'xinxijiekou';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
 
-        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->get()->first();
-        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->get()->first();
-        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->get()->first();
+        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->first();
+        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->first();
+        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->first();
 
         return view('zongpingtai.xitong.xinxijiekou', [
             'pages' => $pages,
@@ -33,9 +33,9 @@ class YimeiSmsCtrl extends Controller
     }
 
     public function showPost(Request $request){
-        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->get()->first();
-        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->get()->first();
-        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->get()->first();
+        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->first();
+        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->first();
+        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->first();
 
         if ($yimeiurl->value != $request['yimeiurl'])
             DB::update("update yimeisms set value = '".$request['yimeiurl']."' where name = 'sms_yimei_url'");
@@ -51,9 +51,9 @@ class YimeiSmsCtrl extends Controller
         $current_page = 'xinxijiekou';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
 
-        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->get()->first();
-        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->get()->first();
-        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->get()->first();
+        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->first();
+        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->first();
+        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->first();
 
         return view('zongpingtai.xitong.xinxijiekou', [
             'pages' => $pages,
@@ -69,9 +69,9 @@ class YimeiSmsCtrl extends Controller
 
     public function sendSMS($phone, $msg)
     {
-        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->get()->first();
-        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->get()->first();
-        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->get()->first();
+        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->first();
+        $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->first();
+        $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->first();
 
         $message = "您的验证码为:".$msg;
 

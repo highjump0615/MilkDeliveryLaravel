@@ -68,7 +68,6 @@ class Order extends Model
         'milkman_name',
         'milkman_id',
         'milkman',
-        'addr_id',
         'addresses',
         'milk_box_install_label',
         'province_id',
@@ -84,7 +83,6 @@ class Order extends Model
         'unfinished_delivery_plans',
         'delivery_plans_sent_to_production_plan',
         'waiting_passed_delivery_plans',
-        'order_start_date',
         'order_end_date',
         'status_name',
         'customer',
@@ -95,7 +93,6 @@ class Order extends Model
         'total_count',
         'grouped_plans_per_product',
         'order_stop_end_date',
-        'first_delivery_plans',
     ];
     
     const ORDER_TRANS_CHECK_TRUE = 1;
@@ -169,19 +166,6 @@ class Order extends Model
 
     public function getAddrHouseNumber() {
         return $this->mStrHouseNumber;
-    }
-
-    public function getFirstDeliveryPlansAttribute()
-    {
-        $plan1=MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at')->get()->first();
-        if($plan1)
-        {
-            $first_deliver_at = $plan1->deliver_at;
-
-            $plans = MilkManDeliveryPlan::where('order_id', $this->id)->where('deliver_at', $first_deliver_at)->get();
-            return $plans;
-        } else
-            return null;
     }
 
     public function getTotalCountAttribute()
@@ -317,22 +301,10 @@ class Order extends Model
         return $status_name;
     }
 
-    public function getOrderStartDateAttribute()
-    {
-        //get delivery date of last delivery plan
-        $dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'asc')->get()->first();
-        if($dp)
-        {
-            return $dp->deliver_at;
-        } else
-            return "";
-
-    }
-
     public function getOrderEndDateAttribute()
     {
         //get delivery date of last delivery plan
-        $last_dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'desc')->get()->first();
+        $last_dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'desc')->first();
         if($last_dp)
         {
             return $last_dp->deliver_at;
@@ -524,7 +496,7 @@ class Order extends Model
         $province = $sa[0];
         if(!$province)
             return 0;
-        $province_m = Address::where('name', $province)->get()->first();
+        $province_m = Address::where('name', $province)->first();
         if($province_m)
             return $province_m->id;
         else
@@ -541,7 +513,7 @@ class Order extends Model
         if(!$city)
             return 0;
 
-        $city_m = Address::where('name', $city)->where('parent_id', $province_id)->get()->first();
+        $city_m = Address::where('name', $city)->where('parent_id', $province_id)->first();
 
         if($city_m)
             return $city_m->id;
@@ -568,7 +540,7 @@ class Order extends Model
         if(!$district)
             return 0;
 
-        $district_m = Address::where('name', $district)->where('parent_id', $city_id)->get()->first();
+        $district_m = Address::where('name', $district)->where('parent_id', $city_id)->first();
         if($district_m)
             return $district_m->id;
         else
@@ -598,7 +570,7 @@ class Order extends Model
         if(!$street)
             return 0;
 
-        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->get()->first();
+        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->first();
 
         if($street_m)
             return $street_m->id;
@@ -621,7 +593,7 @@ class Order extends Model
         if(!$xq)
             return 0;
 
-        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->get()->first();
+        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->first();
         if($xq_m)
             return $xq_m->id;
         else
@@ -765,12 +737,6 @@ class Order extends Model
         }
         else
             return "";
-    }
-
-    public function getAddrIdAttribute()
-    {
-        $addr_id = $this->xiaoqu_id;
-        return $addr_id;
     }
 
     /**
