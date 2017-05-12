@@ -13,6 +13,13 @@ $(function(){
         $('#input-upload').click();
     });
 
+    // 地址库导入
+    $('#btn-address').click(function(){
+        $('#input-type').val(2);
+        $('#input-upload').click();
+    });
+
+    // 打开文件处理
     $('#input-upload').change(function(){
         console.log('uploading');
         $('#upload-form').submit();

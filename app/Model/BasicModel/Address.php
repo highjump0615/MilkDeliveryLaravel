@@ -8,6 +8,12 @@ class Address extends Model
 {
     protected $table = 'address';
 
+    const LEVEL_PROVINCE = 1;
+    const LEVEL_CITY = 2;
+    const LEVEL_DISTRICT = 3;
+    const LEVEL_STREET = 4;
+    const LEVEL_VILLAGE = 5;
+
     protected $fillable = [
         'name',
         'level',
