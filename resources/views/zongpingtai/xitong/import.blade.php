@@ -39,6 +39,10 @@
                                 客户账户余额数据导入
                             </button>
 
+                            <button type="button" class="btn btn-success btn-outline" id="btn-address">
+                                地址库额数据导入
+                            </button>
+
                             {{-- 只接受excel文件 --}}
                             <input type="file" name="upload" id="input-upload"
                                    accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
