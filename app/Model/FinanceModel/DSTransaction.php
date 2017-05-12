@@ -76,7 +76,6 @@ class DSTransaction extends Model
             ->where('station2_id', $this->delivery_station_id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->orderBy('created_at', 'desc')
-            ->get()
             ->first();
 
         if($money_transfer)
@@ -91,7 +90,6 @@ class DSTransaction extends Model
         $money_transfer = StationsMoneyTransfer::where('station2_id', $this->delivery_station_id)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->orderBy('created_at', 'desc')
-            ->get()
             ->first();
 
         if($money_transfer)

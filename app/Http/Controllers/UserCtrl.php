@@ -73,7 +73,7 @@ class UserCtrl extends Controller
      */
     public function addAccount(Request $request)
     {
-        $is_exist = User::where('name',$request->input('name'))->get()->first();
+        $is_exist = User::where('name',$request->input('name'))->first();
         if(empty($is_exist)){
             $user = new User;
             $user->name = $request->input('name');
@@ -158,7 +158,7 @@ class UserCtrl extends Controller
 
     public function addZongpingGuanliyuan(Request $request){
         $name = $request->input('name');
-        $is_exist = User::where('name',$name)->get()->first();
+        $is_exist = User::where('name',$name)->first();
 
         if(empty($is_exist)){
             $user = new User;
@@ -253,7 +253,7 @@ class UserCtrl extends Controller
         $current_factory_id = $this->getCurrentFactoryId(false);
 
         $name = $request->input('name');
-        $is_exist = User::where('name',$name)->get()->first();
+        $is_exist = User::where('name',$name)->first();
 
         if(empty($is_exist)){
             $user = new User;

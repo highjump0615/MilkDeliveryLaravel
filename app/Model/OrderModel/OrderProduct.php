@@ -42,7 +42,6 @@ class OrderProduct extends Model
         'finished_count',
         'remain_count',
         'remain_amount',
-        'last_deliver_plan',
         'finished_money_amount',
         'delivery_plans_sent_to_production_plan',
         'start_at_after_delivered'
@@ -55,7 +54,7 @@ class OrderProduct extends Model
             ->where('order_product_id', $this->id)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             ->orderBy('deliver_at', 'desc')
-            ->get()->first();
+            ->first();
         if($last_delivered_plan) {
             $date = $last_delivered_plan->deliver_at;
             //get next deliver date
@@ -91,11 +90,6 @@ class OrderProduct extends Model
         }
 
         return $finished_amount;
-    }
-
-
-    public function getLastDeliverPlanAttribute(){
-        return MilkManDeliveryPlan::where('order_product_id', $this->id)->orderBy('deliver_at', 'desc')->get()->first();
     }
 
     public function product(){
@@ -424,7 +418,6 @@ class OrderProduct extends Model
                 // 获取最后一条配送任务
                 $lastDeliverPlan = MilkManDeliveryPlan::where('order_product_id', $this->id)
                     ->orderby('deliver_at', 'desc')
-                    ->get()
                     ->first();
             }
 

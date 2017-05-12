@@ -100,7 +100,7 @@ class AddressCtrl extends Controller
             $parent = Address::find($parentId);
 
         $addr = Address::where('parent_id', $parentId)
-            ->where('name', $addressName)->where('factory_id', $factory_id)->where('is_active', Address::ADDRESS_ACTIVE)->get()->first();
+            ->where('name', $addressName)->where('factory_id', $factory_id)->where('is_active', Address::ADDRESS_ACTIVE)->first();
 
         if ($addr == null) {
             $addr = new Address;
@@ -160,28 +160,28 @@ class AddressCtrl extends Controller
             //Delete one row means delete the street and all xiaoqu in the street
 
             //get province id
-            $po = Address::where('name', $province)->where('level', 1)->where('factory_id', $factory_id)->get()->first();
+            $po = Address::where('name', $province)->where('level', 1)->where('factory_id', $factory_id)->first();
             if (!$po) {
                 return response()->json(['status' => 'fail', 'message' => '没有省']);
             }
             $pid = $po->id;
 
             //get city id
-            $co = Address::where('name', $city)->where('level', 2)->where('parent_id', $pid)->where('factory_id', $factory_id)->get()->first();
+            $co = Address::where('name', $city)->where('level', 2)->where('parent_id', $pid)->where('factory_id', $factory_id)->first();
             if (!$co) {
                 return response()->json(['status' => 'fail', 'message' => '没有市']);
             }
             $cid = $co->id;
 
             //get district id
-            $do = Address::where('name', $district)->where('level', 3)->where('parent_id', $cid)->where('factory_id', $factory_id)->get()->first();
+            $do = Address::where('name', $district)->where('level', 3)->where('parent_id', $cid)->where('factory_id', $factory_id)->first();
             if (!$do) {
                 return response()->json(['status' => 'fail', 'message' => '没有区']);
             }
             $did = $do->id;
 
             //get street id
-            $so = Address::where('name', $street)->where('level', 4)->where('parent_id', $did)->where('factory_id', $factory_id)->get()->first();
+            $so = Address::where('name', $street)->where('level', 4)->where('parent_id', $did)->where('factory_id', $factory_id)->first();
             if (!$so) {
                 return response()->json(['status' => 'fail', 'message' => '没有大街']);
             }
@@ -245,21 +245,21 @@ class AddressCtrl extends Controller
             $use = $request->input('use');
 
             //get province id
-            $pid = Address::where('name', $province)->where('level', 1)->where('factory_id', $factory_id)->get()->first()->id;
+            $pid = Address::where('name', $province)->where('level', 1)->where('factory_id', $factory_id)->first()->id;
 
             //get city id
-            $cid = Address::where('name', $city)->where('level', 2)->where('factory_id', $factory_id)->where('parent_id', $pid)->get()->first()->id;
+            $cid = Address::where('name', $city)->where('level', 2)->where('factory_id', $factory_id)->where('parent_id', $pid)->first()->id;
 
             //get district id
-            $did = Address::where('name', $district)->where('level', 3)->where('factory_id', $factory_id)->where('parent_id', $cid)->get()->first()->id;
+            $did = Address::where('name', $district)->where('level', 3)->where('factory_id', $factory_id)->where('parent_id', $cid)->first()->id;
 
             //get street id
-            $sid = Address::where('name', $street)->where('level', 4)->where('factory_id', $factory_id)->where('parent_id', $did)->get()->first()->id;
+            $sid = Address::where('name', $street)->where('level', 4)->where('factory_id', $factory_id)->where('parent_id', $did)->first()->id;
 
 
             if ($use == "1") {
                 //make disable
-                $addr = Address::where('id', $sid)->where('factory_id', $factory_id)->get()->first();
+                $addr = Address::where('id', $sid)->where('factory_id', $factory_id)->first();
                 if ($addr) {
                     $addr->setDisable();
                     return response()->json(['status' => 'success', 'action' => 'disabled', 'message' => 'disabled']);
@@ -271,7 +271,7 @@ class AddressCtrl extends Controller
             } else {
                 //Make enable
 
-                $addr = Address::where('id', $sid)->where('factory_id', $factory_id)->get()->first();
+                $addr = Address::where('id', $sid)->where('factory_id', $factory_id)->first();
 
                 if ($addr) {
                     $addr->setEnable();
@@ -302,9 +302,9 @@ class AddressCtrl extends Controller
         $city = trim($request->input('city'));
         $district = trim($request->input('district'));
 
-        $province = Address::where('parent_id', 0)->where('name', $province)->where('factory_id', $factory_id)->get()->first();
-        $city = $province->getSubAddressesWithNameAttribute($city)->first();
-        $district = $city->getSubAddressesWithNameAttribute($district)->first();
+        $province = Address::where('parent_id', 0)->where('name', $province)->where('factory_id', $factory_id)->first();
+        $city = $province->getSubAddressWithName($city);
+        $district = $city->getSubAddressWithName($district);
 
         $origin_street = trim($request->input('origin_street'));
         $new_street = trim($request->input('street'));
@@ -322,7 +322,7 @@ class AddressCtrl extends Controller
 
         foreach ($delete_xiaoqu as $do_xiaoqu) {
             if ($do_xiaoqu) {
-                $d_xiaoqu = $street->getSubAddressesWithNameAttribute($do_xiaoqu)->first();
+                $d_xiaoqu = $street->getSubAddressWithName($do_xiaoqu);
                 $d_xiaoqu->delete();
             }
         }
@@ -353,7 +353,7 @@ class AddressCtrl extends Controller
 
             $province_name = $request->input('province');
 
-            $province = ProvinceData::where('name', $province_name)->get()->first();
+            $province = ProvinceData::where('name', $province_name)->first();
 
             $city = $province->city;
 
@@ -374,10 +374,10 @@ class AddressCtrl extends Controller
             $province_name = $request->input('province');
             $city_name = $request->input('city');
 
-            $province = ProvinceData::where('name', $province_name)->get()->first();
+            $province = ProvinceData::where('name', $province_name)->first();
             $province_code = $province->code;
 
-            $city = CityData::where('name', $city_name)->where('provincecode', $province_code)->get()->first();
+            $city = CityData::where('name', $city_name)->where('provincecode', $province_code)->first();
 
             $district = $city->district;
             return response()->json(['status' => 'success', 'district' => $district]);
@@ -653,7 +653,8 @@ class AddressCtrl extends Controller
         $province = Address::where('name', $province_name)->where('level', 1)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         if($province == null)
             return null;
@@ -667,7 +668,8 @@ class AddressCtrl extends Controller
             ->where('parent_id', $province->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
 
         if($city == null)
@@ -682,7 +684,8 @@ class AddressCtrl extends Controller
             ->where('parent_id', $city->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
 
         if($district == null)
@@ -697,7 +700,8 @@ class AddressCtrl extends Controller
             ->where('parent_id', $district->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         if($street == null)
             return null;
@@ -711,7 +715,8 @@ class AddressCtrl extends Controller
             ->where('parent_id', $street->id)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         return $xiaoqi;
     }

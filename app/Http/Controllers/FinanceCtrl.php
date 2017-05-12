@@ -2331,7 +2331,7 @@ class FinanceCtrl extends Controller
         {
             $tid = $ct->transaction_pay_id;
             $result[$tid][0][] = $ct;
-            $result[$tid][1] = StationsMoneyTransfer::where('transaction_pay_id', $tid)->get()->first();
+            $result[$tid][1] = StationsMoneyTransfer::where('transaction_pay_id', $tid)->first();
             $result[$tid][2] = DSTransactionPay::find($tid);
         }
 

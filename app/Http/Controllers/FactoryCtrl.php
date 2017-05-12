@@ -103,7 +103,7 @@ class FactoryCtrl extends Controller
         $parent = 'yonghu';
         $current_page = 'xiangqing';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        $factory = Factory::where('id',$user_id)->get()->first();
+        $factory = Factory::where('id',$user_id)->first();
 
         return view('zongpingtai.yonghu.yonghu.xiangqing', [
             'pages' => $pages,
@@ -146,7 +146,7 @@ class FactoryCtrl extends Controller
             $factory_user = new User;
         }
         else {
-            $factory_user = User::where('factory_id', $factory->id)->where('user_role_id',1)->get()->first();
+            $factory_user = User::where('factory_id', $factory->id)->where('user_role_id',1)->first();
         }
 
         $factory->name              = $name;
@@ -237,12 +237,12 @@ class FactoryCtrl extends Controller
             $banner_ads[$i] = WechatAd::where('factory_id', $factory_id)
                 ->where('type', WechatAd::WECHAT_AD_TYPE_BANNER)
                 ->where('image_no', $i)
-                ->get()->first();
+                ->first();
 
             $promo_ads[$i] = WechatAd::where('factory_id', $factory_id)
                 ->where('type', WechatAd::WECHAT_AD_TYPE_PROMOTION)
                 ->where('image_no', $i)
-                ->get()->first();
+                ->first();
         }
 
         return view('zongpingtai.yonghu.yonghu.gongzhonghaosheding', [
@@ -290,7 +290,6 @@ class FactoryCtrl extends Controller
             $ad = WechatAd::where('factory_id', $factory_id)
                 ->where('type', $type)
                 ->where('image_no', $i)
-                ->get()
                 ->first();
 
             // 没有图片，删除
@@ -362,7 +361,6 @@ class FactoryCtrl extends Controller
         $ad = WechatAd::where('factory_id', $factory_id)
             ->where('type', $type)
             ->where('image_no', $id)
-            ->get()
             ->first();
 
         if($ad) {

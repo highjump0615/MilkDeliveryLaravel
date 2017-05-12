@@ -67,7 +67,7 @@ class ProductSettingsCtrl extends Controller
         $order_types = OrderType::all();
 
         foreach($order_types as $ot) {
-            $fot = FactoryOrderType::where('factory_id', $factory_id)->where('order_type', $ot->id)->get()->first();
+            $fot = FactoryOrderType::where('factory_id', $factory_id)->where('order_type', $ot->id)->first();
 
             if($fot == null) {
                 $ot['active'] = false;
@@ -104,7 +104,7 @@ class ProductSettingsCtrl extends Controller
             $fdts_id = $request->input('fdts_id');
             $action = $request->input('action');
 
-            $fdts = FactoryDeliveryType::where('factory_id', $fuser->factory_id)->where('delivery_type', $fdts_id)->get()->first();
+            $fdts = FactoryDeliveryType::where('factory_id', $fuser->factory_id)->where('delivery_type', $fdts_id)->first();
 
             if($action == 'unuse')
             {
@@ -131,7 +131,7 @@ class ProductSettingsCtrl extends Controller
             $as = $request->input('afternoon_start_at');
             $ae = $request->input('afternoon_end_at');
 
-            $dt = FactoryDeliveryTime::where('factory_id', $fuser->factory_id)->get()->first();
+            $dt = FactoryDeliveryTime::where('factory_id', $fuser->factory_id)->first();
 
             if($dt == null) {
                 $dt = new FactoryDeliveryTime;
@@ -156,7 +156,7 @@ class ProductSettingsCtrl extends Controller
         if($request->ajax())
         {
             $order_type = $request->input('order_type');
-            $fot = FactoryOrderType::where('factory_id', $factory->id)->where('order_type', $order_type)->get()->first();
+            $fot = FactoryOrderType::where('factory_id', $factory->id)->where('order_type', $order_type)->first();
 
             if($fot == null) {
                 $fot = new FactoryOrderType;
@@ -177,7 +177,7 @@ class ProductSettingsCtrl extends Controller
 
         if($request->ajax())
         {
-            $fot = FactoryOrderType::where('factory_id', $fuser->factory_id)->where('order_type', $id)->get()->first();
+            $fot = FactoryOrderType::where('factory_id', $fuser->factory_id)->where('order_type', $id)->first();
 
             if($fot) {
                 $fot->delete();
@@ -191,7 +191,7 @@ class ProductSettingsCtrl extends Controller
     {
         //get bottle type last number
         //FactoryBottleType::FACTORY_BOTTLE_TYPE_PREFIX
-        $bt = FactoryBottleType::where('factory_id', $fid)->orderBy('id', 'desc')->get()->first();
+        $bt = FactoryBottleType::where('factory_id', $fid)->orderBy('id', 'desc')->first();
         if($bt)
         {
             $sub = intval($bt->id)+1;
@@ -245,7 +245,7 @@ class ProductSettingsCtrl extends Controller
     {
         //get bottle type last number
         //FactoryBottleType::FACTORY_BOTTLE_TYPE_PREFIX
-        $bt = FactoryBoxType::where('factory_id', $fid)->orderBy('id', 'desc')->get()->first();
+        $bt = FactoryBoxType::where('factory_id', $fid)->orderBy('id', 'desc')->first();
 
         if($bt)
         {

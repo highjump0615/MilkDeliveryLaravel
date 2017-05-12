@@ -140,10 +140,10 @@ class Address extends Model
     	return implode(', ', $names);
     }
 
-    public function getSubAddressesWithNameAttribute($name) {
+    public function getSubAddressWithName($name) {
         $id = $this->id;
 
-        return Address::where('parent_id', $id)->where('name', $name)->get();
+        return Address::where('parent_id', $id)->where('name', $name)->first();
     }
 
     public function getFullAddressNameAttribute()
@@ -179,12 +179,12 @@ class Address extends Model
     public function changeSubAddressName($origin_val, $new_val)
     {
     
-        $origin_child_addr = $this->getSubAddressesWithNameAttribute($origin_val)->first();
+        $origin_child_addr = $this->getSubAddressWithName($origin_val);
 
         if( strcasecmp($origin_val, $new_val) != 0 ){
 
             //find child whose name is new_val
-            $same_new_addr = $this->getSubAddressesWithNameAttribute($new_val)->first();
+            $same_new_addr = $this->getSubAddressWithName($new_val);
 
             if( $same_new_addr )
             {

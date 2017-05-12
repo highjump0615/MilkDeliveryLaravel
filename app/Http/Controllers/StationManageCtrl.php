@@ -243,7 +243,7 @@ class StationManageCtrl extends Controller
 
             $station = DeliveryStation::find($sid);
 
-            $user_info = User::where('station_id',$sid)->where('user_role_id',200)->get()->first();
+            $user_info = User::where('station_id',$sid)->where('user_role_id',200)->first();
             if($user_info){
                 if($checked == "true")
                     $user_info->status = User::USER_STATUS_ACTIVE;
@@ -760,7 +760,8 @@ class StationManageCtrl extends Controller
         $station = DeliveryStation::where('id', $station_id)
             ->where('factory_id', $factory_id)
             ->where('status', DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)
-            ->where('is_deleted', 0)->get()->first();
+            ->where('is_deleted', 0)
+            ->first();
 
         $station_address = explode(" ", $station->address);
 

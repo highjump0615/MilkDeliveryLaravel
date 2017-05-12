@@ -180,7 +180,7 @@ class MilkCardCtrl extends Controller
             if(count($d) != 5)
                 continue;
 
-            $oc = MilkCard::where('number', $d['1'])->where('factory_id', $factory_id)->get()->first();
+            $oc = MilkCard::where('number', $d['1'])->where('factory_id', $factory_id)->first();
             if(!$oc) {
                 $c = new MilkCard;
 
