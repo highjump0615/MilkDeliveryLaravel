@@ -202,7 +202,7 @@ $('#origin_table .edit_station').on('click', function(e){
     e.stopPropagation();
     var station_id = $(this).data('sid');
 
-    var url =SITE_URL +'/gongchang/xitong/naizhanzhanghao/naizhanxiugai/'+station_id;
+    var url =SITE_URL +'gongchang/xitong/naizhanzhanghao/naizhanxiugai/'+station_id;
 
     window.location.href = url;
 });
