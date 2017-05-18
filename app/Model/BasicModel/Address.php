@@ -188,7 +188,7 @@ class Address extends Model
 
             if( $same_new_addr )
             {
-                if($origin_child_addr->level != 4)
+                if($origin_child_addr->level != Address::LEVEL_STREET)
                 {
                     //There is same address and that is not the street.
                     //give same_parent_id to origin's children

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\SystemModel\SysLog;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Model\BasicModel\Address;
 use App\Model\UserModel\Page;
@@ -302,13 +303,17 @@ class AddressCtrl extends Controller
         $city = trim($request->input('city'));
         $district = trim($request->input('district'));
 
+        // 获取省
         $province = Address::where('parent_id', 0)->where('name', $province)->where('factory_id', $factory_id)->first();
+        // 获取市
         $city = $province->getSubAddressWithName($city);
+        // 获取区
         $district = $city->getSubAddressWithName($district);
 
         $origin_street = trim($request->input('origin_street'));
         $new_street = trim($request->input('street'));
 
+        // 获取街道
         $street = $district->changeSubAddressName($origin_street, $new_street);
 
         $origin_xiaoqu = trim($request->input('origin_xiaoqu'));
@@ -320,19 +325,28 @@ class AddressCtrl extends Controller
         $delete_xiaoqu = array_diff($origin_xiaoqus, $new_xiaoqus);
         $add_xiaoqu = array_diff($new_xiaoqus, $origin_xiaoqus);
 
-        foreach ($delete_xiaoqu as $do_xiaoqu) {
-            if ($do_xiaoqu) {
-                $d_xiaoqu = $street->getSubAddressWithName($do_xiaoqu);
-                $d_xiaoqu->delete();
+        try {
+            foreach ($delete_xiaoqu as $do_xiaoqu) {
+                if ($do_xiaoqu) {
+                    $d_xiaoqu = $street->getSubAddressWithName($do_xiaoqu);
+                    $d_xiaoqu->delete();
+                }
             }
-        }
 
-        foreach ($add_xiaoqu as $no_xiaoqu) {
-            $this->storeIfNotExist($no_xiaoqu, $street->id);
-        }
+            foreach ($add_xiaoqu as $no_xiaoqu) {
+                $this->storeIfNotExist($no_xiaoqu, $street->id);
+            }
 
-        // 添加系统日志
-        $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EDIT);
+            // 添加系统日志
+            $this->addSystemLog(User::USER_BACKEND_FACTORY, '地址库管理', SysLog::SYSLOG_OPERATION_EDIT);
+        }
+        catch (QueryException $e) {
+            // 报错
+            return response()->json([
+                'status' => 'fail',
+                'message' => '该地址信息在使用，删除失败！'
+            ]);
+        }
 
         return response()->json(['status' => 'success']);
     }
