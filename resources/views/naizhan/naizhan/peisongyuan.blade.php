@@ -42,8 +42,8 @@
                                     <select id="filter_area" data-placeholder="" class="form-control"
                                             class="chosen-select" tabindex="2" style="width:100%;">
                                         <option value="">全部</option>
-                                        @foreach($street as $s)
-                                            <option value="{{$s}}">{{$s}}</option>
+                                        @foreach($streets as $s)
+                                            <option value="{{$s->name}}">{{$s->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -94,8 +94,8 @@
                                 <div class="col-md-9">
                                     <select data-placeholder=" " id="area" class="chosen-select form-control" multiple
                                             style="height:35px;" onchange="hide_street_alert();">
-                                        @foreach($street as $s)
-                                            <option value="{{$s}}">{{$s}}</option>
+                                        @foreach($streets as $s)
+                                            <option value="{{$s->id}}">{{$s->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -128,7 +128,7 @@
 
                     <div class="wrapper">
                         <div class="col-md-2 col-md-offset-5">
-                            <button class="btn btn-danger" id="save" type="submit" style="width:100%; padding-bottom: 10px;"><i class="fa fa-plus"></i>保存并添加</button>
+                            <button class="btn btn-danger" id="save" type="submit" style="width:100%; padding-bottom: 10px;"><i class="fa fa-plus"></i> 保存并添加</button>
                         </div>
                     </div>
                 </form>
