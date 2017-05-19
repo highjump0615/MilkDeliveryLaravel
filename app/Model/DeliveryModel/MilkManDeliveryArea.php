@@ -11,6 +11,7 @@ class MilkManDeliveryArea extends Model
         'milkman_id',
         'address',
         'order',
+        'deliveryarea_id',
     ];
 
     public $timestamps = false;

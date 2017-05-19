@@ -374,6 +374,17 @@ $(document).on('change', '#area_street_list', function () {
     }
 });
 
+/**
+ * 恢复保存按钮
+ */
+function restoreSaveButton() {
+    var button = $('#station_insert_form').find('button[type=submit]');
+
+    button.prop('disabled', false);
+    button.html('保存');
+}
+
+
 //insert station info
 $('#station_insert_form').on('submit', function (e) {
     e.preventDefault(e);
@@ -393,22 +404,40 @@ $('#station_insert_form').on('submit', function (e) {
 
     console.log(sendData);
 
+    // 禁用保存按钮
+    var eleButton = $(this).find('button[type=submit]');
+    eleButton.html('正在保存...');
+    eleButton.prop('disabled', true);
+
     $.ajax({
         type: "POST",
         url: API_URL + "gongchang/xitong/tianjianaizhanzhanghu/insert_station",
         data: sendData,
         success: function (data) {
             console.log(data);
+
             if (data.status == "success") {
                 var sid = data.sid;
-                if ($('#st_img_upload')[0].files[0])
+                if ($('#st_img_upload')[0].files[0]) {
                     insert_station_image(sid);
-                else
+                    restoreSaveButton();
+                }
+                else {
                     window.location = SITE_URL + "gongchang/xitong/naizhanzhanghao";
+                }
+            }
+            // 失败
+            else {
+                restoreSaveButton();
+                if(data.message)
+                {
+                    show_err_msg(data.message);
+                }
             }
         },
         error: function (data) {
             console.log(data);
+            restoreSaveButton();
         }
     });
 
