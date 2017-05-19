@@ -1,5 +1,4 @@
-
-var street = [];
+var g_streetsPrev = new Array();
 
 $(document).ready(function () {
     $(".chosen-select").chosen();
@@ -19,68 +18,125 @@ $('.tbl_data tbody tr td:not(:nth-child(7))').on('click', function(e){
     window.location = SITE_URL+'naizhan/naizhan/fanwei-chakan/'+nId;
 });
 
+/**
+ * 选择街道有变化
+ */
 $(document).on('change', '#area', function () {
-    street = [];
-    $('#xiaoqi_table').html("");
 
-    $('#area :selected').each(function (i, selected) {
-        street[i] = $(selected).text();
-    });
+    var tblVillage = $('#xiaoqi_table');
+    var streets = $(this).find('option:selected');
 
-    if(street.length == 0)
-        return;
+    var length = streets.length;
 
+    // 添加街道 & 小区
+    var i, j;
 
-    var url = API_URL + 'naizhan/naizhan/peisongyuan/getXiaoqi';
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+    for (i = 0; i < length; i++) {
+        var id = streets.eq(i).val();
+        if (id == undefined) {
+            continue;
         }
-    });
 
-    var form_data = {
-        street: street
-    };
+        // 查看是否已选择的街道
+        for (j = 0; j < g_streetsPrev.length; j++) {
+            var streetPrev = g_streetsPrev[j];
+            if (streetPrev.id == id) {
+                break;
+            }
+        }
 
-    console.log(street);
+        if (j < g_streetsPrev.length) {
+            // 已添加的，跳过
+            continue;
+        }
 
-    var type = "GET";
+        // 获取该街道的小区
+        var dataString = {"street_id": id};
+        $.ajax({
+            type: "GET",
+            url: API_URL + 'naizhan/naizhan/peisongyuan/getXiaoqi',
+            data: dataString,
+            success: function (data) {
+                console.log(data);
 
-    $.ajax({
-        type: type,
-        url: url,
-        data: form_data,
-        dataType:'json',
-        success: function (data) {
-            console.log(data);
-            var role = '';
-            for(var key in data) {
-                var value = data[key];
-                role +='<tr><td class="col-sm-3">'+key+'</td><td class="col-sm-9" style="text-align: left">';
-                for(i=0;i<value.length; i++){
+                // 获取街道名称
+                var strStreet = '';
+                for (i = 0; i < length; i++) {
+                    var id = streets.eq(i).val();
+                    if (id == data.streetId) {
+                        strStreet = streets.eq(i).html();
+                        break;
+                    }
+                }
+
+                // 添加小区
+                var villages = data.deliveryArea;
+                var role = '<tr id="area' + data.streetId + '"><td class="col-sm-3">' + strStreet + '</td><td class="col-sm-9" style="text-align: left">';
+
+                for (j = 0; j < villages.length; j++) {
+                    var village = villages[j];
                     role += '<div class="col-sm-3" style="padding-bottom:5px;">';
-                    role += '<label><input type="checkbox"  class="i-checks" name="checkboxlist" value="'+key+" "+value[i]+'">'+' '+''+value[i]+'</label></div>';
+                    role += '<label><input type="checkbox"  class="i-checks" name="checkboxlist" value="' + village[0] + '">';
+                    role += '<span>' + ' ' + village[1] + '</span></label>';
+                    role += '</div>';
                 }
                 role += '</td></tr>';
+
+                tblVillage.append(role);
+
+                // 添加到主数组
+                var street = {id: data.streetId};
+                g_streetsPrev.push(street);
+            },
+            error:function (data) {
+                console.log('Error:', data);
             }
-            $('#xiaoqi_table').append(role);
-        },
-        error:function (data) {
-            console.log('Error:',data);
+        });
+    }
+
+    // 删除已取消的街道
+    for (i = 0; i < g_streetsPrev.length; i++) {
+        id = g_streetsPrev[i].id;
+
+        // 查看是否已取消的街道
+        for (j = 0; j < length; j++) {
+            if (streets.eq(j).val() == id) {
+                break;
+            }
         }
-    });
+
+        if (j < length) {
+            // 没有取消，跳过
+            continue;
+        }
+
+        // 删除该街道内容
+        $('#area' + id).remove();
+
+        // 从主数组删除
+        g_streetsPrev.splice(i, 1);
+    }
+
+    // 如果没有选择街道，则不用显示小区信息
+    if (length == 0) {
+        tblVillage.html("");
+    }
 });
 
 function hide_street_alert() {
     $('#street_alert').hide();
 }
 
+/**
+ * 添加配送员提交
+ */
 $('#add_milkman').submit(function(e){
     e.preventDefault();
 
     var name = $('#milkman').val();
     var phone = $('#phone').val();
     var number = $('#number').val();
+    var street = [];
 
     checkname();
     if(name == ''){
@@ -108,7 +164,9 @@ $('#add_milkman').submit(function(e){
         $('#street_alert').show();
         return;
     }
-    var checkValues = $('input[name=checkboxlist]:checked').map(function()
+
+    var areaInput = $('input[name=checkboxlist]:checked');
+    var checkValues = areaInput.map(function()
     {
         return $(this).val();
     }).get();
@@ -117,13 +175,15 @@ $('#add_milkman').submit(function(e){
         $('#xiaoqu_alert').show();
         return;
     }
+
     var url = API_URL + 'naizhan/naizhan/peisongyuan/savePeisongyuan';
 
-    var xiaoqi_val = [];
-    for(i = 0; i < checkValues.length; i++){
-        var xiaoqi = checkValues[i].split(" ");
-        xiaoqi_val[i] = xiaoqi[1];
-    }
+    //
+    // 收集奶站名称
+    //
+    var xiaoqi_val = areaInput.map(function() {
+        return $(this).siblings('span').html();
+    }).get();
 
     $.ajaxSetup({
         headers: {
@@ -135,12 +195,12 @@ $('#add_milkman').submit(function(e){
         name: name,
         phone: phone,
         number: number,
-        street: street,
-        xiaoqi: checkValues,
+        xiaoqi: checkValues
     };
 
     var button = $('#save');
-    $(button).prop('disabled', true);
+    button.prop('disabled', true);
+    button.html('正在添加...');
 
     $.ajax({
         type: "POST",
@@ -169,15 +229,25 @@ $('#add_milkman').submit(function(e){
             // 清空配送街道输入框
             $("#area").val('').trigger("chosen:updated");
 
-            $(button).prop('disabled', false);
+            restoreSaveButton();
         },
         error:function (data) {
             console.log('Error:',data);
-            $(button).prop('disabled', false);
+
+            restoreSaveButton();
         }
     });
 });
 
+/**
+ * 恢复保存按钮
+ */
+function restoreSaveButton() {
+    var button = $('#save');
+
+    button.prop('disabled', false);
+    button.html('<i class="fa fa-plus"></i> 保存并添加');
+}
 
 $(document).on('click','.modify',function(){
     var milkman_id = $(this).val();
