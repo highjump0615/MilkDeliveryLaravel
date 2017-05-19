@@ -33,26 +33,34 @@ class MilkManCtrl extends Controller
         $parent = 'naizhan';
         $current_page = 'peisongyuan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
+        // 获取奶站的配送范围
         $dsdeliveryarea  = DSDeliveryArea::where('station_id',$current_station_id)->get();
 
-        $street = array();
-        $i = 0;
+        $streets = array();
+
+        // 遍历所有配送范围、提取街道信息
         foreach ($dsdeliveryarea as $da){
-            $flag = 0;
-            $cur_addr = explode(" ",$da->address);
-            if($i == 0){
-                $street[$i] = $cur_addr[3];
-                $i++;
-            }
-            for($j = 0; $j < $i; $j++){
-                if($street[$j] == $cur_addr[3]){
-                    $flag = 1;
+
+            // 获取该小区的街道
+            $street = $da->village->parent;
+
+            // 判断是否重复
+            $bExist = false;
+            foreach ($streets as $st) {
+                if ($street->id == $st->id) {
+                    $bExist = true;
+                    break;
                 }
             }
-            if($flag == 0){
-                $street[$i] = $cur_addr[3];
-                $i++;
+
+            // 已添加，跳过
+            if ($bExist) {
+                continue;
             }
+
+            // 添加到街道数组
+            $streets[] = $street;
         }
 
         $milkmans = MilkMan::where('station_id',$current_station_id)->where('is_active',1)->get();
@@ -102,47 +110,82 @@ class MilkManCtrl extends Controller
             'current_page' => $current_page,
 
             'deliveryarea'=> $dsdeliveryarea,
-            'street' => $street,
+            'streets' => $streets,
             'milkmans'=>$milkmans,
         ]);
     }
 
+    /**
+     * 奶站配送范围的小区信息
+     * @param Request $request
+     * @return array
+     */
     public function getXiaoqi(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $streets = $request->input('street');
-        $street_info = array();
-        foreach ($streets as $s){
-            $delivery_area = DSDeliveryArea::where('station_id',$current_station_id)->where('address','LIKE','%'.$s.'%')->get();
-            foreach ($delivery_area as $i=>$da){
-                $addr = explode(" ",$da->address);
-                $xiaoqi = $addr[4];
-                $street_info[$s][$i] = $xiaoqi;
+        $nStationId = $this->getCurrentStationId();
+        $nStreetId = $request->input('street_id');
+
+        // 获取该奶站的配送范围（小区）
+        $deliveryAreas = DSDeliveryArea::where('station_id', $nStationId)->get();
+
+        $deliveryAreasResult = array();
+        foreach ($deliveryAreas as $da){
+            // 如果该范围小区不属于目标街道，跳过
+            if ($da->village->parent->id != $nStreetId) {
+                continue;
             }
+
+            $deliveryAreasResult[] = [$da->id, $da->village->name];
         }
-        return $street_info;
+
+        return response()->json([
+            'status' => 'success',
+            'deliveryArea' => $deliveryAreasResult,
+            'streetId' => $nStreetId,
+        ]);
     }
 
+    /**
+     * 添加配送员信息
+     * @param Request $request
+     * @return mixed
+     */
     public function savePeisongyuan(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
+
         $name = $request->input('name');
         $number = $request->input('number');
         $phone = $request->input('phone');
-        $street = $request->input('street');
         $xiaoqi = $request->input('xiaoqi');
 
+        // 添加配送员
         $milkman = new MilkMan;
         $milkman->name = $name;
         $milkman->phone = $phone;
         $milkman->station_id = $current_station_id;
         $milkman->number = $number;
         $milkman->save();
+
         $milkman_id = $milkman->id;
-        $i =0;
+
+        // 获取奶站配送范围
+        $deliveryAreas = DSDeliveryArea::whereIn('id', $xiaoqi)->get(['id', 'address']);
+
+        // 添加配送员配送范围
+        $i = 0;
         foreach ($xiaoqi as $x){
             $i++;
             $milkman_delivery_area = new MilkManDeliveryArea;
             $milkman_delivery_area->milkman_id = $milkman_id;
-            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)->where('address','LIKE','%'.$x.'%')->first()->address;
+
+            // 获取该小区的全名
+            foreach ($deliveryAreas as $da) {
+                if ($da->id == $x) {
+                    $milkman_delivery_area->address = $da->address;
+                    break;
+                }
+            }
+
+            $milkman_delivery_area->deliveryarea_id = $x;
             $milkman_delivery_area->order = $i;
             $milkman_delivery_area->save();
         }

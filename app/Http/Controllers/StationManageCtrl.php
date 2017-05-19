@@ -9,6 +9,7 @@ use App\Model\NotificationModel\FactoryNotification;
 use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
 use App\Model\SystemModel\SysLog;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -365,20 +366,44 @@ class StationManageCtrl extends Controller
 
             $account->save();
 
-            //save delivery area ($dsid)
-            DSDeliveryArea::where('station_id', $dsid)->delete();
+            //
+            // 保存配送范围
+            //
+            $deliverAreaDiffs = array();
+            $deliverAreaIds = array();
+            $villagesSelected = $request->input('area_xiaoqu');
 
-            $area_count = count($request->input('area_xiaoqu'));
-            for ($i = 0; $i < $area_count; $i++) {
-                $xiaoqu_id = $request->input('area_xiaoqu')[$i];
-                $xiaoqu = Address::find($xiaoqu_id);
-                if ($xiaoqu) {
-                    $address = $xiaoqu->getFullName();
-                    $dsarea = new DSDeliveryArea;
-                    $dsarea->address = $address;
-                    $dsarea->address_id = $xiaoqu->id;
-                    $dsarea->station_id = $dsid;
-                    $dsarea->save();
+            // 删除已被取消的
+            foreach ($ds->delivery_area as $da) {
+                if (!in_array($da->address_id, $villagesSelected)) {
+                    $deliverAreaDiffs[] = $da->id;
+                }
+
+                $deliverAreaIds[] = $da->address_id;
+            }
+            try {
+                DSDeliveryArea::whereIn('id', $deliverAreaDiffs)->delete();
+            }
+            catch (QueryException $e) {
+                // 报错
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => '该地址信息在使用，不能删除！'
+                ]);
+            }
+
+            // 添加选择好的
+            foreach ($villagesSelected as $vid) {
+                if (!in_array($vid, $deliverAreaIds)) {
+                    $xiaoqu = Address::find($vid);
+                    if ($xiaoqu) {
+                        $address = $xiaoqu->getFullName();
+                        $dsarea = new DSDeliveryArea;
+                        $dsarea->address = $address;
+                        $dsarea->address_id = $xiaoqu->id;
+                        $dsarea->station_id = $dsid;
+                        $dsarea->save();
+                    }
                 }
             }
 
