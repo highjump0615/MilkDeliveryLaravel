@@ -157,76 +157,99 @@ class ImportCtrl extends Controller
                 echo '<br>';
             }
 
+            $nIndex = 0;
+
             // 序号
-            $nSeq = $row[0];
+            $nSeq = $row[$nIndex++];
 
             // 收货人
-            $strName = $row[1];
+            $strName = $row[$nIndex++];
 
             // 电话
-            $strPhone = strval($row[2]);
+            $strPhone = strval($row[$nIndex++]);
 
             // 订单性质
-            $strProperty = $row[3];
+            $strProperty = $row[$nIndex++];
 
             // 商品名
-            $strProduct = $row[4];
+            $strProduct = $row[$nIndex++];
 
             // 起送日期
-            $strDateStart = $row[5];
+            $strDateStart = $row[$nIndex++];
 
             // 订购数量
-            $nCount = intval($row[6]);
+            $nCount = intval($row[$nIndex++]);
 
             // 订单类型
-            $strType = $row[7];
+            $strType = $row[$nIndex++];
 
             // 配送规则
-            $strDeliveryType = $row[8];
+            $strDeliveryType = $row[$nIndex++];
 
             // 销售价
-            $dPrice = doubleval($row[9]);
+            $dPrice = doubleval($row[$nIndex++]);
+
+            // 成本价、配送类型 不需要
+            $nIndex += 2;
 
             // 地址
-            $strProvince = $row[12];
-            $strCity = $row[13];
-            $strDistrict = $row[14];
-            $strStreet = $row[15];
-            $strAddress = $row[16];
+            $strProvince = $row[$nIndex++];
+            $strCity = $row[$nIndex++];
+            $strDistrict = $row[$nIndex++];
+            $strStreet = $row[$nIndex++];
+            $strVillage = $row[$nIndex++];
+            $strAddress = $row[$nIndex++];
 
             // 配送站
-            $strStation = $row[17];
+            $strStation = $row[$nIndex++];
 
             // 录入时间
-            $strDateInput = substr($row[18], 0, strlen("yyyy-mm-dd"));
+            $strDateInput = substr($row[$nIndex++], 0, strlen("yyyy-mm-dd"));
+
+            // 空列
+            $nIndex++;
 
             // 票据号
-            $strReceipt = $row[20];
+            $strReceipt = $row[$nIndex++];
+
+            // 退款金额，扣提成 不需要
+            $nIndex += 2;
 
             // 备注
-            $strComment = $row[23];
+            $strComment = $row[$nIndex++];
+
+            // 空列
+            $nIndex++;
 
             // 征订人
-            $strChecker = strval($row[25]);
+            $strChecker = strval($row[$nIndex++]);
 
             //
-            // 设置地址
+            // 验证地址
             //
             $village = null;
-            $strSubAddr = "";
 
             foreach ($villages as $v) {
-                if (!strncmp($strAddress, $v->name, strlen($v->name))) {
-                    $village = $v;
-                    $strSubAddr = substr($strAddress, strlen($v->name));
+                $street = $v->parent;
+                $district = $street->parent;
+                $city = $district->parent;
+                $province = $city->parent;
 
+                if (!strcmp($strProvince, $province->name) &&
+                    // 考虑到"北京"和"北京市"的情况
+                    !strncmp($strCity, $city->name, strlen($strCity)) &&
+                    !strcmp($strDistrict, $district->name) &&
+                    !strcmp($strStreet, $street->name) &&
+                    !strcmp($strVillage, $v->name)) {
+
+                    $village = $v;
                     break;
                 }
             }
 
             // 找不到小区信息, 失败
             if (!$village) {
-                echo '找不到小区信息: ' . $strSubAddr;
+                echo '找不到地址信息: ' . $strProvince . ' ' . $strCity . ' ' . $strDistrict . ' ' . $strStreet . ' ' . $strVillage;
                 $bResult = false;
                 break;
             }
@@ -235,23 +258,23 @@ class ImportCtrl extends Controller
             // 配送员
             //
             $strFullVillageAddr = $village->getFullName();
-            $strFullAddr = $strFullVillageAddr . ' ' . $strSubAddr;
+            $strFullAddr = $strFullVillageAddr . ' ' . $strAddress;
 
             $station = null;
             $milkman = $orderCtrl->get_station_milkman_with_address_from_factory($this->mnFactoryId, $strFullVillageAddr, $station);
 
             if ($milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
-                echo '该地区没有覆盖可配送的范围: ' . $strFullVillageAddr;
+                echo '该地区没有覆盖可配送的范围，导入失败: ' . $strFullVillageAddr;
                 $bResult = false;
                 break;
             }
             else if ($milkman == OrderCtrl::NOT_EXIST_STATION) {
-                echo '没有奶站: ' . $strFullVillageAddr;
+                echo '没有奶站，导入失败: ' . $strFullVillageAddr;
                 $bResult = false;
                 break;
             }
             else if ($milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
-                echo '奶站没有配送员.';
+                echo '奶站没有配送员，导入失败';
                 $bResult = false;
                 break;
             }
