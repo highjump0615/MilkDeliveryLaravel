@@ -61,6 +61,8 @@ class ImportCtrl extends Controller
      */
     public function uploadFile(Request $request) {
 
+        set_time_limit(0);
+
         $nType = $request->input('type');
 
         if ($request->hasFile('upload')){
