@@ -20,4 +20,8 @@ class MilkManDeliveryArea extends Model
     {
     	return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
     }
+
+    public function deliveryArea() {
+        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id');
+    }
 }
