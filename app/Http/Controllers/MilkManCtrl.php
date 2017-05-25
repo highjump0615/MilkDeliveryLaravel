@@ -230,54 +230,62 @@ class MilkManCtrl extends Controller
         return Response::json($deletePeisongyuan);
     }
 
+    /**
+     * 显示配送范围页面
+     * @param $milkman_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showFanwei($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
         $child = 'peisongyuan';
         $parent = 'naizhan';
         $current_page = 'fanwei-chakan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
-
+        // 获取改配送员的所属奶站
         $station = Milkman::find($milkman_id)->station;
 
-
-        $delivery_areas = DSDeliveryArea::where('station_id',$station->id)->get();
+        //
+        // 获取该奶站的配送范围
+        //
+        $delivery_areas = $station->delivery_area;
 
         $available_address = array();
-        if($delivery_areas->first() != null){
-            foreach ($delivery_areas as $da){
-                if($da->address != null){
-                    $xiaoqu = Address::addressObjFromName($da->address, $station->factory->id);
+        foreach ($delivery_areas as $da){
+            $xiaoqu = $da->village;
 
-                    if($xiaoqu) {
-                        $available_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
-                        $available_address[$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
-                    }
-                }
+            if($xiaoqu) {
+                $available_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
+                $available_address[$xiaoqu->parent_id][1][$da->id] = $xiaoqu->name;
             }
         }
 
+        //
+        // 获取该配送员的配送范围
+        //
         $milkman_delivery_area = MilkManDeliveryArea::where('milkman_id',$milkman_id)->orderby('order')->get();
 
         $area_address = array();
-        
-        if($milkman_delivery_area->first()){
-            foreach ($milkman_delivery_area as $ma){
-                $xiaoqu = Address::addressObjFromName($ma->address, $station->factory->id);
-                if($xiaoqu) {
-                    $area_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
-                    $area_address[$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
-                }
+        foreach ($milkman_delivery_area as $ma){
+            $deliveryArea = $ma->deliveryarea;
+            $xiaoqu = $deliveryArea->village;
+
+            if($xiaoqu) {
+                $area_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
+                $area_address[$xiaoqu->parent_id][1][$deliveryArea->id] = $xiaoqu->name;
             }
         }
 
         return view('naizhan.naizhan.peisongyuan.fanwei-chakan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'milkman_id'=>$milkman_id,
-            'current_page' => $current_page,
-            'area_address' => $area_address,
+            // 页面信息
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+
+            // 数据
+            'milkman_id'        => $milkman_id,
+            'area_address'      => $area_address,
             'available_address' => $available_address,
         ]);
     }
@@ -326,10 +334,16 @@ class MilkManCtrl extends Controller
         return Response::json(['status'=>'success']);
     }
 
+    /**
+     * 修改配送员配送范围
+     * @param Request $request
+     * @return mixed
+     */
     public function modifyPeisongyuanArea(Request $request){
         $milkman_id = $request->input('milkman_id');
         $street_id = $request->input('street_id_to_change');
 
+        // DSDeliveryArea id 数组
         $xiaoqus = $request->input('to');
 
         //Delete pre-exist delivery areas
@@ -339,11 +353,9 @@ class MilkManCtrl extends Controller
         $city_name = $street->city->name;
         $province_name = $street->province->name;
 
-        $milkman_areas = MilkManDeliveryArea::where('milkman_id',$milkman_id)
-            ->where('address','LIKE',$province_name.' '.$city_name.' '.$district_name. ' '. $street_name. '%')->get();
-        foreach ($milkman_areas as $ma){
-            $ma->delete();
-        }
+        MilkManDeliveryArea::where('milkman_id',$milkman_id)
+            ->where('address','LIKE',$province_name.' '.$city_name.' '.$district_name. ' '. $street_name. '%')
+            ->delete();
 
         $i = 0;
         foreach ($xiaoqus as $xid){
@@ -357,19 +369,17 @@ class MilkManCtrl extends Controller
     //Make new delivery area for xiaoqu with station
     private function make_delivery_area_for_xiaoqu($milkman_id, $xid, $order)
     {
-        $xiaoqu = Address::find($xid);
-        if(!$xiaoqu)
+        $deliveryArea = DSDeliveryArea::find($xid);
+        if (!$deliveryArea)
             return false;
-
-        $address = $xiaoqu->full_address_name;
 
         $ma = new MilkmanDeliveryArea;
 
         $ma->milkman_id = $milkman_id;
-        $ma->address = $address;
+        $ma->address = $deliveryArea->village->getFullName();
+        $ma->deliveryarea_id = $deliveryArea->id;
         $ma->order = $order;
         $ma->save();
-
     }
 
     public function sortPeisongyuanArea(Request $request){
