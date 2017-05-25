@@ -145,7 +145,7 @@ class MilkManCtrl extends Controller
     public function updatePeisongyuan(Request $request){
         $nId = $request->input('milkman_id');
         $strName = $request->input('name');
-        $strNumber = $request->input('number');
+        $strNumber = $request->input('idnumber');
         $strPhone = $request->input('phone');
 
         $milkman = MilkMan::find($nId);
