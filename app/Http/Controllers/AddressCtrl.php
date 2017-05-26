@@ -191,9 +191,18 @@ class AddressCtrl extends Controller
             //get all xiaoqu data which has parent_id= street id
             $xiaoqus = Address::where('parent_id', $sid)->where('factory_id', $factory_id)->get();
 
-            foreach ($xiaoqus as $xiaoqu) {
+            try {
+                foreach ($xiaoqus as $xiaoqu) {
 //                $xiaoqu->setDelete();
-                $xiaoqu->delete();
+                    $xiaoqu->delete();
+                }
+            }
+            catch (QueryException $e) {
+                // 报错
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => '该地址信息在使用，删除失败！'
+                ]);
             }
 
             //delete one which has no child
