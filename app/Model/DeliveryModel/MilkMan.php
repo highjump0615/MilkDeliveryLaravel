@@ -19,7 +19,7 @@ class MilkMan extends Model
 
     public function deliveryarea()
     {
-    	return $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryArea');
+    	return $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryArea', 'milkman_id');
     }
 
     public function milkman_delivery_plan(){

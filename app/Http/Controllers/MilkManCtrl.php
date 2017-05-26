@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\DeliveryModel\MilkMan;
 use App\Model\DeliveryModel\MilkManDeliveryArea;
@@ -290,26 +291,47 @@ class MilkManCtrl extends Controller
         ]);
     }
 
+    /**
+     * 添加配送员配送范围
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function addDeliveryArea(Request $request) {
         $milkman_id = $request->input('milkman_id');
+        $nStationId = $this->getCurrentStationId();
         $street_address_id = $request->input('street_id_to_add');
 
-        $addr = Address::find($street_address_id);
+        $milkman = Milkman::find($milkman_id);
 
-        $street_addr = $addr->full_address_name;
+        $deliveryAreas = DSDeliveryArea::where('station_id', $nStationId)->get();
+        $deliveryAreasMilkman = $milkman->deliveryarea;
 
-        $da = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-            ->where('address', 'LIKE', $street_addr.' %')
-            ->first();
-
-        if(!$da) {
-            $xiaoqus = $addr->getSubAddresses();
-            foreach ($xiaoqus as $xiaoqu) {
-                $da = new MilkManDeliveryArea();
-                $da->milkman_id = $milkman_id;
-                $da->address = $xiaoqu->full_address_name;
-                $da->save();
+        foreach ($deliveryAreas as $da){
+            // 如果该范围小区不属于目标街道，跳过
+            if ($da->village->parent->id != $street_address_id) {
+                continue;
             }
+
+            //
+            // 如果该配送范围小区不在配送员配送范围内，新添加
+            //
+            $bExist = false;
+            foreach ($deliveryAreasMilkman as $dam) {
+                if ($dam->deliveryarea_id == $da->id) {
+                    $bExist = true;
+                    break;
+                }
+            }
+
+            if ($bExist) {
+                continue;
+            }
+
+            $newArea = new MilkManDeliveryArea();
+            $newArea->milkman_id = $milkman_id;
+            $newArea->address = $da->village->getFullName();
+            $newArea->deliveryarea_id = $da->id;
+            $newArea->save();
         }
 
         return redirect()->back();
