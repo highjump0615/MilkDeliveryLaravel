@@ -79,7 +79,7 @@
                 <div class="ibox float-e-margins white-bg">
                     <div class="ibox-content">
 
-                        <table class="footable table table-bordered" id="order_table" data-page-size="10" data-limit-navigation="5">
+                        <table class="table table-bordered" id="order_table" >
                         <thead>
                             <tr>
                                 <th data-sort-ignore="true">序号</th>
@@ -130,47 +130,11 @@
                                     </tr>
                             @endfor
                             @endif
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
+                            </tbody>
                         </table>
 
-                        <table class="footable table table-bordered" id="filter_table" data-page-size="10"
-                               style="display:none;">
-                            <thead>
-                            <tr>
-                               <th data-sort-ignore="true">序号</th>
-                               <th data-sort-ignore="true">订单号</th>
-                               <th data-sort-ignore="true">客户名</th>
-                               <th data-sort-ignore="true">电话</th>
-                               <th data-sort-ignore="true">地址</th>
-                               <th data-sort-ignore="true">订单类型</th>
-                               <th data-sort-ignore="true">订单金额</th>
-                               <th data-sort-ignore="true">下单日期</th>
-                               <th data-sort-ignore="true">到期日期</th>
-                               <th data-sort-ignore="true">支付</th>
-                               <th data-sort-ignore="true">订单性质</th>
-                               <th data-sort-ignore="true">征订员</th>
-                               <th data-sort-ignore="true">奶站</th>
-                               <th data-sort-ignore="true">配送员</th>
-                               <th data-sort-ignore="true">状态</th>
-                               <th data-sort-ignore="true">备注</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
-                        </table>
+                        <ul id="pagination_data" class="pagination-sm pull-right"></ul>
+
                     </div>
                 </div>
             </div>
@@ -181,8 +145,16 @@
 @section('script')
     <script type="text/javascript">
         var at_page = "quanbu";
+
+        // 全局变量
+        var gnTotalPage = '{{$orders->lastPage()}}';
+        var gnCurrentPage = '{{$orders->currentPage()}}';
+
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
     </script>
 
-    <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
 @endsection
