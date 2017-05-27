@@ -2067,62 +2067,106 @@ class OrderCtrl extends Controller
         ]);
     }
 
+    /**
+     * 获取订单列表
+     * @param int $factoryId
+     * @param int $status
+     * @param int $stationId
+     * @return mixed
+     */
+    private function getOrderList($factoryId = 0, $status = 0, $stationId = 0) {
+
+        $queryOrder = Order::where('is_deleted', 0)
+            ->where('factory_id', $factoryId)
+            ->orderBy('created_at', 'desc');
+
+        if ($stationId == 0) {
+            // 获取奶厂订单
+        }
+
+        return $queryOrder->paginate();
+    }
+
 //show all dingdan in one season by ordered_at
     public
     function show_all_dingdan_in_gongchang()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")
-            ->where('factory_id', $factory_id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $orders = $this->getOrderList($factory_id);
+//        $orders = Order::where('is_deleted', "0")
+//            ->where('factory_id', $factory_id)
+//            ->orderBy('created_at', 'desc')
+//            ->get();
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
 
-        //get wechat amount
-        $money_amount = $card_amount = $wechat_amount = 0;
-        $money_dcount = $card_dcount = $wechat_dcount = 0;
+        // 现金订单
+        $money_amount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->sum('total_amount');
+        $money_dcount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->count();
 
-        foreach ($orders as $order) {
-            if ($order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
-                $money_amount += $order->total_amount;
-                $money_dcount++;
-            } else if ($order->payment_type == PaymentType::PAYMENT_TYPE_CARD) {
-                $card_amount += $order->total_amount;
-                $card_dcount++;
-            } else {
-                $wechat_amount += $order->total_amount;
-                $wechat_dcount++;
-            }
-        }
+        // 奶卡订单
+        $card_amount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->sum('total_amount');
+        $card_dcount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->count();
+
+        // 微信订单
+        $wechat_amount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->sum('total_amount');
+        $wechat_dcount = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->count();
+
+        // 没数据变量会变成null
+        if (empty($money_amount))
+            $money_amount = 0;
+        if (empty($card_amount))
+            $card_amount = 0;
+        if (empty($wechat_amount))
+            $wechat_amount = 0;
 
         $child = 'quanbudingdan-liebiao';
         $parent = 'dingdan';
         $current_page = 'quanbudingdan-liebiao';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
+        $order_properties = OrderProperty::get();
+        $payment_types = PaymentType::get();
 
         return view('gongchang.dingdan.quanbudingdan-liebiao', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'money_amount' => $money_amount,
-            'money_dcount' => $money_dcount,
-            'card_amount' => $card_amount,
-            'card_dcount' => $card_dcount,
-            'wechat_amount' => $wechat_amount,
-            'wechat_dcount' => $wechat_dcount,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
+            // 页面信息
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+
+            // 数据
+            'orders'            => $orders,
+            'money_amount'      => $money_amount,
+            'money_dcount'      => $money_dcount,
+            'card_amount'       => $card_amount,
+            'card_dcount'       => $card_dcount,
+            'wechat_amount'     => $wechat_amount,
+            'wechat_dcount'     => $wechat_dcount,
+            'factory'           => $factory,
+            'order_properties'  => $order_properties,
+            'payment_types'     => $payment_types,
         ]);
     }
 
