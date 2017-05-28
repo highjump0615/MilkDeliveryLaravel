@@ -61,7 +61,6 @@ class Order extends Model
         'customer_name',
         'payment_type_name',
         'order_property_name',
-        'order_checker',
         'order_checker_name',
         'station_name',
         'delivery_station_name',
@@ -85,7 +84,6 @@ class Order extends Model
         'waiting_passed_delivery_plans',
         'order_end_date',
         'status_name',
-        'customer',
         'has_stopped',
         'remain_order_money',
         'sub_address',
@@ -303,14 +301,8 @@ class Order extends Model
 
     public function getOrderEndDateAttribute()
     {
-        //get delivery date of last delivery plan
-        $last_dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'desc')->first();
-        if($last_dp)
-        {
-            return $last_dp->deliver_at;
-        } else
-            return "";
-
+        $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
+        return $dp->deliver_at;
     }
 
     public function getOrderStopEndDateAttribute()
@@ -621,27 +613,13 @@ class Order extends Model
             return "";
     }
 
-    public function getCustomerAttribute()
-    {
-        if ($this->customer_id) {
-            $customer = Customer::find($this->customer_id);
-            return $customer;
-        }
-    }
-
+    /**
+     * 获取收件人名称
+     * @return mixed
+     */
     public function getCustomerNameAttribute()
     {
-        if($this->customer_id)
-        {
-            $customer = Customer::find($this->customer_id);
-            
-            if($customer)
-                return $customer->name;
-            else
-                return "";
-        }
-        else
-            return "";
+        return $this->customer->name;
     }
 
     
@@ -659,6 +637,10 @@ class Order extends Model
             return "";
     }
 
+    /**
+     * 获取订单奶品信息
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function order_products()
     {
         return $this->hasMany('App\Model\OrderModel\OrderProduct');
@@ -669,34 +651,30 @@ class Order extends Model
         return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
     }
 
+    /**
+     * 获取配送明细
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function milkmanDeliveryPlan() {
+        return $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryPlan', 'order_id');
+    }
+
+    /**
+     * 获取订单性质名称
+     * @return mixed
+     */
     public function getOrderPropertyNameAttribute()
     {
-        if($this->order_property_id)
-        {
-            $order_property = OrderProperty::find($this->order_property_id);
-            if($order_property)
-                return $order_property->name;
-            else
-                return "";
-        }
-        else
-            return "";
+        return $this->property->name;
     }
 
     /**
      * 获取征订员信息
      * @return OrderChecker
      */
-    public function getOrderCheckerAttribute()
+    public function checker()
     {
-        $order_checker = null;
-
-        if($this->order_checker_id)
-        {
-            $order_checker = OrderCheckers::find($this->order_checker_id);
-        }
-
-        return $order_checker;
+        return $this->belongsTo('App\Model\OrderModel\OrderCheckers', 'order_checker_id');
     }
 
     /**
@@ -705,10 +683,7 @@ class Order extends Model
      */
     public function getOrderCheckerNameAttribute()
     {
-        if ($this->order_checker)
-            return $this->order_checker->name;
-        else
-            return "";
+        return $this->checker->name;
     }
 
     public function getDeliveryStationNameAttribute()
@@ -878,8 +853,20 @@ class Order extends Model
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation', 'delivery_station_id', 'id');
     }
 
+    /**
+     * 获取收件人
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function customer(){
         return $this->belongsTo('App\Model\BasicModel\Customer');
+    }
+
+    /**
+     * 获取订单性质
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function property() {
+        return $this->belongsTo('App\Model\OrderModel\OrderProperty', 'order_property_id');
     }
 
     /**
