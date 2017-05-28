@@ -657,8 +657,10 @@ class StationManageCtrl extends Controller
         }
     }
 
-
-    /*Show station list for delivery area*/
+    /**
+     * 打开奶站配送范围管理页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_station_list_for_delivery_area()
     {
         $factory_id = Auth::guard('gongchang')->user()->factory_id;
@@ -681,15 +683,14 @@ class StationManageCtrl extends Controller
         foreach($stations as $s) {
             $station_id = $s->id;
             $delivery_areas = DSDeliveryArea::where('station_id', $station_id)->get();
-            if ($delivery_areas->first() != null) {
-                foreach ($delivery_areas as $da) {
-                    if ($da->address != null) {
-                        $xiaoqu = Address::addressObjFromName($da->address, $factory_id);
 
-                        if ($xiaoqu) {
-                            $area_address[$station_id][$xiaoqu->parent_id][0] = $xiaoqu->street->name;
-                            $area_address[$station_id][$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
-                        }
+            foreach ($delivery_areas as $da) {
+                if ($da->address != null) {
+                    $xiaoqu = $da->village;
+
+                    if ($xiaoqu) {
+                        $area_address[$station_id][$xiaoqu->parent_id][0] = $xiaoqu->street->name;
+                        $area_address[$station_id][$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
                     }
                 }
             }
@@ -709,17 +710,17 @@ class StationManageCtrl extends Controller
         ]);
     }
 
-    //Show Station's Delivery Area
+    /**
+     * 打开奶站配送范围管理页面
+     * @param $station_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_delivery_area_of_station($station_id)
     {
-        $factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
         //first get province, city, district of station: give limitation to this
-        $station = DeliveryStation::where('id', $station_id)
-            ->where('factory_id', $factory_id)
-            ->where('status', DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)
-            ->where('is_deleted', 0)
-            ->first();
+        $station = DeliveryStation::find($station_id);
 
         $station_address = explode(" ", $station->address);
 
@@ -734,17 +735,21 @@ class StationManageCtrl extends Controller
 
         $district_id = $district_entity->id;
 
-        $street_entities = Address::where('parent_id', $district_id)->where('level', 4)
+        $street_entities = Address::where('parent_id', $district_id)
+            ->where('level', Address::LEVEL_STREET)
             ->where('factory_id', $factory_id)
             ->where('is_active', Address::ADDRESS_ACTIVE)
-            ->where('is_deleted', 0)->get();
+            ->where('is_deleted', 0)
+            ->get();
 
         foreach ($street_entities as $street_entity) {
             $street_id1 = $street_entity->id;
-            $xiaoqus = Address::where('parent_id', $street_id1)->where('level', 5)
+            $xiaoqus = Address::where('parent_id', $street_id1)
+                ->where('level', Address::LEVEL_VILLAGE)
                 ->where('factory_id', $factory_id)
                 ->where('is_active', Address::ADDRESS_ACTIVE)
-                ->where('is_deleted', 0)->get();
+                ->where('is_deleted', 0)
+                ->get();
             foreach ($xiaoqus as $xiaoqu) {
                 $available_address[$street_id1][0] = $street_entity->name;
                 $xiaoqu_id1 = $xiaoqu->id;
@@ -756,17 +761,13 @@ class StationManageCtrl extends Controller
         $delivery_areas = DSDeliveryArea::where('station_id', $station_id)->get();
 
         $area_address = array();
-        if ($delivery_areas->first() != null) {
-            foreach ($delivery_areas as $da) {
-                if ($da->address != null) {
 
-                    $xiaoqu = Address::addressObjFromName($da->address, $factory_id);
+        foreach ($delivery_areas as $da) {
+            $xiaoqu = $da->village;
 
-                    if ($xiaoqu) {
-                        $area_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
-                        $area_address[$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
-                    }
-                }
+            if ($xiaoqu) {
+                $area_address[$xiaoqu->parent_id][0] = $xiaoqu->street->name;
+                $area_address[$xiaoqu->parent_id][1][$xiaoqu->id] = $xiaoqu->name;
             }
         }
 
