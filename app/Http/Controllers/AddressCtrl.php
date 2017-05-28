@@ -21,13 +21,18 @@ use Excel;
 
 class AddressCtrl extends Controller
 {
-
+    /**
+     * 打开地址库页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
-        $streets = Address::where('level', 4)->where('factory_id', $factory_id)->where('is_deleted', 0)->get();
+        $streets = Address::where('level', Address::LEVEL_STREET)
+            ->where('factory_id', $factory_id)
+            ->where('is_deleted', 0)
+            ->paginate();
 
         //Combine address list that has the same province, city distirct
 
