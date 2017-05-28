@@ -2069,36 +2069,163 @@ class OrderCtrl extends Controller
 
     /**
      * 获取订单列表
+     * @param Request $request
      * @param int $factoryId
      * @param int $status
      * @param int $stationId
      * @return mixed
      */
-    private function getOrderList($factoryId = 0, $status = 0, $stationId = 0) {
+    private function getOrderList(Request $request, $factoryId = 0, $stationId = 0) {
+
+        $retData = array();
 
         $queryOrder = Order::where('is_deleted', 0)
-            ->where('factory_id', $factoryId)
             ->orderBy('created_at', 'desc');
 
-        if ($stationId == 0) {
-            // 获取奶厂订单
+        if ($factoryId > 0) {
+            $queryOrder->where('factory_id', $factoryId);
         }
 
-        return $queryOrder->paginate();
+        // 收件人
+        $customer = $request->input('customer');
+        if (!empty($customer)) {
+            // 筛选
+            $queryOrder->whereHas('customer', function($query) use ($customer) {
+                $query->where('name', 'like', '%' . $customer . '%');
+            });
+
+            // 添加筛选参数
+            $retData['customer'] = $customer;
+        }
+
+        // 电话
+        $phone = $request->input('phone');
+        if (!empty($phone)) {
+            // 筛选
+            $queryOrder->where('phone', 'like', '%' . $phone . '%');
+
+            // 添加筛选参数
+            $retData['phone'] = $phone;
+        }
+
+        // 奶站
+        $station = $request->input('station');
+        if (empty($station)) {
+            $station = $stationId;
+        }
+        if (!empty($station)) {
+            // 筛选
+            $queryOrder->where('delivery_station_id', $station);
+
+            // 添加筛选参数
+            $retData['station'] = $station;
+        }
+
+        // 订单性质
+        $property = $request->input('property');
+        if (!empty($property)) {
+            // 筛选
+            $queryOrder->whereHas('property', function($query) use ($property) {
+                $query->where('id', $property);
+            });
+
+            // 添加筛选参数
+            $retData['property'] = $property;
+        }
+
+        // 订单编号
+        $number = $request->input('number');
+        if (!empty($number)) {
+            // 筛选
+            $queryOrder->where('number', 'like', '%' . $number . '%');
+
+            // 添加筛选参数
+            $retData['number'] = $number;
+        }
+
+        // 征订员
+        $checker = $request->input('checker');
+        if (!empty($checker)) {
+            // 筛选
+            $queryOrder->whereHas('checker', function($query) use ($checker) {
+                $query->where('name', 'like', '%' . $checker . '%');
+            });
+
+            // 添加筛选参数
+            $retData['checker'] = $checker;
+        }
+
+        // 订单类型
+        $type = $request->input('type');
+        if (!empty($type)) {
+            // 筛选
+            $queryOrder->whereHas('order_products', function($query) use ($type) {
+                $query->where('order_type', $type);
+            });
+
+            // 添加筛选参数
+            $retData['type'] = $type;
+        }
+
+        // 支付类型
+        $ptype = $request->input('ptype');
+        if (!empty($ptype)) {
+            // 筛选
+            $queryOrder->where('payment_type', $ptype);
+
+            // 添加筛选参数
+            $retData['ptype'] = $ptype;
+        }
+
+        // 订单状态
+        $status = $request->input('status');
+        if (!empty($status)) {
+            // 筛选
+            $queryOrder->where('status', $status);
+
+            // 添加筛选参数
+            $retData['status'] = $status;
+        }
+
+        // 下单日期
+        $start = $request->input('start');
+        if (!empty($start)) {
+            // 筛选
+            $queryOrder->where('start_at', '>=', $start);
+
+            // 添加筛选参数
+            $retData['start'] = $start;
+        }
+        $end = $request->input('end');
+        if (!empty($end)) {
+            // 筛选
+            $queryOrder->where('start_at', '<=', $end);
+
+            // 添加筛选参数
+            $retData['end'] = $end;
+        }
+
+        // 到期日期
+        $endDate = $request->input('end_date');
+        if (!empty($endDate)) {
+        }
+
+        $retData['orders'] = $queryOrder->paginate();
+
+        return $retData;
     }
 
-//show all dingdan in one season by ordered_at
-    public
-    function show_all_dingdan_in_gongchang()
+    /**
+     * 打开奶厂全部订单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_all_dingdan_in_gongchang(Request $request)
     {
         $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $orders = $this->getOrderList($factory_id);
-//        $orders = Order::where('is_deleted', "0")
-//            ->where('factory_id', $factory_id)
-//            ->orderBy('created_at', 'desc')
-//            ->get();
+        $aryBaseData = $this->getOrderList($request, $factory_id);
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -2149,7 +2276,7 @@ class OrderCtrl extends Controller
         $order_properties = OrderProperty::get();
         $payment_types = PaymentType::get();
 
-        return view('gongchang.dingdan.quanbudingdan-liebiao', [
+        return view('gongchang.dingdan.quanbudingdan-liebiao', array_merge($aryBaseData, [
             // 页面信息
             'pages'             => $pages,
             'child'             => $child,
@@ -2157,7 +2284,6 @@ class OrderCtrl extends Controller
             'current_page'      => $current_page,
 
             // 数据
-            'orders'            => $orders,
             'money_amount'      => $money_amount,
             'money_dcount'      => $money_dcount,
             'card_amount'       => $card_amount,
@@ -2167,7 +2293,7 @@ class OrderCtrl extends Controller
             'factory'           => $factory,
             'order_properties'  => $order_properties,
             'payment_types'     => $payment_types,
-        ]);
+        ]));
     }
 
     //Show All dingdan in Naizhan : Only it's orders
