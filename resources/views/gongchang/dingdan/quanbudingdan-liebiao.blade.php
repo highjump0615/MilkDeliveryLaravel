@@ -105,7 +105,7 @@
                             @if (isset($orders))
                                 @for($i =0; $i<count($orders); $i++)
                                     <tr data-orderid="{{$orders[$i]->id}}" data-status="{{$orders[$i]->status}}" class="row-hover-light-blue">
-                                        <td>{{$i+1}}</td>
+                                        <td>{{$i + $orders->firstItem()}}</td>
                                         <td class="o_number">{{$orders[$i]->number}}</td>
                                         <td class="o_customer_name">{{$orders[$i]->customer_name}}</td>
                                         <td class="o_phone">{{$orders[$i]->phone}}</td>
@@ -157,4 +157,5 @@
     <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
+    <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
 @endsection
