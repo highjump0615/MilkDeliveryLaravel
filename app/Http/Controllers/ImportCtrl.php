@@ -122,6 +122,20 @@ class ImportCtrl extends Controller
     }
 
     /**
+     * 画面上显示结果
+     * @param $cell
+     * @param $show
+     */
+    private function logData($cell, $show) {
+        if (!$show) {
+            return;
+        }
+
+        echo $cell->getFormattedValue();
+        echo ', ';
+    }
+
+    /**
      * 导入订单信息
      * @param $sheet
      * @param $checkData boolean 是否只校验数据
@@ -130,8 +144,6 @@ class ImportCtrl extends Controller
     private function importOrder($sheet, $checkData = true) {
 
         $bResult = true;
-
-        $aryData = $sheet->toArray();
 
         //
         // 加载基础信息
@@ -149,82 +161,143 @@ class ImportCtrl extends Controller
         // 加载地址
         $villages = Address::where('factory_id', $this->mnFactoryId)->where('level', 5)->get();
 
-        for ($i = 1; $i < count($aryData); $i++) {
-            $row = $aryData[$i];
+        // 显示log
+        if ($checkData) {
+            echo '---------- Order ------------<br>';
+            echo '<br>';
+        }
 
-            // 显示log
-            if ($checkData) {
-                echo '---------- Order ------------<br>';
-                echo implode(', ', $row);
-                echo '<br>';
+        $nRowIndex = -1;
+        foreach ($sheet->getRowIterator() as $row) {
+            usleep(10000);
+
+            $nRowIndex++;
+
+            // 跳过第一行
+            if ($nRowIndex == 0) {
+                continue;
             }
 
             $nIndex = 0;
+            foreach ($row->getCellIterator() as $cell) {
+                // 显示log
+                $this->logData($cell, $checkData);
 
-            // 序号
-            $nSeq = $row[$nIndex++];
+                // 获取订单内容
+                switch ($nIndex) {
+                    // 序号
+                    case 0:
+                        $nSeq = $cell->getValue();
+                        break;
 
-            // 收货人
-            $strName = $row[$nIndex++];
+                    // 收货人
+                    case 1:
+                        $strName = $cell->getValue();
+                        break;
 
-            // 电话
-            $strPhone = strval($row[$nIndex++]);
+                    // 电话
+                    case 2:
+                        $strPhone = strval($cell->getValue());
+                        break;
 
-            // 订单性质
-            $strProperty = $row[$nIndex++];
+                    // 订单性质
+                    case 3:
+                        $strProperty = $cell->getValue();
+                        break;
 
-            // 商品名
-            $strProduct = $row[$nIndex++];
+                    // 商品名
+                    case 4:
+                        $strProduct = $cell->getValue();
+                        break;
 
-            // 起送日期
-            $strDateStart = $row[$nIndex++];
+                    // 起送日期
+                    case 5:
+                        $strDateStart = $cell->getFormattedValue();
+                        break;
 
-            // 订购数量
-            $nCount = intval($row[$nIndex++]);
+                    // 订购数量
+                    case 6:
+                        $nCount = intval($cell->getValue());
+                        break;
 
-            // 订单类型
-            $strType = $row[$nIndex++];
+                    // 订单类型
+                    case 7:
+                        $strType = $cell->getValue();
+                        break;
 
-            // 配送规则
-            $strDeliveryType = $row[$nIndex++];
+                    // 配送规则
+                    case 8:
+                        $strDeliveryType = $cell->getValue();
+                        break;
 
-            // 销售价
-            $dPrice = doubleval($row[$nIndex++]);
+                    // 销售价
+                    case 9:
+                        $dPrice = doubleval($cell->getValue());
+                        break;
 
-            // 成本价、配送类型 不需要
-            $nIndex += 2;
+                    // 地址：省
+                    case 12:
+                        $strProvince = $cell->getValue();
+                        break;
 
-            // 地址
-            $strProvince = $row[$nIndex++];
-            $strCity = $row[$nIndex++];
-            $strDistrict = $row[$nIndex++];
-            $strStreet = $row[$nIndex++];
-            $strVillage = $row[$nIndex++];
-            $strAddress = $row[$nIndex++];
+                    // 地址：市
+                    case 13:
+                        $strCity = $cell->getValue();
+                        break;
 
-            // 配送站
-            $strStation = $row[$nIndex++];
+                    // 地址：区
+                    case 14:
+                        $strDistrict = $cell->getValue();
+                        break;
 
-            // 录入时间
-            $strDateInput = substr($row[$nIndex++], 0, strlen("yyyy-mm-dd"));
+                    // 地址：街道
+                    case 15:
+                        $strStreet = $cell->getValue();
+                        break;
 
-            // 空列
-            $nIndex++;
+                    // 地址：小区
+                    case 16:
+                        $strVillage = $cell->getValue();
+                        break;
 
-            // 票据号
-            $strReceipt = $row[$nIndex++];
+                    // 地址：详细地址
+                    case 17:
+                        $strAddress = $cell->getValue();
+                        break;
 
-            // 退款金额，扣提成 不需要
-            $nIndex += 2;
+                    // 配送站
+                    case 18:
+                        $strStation = $cell->getValue();
+                        break;
 
-            // 备注
-            $strComment = $row[$nIndex++];
+                    // 录入时间
+                    case 19:
+                        $strDateInput = substr($cell->getValue(), 0, strlen("yyyy-mm-dd"));
+                        break;
 
-            // 空列
-            $nIndex++;
+                    // 票据号
+                    case 21:
+                        $strReceipt = $cell->getValue();
+                        break;
 
-            // 征订人
-            $strChecker = strval($row[$nIndex++]);
+                    // 备注
+                    case 24:
+                        $strComment = $cell->getValue();
+                        break;
+
+                    // 征订人
+                    case 26:
+                        $strChecker = $cell->getValue();
+                        break;
+                }
+
+                $nIndex++;
+            }
+
+            // 换行
+            if ($checkData) {
+                echo '<br>';
+            }
 
             //
             // 验证地址
@@ -489,6 +562,8 @@ class ImportCtrl extends Controller
                 $op,
                 MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
                 $op->total_count);
+
+            echo 'Added order: ' . $nSeq . '<br>';
         }
 
         echo '<br>----------------------<br>';

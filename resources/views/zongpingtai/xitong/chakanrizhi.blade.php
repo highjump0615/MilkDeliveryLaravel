@@ -94,6 +94,7 @@
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
 
 		</div>
@@ -113,6 +114,7 @@
     </script>
 
      <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
      <script type="text/javascript" src="<?=asset('js/pages/zongpingtai/syslog.js')?>"></script>
 
 @endsection
