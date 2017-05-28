@@ -61,7 +61,6 @@ class Order extends Model
         'customer_name',
         'payment_type_name',
         'order_property_name',
-        'order_checker',
         'order_checker_name',
         'station_name',
         'delivery_station_name',

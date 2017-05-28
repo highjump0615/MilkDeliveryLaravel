@@ -210,7 +210,7 @@ class OrderCtrl extends Controller
 
             // 更新数量
             $plan->setCount($changed);
-            
+
             // 处理多余量
             $plan->order_product->processExtraCount($plan, -$diff);
 
@@ -551,8 +551,8 @@ class OrderCtrl extends Controller
     private function initShowOrderChecker($order) {
         // 征订员信息，奶站或奶厂的征订员
         $order_checkers = null;
-        if ($order->order_checker->station) {
-            $order_checkers = $order->order_checker->station->all_order_checkers;
+        if ($order->checker->station) {
+            $order_checkers = $order->checker->station->all_order_checkers;
         }
         else {
             $order_checkers = $this->factory->ordercheckers;
@@ -1226,7 +1226,7 @@ class OrderCtrl extends Controller
             'order_products'            => $order_products,
             'grouped_plans_per_product' => $grouped_plans_per_product,
             'gap_day'                   => $factory->gap_day,
-            
+
             // 奶站信息
             'station'                   => $station
         ]);
@@ -1435,40 +1435,41 @@ class OrderCtrl extends Controller
         }
     }
 
-    //show not passed dingdan in gongchang
-    public
-    function show_not_passed_dingdan_in_gongchang()
+    /**
+     * 打开奶厂未通过订单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_not_passed_dingdan_in_gongchang(Request $request)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $queryOrder = Order::where('is_deleted', 0)
             ->where('factory_id', $factory_id)
             ->where(function($query) {
                 $query->where('status', Order::ORDER_NOT_PASSED_STATUS);
                 $query->orwhere('status', Order::ORDER_NEW_NOT_PASSED_STATUS);
             })
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
+
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         $child = 'weitongguodingdan';
         $parent = 'dingdan';
         $current_page = 'weitongguodingdan';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        return view('gongchang.dingdan.weitongguodingdan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
+        return view('gongchang.dingdan.weitongguodingdan', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'factory'       => $factory,
+        ]));
     }
 
     //show not passed dingdan in naizhan
@@ -1508,38 +1509,38 @@ class OrderCtrl extends Controller
         ]);
     }
 
-
-    //show stopped dingdan in gongchang
-    public
-    function show_stopped_dingdan_in_gongchang()
+    /**
+     * 打开奶厂暂停订单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_stopped_dingdan_in_gongchang(Request $request)
     {
         $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
-
-        $orders = Order::queryStopped()
-            ->where('is_deleted', "0")
+        $queryOrder = Order::queryStopped()
+            ->where('is_deleted', 0)
             ->where('factory_id', $factory_id)
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
+
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         $child = 'zantingdingdan';
         $parent = 'dingdan';
         $current_page = 'zantingdingdan';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        return view('gongchang.dingdan.zantingdingdan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
+        return view('gongchang.dingdan.zantingdingdan', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'factory'       => $factory,
+        ]));
     }
 
 
@@ -1576,38 +1577,38 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//Show On Delivery Orders in gongchang
-    public
-    function show_on_delivery_dingdan_in_gongchang()
+    /**
+     * 打开奶厂在配送订单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_on_delivery_dingdan_in_gongchang(Request $request)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
-
-        $orders = Order::where('is_deleted', "0")
+        $queryOrder = Order::where('is_deleted', 0)
             ->where('factory_id', $factory_id)
             ->where('status', Order::ORDER_ON_DELIVERY_STATUS)
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
+
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         $child = 'zaipeisongdingdan';
         $parent = 'dingdan';
         $current_page = 'zaipeisongdingdan';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        return view('gongchang.dingdan.zaipeisongdingdan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
+        return view('gongchang.dingdan.zaipeisongdingdan', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'factory'       => $factory,
+        ]));
     }
 
     //Show on Delivery Orders in Naizhan
@@ -1768,44 +1769,41 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//show xudan liebiao page
-    public
-    function show_xudan_dingdan_liebiao_in_gongchang()
+    /**
+     * 打开奶厂续单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_xudan_dingdan_liebiao_in_gongchang(Request $request)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $orders = Order::where('is_deleted', "0")->where('factory_id', $factory_id)
+        $queryOrder = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
             ->where(function ($query) {
                 $query->where('status', Order::ORDER_FINISHED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
             })
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
 
-        //find total amount according to payment type
-        //payment type: wechat=3, money=1, card=2
-
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
-
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         $child = 'xudanliebiao';
         $parent = 'dingdan';
         $current_page = 'xudanliebiao';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        return view('gongchang.dingdan.xudanliebiao', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'orders' => $orders,
-            'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
+        return view('gongchang.dingdan.xudanliebiao', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'factory'       => $factory,
+        ]));
     }
 
     //show xudan liebiao  in Naizhan
@@ -1845,40 +1843,41 @@ class OrderCtrl extends Controller
         ]);
     }
 
-//show waiting check dingdan in gongchang/daishenhe
-    public
-    function show_check_waiting_dingdan_in_gongchang()
+    /**
+     * 打开奶厂待审核订单列表页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show_check_waiting_dingdan_in_gongchang(Request $request)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
-        $order_properties = OrderProperty::get()->all();
-        $payment_types = PaymentType::get()->all();
 
-        $orders = Order::where('is_deleted', "0")
+        $queryOrder = Order::where('is_deleted', 0)
             ->where(function($query) {
                 $query->where('status', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', Order::ORDER_WAITING_STATUS);
             })
             ->where('factory_id', $factory_id)
-            ->orderBy('updated_at', 'desc')
-            ->get();//add time condition
+            ->orderBy('updated_at', 'desc');
+
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         $child = 'daishenhedingdan';
         $parent = 'dingdan';
         $current_page = 'daishenhedingdan';;
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        return view('gongchang.dingdan.daishenhedingdan', [
+        return view('gongchang.dingdan.daishenhedingdan', array_merge($aryBaseData, [
+            // 页面信息
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'orders' => $orders,
+
+            // 数据
             'factory' => $factory,
-            'order_properties' => $order_properties,
-            'payment_types' => $payment_types,
-        ]);
+        ]));
     }
 
     public function change_sub_address_in_gongchang(Request $request)
@@ -2069,22 +2068,13 @@ class OrderCtrl extends Controller
 
     /**
      * 获取订单列表
+     * @param $queryOrder
      * @param Request $request
-     * @param int $factoryId
-     * @param int $status
-     * @param int $stationId
      * @return mixed
      */
-    private function getOrderList(Request $request, $factoryId = 0, $stationId = 0) {
+    private function getOrderList($queryOrder, Request $request) {
 
         $retData = array();
-
-        $queryOrder = Order::where('is_deleted', 0)
-            ->orderBy('created_at', 'desc');
-
-        if ($factoryId > 0) {
-            $queryOrder->where('factory_id', $factoryId);
-        }
 
         // 收件人
         $customer = $request->input('customer');
@@ -2110,9 +2100,6 @@ class OrderCtrl extends Controller
 
         // 奶站
         $station = $request->input('station');
-        if (empty($station)) {
-            $station = $stationId;
-        }
         if (!empty($station)) {
             // 筛选
             $queryOrder->where('delivery_station_id', $station);
@@ -2212,6 +2199,14 @@ class OrderCtrl extends Controller
 
         $retData['orders'] = $queryOrder->paginate();
 
+        // 订单性质
+        $order_properties = OrderProperty::get();
+        $retData['order_properties'] = $order_properties;
+
+        // 支付类型
+        $payment_types = PaymentType::get();
+        $retData['payment_types'] = $payment_types;
+
         return $retData;
     }
 
@@ -2225,7 +2220,11 @@ class OrderCtrl extends Controller
         $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $aryBaseData = $this->getOrderList($request, $factory_id);
+        $queryOrder = Order::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->orderBy('created_at', 'desc');
+
+        $aryBaseData = $this->getOrderList($queryOrder, $request);
 
         //find total amount according to payment type
         //payment type: wechat=3, money=1, card=2
@@ -2273,9 +2272,6 @@ class OrderCtrl extends Controller
         $current_page = 'quanbudingdan-liebiao';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        $order_properties = OrderProperty::get();
-        $payment_types = PaymentType::get();
-
         return view('gongchang.dingdan.quanbudingdan-liebiao', array_merge($aryBaseData, [
             // 页面信息
             'pages'             => $pages,
@@ -2291,8 +2287,6 @@ class OrderCtrl extends Controller
             'wechat_amount'     => $wechat_amount,
             'wechat_dcount'     => $wechat_dcount,
             'factory'           => $factory,
-            'order_properties'  => $order_properties,
-            'payment_types'     => $payment_types,
         ]));
     }
 
