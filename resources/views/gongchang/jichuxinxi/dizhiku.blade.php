@@ -1,5 +1,7 @@
 @extends('gongchang.layout.master')
 
+<?php $pageSize = 15; ?>
+
 @section('css')
     <link href="<?=asset('css/plugins/tagsinput/bootstrap-tagsinput.css') ?>" rel="stylesheet">
     <style>
@@ -38,7 +40,7 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
 
-                    <table class="footable table table-bordered" data-page-size="10" id="address_tb">
+                    <table class="table table-bordered" id="address_tb">
                         <thead>
                         <tr>
                             <th data-sort-ignore="true">序号</th>
@@ -60,21 +62,22 @@
                                 <?php
                                 // 考虑合并因分页分开的情况
                                 $streetcount = count($streets);
-                                $row_span = min($streetcount, 10 - $rowcount % 10);
+                                $row_span = min($streetcount, $pageSize - $rowcount % $pageSize);
                                 $j = 0;
                                 ?>
                                 @foreach($streets as $street)
                                     <tr>
-                                        @if ($rowcount % 10 == 0 && $j > 0)
+                                        @if ($rowcount % $pageSize == 0 && $j > 0)
                                             <?php
                                             $streetcount -= $row_span;
-                                            $row_span = min($streetcount, 10);
+                                            $row_span = min($streetcount, $pageSize);
                                             $j = 0;
                                             ?>
                                         @endif
 
+                                        <td>{{$j + $address_list->firstItem()}}</td>
+
                                         @if ($j == 0)
-                                            <td rowspan="{{$row_span}}">{{$i+1}}</td>
                                             <td rowspan="{{$row_span}}">{{$street->province->name}}</td>
                                             <td rowspan="{{$row_span}}">{{$street->city->name}}</td>
                                             <td rowspan="{{$row_span}}">{{$street->district->name}}</td>
@@ -118,7 +121,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <ul class="pagination pull-right"></ul>
+                                <ul id="pagination_data" class="pagination-sm pull-right"></ul>
                             </td>
                         </tr>
                         </tfoot>
@@ -278,6 +281,18 @@
 @endsection
 
 @section('script')
+
+    <script type="text/javascript">
+        // 全局变量
+        var gnTotalPage = '{{$address_list->lastPage()}}';
+        var gnCurrentPage = '{{$address_list->currentPage()}}';
+
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
+    </script>
+
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
     <script type="text/javascript" src="<?=asset('js/plugins/tagsinput/bootstrap-tagsinput.js') ?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/address_manage.js')?>"></script>

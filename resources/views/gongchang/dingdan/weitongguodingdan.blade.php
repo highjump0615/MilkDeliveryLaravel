@@ -39,7 +39,7 @@
                 <div class="ibox float-e-margins white-bg">
                     <div class="ibox-content">
 
-                        <table id="order_table" class="footable table table-bordered" data-page-size="10" data-limit-navigation="5">
+                        <table id="order_table" class="table table-bordered">
                             <thead>
                             <tr>
                                 <th data-sort-ignore="true">序号</th>
@@ -63,7 +63,7 @@
                             @if (isset($orders))
                                 @for($i =0; $i<count($orders); $i++)
                                     <tr data-orderid="{{$orders[$i]->id}}" class="row-hover-light-blue">
-                                        <td>{{$i+1}}</td>
+                                        <td>{{$i + $orders->firstItem()}}</td>
                                         <td class="o_number">{{$orders[$i]->number}}</td>
                                         <td class="o_customer_name">{{$orders[$i]->customer_name}}</td>
                                         <td class="o_phone">{{$orders[$i]->phone}}</td>
@@ -86,45 +86,9 @@
                                 @endfor
                             @endif
                             </tbody>
-                            <tfoot align="right">
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
 
-                        <table class="footable table table-bordered" id="filter_table" data-page-size="10" data-limit-navigation="5"
-                               style="display:none;">
-                            <thead>
-                            <tr>
-                               <th data-sort-ignore="true">序号</th>
-                               <th data-sort-ignore="true">订单号</th>
-                               <th data-sort-ignore="true">客户名</th>
-                               <th data-sort-ignore="true">电话</th>
-                               <th data-sort-ignore="true">地址</th>
-                               <th data-sort-ignore="true">订单类型</th>
-                               <th data-sort-ignore="true">订单金额</th>
-                               <th data-sort-ignore="true">下单日期</th>
-                               <th data-sort-ignore="true">支付</th>
-                               <th data-sort-ignore="true">订单性质</th>
-                               <th data-sort-ignore="true">征订员</th>
-                               <th data-sort-ignore="true">奶站</th>
-                               <th data-sort-ignore="true">配送员</th>
-                               <th data-sort-ignore="true">备注</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="16">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
-                        </table>
+                        <ul id="pagination_data" class="pagination-sm pull-right"></ul>
 
                     </div>
                 </div>
@@ -134,11 +98,8 @@
     </div>
 @endsection
 
-@section('script')
-<script type="text/javascript">
-    var at_page = "weitongguo";
-</script>
-<script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
-<script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
-@endsection
+<!-- script -->
+@include('gongchang.dingdan.orderscript', [
+    'pageName' => 'weitongguo',
+])
 
