@@ -14,6 +14,11 @@
 
     <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_list_filter.js') ?>"></script>
+
+    @if (empty($isStation))
+        <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_select_export_print.js')?>"></script>
+    @else
+        <script type="text/javascript" src="<?=asset('js/pages/naizhan/order_select_export_print.js')?>"></script>
+    @endif
 @endsection
