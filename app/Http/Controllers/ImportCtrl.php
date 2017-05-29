@@ -448,7 +448,7 @@ class ImportCtrl extends Controller
                 $station->id,
                 $op->start_at,
                 $op,
-                MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING,
+                MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,
                 $op->total_count);
         }
 
