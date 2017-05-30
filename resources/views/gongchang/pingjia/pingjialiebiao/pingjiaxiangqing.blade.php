@@ -26,23 +26,22 @@
 			</ol>
 		</div>
 		<div class="row border-bottom">
-                <div class="col-lg-12" style="background-color:white">
-                    <div class="ibox float-e-margins">
-                        <div class="ibox">
-                            <form method="get" class="form-horizontal">
-                                <div class="row">
-                                    <div class="form-group">
+            <div class="col-lg-12" style="background-color:white">
+                <div class="ibox float-e-margins">
+                    <div class="ibox">
+                        <form method="get" class="form-horizontal">
+                            <div class="row">
+                                <div class="form-group">
 
-                                        <label class="col-sm-2 control-label" style="padding-top: 15px;">综合评价</label>
-                                        <input type="text" class="kv-fa rating-loading" value="{{$review->mark}}" data-size="xs" title="" readonly>
-                                    </div>
-								</div>
-                                <div class="hr-line-dashed"></div>
-								<div class="ibox">
-									<label style="padding-left: 120px;">{{$review->content}}</label>
-								</div>
-                            </form>
-                        </div>
+                                    <label class="col-sm-2 control-label" style="padding-top: 15px;">综合评价</label>
+                                    <input type="text" class="kv-fa rating-loading" value="{{$review->mark}}" data-size="xs" title="" readonly>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="ibox">
+                                <label style="padding-left: 120px;">{{$review->content}}</label>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -53,9 +52,6 @@
 @section('script')
 	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
    
-    <!-- Data picker -->
-    <script src="<?=asset('js/plugins/datepicker/bootstrap-datepicker.js') ?>"></script>
-
 	<script src="<?=asset('js/plugins/star-rating/star-rating.js') ?>" type="text/javascript"></script>
 
     <!-- optionally if you need to use a theme, then include the theme JS file as mentioned below -->
