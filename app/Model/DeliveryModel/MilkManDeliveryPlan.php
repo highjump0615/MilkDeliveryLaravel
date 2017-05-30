@@ -126,9 +126,17 @@ class MilkManDeliveryPlan extends Model
 
     public function order_product(){
         if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id', 'id')->withTrashed();
+            return $this->orderProduct();
         else
             return $this->belongsTo('App\Model\OrderModel\SelfOrderProduct', 'order_product_id', 'id');
+    }
+
+    /**
+     * 获取订单奶品
+     * @return mixed
+     */
+    public function orderProduct() {
+        return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id')->withTrashed();
     }
 
     public function milkman(){
