@@ -11,7 +11,7 @@ use App\Model\ProductModel\ProductCategory;
 class Product extends Model
 {
     protected $table= 'products';
-    
+
     protected $fillable = [
     	'name',
         'simple_name',
@@ -41,7 +41,6 @@ class Product extends Model
     protected $appends = [
     	'category_name',
         'bottle_type_name',
-        'settle_price'
     ];
 
 //	public $timestamps = false;
@@ -76,11 +75,21 @@ class Product extends Model
             return $bottle_type->name;
     }
 
-    public function getSettlePriceAttribute()
+    /**
+     * 获取奶品的结算价格
+     * @param $address
+     * @return float
+     */
+    public function getSettlePrice($address)
     {
-        //Todo
-        //ProductPrice::where('product_id', $this->id)->where('sales_area', )
-         return 6.8;
+        $dPrice = 0;
+
+        $product_price = ProductPrice::priceTemplateFromAddress($this->id, $address);
+        if ($product_price) {
+            $dPrice = $product_price->settle_price;
+        }
+
+        return $dPrice;
     }
 
     /**
