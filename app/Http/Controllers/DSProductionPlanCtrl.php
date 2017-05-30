@@ -160,39 +160,13 @@ class DSProductionPlanCtrl extends Controller
             ->where('produce_start_at',$currentDate_str)
             ->count();
 
-        $product_list = Product::where('is_deleted','0')->get();
-
-        foreach($product_list as $pl){
-            $product_price = ProductPrice::priceTemplateFromAddress($pl->id, $current_station_addr);
-            if($product_price == null)
-                $pl["current_price"] = null;
-            else
-                $pl["current_price"] = $product_price->settle_price;
-
-            $order_products = OrderProduct::where('product_id',$pl->id)->get();
-            $total_count = 0;
-            $total_money = 0;
-
-            foreach($order_products as $op){
-                $plan = MilkManDeliveryPlan::where('station_id',$current_station_id)
-                    ->where(function($query) {
-                        $query->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
-                        $query->orwhere('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
-                    })
-                    ->where('produce_at',$currentDate_str)
-                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                    ->where('order_product_id',$op->id)
-                    ->first();
-
-                if($plan == null){
-                }
-                else {
-                    $total_count += $plan->plan_count;
-                    $total_money += $plan->plan_count * $plan->product_price;
-                }
-            }
-            $pl["total_count"] = $total_count;
-            $pl["total_money"] = $total_money;
+        // 奶品数组
+        $product_list = $current_station->factory->products;
+        foreach ($product_list as $pl) {
+            // 获取奶品的价格
+            $pl["current_price"] = $pl->getSettlePrice($current_station_addr);
+            $pl["total_count"] = 0;
+            $pl["total_money"] = 0;
 
             if ($is_sent) {
                 $current_delivery_plans = DSProductionPlan::where('produce_start_at', $currentDate_str)
@@ -213,6 +187,35 @@ class DSProductionPlanCtrl extends Controller
             $dateOut = date('Y-m-d',strtotime($strOutDate."+".$nDuration."days"));
 
             $pl["out_date"] = $dateOut;
+        }
+
+        // 获取配送明细
+        $plans = MilkManDeliveryPlan::with('orderProduct')
+            ->where('station_id',$current_station_id)
+            ->where(function($query) {
+                $query->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
+                $query->orwhere('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+            })
+            ->where('produce_at',$currentDate_str)
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->get();
+
+        foreach ($plans as $plan) {
+
+            // 是否已获取
+            for ($i = 0; $i < count($product_list); $i++) {
+                if ($product_list[$i]->id == $plan->orderProduct->product_id) {
+                    break;
+                }
+            }
+
+            // 奶品数组里不存在，退出
+            if ($i >= count($product_list)) {
+                continue;
+            }
+
+            $product_list[$i]["total_count"] += $plan->plan_count;
+            $product_list[$i]["total_money"] += $plan->plan_count * $plan->product_price;
         }
 
         return view('naizhan.shengchan.jihuaguanli.tijiaojihua',[
