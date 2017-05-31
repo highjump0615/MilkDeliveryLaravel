@@ -17,9 +17,9 @@
         <ul class="dnpro dnpro2">
             @forelse($plans as $plan)
                 <li class="clearfix one_plan">
-                    <img class="ordpro" src="<?=asset('/img/product/logo/'.$plan->plan_product_image)?>">
-                    <p>{{$plan->product_name}}</p>
-                    <div class="ordye">金额：{{$plan->plan_price}}元</div>
+                    <img class="ordpro" src="<?=asset('/img/product/logo/'.$plan->getPlanProductImage())?>">
+                    <p>{{$plan->getProductName()}}</p>
+                    <div class="ordye">金额：{{$plan->getPlanPrice()}}元</div>
                     <span class="minusplus">
                         <a class="minus" href="javascript:;">-</a>
                         <input type="text" value="{{$plan->changed_plan_count}}" style="ime-mode: disabled;"/>

@@ -464,12 +464,12 @@ class Order extends Model
                 $result_group[] = [
                     'time'          =>$opdp->deliver_at,
                     'plan_id'       =>$opdp->id,
-                    'product_name'  =>$opdp->product_simple_name,
+                    'product_name'  =>$opdp->getProductSimpleName(),
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
                     'can_edit'      =>$opdp->isEditAvailable(),
-                    'status_name'   =>$opdp->status_name,
+                    'status_name'   =>$opdp->getStatusName(),
                 ];
             }
         }
