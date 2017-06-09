@@ -330,7 +330,7 @@ class Order extends Model
     public function getOrderEndDateAttribute()
     {
         $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
-        return $dp->deliver_at;
+        return ($dp) ? $dp->deliver_at : "";
     }
 
     public function getOrderStopEndDateAttribute()
