@@ -856,7 +856,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 配送任务根据配送员分组
         $milkman_delivery_plans = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
-            ->with(array('order' => function($query) {
+            ->with(array('orderDelivery' => function($query) {
                 $query->orderBy('delivery_time');
                 $query->orderBy('address');
             }))
@@ -872,17 +872,22 @@ class DSDeliveryPlanCtrl extends Controller
             $changestatus['new_changed_order_amount'] = 0;
             $changestatus['milkbox_amount'] = 0;
 
+            $milkman = null;
+
             $delivery_info = array();
             $comment = '';
 
             // 配送任务根据订单分组
-            $regular_delivers = $dps_by_milkman->groupBy(function ($sort) {
-                return $sort->order_id;
-            });
+            $regular_delivers = $dps_by_milkman->sortBy(function ($sort) {
+                    return $sort->orderDelivery->address;
+                })
+                ->groupBy(function ($sort) {
+                    return $sort->orderDelivery->address;
+                });
 
-            foreach ($regular_delivers as $r => $by_order_id) {
+            foreach ($regular_delivers as $r => $byAddress) {
                 // 获取订单信息
-                $orderData = Order::find($r);
+                $orderData = array();
 
                 $products = array();
                 $is_changed = 0;
@@ -891,16 +896,21 @@ class DSDeliveryPlanCtrl extends Controller
                 $flag = 0;                  // 是否第一次配送
                 $box_install_count = 0;     // 奶箱安装数量
 
-                foreach ($by_order_id as $dp) {
+                foreach ($byAddress as $dp) {
+                    if (empty($orderData)) {
+                        $orderData = $dp->orderDelivery;
+                    }
+
                     $name = $dp->order_product->product->simple_name;
                     $count = $dp->delivery_count;
-                    $products[] = $name . '*' . $count;
+                    $nRemain = $dp->order_product->remain_count - $count;
+                    $products[] = $name . '*' . $count . '（剩' . $nRemain . '）';
 
                     if ($dp->plan_count != $dp->changed_plan_count)
                         $is_changed = 1;
 
                     $delivery_type = $dp->type;
-                    $flag = $dp->flag;
+                    $flag = max($flag, $dp->flag);
 
                     if ($dp->flag && $orderData->milk_box_install) {
                         $box_install_count = 1;
@@ -918,7 +928,7 @@ class DSDeliveryPlanCtrl extends Controller
                     }
                 }
 
-                $orderData['product'] = implode(',', $products);
+                $orderData['products'] = $products;
                 if ($box_install_count > 0) {
                     $orderData['product'] = $orderData['product'] . ', 奶箱*' . $box_install_count;
 
