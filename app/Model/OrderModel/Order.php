@@ -198,6 +198,27 @@ class Order extends Model
         return $main_addr;
     }
 
+    /**
+     * 获取小区和具体地址
+     * @return string
+     */
+    public function getAddressSmall() {
+        $main_addr = "";
+        $addr_list = explode(' ', $this->address);
+
+        // 小区
+        if (!empty($addr_list[4])) {
+            $main_addr = $addr_list[4];
+        }
+
+        // 具体地址
+        if (!empty($addr_list[5])) {
+            $main_addr .= " " . $addr_list[5];
+        }
+
+        return $main_addr;
+    }
+
     public function getRemainOrderMoneyAttribute()
     {
         $order_products = $this->order_products;

@@ -38,18 +38,7 @@ $(document).on('change','#milkman_name',function () {
 });
 
 $('button[data-action = "print"]').click(function () {
-
-    var sendData = [];
-
-    var printContents;
-
-    printContents = document.getElementById("deliver_info").outerHTML;
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    printContent('deliver_info', 0, '');
 });
 
 $('#return').click(function () {
