@@ -1407,6 +1407,9 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         $current_date_str = getPrevDateString($request->input('date'));
 
+        //
+        // 更新奶站计划
+        //
         $dsplan = DSProductionPlan::where('station_id',$station_id)
             ->where('produce_end_at',$current_date_str)
             ->where('product_id',$product_id)
@@ -1417,6 +1420,45 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $dsplan->confirm_count = $confirm_count;
             $dsplan->status = DSProductionPlan::DSPRODUCTION_PRODUCE_RECEIVED;
             $dsplan->save();
+
+            //
+            // 添加/更新库存数据
+            //
+
+            // 获取今日以前最近的
+            $dsdpLatest = DSDeliveryPlan::where('station_id', $station_id)
+                ->where('product_id', $product_id)
+                ->where('deliver_at', '<=', $request->input('date'))
+                ->orderby('deliver_at', 'desc')
+                ->first();
+
+            if (empty($dsdpLatest) || $dsdpLatest->deliver_at != $request->input('date')) {
+                // 添加/更新当日库存数据
+                $dsdp = new DSDeliveryPlan;
+                $dsdp->station_id = $station_id;
+                $dsdp->deliver_at = $request->input('date');
+                $dsdp->product_id = $product_id;
+
+                if (!empty($dsdpLatest)) {
+                    $dsdp->remain = $dsdpLatest->remain_final;
+                }
+
+                $dsdpLatest = $dsdp;
+            }
+
+            $dsdpLatest->remain += $confirm_count;
+            $dsdpLatest->save();
+
+            // 更新最新库存数据，有可能是今日以后或今日
+            $dsdpLatestNew = DSDeliveryPlan::where('station_id', $station_id)
+                ->where('product_id', $product_id)
+                ->orderby('deliver_at', 'desc')
+                ->first();
+
+            if ($dsdpLatestNew->id != $dsdpLatest->id) {
+                $dsdpLatestNew->remain += $confirm_count;
+                $dsdpLatestNew->save();
+            }
         }
 
         return count($dsplan);

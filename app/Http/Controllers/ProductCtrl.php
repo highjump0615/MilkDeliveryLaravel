@@ -252,7 +252,7 @@ class ProductCtrl extends Controller
             $factory_id = $fuser->factory_id;
 
             $cname = $request->input('category_name_to_add');
-            if (ProductCategory::where('name', $cname)->where('factory_id', $factory_id)->get()->count() > 0)
+            if (ProductCategory::where('name', $cname)->where('factory_id', $factory_id)->count() > 0)
                 return response()->json(['status' => 'fail']);
             else
                 return response()->json(['status' => 'success']);
@@ -266,7 +266,7 @@ class ProductCtrl extends Controller
             $factory_id = $fuser->factory_id;
 
             $category_name_to_add = $request->input('category_name_to_add');
-            if (ProductCategory::where('name', $category_name_to_add)->where('factory_id', $factory_id)->get()->count() > 0)
+            if (ProductCategory::where('name', $category_name_to_add)->where('factory_id', $factory_id)->count() > 0)
                 return response()->json(['status' => 'fail', 'message' => '同一分类名称存在']);
             $newpc = new ProductCategory;
             $newpc->name = $category_name_to_add;
@@ -389,7 +389,7 @@ class ProductCtrl extends Controller
             $new_product->name = $name;
             $new_product->simple_name = $simple_name;
 
-            $categoryo = ProductCategory::where('factory_id', $factory_id)->where('id', $category)->get()->first();
+            $categoryo = ProductCategory::where('factory_id', $factory_id)->where('id', $category)->first();
             $category_id = $categoryo->id;
 
             if (!$category_id)
@@ -652,7 +652,7 @@ class ProductCtrl extends Controller
                 $origin_val = $cat['origin_value'];
                 $new_val = $cat['new_value'];
 
-                $ct = ProductCategory::where('id', $ccid)->where('factory_id', $factory_id)->get()->first();
+                $ct = ProductCategory::where('id', $ccid)->where('factory_id', $factory_id)->first();
                 if ($ct) {
                     $ct->name = $new_val;
                     $ct->factory_id = $factory_id;

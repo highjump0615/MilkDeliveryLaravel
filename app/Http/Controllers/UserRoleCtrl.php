@@ -33,7 +33,7 @@ class UserRoleCtrl extends Controller
                 $access = false;
             }
 
-            $ur = UserPageAccess::where('user_role_id', $roleId)->where('page_id', $p->id)->get()->first();
+            $ur = UserPageAccess::where('user_role_id', $roleId)->where('page_id', $p->id)->first();
             if($access) {
                 if($ur == null) {
                     $ur = new UserPageAccess;

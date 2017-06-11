@@ -414,8 +414,8 @@ class FinanceCtrl extends Controller
         if ($request->ajax()) {
 
             $station_id = $request->input('station_id');
-            $io_type = $request->input('io_type');
-            $type = $request->input('type');
+            $io_type = DSBusinessCreditBalanceHistory::DSBCBH_IN;
+            $type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_STATION_RETAIL_BUSINESS;
             $amount = $request->input('amount');
             $receipt_number = $request->input('receipt_number');
             $comment = $request->input('comment');
@@ -2331,7 +2331,7 @@ class FinanceCtrl extends Controller
         {
             $tid = $ct->transaction_pay_id;
             $result[$tid][0][] = $ct;
-            $result[$tid][1] = StationsMoneyTransfer::where('transaction_pay_id', $tid)->get()->first();
+            $result[$tid][1] = StationsMoneyTransfer::where('transaction_pay_id', $tid)->first();
             $result[$tid][2] = DSTransactionPay::find($tid);
         }
 

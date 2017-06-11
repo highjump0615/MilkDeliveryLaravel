@@ -6,32 +6,14 @@ $(document).on('click','#but_print',function(e){
     printContent('delivery_milk');
 });
 
-$(document).on('click','#save',function(e){
+/**
+ * 保存自营订单
+ */
+function saveZiyingdingdan(count, button) {
+
     var url = API_URL + 'naizhan/shengchan/ziyingdingdan/save';
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-        }
-    });
-
-    e.preventDefault();
-
-    var count = 0;
-    $('#delivery_milk #user').each(function(){
-        count++;
-    });
-
-    // 没有保存的数据，退出
-    if (count <= 0) {
-        return;
-    }
-
     var order_count = 0;
     var urlTo = SITE_URL + "naizhan/shengchan/jinripeisongdan";
-
-    // 反应正在保存状态
-    $(this).attr('disabled', 'disabled');
-    $(this).html('正在保存...');
 
     $('#delivery_milk #user').each(function(){
         order_count++;
@@ -55,7 +37,7 @@ $(document).on('click','#save',function(e){
             deliver_time: $(this).find('td:eq(7)').attr('value'),
             comment: $(this).find('td:eq(8)').html(),
             product_id: product_id_array,
-            product_count: product_name_array,
+            product_count: product_name_array
         };
 
         var type = "POST"; //for creating new resource
@@ -77,8 +59,73 @@ $(document).on('click','#save',function(e){
             },
             error: function (data) {
                 console.log('Error:', data);
+
+                // 恢复保存按钮
+                $(button).html('保 存');
+                $(button).removeAttr('disabled');
             }
         });
+    });
+}
+
+$(document).on('click','#save',function(e){
+
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+        }
+    });
+
+    e.preventDefault();
+
+    var count = 0;
+    var button = this;
+
+    $('#delivery_milk #user').each(function(){
+        count++;
+    });
+
+    // 没有保存的数据，退出
+    if (count <= 0) {
+        return;
+    }
+
+    // 反应正在保存状态
+    $(this).attr('disabled', 'disabled');
+    $(this).html('正在保存...');
+
+    //
+    // 保存库存数据
+    //
+    var aryParam = [];
+
+    $('#produced_milk tr:gt(1)').each(function(){
+        var nProductId = parseInt($(this).attr('value'));
+        var nCount = parseInt($(this).find('td:eq(1)').html());
+
+        var formData = {
+            id: nProductId,
+            count: nCount
+        };
+
+        aryParam.push(formData);
+    });
+
+    $.ajax({
+        type: "POST",
+        url: API_URL + 'naizhan/shengchan/ziyingdingdan/saveStock',
+        data: {product: aryParam},
+        dataType: 'json',
+        success: function (data) {
+            saveZiyingdingdan(count, button);
+        },
+        error: function (data) {
+            console.log('Error:', data);
+
+            // 恢复保存按钮
+            $(this).html('保 存');
+            $(this).removeAttr('disabled');
+        }
     });
 });
 
@@ -264,21 +311,6 @@ $(document).on('click','#plan_cancel',function () {
 });
 
 $(document).ready(function(){
-//			$('#produced_milk tr:not(:first)').each(function(){
-//				var test_drink=0;
-//				var group_sale=0;
-//				var channel_sale=0;
-//				if(!isNaN(parseInt($(this).find('td:eq(2)').text()))){
-//					test_drink = parseInt($(this).find('td:eq(2)').text());
-//				}
-//				if(!isNaN(parseInt($(this).find('td:eq(3)').text()))){
-//					group_sale = parseInt($(this).find('td:eq(3)').text());
-//				}
-//				if(!isNaN(parseInt($(this).find('td:eq(4)').text()))){
-//					channel_sale = parseInt($(this).find('td:eq(4)').text());
-//				}
-//				$(this).find('td:eq(5)').html(test_drink+group_sale+channel_sale);
-//			})
 
     if ($('.street_list').val() != "none")
         $('.street_list').trigger('change');

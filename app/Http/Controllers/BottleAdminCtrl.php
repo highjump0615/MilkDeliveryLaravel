@@ -147,14 +147,14 @@ class BottleAdminCtrl extends Controller
         }
 
         $today_status = 0;
-        $todaybottlerefunds = MFBottle::where('factory_id',$current_factory_id)->where('time',$current_date_str)->get();
-        if($todaybottlerefunds->first() != null){
-            if($todaybottlerefunds->first()->final_count != null)
+        $todaybottlerefund = MFBottle::where('factory_id',$current_factory_id)->where('time',$current_date_str)->first();
+        if ($todaybottlerefund != null){
+            if ($todaybottlerefund->final_count != null)
                 $today_status = 1;
         }
-        $todayboxrefunds = MFBox::where('factory_id',$current_factory_id)->where('time',$current_date_str)->get();
-        if($todayboxrefunds->first() != null){
-            if($todayboxrefunds->first()->final_count != null)
+        $todayboxrefund = MFBox::where('factory_id',$current_factory_id)->where('time',$current_date_str)->first();
+        if ($todayboxrefund != null){
+            if ($todayboxrefund->final_count != null)
                 $today_status = 1;
         }
 //        return $refunds_info;
@@ -245,7 +245,7 @@ class BottleAdminCtrl extends Controller
 
         // 配送员
         if($milkman_id == ''){
-            $milkman = MilkMan::where('station_id',$current_station_id)->get()->first();
+            $milkman = MilkMan::where('station_id',$current_station_id)->first();
             if($milkman != null){
                 $milkman_id = $milkman->id;
             }
@@ -422,13 +422,11 @@ class BottleAdminCtrl extends Controller
             if (DSBottleRefund::where('time',$current_date_str)
                     ->where('station_id',$current_station_id)
                     ->where('bottle_type',$bt->bottle_type)
-                    ->get()
                     ->first() != null) {
 
                 $today_bottle_info[$bt->bottle_type]['init_count'] = (int)DSBottleRefund::where('time',$current_date_str)
                         ->where('station_id',$current_station_id)
                         ->where('bottle_type',$bt->bottle_type)
-                        ->get()
                         ->first()
                         ->init_store;
             }
@@ -473,7 +471,6 @@ class BottleAdminCtrl extends Controller
             $current_return_to_factory = DSBottleRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('bottle_type',$bt->bottle_type)
-                ->get()
                 ->first();
 
             if($current_return_to_factory != null){
@@ -489,7 +486,6 @@ class BottleAdminCtrl extends Controller
             $damaged = DSBottleRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('bottle_type',$bt->bottle_type)
-                ->get()
                 ->first();
 
             if($damaged != null){
@@ -531,13 +527,11 @@ class BottleAdminCtrl extends Controller
             if (DSBoxRefund::where('time',$current_date_str)
                     ->where('station_id',$current_station_id)
                     ->where('box_type',$bx->basket_spec)
-                    ->get()
                     ->first() != null) {
 
                 $today_box_info[$bx->basket_spec]['init_count'] = (int)DSBoxRefund::where('time',$current_date_str)
                     ->where('station_id',$current_station_id)
                     ->where('box_type',$bx->basket_spec)
-                    ->get()
                     ->first()->init_store;
             }
             else {
@@ -562,7 +556,6 @@ class BottleAdminCtrl extends Controller
             $current_return_to_factory = DSBoxRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('box_type',$bx->basket_spec)
-                ->get()
                 ->first();
 
             if ($current_return_to_factory != null){
@@ -578,7 +571,6 @@ class BottleAdminCtrl extends Controller
             $damaged = DSBoxRefund::where('time',$current_date_str)
                 ->where('station_id',$current_station_id)
                 ->where('box_type',$bx->basket_spec)
-                ->get()
                 ->first();
 
             if($damaged != null){
@@ -593,15 +585,15 @@ class BottleAdminCtrl extends Controller
         // 今日状态
         //
         $today_status = 0;
-        $todaybottlerefunds = DSBottleRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->get();
-        if($todaybottlerefunds->first() != null){
-            if($todaybottlerefunds->first()->end_store != null)
+        $todaybottlerefund = DSBottleRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->first();
+        if ($todaybottlerefund != null){
+            if ($todaybottlerefund->end_store != null)
                 $today_status = 1;
         }
 
-        $todayboxrefunds = DSBoxRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->get();
-        if($todayboxrefunds->first() != null){
-            if($todayboxrefunds->first()->end_store != null)
+        $todayboxrefund = DSBoxRefund::where('station_id',$current_station_id)->where('time',$deliver_date_str)->first();
+        if ($todayboxrefund != null){
+            if ($todayboxrefund->end_store != null)
                 $today_status = 1;
         }
 
@@ -716,15 +708,20 @@ class BottleAdminCtrl extends Controller
         $end_store = $request->input('end_store');
         $recipient = $request->input('received');
         $status = 0;
+
         if($type == 0){
-            $bottles = DSBottleRefund::where('station_id',$current_station_id)->where('time',$current_date_str)->where('bottle_type',$bottle_type)->get()->first();
-            if($bottles != null){
-                $bottles->init_store = $init_store;
-                $bottles->milkman_return = $milkman_refund;
-                $bottles->station_damaged = $station_damaged;
-                $bottles->end_store = $end_store;
-                $bottles->received = $recipient;
-                $bottles->save();
+            $bottle = DSBottleRefund::where('station_id',$current_station_id)
+                ->where('time',$current_date_str)
+                ->where('bottle_type',$bottle_type)
+                ->first();
+
+            if($bottle != null){
+                $bottle->init_store = $init_store;
+                $bottle->milkman_return = $milkman_refund;
+                $bottle->station_damaged = $station_damaged;
+                $bottle->end_store = $end_store;
+                $bottle->received = $recipient;
+                $bottle->save();
             }
             else{
                 $new_bottle_refund = new DSBottleRefund();
@@ -741,12 +738,17 @@ class BottleAdminCtrl extends Controller
             $status = 1;
         }
         elseif ($type == 1){
-            $boxes = DSBoxRefund::where('station_id',$current_station_id)->where('time',$current_date_str)->where('box_type',$bottle_type)->get()->first();
-            if($boxes != null){
-                $boxes->init_store = $init_store;
-                $boxes->station_damaged = $station_damaged;
-                $boxes->end_store = $end_store;
-                $boxes->save();
+
+            $box = DSBoxRefund::where('station_id',$current_station_id)
+                ->where('time',$current_date_str)
+                ->where('box_type',$bottle_type)
+                ->first();
+
+            if ($box != null){
+                $box->init_store = $init_store;
+                $box->station_damaged = $station_damaged;
+                $box->end_store = $end_store;
+                $box->save();
             }
             else{
                 $new_box_refund = new DSBoxRefund();

@@ -46,8 +46,6 @@ class DeliveryStation extends Authenticatable
         'is_deleted',
     ];
 
-    public $timestamps = false;
-
     protected $appends = [
         'total_count',
         'received_order_money',
@@ -131,56 +129,28 @@ class DeliveryStation extends Authenticatable
         // 本期日期范围
         $last_m = date('Y-m-01');
 
-        // 订单
-        $aryOrder = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '<', $last_m)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        // 获取订单id
-        foreach ($aryOrder as $o) {
-            array_push($aryOrderId, $o->id);
-        }
-
         // 查询配送明细，条件为前期完成的相反
-        $plans = MilkManDeliveryPlan::whereIn('order_id', $aryOrderId)
-            ->where(function ($query) use ($last_m) {
-                $query->where('deliver_at', '>=', $last_m);
-                $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED);
+        $plans = MilkManDeliveryPlan::where('deliver_at', '>=', $last_m)
+            ->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->whereHas('orderDelivery', function($query) use ($last_m) {
+                $query->where('delivery_station_id', $this->id);
+                $query->where('ordered_at', '<', $last_m);
+                $query->where(function($query){
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                });
             })
+            ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
             ->get();
 
-        foreach ($plans as $p) {
-            $count += $p->changed_plan_count;
-            $cost += $p->changed_plan_count * $p->product_price;
+        // 返回数据
+        if (!empty($plans->count)) {
+            $count = $plans->count;
         }
-    }
-
-    /**
-     * 获取本期订单信息
-     * @return mixed
-     */
-    public function getOrdersThisTerm() {
-        // 本期日期范围
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
-        // 订单
-        $aryOrder = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        return $aryOrder;
+        if (!empty($plans->cost)) {
+            $cost = $plans->cost;
+        }
     }
 
     /**
@@ -191,18 +161,30 @@ class DeliveryStation extends Authenticatable
     public function getBottleCountIncreasedThisTerm(&$count, &$cost) {
         $count = 0;
         $cost = 0;
-        $aryOrderId = array();
 
-        // 获取订单id
-        $aryOrder = $this->getOrdersThisTerm();
-        foreach ($aryOrder as $o) {
-            array_push($aryOrderId, $o->id);
+        // 本期日期范围
+        $first_m = date('Y-m-01');
+        $last_m = getCurDateString();
+
+        // 查询本期订单的配送明细
+        $plans = MilkManDeliveryPlan::whereHas('orderDelivery', function($query) use ($first_m, $last_m) {
+                $query->where('delivery_station_id', $this->id);
+                $query->where('ordered_at', '>=', $first_m);
+                $query->where('ordered_at', '<=', $last_m);
+                $query->where(function($query){
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                });
+            })->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
+            ->get();
+
+        // 返回数据
+        if (!empty($plans->count)) {
+            $count = $plans->count;
         }
-
-        $plans = MilkManDeliveryPlan::whereIn('order_id', $aryOrderId)->get();
-        foreach ($plans as $p) {
-            $count += $p->changed_plan_count;
-            $cost += $p->changed_plan_count * $p->product_price;
+        if (!empty($plans->cost)) {
+            $cost = $plans->cost;
         }
     }
 
@@ -224,11 +206,15 @@ class DeliveryStation extends Authenticatable
             ->where('deliver_at', '>=', $first_m)
             ->where('deliver_at', '<=', $last_m)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
             ->get();
 
-        foreach ($plans as $p) {
-            $count += $p->changed_plan_count;
-            $cost += $p->changed_plan_count * $p->product_price;
+        // 返回数据
+        if (!empty($plans->count)) {
+            $count = $plans->count;
+        }
+        if (!empty($plans->cost)) {
+            $cost = $plans->cost;
         }
     }
 
@@ -251,10 +237,11 @@ class DeliveryStation extends Authenticatable
         foreach($milkmans as $milkman)
         {
             $milkman_id = $milkman->id;
-            $areas = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-                ->where('address', 'like', $address)->get()->first();
+            $area = MilkManDeliveryArea::where('milkman_id', $milkman_id)
+                ->where('address', 'like', $address)
+                ->first();
 
-            if($areas)
+            if ($area)
             {
                 $result_milkman = $milkman;
                 break;
@@ -420,10 +407,10 @@ class DeliveryStation extends Authenticatable
     {
         $first_m = date('Y-m-01');
 
-        $count_orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->get()->count();
+        $count_orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->count();
 
         $count_orders_done_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)
-            ->where('status', Order::ORDER_FINISHED_STATUS)->get()->count();
+            ->where('status', Order::ORDER_FINISHED_STATUS)->count();
 
         $term_start_order_count = $count_orders_before-$count_orders_done_before;
 
@@ -842,7 +829,7 @@ class DeliveryStation extends Authenticatable
         $userinfo = User::where('backend_type','3')
             ->where('user_role_id', '200')
             ->where('station_id', $this->id)
-            ->get()->first();
+            ->first();
 
         return $userinfo;
     }

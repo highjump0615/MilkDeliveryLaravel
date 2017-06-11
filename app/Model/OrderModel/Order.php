@@ -61,14 +61,12 @@ class Order extends Model
         'customer_name',
         'payment_type_name',
         'order_property_name',
-        'order_checker',
         'order_checker_name',
         'station_name',
         'delivery_station_name',
         'milkman_name',
         'milkman_id',
         'milkman',
-        'addr_id',
         'addresses',
         'milk_box_install_label',
         'province_id',
@@ -84,10 +82,8 @@ class Order extends Model
         'unfinished_delivery_plans',
         'delivery_plans_sent_to_production_plan',
         'waiting_passed_delivery_plans',
-        'order_start_date',
         'order_end_date',
         'status_name',
-        'customer',
         'has_stopped',
         'remain_order_money',
         'sub_address',
@@ -95,7 +91,6 @@ class Order extends Model
         'total_count',
         'grouped_plans_per_product',
         'order_stop_end_date',
-        'first_delivery_plans',
     ];
     
     const ORDER_TRANS_CHECK_TRUE = 1;
@@ -126,6 +121,9 @@ class Order extends Model
     private $mStrStreet;
     private $mStrVillage;
     private $mStrHouseNumber;
+
+    // 序号，只在导入时使用
+    public $mnSeq;
 
     /**
      * 解析订单收货地址，以空格分隔的
@@ -166,19 +164,6 @@ class Order extends Model
 
     public function getAddrHouseNumber() {
         return $this->mStrHouseNumber;
-    }
-
-    public function getFirstDeliveryPlansAttribute()
-    {
-        $plan1=MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at')->get()->first();
-        if($plan1)
-        {
-            $first_deliver_at = $plan1->deliver_at;
-
-            $plans = MilkManDeliveryPlan::where('order_id', $this->id)->where('deliver_at', $first_deliver_at)->get();
-            return $plans;
-        } else
-            return null;
     }
 
     public function getTotalCountAttribute()
@@ -314,28 +299,10 @@ class Order extends Model
         return $status_name;
     }
 
-    public function getOrderStartDateAttribute()
-    {
-        //get delivery date of last delivery plan
-        $dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'asc')->get()->first();
-        if($dp)
-        {
-            return $dp->deliver_at;
-        } else
-            return "";
-
-    }
-
     public function getOrderEndDateAttribute()
     {
-        //get delivery date of last delivery plan
-        $last_dp = MilkManDeliveryPlan::where('order_id', $this->id)->orderBy('deliver_at', 'desc')->get()->first();
-        if($last_dp)
-        {
-            return $last_dp->deliver_at;
-        } else
-            return "";
-
+        $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
+        return ($dp) ? $dp->deliver_at : "";
     }
 
     public function getOrderStopEndDateAttribute()
@@ -497,12 +464,12 @@ class Order extends Model
                 $result_group[] = [
                     'time'          =>$opdp->deliver_at,
                     'plan_id'       =>$opdp->id,
-                    'product_name'  =>$opdp->product_simple_name,
+                    'product_name'  =>$opdp->getProductSimpleName(),
                     'count'         => $count,
                     'remain'        =>$remain_count,
                     'status'        =>$opdp->status,
                     'can_edit'      =>$opdp->isEditAvailable(),
-                    'status_name'   =>$opdp->status_name,
+                    'status_name'   =>$opdp->getStatusName(),
                 ];
             }
         }
@@ -521,7 +488,7 @@ class Order extends Model
         $province = $sa[0];
         if(!$province)
             return 0;
-        $province_m = Address::where('name', $province)->get()->first();
+        $province_m = Address::where('name', $province)->first();
         if($province_m)
             return $province_m->id;
         else
@@ -538,7 +505,7 @@ class Order extends Model
         if(!$city)
             return 0;
 
-        $city_m = Address::where('name', $city)->where('parent_id', $province_id)->get()->first();
+        $city_m = Address::where('name', $city)->where('parent_id', $province_id)->first();
 
         if($city_m)
             return $city_m->id;
@@ -565,7 +532,7 @@ class Order extends Model
         if(!$district)
             return 0;
 
-        $district_m = Address::where('name', $district)->where('parent_id', $city_id)->get()->first();
+        $district_m = Address::where('name', $district)->where('parent_id', $city_id)->first();
         if($district_m)
             return $district_m->id;
         else
@@ -595,7 +562,7 @@ class Order extends Model
         if(!$street)
             return 0;
 
-        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->get()->first();
+        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->first();
 
         if($street_m)
             return $street_m->id;
@@ -618,7 +585,7 @@ class Order extends Model
         if(!$xq)
             return 0;
 
-        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->get()->first();
+        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->first();
         if($xq_m)
             return $xq_m->id;
         else
@@ -646,27 +613,13 @@ class Order extends Model
             return "";
     }
 
-    public function getCustomerAttribute()
-    {
-        if ($this->customer_id) {
-            $customer = Customer::find($this->customer_id);
-            return $customer;
-        }
-    }
-
+    /**
+     * 获取收件人名称
+     * @return mixed
+     */
     public function getCustomerNameAttribute()
     {
-        if($this->customer_id)
-        {
-            $customer = Customer::find($this->customer_id);
-            
-            if($customer)
-                return $customer->name;
-            else
-                return "";
-        }
-        else
-            return "";
+        return $this->customer->name;
     }
 
     
@@ -684,6 +637,10 @@ class Order extends Model
             return "";
     }
 
+    /**
+     * 获取订单奶品信息
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function order_products()
     {
         return $this->hasMany('App\Model\OrderModel\OrderProduct');
@@ -694,34 +651,30 @@ class Order extends Model
         return $this->hasMany('App\Model\OrderModel\OrderProduct')->withTrashed()->orderby('id', 'desc');
     }
 
+    /**
+     * 获取配送明细
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function milkmanDeliveryPlan() {
+        return $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryPlan', 'order_id');
+    }
+
+    /**
+     * 获取订单性质名称
+     * @return mixed
+     */
     public function getOrderPropertyNameAttribute()
     {
-        if($this->order_property_id)
-        {
-            $order_property = OrderProperty::find($this->order_property_id);
-            if($order_property)
-                return $order_property->name;
-            else
-                return "";
-        }
-        else
-            return "";
+        return $this->property->name;
     }
 
     /**
      * 获取征订员信息
      * @return OrderChecker
      */
-    public function getOrderCheckerAttribute()
+    public function checker()
     {
-        $order_checker = null;
-
-        if($this->order_checker_id)
-        {
-            $order_checker = OrderCheckers::find($this->order_checker_id);
-        }
-
-        return $order_checker;
+        return $this->belongsTo('App\Model\OrderModel\OrderCheckers', 'order_checker_id');
     }
 
     /**
@@ -730,10 +683,7 @@ class Order extends Model
      */
     public function getOrderCheckerNameAttribute()
     {
-        if ($this->order_checker)
-            return $this->order_checker->name;
-        else
-            return "";
+        return $this->checker->name;
     }
 
     public function getDeliveryStationNameAttribute()
@@ -764,19 +714,20 @@ class Order extends Model
             return "";
     }
 
-    public function getAddrIdAttribute()
-    {
-        $addr_id = $this->xiaoqu_id;
-        return $addr_id;
-    }
-
     /**
      * 获取配送员id
      * @return int|null
      */
     public function getMilkmanIdAttribute()
     {
-        return $this->milkman->id;
+        $milkman = $this->milkman;
+        $nId = 0;
+
+        if (!empty($milkman)) {
+            $nId = $milkman->id;
+        }
+
+        return $nId;
     }
 
     /**
@@ -814,7 +765,14 @@ class Order extends Model
      */
     public function getMilkmanNameAttribute()
     {
-        return $this->milkman->name;
+        $strName = null;
+        $milkman = $this->milkman;
+
+        if (!empty($milkman)) {
+            $strName = $milkman->name;
+        }
+
+        return $strName;
     }
 
     public function getAllOrderTypesAttribute()
@@ -895,8 +853,20 @@ class Order extends Model
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation', 'delivery_station_id', 'id');
     }
 
+    /**
+     * 获取收件人
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function customer(){
         return $this->belongsTo('App\Model\BasicModel\Customer');
+    }
+
+    /**
+     * 获取订单性质
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function property() {
+        return $this->belongsTo('App\Model\OrderModel\OrderProperty', 'order_property_id');
     }
 
     /**
@@ -908,11 +878,12 @@ class Order extends Model
     }
 
     /**
-     * 获取奶卡
-     * @return MilkCard
+     * 获取奶卡总金额
+     * @return
      */
-    public function milkcard(){
-        return $this->belongsTo('App\Model\FactoryModel\MilkCard', 'milk_card_id', 'number');
+    public function getMilkcardValue() {
+        $nValue = $this->hasMany('App\Model\FactoryModel\MilkCard', 'order_id')->sum('balance');
+        return $nValue;
     }
 
     public function getMilkBoxInstallLabelAttribute()
@@ -921,64 +892,6 @@ class Order extends Model
             return "是";
         else
             return "不";
-    }
-
-    function get_week_delivery_info($string)
-    {
-        /*convert weekday string to int:int
-         * data: "2016-09-28:5,2016-09-27:4,2016-09-29:1,2016-09-30:2"
-         * 09-26: monday = 0
-         * result: "1:4, 2:5, 3:1, 4:2"
-        */
-        $result = "";
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $date_count = $estring[$i];
-            $date_count_array = explode(':', $date_count);
-            $date = trim($date_count_array[0]);
-
-            $day = date('N', strtotime($date));
-
-            $count = trim($date_count_array[1]);
-            $ecstring[$day] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
-    }
-
-    function get_month_delivery_info($string)
-    {
-        /*convert weekday string to int:int
-         * data: "2016-09-28:5,2016-09-27:4,2016-09-13:1,2016-09-15:2,2016-09-23:3"
-         * result: "13:1,15:1,23:3,27:4,28:5"
-        */
-        $result = "";
-
-        $estring = explode(',', $string);
-        $ecstring = array();
-        for ($i = 0; $i < count($estring); $i++) {
-            $date_count = $estring[$i];
-            $date_count_array = explode(':', $date_count);
-            $date = trim($date_count_array[0]);
-            $day = explode('-', $date)[2];
-            $count = trim($date_count_array[1]);
-            $ecstring[$day] = $count;
-        }
-
-        ksort($ecstring);
-
-        foreach ($ecstring as $x => $y) {
-            $result .= $x . ':' . $y . ',';
-        }
-        $result = rtrim($result, ',');
-        return $result;
     }
 
     /**
@@ -1010,5 +923,18 @@ class Order extends Model
         }
 
         return $result;
+    }
+
+    /**
+     * 设置订单编号
+     * @param $needSave boolean
+     */
+    public function setOrderNumber($needSave = true)
+    {
+        $this->number = 'F' . $this->factory_id . 'S' . $this->station_id . 'C' . $this->customer_id . 'O' . $this->id;
+
+        if ($needSave) {
+            $this->save();
+        }
     }
 }

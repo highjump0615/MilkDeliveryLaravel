@@ -11,6 +11,15 @@ var gnUserTypeAdmin = 1;
 var gnUserTypeFactory = 2;
 var gnUserTypeStation = 3;
 
+/**
+ * 配送规则
+ */
+var gnDeliveryTypeEveryDay = 1;     // DeliveryType::DELIVERY_TYPE_EVERY_DAY
+var gnDeliveryTypeTwice = 2;        // DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY
+var gnDeliveryTypeWeek = 3;         // DeliveryType::DELIVERY_TYPE_WEEK
+var gnDeliveryTypeFree = 4;         // DeliveryType::DELIVERY_TYPE_MONTH
+
+
 // 验证手机号码形式
 function verifyPhone() {
     var objInput = $('input[name="phone"]');

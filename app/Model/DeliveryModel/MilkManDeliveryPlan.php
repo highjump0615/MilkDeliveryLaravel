@@ -39,11 +39,6 @@ class MilkManDeliveryPlan extends Model
     ];
 
     protected $appends = [
-        'plan_price',
-        'product_name',
-        'product_simple_name',
-        'status_name',
-        'plan_product_image',
     ];
 
     const MILKMAN_DELIVERY_PLAN_TYPE_USER = 1;
@@ -67,7 +62,11 @@ class MilkManDeliveryPlan extends Model
     const DP_CANCEL_CHANGEORDER     = 3;
 
 
-    public function getPlanProductImageAttribute()
+    /**
+     * 获取奶品图片
+     * @return mixed
+     */
+    public function getPlanProductImage()
     {
         $order_product = OrderProduct::find($this->order_product_id);
         if($order_product)
@@ -77,7 +76,11 @@ class MilkManDeliveryPlan extends Model
         }
     }
 
-    public function getStatusNameAttribute(){
+    /**
+     * 获取状态名称
+     * @return string
+     */
+    public function getStatusName(){
         $strStatus = "";
 
         if ($this->status == $this::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {
@@ -101,17 +104,29 @@ class MilkManDeliveryPlan extends Model
         return $strStatus;
     }
 
-    public function getProductNameAttribute()
+    /**
+     * 获取奶品名称
+     * @return mixed
+     */
+    public function getProductName()
     {
         return $this->order_product->product_name;
     }
 
-    public function getProductSimpleNameAttribute()
+    /**
+     * 获取奶品简称
+     * @return mixed
+     */
+    public function getProductSimpleName()
     {
         return $this->order_product->product_simple_name;
     }
 
-    public function getPlanPriceAttribute()
+    /**
+     * 获取该配送明细的金额
+     * @return mixed
+     */
+    public function getPlanPrice()
     {
         $plan_price = ($this->product_price) * ($this->changed_plan_count);
         return $plan_price;
@@ -119,9 +134,17 @@ class MilkManDeliveryPlan extends Model
 
     public function order(){
         if($this->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            return $this->belongsTo('App\Model\OrderModel\Order', 'order_id', 'id');
+            return $this->orderDelivery();
         else
             return $this->belongsTo('App\Model\OrderModel\SelfOrder', 'order_id', 'id');
+    }
+
+    /**
+     * 获取配送订单
+     * @return mixed
+     */
+    public function orderDelivery() {
+        return $this->belongsTo('App\Model\OrderModel\Order', 'order_id');
     }
 
     public function order_product(){
@@ -258,7 +281,6 @@ class MilkManDeliveryPlan extends Model
         // 获取下一个配送明细
         $deliverPlanNext = MilkManDeliveryPlan::where('order_product_id', $this->order_product_id)
             ->where('deliver_at', '>', $this->deliver_at)
-            ->get()
             ->first();
 
         // 切换两个配送明细的flag

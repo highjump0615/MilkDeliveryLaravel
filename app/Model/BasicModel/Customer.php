@@ -2,6 +2,7 @@
 
 namespace App\Model\BasicModel;
 
+use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use Illuminate\Database\Eloquent\Model;
 use App\Factory;
@@ -22,7 +23,6 @@ class Customer extends Model
         'milkman_id',
         'factory_id',
         'remain_amount',
-        'remain_order_amount',
     ];
 
     protected $appends =[
@@ -33,6 +33,7 @@ class Customer extends Model
         'xiaoqu',
         'sub_addr',
         'has_milkbox',
+        'remain_order_amount',
         'remaining_bottle_count',
     ];
 
@@ -93,6 +94,22 @@ class Customer extends Model
     public function Order()
     {
         return $this->hasMany('App\Model\OrderModel\Order');
+    }
+
+    /**
+     * 获取配送员
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function milkman() {
+        return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
+    }
+
+    /**
+     * 获取奶站
+     * @return DeliveryStation
+     */
+    public function station(){
+        return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
     }
 
     public function getProvinceAttribute()
