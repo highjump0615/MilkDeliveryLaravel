@@ -478,20 +478,34 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('produce_start_at', $strDateReal)
             ->get();
 
+        // 只考虑提交过的订单
+        $changed_counts = MilkManDeliveryPlan::with('orderProduct')
+            ->where('produce_at', $strDateReal)
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->where(function($query){
+                $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+                $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+            })
+            ->get()
+            ->groupBy(function ($sort) {
+                return $sort->orderProduct->product_id;
+            });
+
+        $planInfoProduct = $plan_info->groupBy('product_id');
+
         foreach($products as $p){
 
             $plan_count = 0;
-            foreach($plan_info as $pi){
-                // 不考虑审核不通过的
-                if ($pi->status == DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL) {
-                    continue;
-                }
-                // 不考虑别的奶品
-                if ($pi->product_id != $p->id) {
-                    continue;
-                }
+            // 是否存在该奶品的奶站生产计划
+            if (!empty($planInfoProduct[$p->id])) {
+                foreach ($planInfoProduct[$p->id] as $pi) {
+                    // 不考虑审核不通过的
+                    if ($pi->status == DSProductionPlan::DSPRODUCTION_PRODUCE_CANCEL) {
+                        continue;
+                    }
 
-                $plan_count+=$pi->subtotal_count;
+                    $plan_count += $pi->subtotal_count;
+                }
             }
             $p["plan_count"] = $plan_count;
 
@@ -519,39 +533,30 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             // 计算当天订单数量
             $total_ordered_count = 0;
 
-            $order_product = OrderProduct::where('product_id',$p->id)->get(['id']);
-            foreach($order_product as $op){
-                // 只考虑提交过的订单
-                $changed_counts = MilkManDeliveryPlan::where('produce_at', $strDateReal)
-                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                    ->where('order_product_id',$op->id)
-                    ->where(function($query){
-                        $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
-                        $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    })
-                    ->get(['changed_plan_count']);
-
-                if ($changed_counts != null){
-                    foreach($changed_counts as $cc){
-                        $total_ordered_count += $cc->changed_plan_count;
-                    }
+            // 是否存在该奶品的配送明细
+            if (!empty($changed_counts[$p->id])) {
+                foreach ($changed_counts[$p->id] as $cc) {
+                    $total_ordered_count += $cc->changed_plan_count;
                 }
             }
 
             $plan_ordered_count = 0;
-            foreach($plan_info as $pi){
-                // 不考虑别的奶品
-                if ($pi->product_id != $p->id) {
-                    continue;
-                }
 
-                $plan_ordered_count += $pi->order_count;
+            // 是否存在该奶品的奶站生产计划
+            if (!empty($planInfoProduct[$p->id])) {
+                foreach ($planInfoProduct[$p->id] as $pi) {
+                    $plan_ordered_count += $pi->order_count;
+                }
             }
 
             $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;
         }
 
-        $stations = DeliveryStation::where('is_deleted',0)->where('factory_id',$current_factory_id)->get();
+        $stations = DeliveryStation::where('is_deleted',0)
+            ->where('factory_id',$current_factory_id)
+            ->get();
+
+        $planInfoStation = $plan_info->groupBy('station_id');
 
         foreach($stations as $si) {
             $areas = explode(" ",$si->address);
@@ -563,22 +568,20 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $dsplanResult = array();
             $dsplanResult['count'] = 0;
             $dsplanResult['data'] = array();
-            foreach($plan_info as $po){
-                // 只考虑本奶站的
-                if ($po->station_id != $si->id) {
-                    continue;
-                }
 
-                $dateIndex = $po->submit_at;
+            // 是否存在该奶站的奶站生产计划
+            if (!empty($planInfoProduct[$si->id])) {
+                foreach ($planInfoStation[$si->id] as $po) {
+                    $dateIndex = $po->submit_at;
 
-                if (isset($dsplanResult['data'][$dateIndex])) {
-                    $dsplanResult['data'][$dateIndex][] = $po;
-                }
-                else {
-                    $dsplanResult['data'][$dateIndex] = array($po);
-                }
+                    if (isset($dsplanResult['data'][$dateIndex])) {
+                        $dsplanResult['data'][$dateIndex][] = $po;
+                    } else {
+                        $dsplanResult['data'][$dateIndex] = array($po);
+                    }
 
-                $dsplanResult['count']++;
+                    $dsplanResult['count']++;
+                }
             }
 
             $si["station_plan"] = $dsplanResult;
@@ -913,15 +916,22 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('is_deleted',0)
             ->get(['id','simple_name']);
 
+        $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
+            ->orderby('product_id')
+            ->get();
+
+        $planInfoProduct = $plan_info->groupBy('product_id');
+
         foreach ($products as $p) {
-            $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)
-                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
-                ->where('product_id',$p->id)
-                ->get();
 
             $plan_count = 0;
-            foreach($plan_info as $pi){
-                $plan_count += $pi->subtotal_count;
+
+            // 是否存在该奶品的奶站生产计划
+            if (!empty($planInfoProduct[$p->id])) {
+                foreach ($planInfoProduct[$p->id] as $pi) {
+                    $plan_count += $pi->subtotal_count;
+                }
             }
             $p["plan_count"] = $plan_count;
 
@@ -938,66 +948,58 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                     $p["real_count"] = $factory_plan->real_count;
                 }
             }
-//            $total_ordered_count = 0;
-//
-//            $order_product = OrderProduct::where('product_id',$p->id)->get(['id']);
-//            foreach($order_product as $op){
-//                $changed_count = MilkManDeliveryPlan::where('deliver_at',$deliver_date_str)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->
-//                where('order_product_id',$op->id)->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get(['changed_plan_count']);
-//                if($changed_count != null){
-//                    foreach($changed_count as $cc){
-//                        $total_ordered_count += $cc->changed_plan_count;
-//                    }
-//                }
-//            }
-//
-//            $plan_ordered_count = 0;
-//            $plan_ordered = DSProductionPlan::where('product_id',$p->id)->where('produce_end_at',$current_date_str)->where('status',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)->get();
-//            foreach($plan_ordered as $po){
-//                $plan_ordered_count += $po->order_count;
-//            }
-//            $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;
         }
 
-        $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $stations = DeliveryStation::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get();
+
+        $delivery_plans = MilkManDeliveryPlan::with('orderProduct')
+            ->where('deliver_at', $deliver_date_str)
+            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->where(function($query){
+                $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
+                $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+            })
+            ->get()
+            ->groupBy('station_id');
+
+        $planInfoStation = $plan_info->groupBy('station_id');
+
         $nPageCount = 25;
         $nCurPageCount = 0;
 
         foreach ($stations as $si) {
             $areas = explode(" ",$si->address);
             $si["area"] = $areas[0];
-            $station_plans = DSProductionPlan::where('station_id', $si->id)
-                ->where('produce_end_at', $current_date_str)
-                ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
-                ->orderby('product_id')
-                ->get();
+            $station_plans = array();
 
-            foreach($station_plans as $sp) {
-                $product_id = $sp->product_id;
+            // 是否存在该奶站的奶站生产计划
+            if (!empty($planInfoStation[$si->id])) {
+                foreach ($planInfoStation[$si->id] as $sp) {
 
-                $total_changed = 0;
-                $delivery_plans = MilkManDeliveryPlan::where('deliver_at', $deliver_date_str)
-                    ->where('station_id', $si->id)
-                    ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-                    ->where(function($query){
-                        $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
-                        $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    })
-                    ->get();
+                    $product_id = $sp->product_id;
 
-                foreach($delivery_plans as $dp) {
-                    if($dp->order->deliveryStation->id == $si->id && $dp->order_product->product->id == $product_id) {
-                        //calc process
-                        $total_changed += $dp->changed_plan_count;
+                    $total_changed = 0;
+
+                    // 是否存在该奶品的配送明细
+                    if (!empty($planInfoProduct[$p->id])) {
+                        foreach ($delivery_plans[$si->id] as $dp) {
+                            if ($dp->orderProduct->product_id == $product_id) {
+                                //calc process
+                                $total_changed += $dp->changed_plan_count;
+                            }
+                        }
                     }
-                }
 
-                $diff = $total_changed - $sp->order_count;
-                if($diff>0){
-                    $sp["diff"] = '+'.$diff;
+                    $diff = $total_changed - $sp->order_count;
+                    if ($diff > 0) {
+                        $sp["diff"] = '+' . $diff;
+                    } else
+                        $sp["diff"] = $diff;
+
+                    $station_plans[] = $sp;
                 }
-                else
-                    $sp["diff"] = $diff;
             }
 
             $si["station_plan"] = $station_plans;
