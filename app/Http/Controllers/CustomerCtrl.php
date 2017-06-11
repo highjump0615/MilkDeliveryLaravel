@@ -31,7 +31,7 @@ class CustomerCtrl extends Controller
     }
 
     /**
-     * 打开客户管理
+     * 打开总平台客户管理
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
@@ -105,73 +105,123 @@ class CustomerCtrl extends Controller
         return $state;
     }
 
+    /**
+     * 打开奶站客户信息
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaizhanUserPage(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
+
         $child = 'kehudangan';
         $parent = 'kehu';
         $current_page = 'kehudangan';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        $customers = Customer::where('is_deleted','<>',1)->where('station_id',$current_station_id)->get();
-        foreach ($customers as $cu){
-            $addr = explode(" ",$cu->address);
-            $cu['area_addr'] = $addr[2];
-            $cu['sector_addr'] = $addr[3];
-            $cu['detail_addr'] = $addr[4].$addr[5];
-            $cu['station_name'] = DeliveryStation::find($cu->station_id)->name;
-            $cu['milkman_name'] = MilkMan::find($cu->milkman_id)->name.' '.MilkMan::find($cu->milkman_id)->phone;
-            $customer_orders = Order::where('customer_id',$cu->id)->get();
-            $cu['order_count'] = count($customer_orders);
-            $cu['order_balance'] = 0;
-            foreach ($customer_orders as $co){
-                $cu['order_balance'] += $co->total_amount;
-            }
-            $cu['order_status'] = $this->getOrderStatus($cu->id);
-        }
+
+        $queryCustomer = Customer::with('station', 'milkman')
+            ->where('is_deleted','<>',1)
+            ->where('station_id',$current_station_id);
+
+        $aryBaseData = $this->getCustomerList($queryCustomer, $request);
 
         $this->addSystemLog(User::USER_BACKEND_STATION, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('naizhan.kehu.kehudangan', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'customers'=>$customers,
-        ]);
+        return view('naizhan.kehu.kehudangan', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+        ]));
     }
 
-    public function showGongchangUserPage(Request $request){
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
-        $child = 'kehu_child';
-        $parent = 'kehu';
-        $current_page = 'kehu';
-        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $customers = Customer::where('is_deleted','<>',1)->where('factory_id',$current_factory_id)->get();
-        foreach ($customers as $cu){
+    /**
+     * 获取客户列表
+     * @param $queryCustomer
+     * @param Request $request
+     * @return array
+     */
+    private function getCustomerList($queryCustomer, Request $request) {
+        $retData = array();
+
+        // 收件人
+        $name = $request->input('name');
+        if (!empty($name)) {
+            // 筛选
+            $queryCustomer->where('name', 'like', '%' . $name . '%');
+
+            // 添加筛选参数
+            $retData['name'] = $name;
+        }
+
+        // 手机号
+        $phone = $request->input('phone');
+        if (!empty($phone)) {
+            // 筛选
+            $queryCustomer->where('phone', 'like', '%' . $phone . '%');
+
+            // 添加筛选参数
+            $retData['phone'] = $phone;
+        }
+
+        // 区域
+        $area = $request->input('area');
+        if (!empty($phone)) {
+            // 筛选
+            $queryCustomer->where('address', 'like', '%' . $area . '%');
+
+            // 添加筛选参数
+            $retData['area'] = $area;
+        }
+
+        $retData['customers'] = $queryCustomer->paginate();
+
+        foreach ($retData['customers'] as $cu){
+            $queryOrder = Order::where('customer_id',$cu->id);
+
             $addr = explode(" ",$cu->address);
             $cu['area_addr'] = $addr[0].$addr[1];
             $cu['sector_addr'] = $addr[2].$addr[3];
             $cu['detail_addr'] = $addr[4].$addr[5];
-            $cu['station_name'] = DeliveryStation::find($cu->station_id)->name;
-            $cu['milkman_name'] = MilkMan::find($cu->milkman_id)->name.' '.MilkMan::find($cu->milkman_id)->phone;
-            $customer_orders = Order::where('customer_id',$cu->id)->get();
-            $cu['order_count'] = count($customer_orders);
-            $cu['order_balance'] = 0;
-            foreach ($customer_orders as $co){
-                $cu['order_balance'] += $co->total_amount;
-            }
+            $cu['station_name'] = $cu->station->name;
+            $cu['milkman_name'] = $cu->milkman->name;
+            $cu['order_count'] = $queryOrder->count();
+            $cu['order_balance'] = $queryOrder->sum('total_amount');
             $cu['order_status'] = $this->getOrderStatus($cu->id);
         }
+
+        return $retData;
+    }
+
+    /**
+     * 打开奶厂客户信息
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showGongchangUserPage(Request $request){
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
+        $queryCustomer = Customer::with('station', 'milkman')
+            ->where('is_deleted','<>',1)
+            ->where('factory_id', $current_factory_id);
+
+        $aryBaseData = $this->getCustomerList($queryCustomer, $request);
+
+        $child = 'kehu_child';
+        $parent = 'kehu';
+        $current_page = 'kehu';
+        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户列表', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.kehu.kehu', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'customers'=>$customers,
-        ]);
+        return view('gongchang.kehu.kehu', array_merge($aryBaseData, [
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+        ]));
     }
     //
 }

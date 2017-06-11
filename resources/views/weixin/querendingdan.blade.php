@@ -82,6 +82,8 @@
         @endif
     </div>
 
+    <!-- 本地版不支持支付 -->
+    @if (!App::environment('local'))
     <?php
 
     ini_set('date.timezone', 'Asia/Shanghai');
@@ -128,6 +130,7 @@
 
     $editAddress = $tools->GetEditAddressParameters();
     ?>
+    @endif
 
 @endsection
 @section('script')
@@ -162,29 +165,20 @@
 
         function callpay() {
             if (typeof WeixinJSBridge == "undefined") {
-                if (document.addEventListener) {
-                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-                } else if (document.attachEvent) {
-                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-                }
-            } else {
+//                if (document.addEventListener) {
+//                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+//                } else if (document.attachEvent) {
+//                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+//                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+//                }
+
+                // 支付模块不存在, 当支付失败
+                window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
+            }
+            else {
                 jsApiCall();
             }
         }
-
-        window.onload = function () {
-            if (typeof WeixinJSBridge == "undefined") {
-                if (document.addEventListener) {
-                    document.addEventListener('WeixinJSBridgeReady', editAddress, false);
-                } else if (document.attachEvent) {
-                    document.attachEvent('WeixinJSBridgeReady', editAddress);
-                    document.attachEvent('onWeixinJSBridgeReady', editAddress);
-                }
-            } else {
-                editAddress();
-            }
-        };
 
         $(document).ready(function () {
                     @if(isset($message) && $message!="")
@@ -204,7 +198,7 @@
                 events: [
                         @foreach($plans as $p)
                     {
-                        title: "{{$p->product_name}} {{$p->changed_plan_count}}",
+                        title: "{{$p->getProductName()}} {{$p->changed_plan_count}}",
                         start: '{{$p->deliver_at}}',
                         className: 'ypsrl',
                         textColor: '#00cc00'
@@ -243,7 +237,6 @@
                 success: function (data) {
                     console.log(data);
                     if (data.status == 'success') {
-                        $(order_bt).prop('disabled', false);
                         order_id = data.order_id;
                         callpay();
                     } else if(data.status == "fail") {

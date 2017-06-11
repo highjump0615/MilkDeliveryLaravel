@@ -51,7 +51,7 @@ class User extends Authenticatable
 
     public function getCurrentRoleNameAttribute(){
         $role_id = $this->user_role_id;
-        $role_name = UserRole::where('id',$role_id)->get()->first();
+        $role_name = UserRole::where('id',$role_id)->first();
         return $role_name;
     }
 
@@ -108,7 +108,7 @@ class User extends Authenticatable
      * @return bool
      */
     public function isSuperUser($type) {
-        $role = UserRole::where('backend_type', $type)->get()->first();
+        $role = UserRole::where('backend_type', $type)->first();
         return ($this->user_role_id == $role->id);
     }
 }

@@ -197,9 +197,6 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
 
-    //Show Passed Orders
-    Route::get('/gongchang/dingdan/weiqinaidingdan', 'OrderCtrl@show_passed_dingdan_in_gongchang');
-
     //Show On Delivery Orders
     Route::get('/gongchang/dingdan/zaipeisongdingdan', 'OrderCtrl@show_on_delivery_dingdan_in_gongchang');
 
@@ -257,7 +254,7 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //show self account balance
     Route::get('/gongchang/caiwu/ziyingzhanghu/{station_id}', 'FinanceCtrl@show_self_account_in_gongchang');
-    Route::get('api/gongchang/caiwu/ziyingzhanghu/add_self_business_history', 'FinanceCtrl@add_self_business_history');
+    Route::post('api/gongchang/caiwu/ziyingzhanghu/add_self_business_history', 'FinanceCtrl@add_self_business_history');
 
     //show delivery status between other stations
     Route::get('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang', 'FinanceCtrl@show_transaction_between_other_station_in_gongchang');
@@ -438,6 +435,8 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('/naizhan/shengchan/peisongliebiao', 'DSDeliveryPlanCtrl@showPeisongliebiao')->name('naizhan_peisongliebiao');
     /*show Ziyingdingdan Page*/
     Route::get('/naizhan/shengchan/ziyingdingdan', 'DSDeliveryPlanCtrl@showZiyingdingdan');
+    /* 保存库存数据 */
+    Route::post('api/naizhan/shengchan/ziyingdingdan/saveStock', 'DSDeliveryPlanCtrl@saveStock');
     /*Save Ziyingdingdan*/
     Route::post('api/naizhan/shengchan/ziyingdingdan/save', 'DSDeliveryPlanCtrl@saveZiyingdingdan');
     /*Save Ziyingdingdan getXiaoqu*/
@@ -511,8 +510,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('/naizhan/dingdan/xudanliebiao', 'OrderCtrl@show_xudan_dingdan_liebiao_in_naizhan');
     //Show check waiting dingdan
     Route::get('/naizhan/dingdan/daishenhe', 'OrderCtrl@show_check_waiting_dingdan_in_naizhan');
-    //Show paseed dingdan
-    Route::get('/naizhan/dingdan/weiqinaidingdan', 'OrderCtrl@show_passed_dingdan_in_naizhan');
+
     //Show On Delivery Dingdan
     Route::get('/naizhan/dingdan/zaipeisong', 'OrderCtrl@show_on_delivery_dingdan_in_naizhan');
     //Show Stopped Dingdan
@@ -768,6 +766,10 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     // 数据库
     Route::get('/zongpingtai/xitong/shujuku','DatableCtrl@showDatable');
 
+    // 导入
+    Route::get('/zongpingtai/xitong/import','ImportCtrl@showImport');
+    Route::post('/zongpingtai/xitong/import/upload', 'ImportCtrl@uploadFile');
+
     Route::get('/zongpingtai/xitong/zhandiansheding', function (Request $request) {
         $child = 'zhandiansheding';
         $parent = 'xitong';
@@ -970,8 +972,6 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* xuedan */
     Route::get('/show_xuedan', 'WeChatCtrl@show_xuedan')->name('show_xuedan');
-    //make xudan based on created wechat order products
-    Route::post('/api/make_order_from_wopids', 'WeChatCtrl@make_order_from_wopids');
 
     /* change order */
     Route::get('/dingdanxiugai', 'WeChatCtrl@dingdanxiugai');

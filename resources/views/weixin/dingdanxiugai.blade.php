@@ -91,7 +91,7 @@
     @include('weixin.layout.footer')
 @endsection
 @section('script')
-    <script src='js/fullcalendar.min.js'></script>
+    <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
     <script type="text/javascript">
         var today = "{{$today}}";
         $(function () {
@@ -107,7 +107,7 @@
                 events: [
                         @foreach($plans as $p)
                     {
-                        title: "{{$p->product_name}} {{$p->changed_plan_count}}",
+                        title: "{{$p->getProductName()}} {{$p->changed_plan_count}}",
                         start: '{{$p->deliver_at}}',
                         className: 'ypsrl',
                         textColor: '#00cc00'
@@ -162,7 +162,7 @@
                     type: "POST",
                     url: SITE_URL + "weixin/api/cancel_change_order",
                     data: {
-                        'order_id': order_id,
+                        'order_id': order_id
                     },
                     success: function (data) {
                         if (data.status == "success") {

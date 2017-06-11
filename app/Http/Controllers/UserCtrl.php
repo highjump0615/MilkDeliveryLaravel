@@ -73,7 +73,7 @@ class UserCtrl extends Controller
      */
     public function addAccount(Request $request)
     {
-        $is_exist = User::where('name',$request->input('name'))->get()->first();
+        $is_exist = User::where('name',$request->input('name'))->first();
         if(empty($is_exist)){
             $user = new User;
             $user->name = $request->input('name');
@@ -100,6 +100,12 @@ class UserCtrl extends Controller
     /*Delete & Update user-info using ajax*/
     public function updateAccount(Request $request, $user_id)
     {
+        // 默认角色是奶厂超级管理员
+        $nRole = $request->input('user_role_id');
+        if (empty($nRole)) {
+            $nRole = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
+        }
+
         $user = User::find($user_id);
         $user->name = $request->input('name');
         if($request->input('password')!=null){
@@ -107,7 +113,7 @@ class UserCtrl extends Controller
         }
         $user->nick_name = $request->input('nick_name');
         $user->status = $request->input('status');
-        $user->user_role_id = $request->input('user_role_id');
+        $user->user_role_id = $nRole;
 
         $user->save();
 
@@ -152,7 +158,7 @@ class UserCtrl extends Controller
 
     public function addZongpingGuanliyuan(Request $request){
         $name = $request->input('name');
-        $is_exist = User::where('name',$name)->get()->first();
+        $is_exist = User::where('name',$name)->first();
 
         if(empty($is_exist)){
             $user = new User;
@@ -247,7 +253,7 @@ class UserCtrl extends Controller
         $current_factory_id = $this->getCurrentFactoryId(false);
 
         $name = $request->input('name');
-        $is_exist = User::where('name',$name)->get()->first();
+        $is_exist = User::where('name',$name)->first();
 
         if(empty($is_exist)){
             $user = new User;

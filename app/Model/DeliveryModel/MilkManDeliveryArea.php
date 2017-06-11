@@ -11,6 +11,7 @@ class MilkManDeliveryArea extends Model
         'milkman_id',
         'address',
         'order',
+        'deliveryarea_id',
     ];
 
     public $timestamps = false;
@@ -18,5 +19,9 @@ class MilkManDeliveryArea extends Model
     public function milkman()
     {
     	return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
+    }
+
+    public function deliveryArea() {
+        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id');
     }
 }

@@ -94,16 +94,19 @@
 															</div>
 
 															<div class="col-xs-2">
-																<button type="button" id="js_right_All_1" class="btn btn-block"><i
-																			class="glyphicon glyphicon-forward"></i></button>
+																<button type="button" id="js_right_All_1" class="btn btn-block">
+																	<i class="glyphicon glyphicon-forward"></i>
+																</button>
 																<button type="button" id="js_right_Selected_1"
-																		class="btn btn-block"><i
-																			class="glyphicon glyphicon-chevron-right"></i></button>
+																		class="btn btn-block">
+																	<i class="glyphicon glyphicon-chevron-right"></i>
+																</button>
 																<button type="button" id="js_left_Selected_1" class="btn btn-block">
-																	<i
-																			class="glyphicon glyphicon-chevron-left"></i></button>
-																<button type="button" id="js_left_All_1" class="btn btn-block"><i
-																			class="glyphicon glyphicon-backward"></i></button>
+																	<i class="glyphicon glyphicon-chevron-left"></i>
+																</button>
+																<button type="button" id="js_left_All_1" class="btn btn-block">
+																	<i class="glyphicon glyphicon-backward"></i>
+																</button>
 															</div>
 
 															<div class="col-xs-5">

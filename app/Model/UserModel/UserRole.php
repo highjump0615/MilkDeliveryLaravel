@@ -34,7 +34,7 @@ class UserRole extends Model
         $pages = Page::where('backend_type', $this->backend_type)->where('parent_page', 0)->orderby('order_no')->get();
 
         foreach($pages as $p) {
-            $page_access = UserPageAccess::where('user_role_id', $role_id)->where('page_id', $p->id)->get()->first();
+            $page_access = UserPageAccess::where('user_role_id', $role_id)->where('page_id', $p->id)->first();
 
             if($page_access == null)
                 $p["access"] = false;
@@ -43,7 +43,7 @@ class UserRole extends Model
 
             $sub_pages = $p->sub_pages;
             foreach($sub_pages as $s) {
-                $page_access = UserPageAccess::where('user_role_id', $role_id)->where('page_id', $s->id)->get()->first();
+                $page_access = UserPageAccess::where('user_role_id', $role_id)->where('page_id', $s->id)->first();
 
                 if($page_access == null)
                     $s["access"] = false;

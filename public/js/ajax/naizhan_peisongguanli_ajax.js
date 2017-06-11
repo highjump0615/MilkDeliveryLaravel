@@ -8,7 +8,6 @@ var group_totals = [];
 var channel_totals = [];
 var sum_totals = [];
 var produced_totals = [];
-var not_ordered_totals = [];
 var product_id = [];
 var remain_amount = [];
 var ordered_amount = [];
@@ -22,7 +21,6 @@ for(i = 0; i<count; i++){
     channel_totals[i] = 0;
     sum_totals[i] = 0;
     produced_totals[i] = 0;
-    not_ordered_totals[i] = 0;
     product_id[i] = 0;
     remain_amount[i] = 0;
     ordered_amount[i] = 0;
@@ -46,27 +44,33 @@ $(document).ready(function(){
         delivered_total[i]=current_val;
     });
 
+    // 当前自营部分数量
+    $('#distribute td.origin').each(function(i) {
+        var current_val = parseInt($(this).html());
+        if(isNaN(current_val)){
+            current_val = 0;
+            $(this).html('0');
+        }
+    });
+
     calc_total();
 });
 
 function get_product_id(){
-    var $datarows = $('#distribute tr.product_id_tr');
-    $datarows.each(function(){
-        $(this).find('.product_id').each(function(i){
-            var current_id = $(this).attr('value');
-            product_id[i]=current_id;
-        });
-    })
+    var $datarows = $('#distribute tr.product_tr');
+    $datarows.each(function(i){
+        product_id[i] = $(this).find('.product_id').attr('value');
+    });
 }
 
 /**
  * 配送业务订单数量和可配送数量的合计
  */
 function calc_order(){
-    var $datarows = $('#distribute tr.order_tr');
-    $datarows.each(function(){
+    var $datarows = $('#distribute tr.product_tr');
+    $datarows.each(function(i){
         // 总数量
-        $(this).find('.order').each(function(i){
+        $(this).find('.order').each(function(){
             var current_val = parseInt($(this).html());
             if(isNaN(current_val)){
                 current_val = 0;
@@ -75,13 +79,11 @@ function calc_order(){
         });
 
         // 订单数量
-        $(this).find('.ordered_amount').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            ordered_amount[i]=current_val;
-        });
+        var current_val = parseInt($(this).find('.ordered_amount').html());
+        if(isNaN(current_val)){
+            current_val = 0;
+        }
+        ordered_amount[i]=current_val;
     });
 
     // 显示总合计
@@ -95,7 +97,6 @@ function calc_order(){
  */
 function calc_retail(){
     var current_val;
-    var retail_count = [];
 
     // 总数量
     $('#distribute td.retail_sum').each(function(){
@@ -106,21 +107,6 @@ function calc_retail(){
         }
         retail_totals[i] = current_val;
     });
-
-    // 当前数量
-    $('#distribute td.retail_origin').each(function(i) {
-        current_val = parseInt($(this).html());
-        if(isNaN(current_val)){
-            current_val = 0;
-            $(this).html('0');
-        }
-        retail_count[i] = current_val;
-    });
-
-    // 差量
-    $('#distribute td.retail_diff').each(function(i) {
-        $(this).html(retail_totals[i] - retail_count[i]);
-    });
 }
 
 /**
@@ -128,7 +114,6 @@ function calc_retail(){
  */
 function calc_drink(){
     var current_val;
-    var drink_count = [];
 
     // 总数量
     $('#distribute td.drink_sum').each(function(i){
@@ -139,21 +124,6 @@ function calc_drink(){
         }
         drink_totals[i] += current_val;
     });
-
-    // 当前数量
-    $('#distribute td.drink_origin').each(function(i) {
-        current_val = parseInt($(this).html());
-        if(isNaN(current_val)){
-            current_val = 0;
-            $(this).html('0');
-        }
-        drink_count[i] = current_val;
-    });
-
-    // 差量
-    $('#distribute td.drink_diff').each(function(i) {
-        $(this).html(drink_totals[i] - drink_count[i]);
-    });
 }
 
 /**
@@ -161,7 +131,6 @@ function calc_drink(){
  */
 function calc_group(){
     var current_val;
-    var group_count = [];
 
     // 总数量
     $('#distribute td.group_sum').each(function(i){
@@ -172,21 +141,6 @@ function calc_group(){
         }
         group_totals[i]+=current_val;
     });
-
-    // 当前数量
-    $('#distribute td.group_origin').each(function(i) {
-        current_val = parseInt($(this).html());
-        if(isNaN(current_val)){
-            current_val = 0;
-            $(this).html('0');
-        }
-        group_count[i] = current_val;
-    });
-
-    // 差量
-    $('#distribute td.group_diff').each(function(i) {
-        $(this).html(group_totals[i] - group_count[i]);
-    });
 }
 
 /**
@@ -195,7 +149,6 @@ function calc_group(){
 function calc_channel(){
 
     var current_val;
-    var channel_count = [];
 
     // 总数量
     $('#distribute td.channel_sum').each(function(i){
@@ -206,60 +159,31 @@ function calc_channel(){
         }
         channel_totals[i]+=current_val;
     });
-
-    // 当前数量
-    $('#distribute td.channel_origin').each(function(i) {
-        current_val = parseInt($(this).html());
-        if(isNaN(current_val)){
-            current_val = 0;
-            $(this).html('0');
-        }
-        channel_count[i] = current_val;
-    });
-
-    // 差量
-    $('#distribute td.channel_diff').each(function(i) {
-        $(this).html(channel_totals[i] - channel_count[i]);
-    });
 }
 
 /**
  * 总数量合计
  */
 function calc_total(){
-    // 订单配送量、自营配送量总合计
-    var $datarows = $('#distribute tr.sum_tr');
-    $datarows.each(function(){
-        $(this).find('.sum').each(function(i){
+
+    var $datarows = $('#distribute tr.product_tr');
+    $datarows.each(function(i){
+        // 订单配送量、自营配送量总合计
+        $(this).find('.sum').each(function(){
             var current_val = parseInt($(this).html());
             if(isNaN(current_val)){
                 current_val = 0;
             }
             sum_totals[i]+=current_val;
         });
-    });
 
-    // 签收数量合计
-    var $produced_rows = $('#distribute tr.produced_tr');
-    $produced_rows.each(function(){
-        $(this).find('.produced').each(function(i){
+        // 签收数量合计
+        $(this).find('.produced').each(function(){
             var current_val = parseInt($(this).html());
             if(isNaN(current_val)){
                 current_val = 0;
             }
             produced_totals[i]+=current_val;
-        });
-    });
-
-    // 自营配送量合计
-    var $not_ordered_rows = $('#distribute tr.sum_tr:not(:first)');
-    $not_ordered_rows.each(function(){
-        $(this).find('.sum').each(function(i){
-            var current_val = parseInt($(this).html());
-            if(isNaN(current_val)){
-                current_val = 0;
-            }
-            not_ordered_totals[i]+=current_val;
         });
     });
 
@@ -271,14 +195,13 @@ function calc_total(){
         $(this).html(sum_totals[i]);
     });
 
-    // 计划差异 = 签收数量合计 - 总合计
-    $('#distribute td.plan_sum').each(function(i) {
-        $(this).html(produced_totals[i]-sum_totals[i]);
-    });
-
-    // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - 可配送数量合计 + 配送业务实际配送数量
+    // 当日库存剩余 = 当日奶站可出库数量 - 出库总计 - (配送业务实际配送数量 - 可配送数量合计)
     $('#distribute td.remain_sum').each(function(i) {
-        remain_amount[i] = produced_totals[i] - sum_totals[i]/* - order_totals[i] + delivered_total[i]*/;
+        remain_amount[i] = produced_totals[i] - sum_totals[i];
+        if (gbReported) {
+            remain_amount[i] = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+        }
+
         $(this).html(remain_amount[i]);
     });
 }
@@ -286,19 +209,10 @@ function calc_total(){
 $('.editable_amount').on('keyup',function(){
     for(i = 0; i<count; i++){
         order_totals[i]=0;
-        retail_totals[i] = 0;
-        drink_totals[i] = 0;
-        group_totals[i] = 0;
-        channel_totals[i] = 0;
         sum_totals[i] = 0;
         produced_totals[i] = 0;
-        not_ordered_totals[i] = 0;
     }
     calc_order();
-    calc_retail();
-    calc_drink();
-    calc_group();
-    calc_channel();
     calc_total();
 });
 
@@ -313,13 +227,15 @@ function save_distribute() {
     for(i = 0; i < count; i++){
         var id = $(this).attr('id');
         var station_id = $(this).attr('value');
+        var nRemain = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+
         var formData = {
             product_id: product_id[i],
             retail: retail_totals[i],
             test_drink: drink_totals[i],
             group_sale: group_totals[i],
             channel_sale: channel_totals[i],
-            remain: remain_amount[i]
+            remain: nRemain
         };
         console.log(formData);
 
@@ -348,7 +264,7 @@ $(document).on('click','.auto_distribute',function(e){
 
     var changed_order_amount = [];
 
-    $('#distribute .order_tr .editable_amount').each(function(i) {
+    $('#distribute .editable_amount').each(function(i) {
         var current_val = parseInt($(this).html());
         if(isNaN(current_val)){
             current_val = 0;

@@ -31,7 +31,7 @@ class FactoryDeliveryType extends Model
 
     public function getNameAttribute()
     {
-    	$dt = DeliveryType::where('id', $this->delivery_type)->get()->first();
+    	$dt = DeliveryType::where('id', $this->delivery_type)->first();
     	return $dt->name;
     }
 }

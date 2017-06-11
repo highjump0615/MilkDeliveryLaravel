@@ -12,7 +12,7 @@ function multiexplode ($delimiters,$string) {
  */
 function getCurDateString() {
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
 }
@@ -31,7 +31,7 @@ function getPrevDateString($strDate = null) {
     }
 
     $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
 }
@@ -50,7 +50,7 @@ function getNextDateString($strDate = null) {
     }
 
     $dateCurrent->add(\DateInterval::createFromDateString('tomorrow'));
-    $strDate = $dateCurrent->format('Y-m-d');
+    $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
 }
@@ -62,4 +62,13 @@ function getNextDateString($strDate = null) {
  */
 function getDateFromString($string) {
     return DateTime::createFromFormat('Y-m-d', $string);
+}
+
+/**
+ * DateTime转string
+ * @param $date DateTime
+ * @return mixed
+ */
+function getStringFromDate($date) {
+    return $date->format('Y-m-d');
 }
