@@ -976,13 +976,13 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
             })
             ->join('orderproducts', 'milkmandeliveryplan.order_product_id', '=', 'orderproducts.id')
-            ->groupBy('orderproducts.product_id')
-            ->selectRaw('orderproducts.product_id as pid, sum(milkmandeliveryplan.changed_plan_count) as plan_count')
+            ->groupBy('orderproducts.product_id', 'milkmandeliveryplan.station_id')
+            ->selectRaw('milkmandeliveryplan.station_id as sid, orderproducts.product_id as pid, sum(milkmandeliveryplan.changed_plan_count) as plan_count')
             ->get();
 
         $planInfoStation = $plan_info->groupBy('station_id');
 
-        $nPageCount = 25;
+        $nPageCount = 50;
         $nCurPageCount = 0;
 
         foreach ($stations as $si) {
@@ -1001,11 +1001,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                     // 是否存在该奶品的配送明细
                     foreach ($delivery_plans as $dp) {
                         // 只考虑本奶站的配送
-                        if ($dp['pid'] != $si->id) {
-                            continue;
+                        if ($dp['sid'] == $si->id && $dp['pid'] == $product_id) {
+                            $total_changed = $dp['plan_count'];
+                            break;
                         }
-
-                        $total_changed += $dp['plan_count'];
                     }
 
                     $diff = $total_changed - $sp->order_count;
@@ -1024,6 +1023,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             // 计算记录行数，超过制定的数量就
             if ($nCurPageCount + count($station_plans) <= $nPageCount) {
                 $nCurPageCount += count($station_plans);
+            }
+            else {
+                // 决定第一个页面数量后停止
+                $nPageCount = 0;
             }
         }
 
@@ -1045,7 +1048,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             // 生产结果信息
             'products'                  =>$products,
 
-            // 一个页面的记录数量, 防止一个奶站的信息被分页表示
+            // 一个页面的记录数量, 防止一个奶站的信息被分页表示, 临时措施
             'page_count'                =>$nCurPageCount
         ]);
     }
