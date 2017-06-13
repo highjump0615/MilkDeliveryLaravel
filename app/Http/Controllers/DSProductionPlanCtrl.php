@@ -925,7 +925,10 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('is_deleted',0)
             ->get(['id','simple_name']);
 
-        $plan_info = DSProductionPlan::where('produce_end_at',$current_date_str)
+        $plan_info = DSProductionPlan::whereHas('station', function($query) use ($current_factory_id) {
+                $query->where('factory_id', $current_factory_id);
+            })
+            ->where('produce_end_at',$current_date_str)
             ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
             ->orderby('product_id')
             ->get();
@@ -963,15 +966,19 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('is_deleted',0)
             ->get();
 
-        $delivery_plans = MilkManDeliveryPlan::with('orderProduct')
+        $delivery_plans = MilkManDeliveryPlan::whereHas('station', function($query) use ($current_factory_id) {
+                $query->where('factory_id', $current_factory_id);
+            })
             ->where('deliver_at', $deliver_date_str)
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->where(function($query){
                 $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
                 $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
             })
-            ->get()
-            ->groupBy('station_id');
+            ->join('orderproducts', 'milkmandeliveryplan.order_product_id', '=', 'orderproducts.id')
+            ->groupBy('orderproducts.product_id')
+            ->selectRaw('orderproducts.product_id as pid, sum(milkmandeliveryplan.changed_plan_count) as plan_count')
+            ->get();
 
         $planInfoStation = $plan_info->groupBy('station_id');
 
@@ -992,13 +999,13 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                     $total_changed = 0;
 
                     // 是否存在该奶品的配送明细
-                    if (!empty($planInfoProduct[$p->id])) {
-                        foreach ($delivery_plans[$si->id] as $dp) {
-                            if ($dp->orderProduct->product_id == $product_id) {
-                                //calc process
-                                $total_changed += $dp->changed_plan_count;
-                            }
+                    foreach ($delivery_plans as $dp) {
+                        // 只考虑本奶站的配送
+                        if ($dp['pid'] != $si->id) {
+                            continue;
                         }
+
+                        $total_changed += $dp['plan_count'];
                     }
 
                     $diff = $total_changed - $sp->order_count;
