@@ -61,6 +61,13 @@ class MilkManDeliveryPlan extends Model
     const DP_CANCEL_POSTPONE        = 2;
     const DP_CANCEL_CHANGEORDER     = 3;
 
+    /**
+     * 获取奶站
+     * @return DeliveryStation
+     */
+    public function station(){
+        return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
+    }
 
     /**
      * 获取奶品图片
