@@ -71,6 +71,14 @@ class DSProductionPlan extends Model
         'receive_at'
     ];
 
+    /**
+     * 获取奶站
+     * @return DeliveryStation
+     */
+    public function station(){
+        return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
+    }
+
     public function getProductNameAttribute(){
         $product_id = $this->product_id;
         $product_name = Product::find($product_id);
