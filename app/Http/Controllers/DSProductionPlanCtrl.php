@@ -474,22 +474,28 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             ->where('is_deleted',0)
             ->get(['id','simple_name','production_period']);
 
-        $plan_info = DSProductionPlan::where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
+        $plan_info = DSProductionPlan::whereHas('station', function($query) use ($current_factory_id) {
+                $query->where('factory_id', $current_factory_id);
+            })
+            ->where('status','>=',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
             ->where('produce_start_at', $strDateReal)
             ->get();
 
         // 只考虑提交过的订单
-        $changed_counts = MilkManDeliveryPlan::with('orderProduct')
+        $deliveryPlans = MilkManDeliveryPlan::whereHas('station', function($query) use ($current_factory_id) {
+                $query->where('factory_id', $current_factory_id);
+            })
             ->where('produce_at', $strDateReal)
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->where(function($query){
                 $query->where('status','>=',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT);
                 $query->orwhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-            })
-            ->get()
-            ->groupBy(function ($sort) {
-                return $sort->orderProduct->product_id;
             });
+
+        $changed_counts = $deliveryPlans->join('orderproducts', 'milkmandeliveryplan.order_product_id', '=', 'orderproducts.id')
+            ->groupBy('orderproducts.product_id')
+            ->selectRaw('orderproducts.product_id as pid, sum(milkmandeliveryplan.changed_plan_count) as plan_count')
+            ->get();
 
         $planInfoProduct = $plan_info->groupBy('product_id');
 
@@ -534,10 +540,13 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $total_ordered_count = 0;
 
             // 是否存在该奶品的配送明细
-            if (!empty($changed_counts[$p->id])) {
-                foreach ($changed_counts[$p->id] as $cc) {
-                    $total_ordered_count += $cc->changed_plan_count;
+            foreach ($changed_counts as $cc) {
+                // 只考虑本奶品
+                if ($cc['pid'] != $p->id) {
+                    continue;
                 }
+
+                $total_ordered_count = $cc['plan_count'];
             }
 
             $plan_ordered_count = 0;
@@ -570,7 +579,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             $dsplanResult['data'] = array();
 
             // 是否存在该奶站的奶站生产计划
-            if (!empty($planInfoProduct[$si->id])) {
+            if (!empty($planInfoStation[$si->id])) {
                 foreach ($planInfoStation[$si->id] as $po) {
                     $dateIndex = $po->submit_at;
 
