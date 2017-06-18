@@ -2184,7 +2184,7 @@ class OrderCtrl extends Controller
         $start = $request->input('start');
         if (!empty($start)) {
             // 筛选
-            $queryOrder->where('start_at', '>=', $start);
+            $queryOrder->where('ordered_at', '>=', $start);
 
             // 添加筛选参数
             $retData['start'] = $start;
@@ -2192,7 +2192,7 @@ class OrderCtrl extends Controller
         $end = $request->input('end');
         if (!empty($end)) {
             // 筛选
-            $queryOrder->where('start_at', '<=', $end);
+            $queryOrder->where('ordered_at', '<=', $end);
 
             // 添加筛选参数
             $retData['end'] = $end;
