@@ -226,6 +226,7 @@ class DSDeliveryPlanCtrl extends Controller
         // 有数量变化的配送明细，排除数量为0的配送明细
         $changed_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)
+            ->whereRaw('plan_count != changed_plan_count')
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->get();
