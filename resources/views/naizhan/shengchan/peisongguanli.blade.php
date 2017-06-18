@@ -174,7 +174,6 @@
 								@endif
 								<?php $i=0; ?>
 								@foreach($changed_plans as $cp)
-									@if($cp->plan_count != $cp->changed_plan_count)
 									<?php $i++; ?>
 									<tr id="{{$cp->id}}" value="{{$cp->order_product->product->id}}">
 										<td>{{$i}}</td>
@@ -207,7 +206,6 @@
 											<td>{{$cp->comment}}</td>
 										@endif
 									</tr>
-									@endif
 								@endforeach
 	                            </tbody>
 	                            <tfoot align="right">
