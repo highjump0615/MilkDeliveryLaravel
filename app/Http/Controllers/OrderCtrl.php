@@ -1341,13 +1341,6 @@ class OrderCtrl extends Controller
      */
     private function insert_customer_for_order(Request $request) {
 
-        //get all stations in this factory
-        $stations = $this->factory->active_stations;
-        $station_ids = [];
-        foreach ($stations as $station) {
-            $station_ids[] = $station->id;
-        }
-
         $name = $request->input('customer');
         $phone = $request->input('phone');
 
