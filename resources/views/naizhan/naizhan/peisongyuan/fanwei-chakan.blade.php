@@ -28,7 +28,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 						<button class="btn btn-success" id="add-street" type="button"><i class="fa fa-plus"></i> 添加街道</button>
-						<table id="delivery_area_table" class="footable table table-bordered" data-page-size="5">
+						<table id="delivery_area_table" class="footable table table-bordered" data-page-size="15">
 							<thead>
 							<tr>
 								<th data-sort-ignore="true">街道</th>
@@ -87,8 +87,10 @@
 														<label class="col-md-12">小区名称：</label>
 														<div class="row">
 															<div class="col-xs-5">
-																<select name="from[]" id="js_multiselect_from_1"
-																		class="js-multiselect1 form-control" size="8"
+																<select name="from[]"
+																		id="js_multiselect_from_1"
+																		class="js-multiselect1 form-control"
+																		size="8"
 																		multiple="multiple">
 																</select>
 															</div>
@@ -110,8 +112,12 @@
 															</div>
 
 															<div class="col-xs-5">
-																<select name="to[]" id="js_multiselect_to_1" class="form-control"
-																		size="8" multiple="multiple"></select>
+																<select name="to[]"
+																		id="js_multiselect_to_1"
+																		class="form-control"
+																		size="8"
+																		multiple="multiple">
+																</select>
 
 																<div class="row">
 																	<div class="col-sm-6">
@@ -181,13 +187,44 @@
 
 	<script>
 		//Availabe Address for this station
-		<?php
-        $avail = json_encode($available_address);
-        echo "var avail_obj = ". $avail . ";\n";
+        var streets, villages;
 
-        $used = json_encode($area_address);
-        echo "var used_obj = ". $used . ";\n";
-        ?>
+        var avail_obj = {};
+		@foreach($available_address as $street_id=>$street)
+            streets = [];
+
+			// push街道名称
+			streets.push('{{$street[0]}}');
+
+        	villages = [];
+			@foreach($street[1] as $xiaoqu_id => $xiaoqu_name)
+				villages.push({'id':'{{$xiaoqu_id}}', 'name':'{{$xiaoqu_name}}'});
+			@endforeach
+
+			// push小区信息
+			streets.push(villages);
+
+	        avail_obj['{{$street_id}}'] = streets;
+		@endforeach
+
+		// 将地址信息转换成js数组
+		var used_obj = {};
+		@foreach($area_address as $street_id=>$street)
+			streets = [];
+
+			// push街道名称
+			streets.push('{{$street[0]}}');
+
+			villages = [];
+			@foreach($street[1] as $xiaoqu_id => $xiaoqu_name)
+                villages.push({'id':'{{$xiaoqu_id}}', 'name':'{{$xiaoqu_name}}'});
+			@endforeach
+
+			// push小区信息
+			streets.push(villages);
+
+			used_obj['{{$street_id}}'] = streets;
+		@endforeach
 
 	</script>
 @endsection
