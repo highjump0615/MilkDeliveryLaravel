@@ -959,24 +959,29 @@ class ImportCtrl extends Controller
      * order里添加deliveryarea_id
      */
     public function updateOrder(Request $request) {
-        $orders = Order::all();
+        $orders = Order::whereNull('deliveryarea_id')->get();
 
         foreach ($orders as $order) {
 
             echo $order->id . " => ";
 
-            $deliveryArea = DSDeliveryArea::where('station_id', $order->delivery_station_id)
-                ->where('address', $order->main_address)
+            $deliveryArea = DSDeliveryArea::where('address', $order->main_address)
                 ->first();
 
             if (!empty($deliveryArea)) {
-                echo $deliveryArea->id;
+                echo $deliveryArea->id . ", Station: " . $deliveryArea->station_id;
 
                 $order->deliveryarea_id = $deliveryArea->id;
+                $order->delivery_station_id= $deliveryArea->station_id;
                 $order->save();
+            }
+            else {
+                echo "Cannot get DSDevlieryArea object";
             }
 
             echo "<br />";
         }
+
+        return "Done!";
     }
 }
