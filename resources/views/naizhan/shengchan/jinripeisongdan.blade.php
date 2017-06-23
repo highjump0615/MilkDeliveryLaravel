@@ -1,5 +1,9 @@
 @extends('naizhan.layout.master')
 
+@section('css')
+	<link href="<?=asset('css/print.css') ?>" rel="stylesheet">
+@endsection
+
 @section('content')
 	@include('naizhan.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
