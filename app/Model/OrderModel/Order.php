@@ -757,27 +757,7 @@ class Order extends Model
      */
     public function getMilkmanAttribute()
     {
-        //
-        // 抽取地址信息
-        //
-        $addr_to_xiaoqu = "";
-
-        $addr_list = multiexplode(' ', $this->address);
-        if (count($addr_list) >= 5)
-        {
-            for($i = 0; $i < 5; $i++)
-            {
-                $addr_to_xiaoqu .=$addr_list[$i]." ";
-            }
-        }
-        $addr_to_xiaoqu = trim($addr_to_xiaoqu);
-
-        if (empty($addr_to_xiaoqu)) {
-            return null;
-        }
-
-        // 获取配送员
-        return $this->deliveryStation->get_milkman_of_address($addr_to_xiaoqu);
+        return $this->milkmanDeliveryPlan->first()->milkman;
     }
 
     /**
