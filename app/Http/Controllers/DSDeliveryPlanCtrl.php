@@ -859,6 +859,9 @@ class DSDeliveryPlanCtrl extends Controller
             ->with(array('orderDelivery' => function($query) {
                 $query->orderBy('delivery_time');
                 $query->orderBy('address');
+                $query->with(['deliveryArea' => function($query) {
+                    $query->with('milkmanDeliveryArea');
+                }]);
             }))
             ->get()
             ->groupBy(function ($sort) {
@@ -941,8 +944,10 @@ class DSDeliveryPlanCtrl extends Controller
                 $orderData['flag'] = $flag;
                 $orderData['comment_delivery'] = $comment;
 
+                //
                 // 添加到主数组
-                array_push($delivery_info, $orderData);
+                //
+                $this->addToDeliveryInfoWithSort($delivery_info, $orderData);
             }
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
@@ -1062,7 +1067,8 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 查询
         $deliveryPlanById = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
-            ->distinct()->get(['milkman_id']);
+            ->distinct()
+            ->get(['milkman_id']);
 
         $aryMilkmanId = array();
         foreach ($deliveryPlanById as $dp) {
@@ -1092,7 +1098,16 @@ class DSDeliveryPlanCtrl extends Controller
             ->where('time',$deliver_date_str)
             ->get(['count','bottle_type']);
 
-        $queryDeliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->where('milkman_id',$current_milkman);
+        $queryDeliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
+            ->where('milkman_id',$current_milkman)
+            ->with(array('orderDelivery' => function($query) {
+                $query->orderBy('delivery_time');
+                $query->orderBy('address');
+                $query->with(['deliveryArea' => function($query) {
+                    $query->with('milkmanDeliveryArea');
+                }]);
+            }));
+
         $milkman_delivery_plans = $queryDeliveryPlan->get();
 
         //
@@ -1101,9 +1116,12 @@ class DSDeliveryPlanCtrl extends Controller
         $delivery_info = array();
 
         // 根据订单分类
-        $mdp_by_order = $milkman_delivery_plans->groupBy(function ($sort){
-            return $sort->order_id;
-        });
+        $mdp_by_order = $milkman_delivery_plans->sortBy(function ($sort) {
+                return $sort->orderDelivery->address;
+            })
+            ->groupBy(function ($sort){
+                return $sort->order_id;
+            });
 
         foreach ($mdp_by_order as $r=>$by_order_id){
             // 获取订单信息
@@ -1137,8 +1155,10 @@ class DSDeliveryPlanCtrl extends Controller
             $orderData['delivery_type'] = $delivery_type;
             $orderData['milkbox_install'] = $milkboxinstall;
 
+            //
             // 添加到主数组
-            array_push($delivery_info, $orderData);
+            //
+            $this->addToDeliveryInfoWithSort($delivery_info, $orderData);
         }
 
         // 添加系统日志
@@ -1159,6 +1179,43 @@ class DSDeliveryPlanCtrl extends Controller
             'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
             'is_todayrefund'            =>$this->isDidReport($current_milkman, $deliver_date_str)
         ]);
+    }
+
+    /**
+     * 添加到主配送数组
+     * @param $delivery_info
+     * @param $orderData
+     */
+    public function addToDeliveryInfoWithSort(&$delivery_info, $orderData) {
+        //
+        // 添加到主数组
+        //
+        $nIndex = 0;
+        for ($i = count($delivery_info) - 1; $i >= 0; $i--) {
+            $di = $delivery_info[$i];
+
+            // 只考虑相同的街道
+            if ($di->street_id != $orderData->street_id) {
+                break;
+            }
+
+            // 决定该对象的排序
+            if ($di->getDeliverAddressOrder() < $orderData->getDeliverAddressOrder()) {
+                break;
+            }
+            else {
+                $nIndex = $i;
+            }
+        }
+
+        // 根据排序添加
+        if ($nIndex > 0) {
+            $aryInsert = array($orderData);
+            array_splice($delivery_info, $nIndex, 0, $aryInsert);
+        }
+        else {
+            array_push($delivery_info, $orderData);
+        }
     }
 
     /**
