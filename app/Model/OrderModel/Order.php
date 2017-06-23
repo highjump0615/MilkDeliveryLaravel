@@ -17,6 +17,7 @@ use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\BasicModel\Address;
 use DateTime;
 use DateTimeZone;
+use League\Flysystem\Exception;
 
 class Order extends Model
 {
@@ -570,47 +571,34 @@ class Order extends Model
             return "";
     }
 
+    /**
+     * 获取配送地址街道id
+     * @return int
+     */
     public function getStreetIdAttribute()
     {
-        $district_id = $this->district_id;
+        $nId = 0;
 
-        $sa = multiexplode(' ', $this->address);
-        if(array_key_exists(3, $sa))
-            $street = $sa[3];
-        else
-            $street = "";
+        if (!empty($this->deliveryArea)) {
+            $nId = $this->deliveryArea->village->parent->id;
+        }
 
-        if(!$street)
-            return 0;
-
-        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->first();
-
-        if($street_m)
-            return $street_m->id;
-        else
-            return 0;
+        return $nId;
     }
 
+    /**
+     * 获取配送地址小区id
+     * @return int
+     */
     public function getXiaoquIdAttribute()
     {
-        $parent_id = $this->street_id;
+        $nId = 0;
 
-        $sa = multiexplode(' ', $this->address);
+        if (!empty($this->deliveryArea)) {
+            $nId = $this->deliveryArea->village->id;
+        }
 
-        if(array_key_exists(4, $sa))
-            $xq = $sa[4];
-        else
-            $xq = "";
-
-
-        if(!$xq)
-            return 0;
-
-        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->first();
-        if($xq_m)
-            return $xq_m->id;
-        else
-            return 0;
+        return $nId;
     }
 
 
@@ -696,6 +684,14 @@ class Order extends Model
     public function checker()
     {
         return $this->belongsTo('App\Model\OrderModel\OrderCheckers', 'order_checker_id');
+    }
+
+    /**
+     * 获取DSDeliveryArea
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryArea() {
+        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id');
     }
 
     /**
@@ -937,5 +933,19 @@ class Order extends Model
         if ($needSave) {
             $this->save();
         }
+    }
+
+    /**
+     * 获取配送员对该地址的配送顺序
+     * @return int
+     */
+    public function getDeliverAddressOrder() {
+        $nOrder = 9999;
+
+        if (!empty($this->deliveryArea)) {
+            $nOrder = $this->deliveryArea->milkmanDeliveryArea->order;
+        }
+
+        return $nOrder;
     }
 }
