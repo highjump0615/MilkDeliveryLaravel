@@ -778,10 +778,9 @@ class DSDeliveryPlanCtrl extends Controller
      * @return array
      */
     public function MilkmanProductInfo($milkman_id){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+        $current_station_id = $this->getCurrentStationId();
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $deliver_date_str = $currentDate->format('Y-m-d');
+        $deliver_date_str = getCurDateString();
 
         $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
             ->where('deliver_at',$deliver_date_str)

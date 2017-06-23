@@ -139,15 +139,17 @@ class OrderProduct extends Model
             return "";
     }
 
+    /**
+     * 获取已配送的数量
+     * @return int
+     */
     public function getFinishedCountAttribute()
     {
-        $order_plans = MilkManDeliveryPlan::where('order_product_id', $this->id)->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
-        $done = 0;
-        foreach($order_plans as $order_plan)
-        {
-            $done += $order_plan->delivered_count;
-        }
-        return $done;
+        $nCount = MilkManDeliveryPlan::where('order_product_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->sum('delivered_count');
+
+        return $nCount;
     }
 
     public function getRemainCountAttribute()
