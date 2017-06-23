@@ -700,6 +700,7 @@ class OrderCtrl extends Controller
                                       $address,
                                       $order_property_id,
                                       $milkman_id,
+                                      $deliveryarea_id,
                                       $delivery_station_id,
                                       $order_checker_id,
                                       $receipt_number,
@@ -839,6 +840,11 @@ class OrderCtrl extends Controller
 
         if (!empty($station_id)) {
             $order->station_id = $station_id;
+        }
+
+        // 配送地区id
+        if (!empty($deliveryarea_id)) {
+            $order->deliveryarea_id = $deliveryarea_id;
         }
 
         $order->receipt_number = $receipt_number;
@@ -1022,6 +1028,7 @@ class OrderCtrl extends Controller
 
         //station info
         $milkman_id = $request->input('milkman_id');
+        $deliveryarea_id = $request->input('deliveryarea_id');
         $delivery_station_id = $request->input('station');
 
         if (!$milkman_id) {
@@ -1060,6 +1067,7 @@ class OrderCtrl extends Controller
             $address,
             $order_property_id,
             $milkman_id,
+            $deliveryarea_id,
             $delivery_station_id,
             $order_checker_id,
             $receipt_number,
@@ -1376,15 +1384,11 @@ class OrderCtrl extends Controller
 
         // 设置客户信息
         $customer = $this->getCustomer($phone, $addr, $this->factory->id);
-
-        foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-            $station = DeliveryStation::find($delivery_station_id);
-
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $milkman_id;
-        }
-
+        $customer->station_id = $station_milkman[0];
+        $customer->milkman_id = $station_milkman[1];
         $customer->name = $name;
+
+        $station = DeliveryStation::find($station_milkman[0]);
 
         // 新建的客户信息需要保存
         if (empty($customer->id)) {
@@ -1392,13 +1396,14 @@ class OrderCtrl extends Controller
         }
 
         return response()->json([
-            'status'        => 'success',
-            'customer_id'   => $customer->id,
-            'station_name'  => $station->name,
-            'station_id'    => $station->id,
-            'milkman_id'    => $customer->milkman_id,
-            'remain_amount' => $customer->remain_amount,
-            'date_start'    => $station->getChangeStartDate()
+            'status'            => 'success',
+            'customer_id'       => $customer->id,
+            'station_name'      => $station->name,
+            'station_id'        => $station->id,
+            'milkman_id'        => $customer->milkman_id,
+            'deliveryarea_id'   => $station_milkman[2],
+            'remain_amount'     => $customer->remain_amount,
+            'date_start'        => $station->getChangeStartDate()
         ]);
     }
 
@@ -2667,9 +2672,9 @@ class OrderCtrl extends Controller
             $station_ids[] = $fstation->id;
         }
 
-        $delivery_areas = DSDeliveryArea::where('address', 'like', $address . '%')->get();
+        $delivery_area = DSDeliveryArea::where('address', 'like', $address . '%')->first();
 
-        if (count($delivery_areas) == 0) {
+        if ($delivery_area == null) {
             //客户并不住在可以递送区域
             return OrderCtrl::NOT_EXIST_DELIVERY_AREA;
         }
@@ -2677,26 +2682,22 @@ class OrderCtrl extends Controller
         $result = [];
 
         $delivery_station_count = 0;
-        foreach ($delivery_areas as $delivery_area) {
 
-            $delivery_station_id = $delivery_area->station_id;
+        $delivery_station_id = $delivery_area->station_id;
 
-            $delivery_station = DeliveryStation::find($delivery_station_id);
+        $delivery_station = DeliveryStation::find($delivery_station_id);
 
-            if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
+        if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
 
-                $delivery_station_count++;
+            $delivery_station_count++;
 
-                // 保存奶站信息
-                $station = $delivery_station;
+            //get this station's milkman that supports this address
+            $milkman = $delivery_station->get_milkman_of_address($address);
 
-                //get this station's milkman that supports this address
-                $milkman = $delivery_station->get_milkman_of_address($address);
-
-                if ($milkman) {
-                    $milkman_id = $milkman->id;
-                    $result[$delivery_station_id] = $milkman_id;
-                }
+            if ($milkman) {
+                $result[] = $delivery_station_id;
+                $result[] = $milkman->id;
+                $result[] = $delivery_area->id;
             }
         }
 

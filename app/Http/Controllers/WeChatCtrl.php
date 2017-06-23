@@ -840,6 +840,7 @@ class WeChatCtrl extends Controller
                     null,
                     null,
                     null,
+                    null,
                     $total_amount,
                     null,
                     null,
@@ -2054,10 +2055,8 @@ class WeChatCtrl extends Controller
         $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factory_id);
 
-        foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $milkman_id;
-        }
+        $customer->station_id = $station_milkman[0];
+        $customer->milkman_id = $station_milkman[1];
 
         $customer->name = $addr_obj->name;
         $customer->save();
@@ -2111,6 +2110,7 @@ class WeChatCtrl extends Controller
             $strAddress,
             OrderProperty::ORDER_PROPERTY_NEW_ORDER,
             $customer->milkman_id,
+            $station_milkman[2],
             $station_id,
             $order_checker->id,
             null,

@@ -246,7 +246,9 @@ $('#customer_form').on("submit", function (e) {
 
                 //init station list
                 $('#station_list').empty();
-                var station_data = '<option data-milkman="' + data.milkman_id + '" value="' + data.station_id + '">' + data.station_name + '</option>';
+                var station_data = '<option data-milkman="' + data.milkman_id + '" data-deliveryarea="' + data.deliveryarea_id + '" value="' + data.station_id + '">' +
+                    data.station_name +
+                    '</option>';
                 $('#station_list').append(station_data);
 
                 // 重新初始化起送日期
@@ -402,10 +404,12 @@ $('#order_form').on('submit', function (e) {
     }
 
     var milkman_id = $('#station_list option:selected').data('milkman');
+    var deliveryarea_id = $('#station_list option:selected').data('deliveryarea');
 
     $('#order_form button[type="submit"]').prop('disabled', true);
 
     sendData.push({'name': 'milkman_id', 'value': milkman_id});
+    sendData.push({'name': 'deliveryarea_id', 'value': deliveryarea_id});
 
     //Customer Info
     customer_data = $('#customer_form').serializeArray();

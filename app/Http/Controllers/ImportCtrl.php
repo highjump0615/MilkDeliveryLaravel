@@ -15,6 +15,7 @@ use App\Model\BasicModel\DistrictData;
 use App\Model\BasicModel\PaymentType;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\DeliveryModel\DeliveryStation;
+use App\Model\DeliveryModel\DSDeliveryArea;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\Factory;
@@ -359,10 +360,8 @@ class ImportCtrl extends Controller
             //
             $customer = $orderCtrl->getCustomer($strPhone, $strFullAddr, $this->mnFactoryId);
 
-            foreach ($milkman as $delivery_station_id => $milkman_id) {
-                $customer->station_id = $delivery_station_id;
-                $customer->milkman_id = $milkman_id;
-            }
+            $customer->station_id = $milkman[0];
+            $customer->milkman_id = $milkman[1];
 
             $customer->name = $strName;
 
@@ -512,6 +511,7 @@ class ImportCtrl extends Controller
             $order->customer_id = $customer->id;
             $order->phone = $strPhone;
             $order->address = $strFullAddr;
+            $order->deliveryarea_id = $milkman[2];
             $order->order_property_id = $nProperty;
 
             $order->station_id = $station->id;
@@ -953,5 +953,30 @@ class ImportCtrl extends Controller
         echo '<br>----------------------<br>';
 
         return $bResult;
+    }
+
+    /**
+     * order里添加deliveryarea_id
+     */
+    public function updateOrder(Request $request) {
+        $orders = Order::all();
+
+        foreach ($orders as $order) {
+
+            echo $order->id . " => ";
+
+            $deliveryArea = DSDeliveryArea::where('station_id', $order->delivery_station_id)
+                ->where('address', $order->main_address)
+                ->first();
+
+            if (!empty($deliveryArea)) {
+                echo $deliveryArea->id;
+
+                $order->deliveryarea_id = $deliveryArea->id;
+                $order->save();
+            }
+
+            echo "<br />";
+        }
     }
 }
