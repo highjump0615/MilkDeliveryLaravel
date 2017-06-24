@@ -338,9 +338,14 @@
                             <hr>
                             <label class="align-center  btn-block" style="margin-top: 30px;">选择开启的日期</label>
                             <div class="input-group date single_date">
-                                <input required type="text" class="form-control" id="start_at"
-                                       name="start_at"><span
-                                        class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                <input required
+                                       type="text"
+                                       class="form-control"
+                                       id="start_at"
+                                       name="start_at">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
                             </div>
                             <input type="hidden" name="order_id" id="restart_order_id" value=""/>
                         </div>

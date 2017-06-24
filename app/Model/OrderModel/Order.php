@@ -266,9 +266,9 @@ class Order extends Model
     {
         // 只考虑没过期的
         $dateCurrent = date(getCurDateString());
-        $dateRestart = date(getCurDateString());
+        $dateRestart = date($this->restart_at);
 
-        if ($dateCurrent > $dateRestart) {
+        if ($dateCurrent >= $dateRestart) {
             return false;
         }
 
@@ -755,8 +755,9 @@ class Order extends Model
     {
         $milkman = null;
 
-        $mdp = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->latest()
+        $mdp = $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryPlan')
+            ->withTrashed()
+            ->orderby('deliver_at', 'desc')
             ->first();
 
         if (!empty($mdp)) {
