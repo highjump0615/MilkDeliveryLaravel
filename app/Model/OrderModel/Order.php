@@ -953,7 +953,9 @@ class Order extends Model
         $nOrder = 9999;
 
         if (!empty($this->deliveryArea)) {
-            $nOrder = $this->deliveryArea->milkmanDeliveryArea->order;
+            if (!empty($this->deliveryArea->milkmanDeliveryArea)) {
+                $nOrder = $this->deliveryArea->milkmanDeliveryArea->order;
+            }
         }
 
         return $nOrder;
