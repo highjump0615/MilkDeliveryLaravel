@@ -238,7 +238,7 @@ class DeliveryStation extends Authenticatable
         {
             $milkman_id = $milkman->id;
             $area = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-                ->where('address', 'like', $address)
+                ->where('address', $address)
                 ->first();
 
             if ($area)

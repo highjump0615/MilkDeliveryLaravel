@@ -2648,7 +2648,7 @@ class OrderCtrl extends Controller
             $station_ids[] = $fstation->id;
         }
 
-        $delivery_area = DSDeliveryArea::where('address', 'like', $address . '%')->first();
+        $delivery_area = DSDeliveryArea::where('address', $address)->first();
 
         if ($delivery_area == null) {
             //客户并不住在可以递送区域
