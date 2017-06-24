@@ -345,12 +345,6 @@ class OrderCtrl extends Controller
 
             $result = $this->pauseOrder($start_date, $end_date, $order, false);
 
-            // 状态设置
-            if (strtotime($start_date) <= strtotime('today') && strtotime('today') <= strtotime($end_date)) {
-                $order->status = Order::ORDER_STOPPED_STATUS;
-                $order->save();
-            }
-
             return $result;
         }
     }
@@ -373,60 +367,42 @@ class OrderCtrl extends Controller
 
         $order_products = $order->order_products;
 
-        foreach ($order_products as $op) {
-            //
-            // 处理上次暂停的配送明细
-            //
-            $nCountPlus = 0;
-            if ($order->has_stopped) {
-                $dateStopStart = $order->stop_at;
-
-                // 开始订单时，日期范围是不同的
-                if ($forRestart) {
-                    $dateStopStart = $start_date;
-                }
-
-                $qb = MilkManDeliveryPlan::onlyTrashed()
-                    ->where('order_product_id', $op->id)
-                    ->where('deliver_at', '>=', $dateStopStart)
-                    ->where('deliver_at', '<=', $order->order_stop_end_date);
-
-                // 计算多余量
-                $nCountPlus = $qb->sum('changed_plan_count');
-
-                // 恢复这期间的配送明细
-                $qb->restore();
-            }
-        }
+        $order->stop_at = $start_date;
+        $order->restart_at = $end_date;
 
         // 暂停时间设置
-        $strRestartDate = $end_date;
         if (!$forRestart) {
-            $last = new DateTime($end_date);
-            $last_date = $last->modify('+1 day');
-            $strRestartDate = $last_date->format('Y-m-d');
+            $order->restart_at = getNextDateString($end_date);
         }
-
-        $order->stop_at = $start_date;
-        $order->restart_at = $strRestartDate;
         $order->save();
 
         foreach ($order_products as $op) {
+            // 获取该奶品的最后配送明细
+            $dpLast = $op->getLastDeliveryPlan();
+            $dateLast = new DateTime($dpLast->deliver_at);
+
+            // 如果暂停开始日期超出最后日期，忽略掉
+            if ($start > $dateLast) {
+                continue;
+            }
+
             //
-            // 重新规划配送明细
+            // 获取数量
             //
+            $nCountExtra = 0;
+
+            // 当天开启的就直接
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
-                ->where('deliver_at', '>=', $start_date)
-                ->where('deliver_at', '<', $strRestartDate);
+                ->where('deliver_at', '>=', $start);
 
             // 计算多余量
             $nCountExtra = $qb->sum('changed_plan_count');
 
-            // 软删除这期间的配送明细
+            // 删除暂停范围的配送明细
             $qb->delete();
 
             // 调整配送明细
-            $op->processExtraCount(null, $nCountExtra - $nCountPlus);
+            $op->processExtraCount(null, $nCountExtra);
         }
 
         return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
