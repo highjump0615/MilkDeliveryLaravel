@@ -753,7 +753,17 @@ class Order extends Model
      */
     public function getMilkmanAttribute()
     {
-        return $this->milkmanDeliveryPlan->first()->milkman;
+        $milkman = null;
+
+        $mdp = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->latest()
+            ->first();
+
+        if (!empty($mdp)) {
+            $milkman = $mdp->milkman;
+        }
+
+        return $milkman;
     }
 
     /**
