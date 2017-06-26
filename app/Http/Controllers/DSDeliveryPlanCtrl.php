@@ -1141,6 +1141,7 @@ class DSDeliveryPlanCtrl extends Controller
                 $products[$pro]['delivered_count'] = $dp->delivered_count;
                 $products[$pro]['report'] = $dp->report;
                 $products[$pro]['comment'] = $dp->comment;
+                $products[$pro]['status'] = $dp->status;
 
                 if($dp->plan_count != $dp->changed_plan_count)
                     $is_changed = 1;
@@ -1278,6 +1279,8 @@ class DSDeliveryPlanCtrl extends Controller
 
         $deliver_date_str = getCurDateString();
 
+        $deliveryPlans = [];
+
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
             $current_milkman_id = $ti['milkman_id'];
@@ -1316,44 +1319,25 @@ class DSDeliveryPlanCtrl extends Controller
             $milkmandeliverys->save();
 
             if($milkmandeliverys->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-//                $total_order_counts = 0;
-//                $delivered_counts = 0;
-//                $order_products = OrderProduct::where('order_id',$order_id)->get();
-//                foreach ($order_products as $op){
-//                    $total_order_counts += $op->total_count;
-//                }
-//                $delivered_products_count = MilkManDeliveryPlan::where('order_id',$order_id)->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
-//                foreach ($delivered_products_count as $dpc){
-//                    $delivered_counts += $dpc->delivered_count;
-//                }
-//                if($delivered_count == $total_order_counts){
-//                    $finished_order = Order::find($order_id);
-//                    $finished_order->status = Order::ORDER_FINISHED_STATUS;
-//                    $finished_order->save();
-//                }
 
                 // 计算订单剩余金额
-                $order = Order::find($order_id);
+                $order = $milkmandeliverys->orderDelivery;
                 $order->remaining_amount = $order->remaining_amount - $milkmandeliverys->delivered_count * $milkmandeliverys->product_price;
                 $order->save();
 
                 // 计算剩下数量
-                $total_order_counts = count(
-                    MilkManDeliveryPlan::where('order_id',$order_id)
+                $total_order_counts = MilkManDeliveryPlan::where('order_id',$order_id)
                         ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
-                        ->get()
-                );
+                        ->count();
 
                 // 如果没有剩下的，订单变成已完成
                 if($total_order_counts == 0){
-                    $finished_order = Order::find($order_id);
-                    $finished_order->status = Order::ORDER_FINISHED_STATUS;
-                    $finished_order->save();
+                    $order->status = Order::ORDER_FINISHED_STATUS;
+                    $order->save();
 
                     // 订单余额到客户账户里加回去
-                    $customer = Customer::find($finished_order->customer_id);
-                    $customer->remain_amount = $customer->remain_amount + $finished_order->remaining_amount;
-                    $customer->save();
+                    $order->customer->remain_amount += $order->remaining_amount;
+                    $order->customer->save();
                 }
 
                 // 如果当天没有配送完，顺延处理
@@ -1364,12 +1348,16 @@ class DSDeliveryPlanCtrl extends Controller
                 //
                 // 更新库存数据
                 //
-                $deliveryPlan = DSDeliveryPlan::getDeliveryPlanGenerated($nStationId, $milkmandeliverys->getProductId(), false, $deliver_date_str);
-                if ($deliveryPlan) {
-                    $deliveryPlan->remain -= $delivered_count;
-                    $deliveryPlan->save();
+                if (!isset($deliveryPlans[$milkmandeliverys->getProductId()])) {
+                    $deliveryPlans[$milkmandeliverys->getProductId()] = DSDeliveryPlan::getDeliveryPlanGenerated($nStationId, $milkmandeliverys->getProductId(), false, $deliver_date_str);
                 }
+
+                $deliveryPlans[$milkmandeliverys->getProductId()]->remain -= $delivered_count;
             }
+        }
+
+        foreach ($deliveryPlans as $dp) {
+            $dp->save();
         }
 
         //
