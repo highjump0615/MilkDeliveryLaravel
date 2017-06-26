@@ -247,7 +247,7 @@
             </div>
 
             <div class="ibox-content">
-                <table class="footable table table-bordered" data-page-size="10">
+                <table class="table table-bordered">
                     <thead>
                     <tr>
                         <th data-sort-ignore="true">序号</th>
@@ -262,14 +262,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @if(isset($grouped_plans_per_product))
                         <?php $i = 0;?>
                         @foreach($grouped_plans_per_product as $gpp)
-                            <tr data-planid="{{$gpp['plan_id']}}">
-                                <td>{{$i+1}}</td>
-                                <td>{{$gpp['time']}}</td>
-                                <td>{{$gpp['product_name']}}</td>
-                                @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
+                            <tr data-planid="{{$gpp->id}}">
+                                <td>{{$i + $grouped_plans_per_product->firstItem()}}</td>
+                                <td>{{$gpp->deliver_at}}</td>
+                                <td>{{$gpp->getProductSimpleName()}}</td>
+                                @if ($gpp->status == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
                                     <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
                                 @else
                                     <td>
@@ -278,12 +277,12 @@
                                                value="{{$gpp['count']}}"/>(余{{$gpp['remain']}})
                                     </td>
                                 @endif
-                                <td>{{$gpp['status_name']}}</td>
+                                <td>{{$gpp->getStatusName()}}</td>
 
                                 <!-- 正常状态才允许单日修改 -->
                                 @if ($order->isAvailable())
                                 <td>
-                                    @if($gpp['can_edit'])
+                                    @if($gpp->isEditAvailable())
                                         <button type="button" class="btn btn-success xiugai_plan_bt" disabled>修改
                                         </button>
                                     @endif
@@ -292,16 +291,11 @@
                             </tr>
                             <?php $i++; ?>
                         @endforeach
-                    @endif
                     </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colspan="100%">
-                            <ul class="pagination pull-right"></ul>
-                        </td>
-                    </tr>
-                    </tfoot>
                 </table>
+
+                <ul id="pagination_data" class="pagination-sm pull-right"></ul>
+
             </div>
         </div>
 
@@ -388,7 +382,17 @@
         var stop_from = new Date("{{$order->stop_at}}");
         var stop_to = new Date("{{$order->order_stop_end_date}}");
 
+        // 全局变量
+        var gnTotalPage = '{{$grouped_plans_per_product->lastPage()}}';
+        var gnCurrentPage = '{{$grouped_plans_per_product->currentPage()}}';
+
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
+
     </script>
+
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
     <script src="<?=asset('js/pages/gongchang/order_xiangqing.js') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>

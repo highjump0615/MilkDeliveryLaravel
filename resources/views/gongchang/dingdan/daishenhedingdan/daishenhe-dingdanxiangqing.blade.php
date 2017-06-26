@@ -197,7 +197,7 @@
                 <label class="col-sm-10">配送明细</label>
             </div>
             <div class="ibox-content">
-                <table class="footable table table-bordered" data-page-size="10">
+                <table class="table table-bordered">
                     <thead>
                     <tr>
                         <th data-sort-ignore="true">序号</th>
@@ -211,34 +211,28 @@
                     @if(isset($grouped_plans_per_product))
                         <?php $i = 0;?>
                         @foreach($grouped_plans_per_product as $gpp)
-                            @if(! ( date($gpp['time']) >= date($order->stop_at)  &&  date($gpp['time'])<=date($order->order_stop_end_date)) )
-                                <tr data-planid="{{$gpp['plan_id']}}">
-                                    <td>{{$i+1}}</td>
-                                    <td>{{$gpp['time']}}</td>
-                                    <td>{{$gpp['product_name']}}</td>
-                                    @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
-                                        <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
-                                    @else
-                                        <td>
-                                            <label> {{$gpp['count']}}(余{{$gpp['remain']}})</label>
-                                        </td>
-                                    @endif
-                                    <td>{{$gpp['status_name']}}</td>
-                                </tr>
-                                <?php $i++; ?>
-                            @endif
+                            <tr data-planid="{{$gpp->id}}">
+                                <td>{{$i + $grouped_plans_per_product->firstItem()}}</td>
+                                <td>{{$gpp->deliver_at}}</td>
+                                <td>{{$gpp->getProductSimpleName()}}</td>
+                                @if($gpp['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
+                                    <td>{{$gpp['count']}} (余 {{$gpp['remain']}}）</td>
+                                @else
+                                    <td>
+                                        <label> {{$gpp['count']}}(余{{$gpp['remain']}})</label>
+                                    </td>
+                                @endif
+                                <td>{{$gpp->getStatusName()}}</td>
+                            </tr>
+                            <?php $i++; ?>
                         @endforeach
                     @endif
 
                     </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colspan="100%">
-                            <ul class="pagination pull-right"></ul>
-                        </td>
-                    </tr>
-                    </tfoot>
                 </table>
+
+                <ul id="pagination_data" class="pagination-sm pull-right"></ul>
+
             </div>
         </div>
     </div>
@@ -251,115 +245,19 @@
 @section('script')
     <script type="text/javascript">
 
-        // 解析当前服务器的时间 (2014-08-12 09:25:24)
-        var gDateToday = new Date(s_timeCurrent);
+        // 全局变量
+        var gnTotalPage = '{{$grouped_plans_per_product->lastPage()}}';
+        var gnCurrentPage = '{{$grouped_plans_per_product->currentPage()}}';
 
-        $('#pass_order').click(function () {
-            var pass_bt = $(this);
-            var no_pass_bt = $('#no_pass_order')
-            var order_id = $(this).data("orderid");
-            var sendData = {'order_id_to_pass': order_id};
-            $.ajax({
-                type: "GET",
-                url: API_URL + "gongchang/daishenhedingdan/pass_order",
-                data: sendData,
-                success: function (data) {
-                    console.log(data);
-                    if (data.status == 'success') {
-                        if (data.message) {
-                            show_success_msg(data.message);
-                        }
-                        window.location = SITE_URL + "gongchang/dingdan/daishenhedingdan";
-                    } else {
-                        if (data.message) {
-                            show_warning_msg(data.message);
-                        }
-                    }
-                },
-                error: function (data) {
-                    console.log(data);
-                }
-            })
-        });
-
-        $('#no_pass_order').click(function () {
-            var no_pass_bt = $(this);
-            var pass_bt = $('#pass_order')
-
-            var order_id = $(this).data("orderid");
-            var sendData = {'order_id_to_not_pass': order_id};
-            $.ajax({
-                type: "GET",
-                url: API_URL + "gongchang/daishenhedingdan/no_pass_order",
-                data: sendData,
-                success: function (data) {
-                    if (data.status == 'success') {
-                        if (data.message) {
-                            show_success_msg(data.message);
-                        }
-                        window.location = SITE_URL + "gongchang/dingdan/daishenhedingdan";
-                    } else {
-                        if (data.message) {
-                            show_warning_msg(data.message);
-                        }
-                    }
-                },
-                error: function (data) {
-                    //console.log(data);
-                }
-            })
-        });
-
-        $('#change_sub_addr').click(function () {
-            $('#sub_addr').prop('disabled', false);
-            $(this).hide();
-            $('#save_sub_addr').show();
-        });
-
-        $('#save_sub_addr').click(function () {
-
-            var new_sub_addr = $('#sub_addr').val().trim();
-            var origin_sub_addr = $('#sub_addr').data('origin');
-
-            var order_id = $('#pass_order').data('orderid');
-
-            if (new_sub_addr != origin_sub_addr) {
-                //submit new name
-
-                $.ajax({
-                    type: "POST",
-                    url: API_URL + 'gongchang/daishenhedingdan/change_sub_addr',
-                    data: {
-                        'new_sub_addr': new_sub_addr,
-                        'order_id': order_id,
-                    },
-                    success: function (data) {
-
-                        if (data.status == "success") {
-                            $('#save_sub_addr').hide();
-                            $('#change_sub_addr').show();
-                            $('#sub_addr').prop('disabled', true);
-                        } else {
-                            if (data.message) {
-                                show_warning_msg(data.message);
-                                $('#sub_addr').val(origin_sub_addr);
-                                $('#sub_addr').prop('disabled', true);
-                            }
-                        }
-                    },
-                    error: function (data) {
-                        console.log(data);
-                    }
-                })
-
-            } else {
-                $(this).hide();
-                $('#change_sub_addr').show();
-            }
-        });
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
 
     </script>
 
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
+
+    <script src="<?=asset('js/pages/gongchang/order_pending.js') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
 
 @endsection
