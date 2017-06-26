@@ -90,7 +90,6 @@ class Order extends Model
         'sub_address',
         'main_address',
         'total_count',
-        'grouped_plans_per_product',
         'order_stop_end_date',
     ];
     
@@ -410,98 +409,6 @@ class Order extends Model
         $dps = MilkManDeliveryPlan::where('order_id', $this->id)->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)->orderBy('deliver_at')->get();
         return $dps;
     }
-
-    function array_sort($array, $on, $order=SORT_ASC)
-    {
-        $new_array = array();
-        $sortable_array = array();
-
-        if (count($array) > 0) {
-            foreach ($array as $k => $v) {
-                if (is_array($v)) {
-                    foreach ($v as $k2 => $v2) {
-                        if ($k2 == $on) {
-                            $sortable_array[$k] = $v2;
-                        }
-                    }
-                } else {
-                    $sortable_array[$k] = $v;
-                }
-            }
-
-            switch ($order) {
-                case SORT_ASC:
-                    asort($sortable_array);
-                    break;
-                case SORT_DESC:
-                    arsort($sortable_array);
-                    break;
-            }
-
-            foreach ($sortable_array as $k => $v) {
-                $new_array[$k] = $array[$k];
-            }
-        }
-
-        return $new_array;
-    }
-
-
-    public function getGroupedPlansPerProductAttribute()
-    {
-        $result_group=[];
-
-        //get order products
-        $order_products = $this->order_products_all;
-
-        foreach ($order_products as $op)
-        {
-            $order_product_id = $op->id;
-            $remain_count = $op->total_count;
-
-            // 配送明细只针对订单的配送
-            $op_dps = MilkManDeliveryPlan::where('order_id', $this->id)
-                ->where('order_product_id', $order_product_id)
-                ->where(function($query) {
-                    $query->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER);
-                    $query->orwhere('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL);
-                })
-                // 不显示订单修改导致取消的明细
-                ->where(function($query) {
-                    $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
-                })
-                ->orderBy('deliver_at')
-                ->get();
-
-            foreach($op_dps as $opdp)
-            {
-                if($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-                    $count = $opdp->delivered_count;
-                else
-                    $count = $opdp->changed_plan_count;
-
-                $remain_count -= $count;
-
-                $result_group[] = [
-                    'time'          =>$opdp->deliver_at,
-                    'plan_id'       =>$opdp->id,
-                    'product_name'  =>$opdp->getProductSimpleName(),
-                    'count'         => $count,
-                    'remain'        =>$remain_count,
-                    'status'        =>$opdp->status,
-                    'can_edit'      =>$opdp->isEditAvailable(),
-                    'status_name'   =>$opdp->getStatusName(),
-                ];
-            }
-        }
-
-        $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
-
-        return $new_array;
-//        return $result_group;
-    }
-
 
     public function getProvinceIdAttribute()
     {

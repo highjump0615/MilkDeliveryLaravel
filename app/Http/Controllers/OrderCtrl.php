@@ -1151,18 +1151,70 @@ class OrderCtrl extends Controller
         }
     }
 
-    //show detial of every order, especially after saved order
-    function show_detail_order_in_gongchang($order_id)
+    /**
+     * 获取配送明细
+     * @return array
+     */
+    public function getOrderDeliveryPlan(Request $request, $orderId)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $result_group=[];
+
+        // 配送明细只针对订单的配送
+        $op_dps = MilkManDeliveryPlan::where('order_id', $orderId)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            // 不显示订单修改导致取消的明细
+            ->where(function($query) {
+                $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+                $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+            })
+            ->orderBy('deliver_at')
+            ->paginate();
+
+        $remainCounts = [];
+
+        foreach($op_dps as &$opdp)
+        {
+            // 查看剩余数量
+            if (!isset($remainCounts[strval($opdp->order_product_id)])) {
+                // 获取剩余数量
+                $nCountDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
+                    ->where('deliver_at', '<', $opdp->deliver_at)
+                    ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                    ->sum('delivered_count');
+
+                $nCountNotDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
+                    ->where('deliver_at', '<', $opdp->deliver_at)
+                    ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                    ->sum('changed_plan_count');
+
+                $remainCounts[strval($opdp->order_product_id)] = $opdp->orderProduct->total_count - ($nCountDelivered + $nCountNotDelivered);
+            }
+
+            if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                $count = $opdp->delivered_count;
+            else
+                $count = $opdp->changed_plan_count;
+
+            $remainCounts[strval($opdp->order_product_id)] -= $count;
+
+            $opdp['count'] = $count;
+            $opdp['remain'] = $remainCounts[strval($opdp->order_product_id)];
+        }
+
+        return $op_dps;
+    }
+
+    //show detial of every order, especially after saved order
+    function show_detail_order_in_gongchang(Request $request, $order_id)
+    {
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         //check this order is current factory's order
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -1185,7 +1237,7 @@ class OrderCtrl extends Controller
     }
 
     //show detail of order in naizhan
-    function show_detail_order_in_naizhan($order_id)
+    function show_detail_order_in_naizhan(Request $request, $order_id)
     {
         $station = DeliveryStation::find($this->getCurrentStationId());
         $factory = Factory::find($this->getCurrentFactoryId(false));
@@ -1194,7 +1246,7 @@ class OrderCtrl extends Controller
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'dingdan';
         $parent = 'dingdan';
@@ -2487,7 +2539,7 @@ class OrderCtrl extends Controller
     }
 
     //show waiting dingdan in detail in gongchang
-    function show_detail_waiting_dingdan_in_gongchang($order_id)
+    function show_detail_waiting_dingdan_in_gongchang(Request $request, $order_id)
     {
         $order = Order::find($order_id);
         $order_products = $order->order_products;
@@ -2495,7 +2547,7 @@ class OrderCtrl extends Controller
         // 解析收货地址
         $order->resolveAddress();
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'daishenhedingdan';
         $parent = 'dingdan';
