@@ -219,21 +219,25 @@ class Order extends Model
         return $main_addr;
     }
 
+    /**
+     * 计算订单余额
+     * @return mixed
+     */
     public function getRemainOrderMoneyAttribute()
     {
-        $order_products = $this->order_products;
+        $dFinished = 0;
 
-        $finished_total = 0;
+        $plans = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->selectRaw('sum(delivered_count * product_price) as cost')
+            ->first();
 
-        if($order_products)
-        {
-            foreach($order_products as $op)
-            {
-                $finished_total += $op->finished_money_amount;
-            }
+        if (!empty($plans->cost)) {
+            $dFinished = $plans->cost;
         }
 
-        $remain = $this->total_amount - $finished_total;
+        $remain = $this->total_amount - $dFinished;
+
         return $remain;
     }
 
