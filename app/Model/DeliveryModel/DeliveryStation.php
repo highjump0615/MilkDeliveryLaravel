@@ -142,7 +142,7 @@ class DeliveryStation extends Authenticatable
                 });
             })
             ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->get();
+            ->first();
 
         // 返回数据
         if (!empty($plans->count)) {
@@ -177,7 +177,7 @@ class DeliveryStation extends Authenticatable
                     $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
                 });
             })->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->get();
+            ->first();
 
         // 返回数据
         if (!empty($plans->count)) {
@@ -207,7 +207,7 @@ class DeliveryStation extends Authenticatable
             ->where('deliver_at', '<=', $last_m)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->get();
+            ->first();
 
         // 返回数据
         if (!empty($plans->count)) {

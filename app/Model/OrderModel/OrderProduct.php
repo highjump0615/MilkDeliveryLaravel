@@ -42,7 +42,6 @@ class OrderProduct extends Model
         'finished_count',
         'remain_count',
         'remain_amount',
-        'finished_money_amount',
         'delivery_plans_sent_to_production_plan',
         'start_at_after_delivered'
     ];
@@ -71,25 +70,6 @@ class OrderProduct extends Model
         $dps = MilkManDeliveryPlan::where('order_product_id', $this->id)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get();
         return $dps;
-    }
-
-    public function getFinishedMoneyAmountAttribute(){
-        //$this->total_amount;
-        $mdps = MilkManDeliveryPlan::where('order_id', $this->order_id)
-            ->where('order_product_id', $this->id)
-            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->get();
-        $finished_amount = 0;
-
-        if($mdps)
-        {
-            foreach($mdps as $mdp)
-            {
-                $finished_amount += $mdp->delivered_count*$mdp->product_price;
-            }
-        }
-
-        return $finished_amount;
     }
 
     public function product(){

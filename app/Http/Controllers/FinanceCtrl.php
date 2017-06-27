@@ -136,22 +136,22 @@ class FinanceCtrl extends Controller
      */
     private function getSummary(&$station) {
         $nCount = 0;
-        $nCost = 0;
+        $dCost = 0;
 
         // 期初余额
-        $station->getBottleCountBeforeThisTerm($nCount, $nCost);
+        $station->getBottleCountBeforeThisTerm($nCount, $dCost);
         $station['fin_before_count'] = $nCount;
-        $station['fin_before_cost'] = $nCost;
+        $station['fin_before_cost'] = round($dCost, 2);
 
         // 本期订单金额增加
-        $station->getBottleCountIncreasedThisTerm($nCount, $nCost);
+        $station->getBottleCountIncreasedThisTerm($nCount, $dCost);
         $station['fin_added_count'] = $nCount;
-        $station['fin_added_cost'] = $nCost;
+        $station['fin_added_cost'] = round($dCost, 2);
 
         // 本期完成订单余额
-        $station->getBottleDoneThisTerm($nCount, $nCost);
+        $station->getBottleDoneThisTerm($nCount, $dCost);
         $station['fin_done_count'] = $nCount;
-        $station['fin_done_cost'] = $nCost;
+        $station['fin_done_cost'] = round($dCost, 2);
 
         // 期末金额
         $station['fin_after_count'] = $station['fin_before_count'] + $station['fin_added_count'] - $station['fin_done_count'];
