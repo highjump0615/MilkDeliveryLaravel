@@ -1236,7 +1236,7 @@ class DSDeliveryPlanCtrl extends Controller
         $bottle_refunds->count = $count;
         $bottle_refunds->save();
 
-        return;
+        return Response::json(['status'=>"success"]);;
     }
 
     /**
