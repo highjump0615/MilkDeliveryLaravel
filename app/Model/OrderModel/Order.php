@@ -17,6 +17,7 @@ use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\BasicModel\Address;
 use DateTime;
 use DateTimeZone;
+use League\Flysystem\Exception;
 
 class Order extends Model
 {
@@ -89,7 +90,6 @@ class Order extends Model
         'sub_address',
         'main_address',
         'total_count',
-        'grouped_plans_per_product',
         'order_stop_end_date',
     ];
     
@@ -198,21 +198,46 @@ class Order extends Model
         return $main_addr;
     }
 
-    public function getRemainOrderMoneyAttribute()
-    {
-        $order_products = $this->order_products;
+    /**
+     * 获取小区和具体地址
+     * @return string
+     */
+    public function getAddressSmall() {
+        $main_addr = "";
+        $addr_list = explode(' ', $this->address);
 
-        $finished_total = 0;
-
-        if($order_products)
-        {
-            foreach($order_products as $op)
-            {
-                $finished_total += $op->finished_money_amount;
-            }
+        // 小区
+        if (!empty($addr_list[4])) {
+            $main_addr = $addr_list[4];
         }
 
-        $remain = $this->total_amount - $finished_total;
+        // 具体地址
+        if (!empty($addr_list[5])) {
+            $main_addr .= " " . $addr_list[5];
+        }
+
+        return $main_addr;
+    }
+
+    /**
+     * 计算订单余额
+     * @return mixed
+     */
+    public function getRemainOrderMoneyAttribute()
+    {
+        $dFinished = 0;
+
+        $plans = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->selectRaw('sum(delivered_count * product_price) as cost')
+            ->first();
+
+        if (!empty($plans->cost)) {
+            $dFinished = $plans->cost;
+        }
+
+        $remain = $this->total_amount - $dFinished;
+
         return $remain;
     }
 
@@ -244,9 +269,9 @@ class Order extends Model
     {
         // 只考虑没过期的
         $dateCurrent = date(getCurDateString());
-        $dateRestart = date(getCurDateString());
+        $dateRestart = date($this->restart_at);
 
-        if ($dateCurrent > $dateRestart) {
+        if ($dateCurrent >= $dateRestart) {
             return false;
         }
 
@@ -389,98 +414,6 @@ class Order extends Model
         return $dps;
     }
 
-    function array_sort($array, $on, $order=SORT_ASC)
-    {
-        $new_array = array();
-        $sortable_array = array();
-
-        if (count($array) > 0) {
-            foreach ($array as $k => $v) {
-                if (is_array($v)) {
-                    foreach ($v as $k2 => $v2) {
-                        if ($k2 == $on) {
-                            $sortable_array[$k] = $v2;
-                        }
-                    }
-                } else {
-                    $sortable_array[$k] = $v;
-                }
-            }
-
-            switch ($order) {
-                case SORT_ASC:
-                    asort($sortable_array);
-                    break;
-                case SORT_DESC:
-                    arsort($sortable_array);
-                    break;
-            }
-
-            foreach ($sortable_array as $k => $v) {
-                $new_array[$k] = $array[$k];
-            }
-        }
-
-        return $new_array;
-    }
-
-
-    public function getGroupedPlansPerProductAttribute()
-    {
-        $result_group=[];
-
-        //get order products
-        $order_products = $this->order_products_all;
-
-        foreach ($order_products as $op)
-        {
-            $order_product_id = $op->id;
-            $remain_count = $op->total_count;
-
-            // 配送明细只针对订单的配送
-            $op_dps = MilkManDeliveryPlan::where('order_id', $this->id)
-                ->where('order_product_id', $order_product_id)
-                ->where(function($query) {
-                    $query->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER);
-                    $query->orwhere('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_MILKBOXINSTALL);
-                })
-                // 不显示订单修改导致取消的明细
-                ->where(function($query) {
-                    $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
-                    $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
-                })
-                ->orderBy('deliver_at')
-                ->get();
-
-            foreach($op_dps as $opdp)
-            {
-                if($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-                    $count = $opdp->delivered_count;
-                else
-                    $count = $opdp->changed_plan_count;
-
-                $remain_count -= $count;
-
-                $result_group[] = [
-                    'time'          =>$opdp->deliver_at,
-                    'plan_id'       =>$opdp->id,
-                    'product_name'  =>$opdp->getProductSimpleName(),
-                    'count'         => $count,
-                    'remain'        =>$remain_count,
-                    'status'        =>$opdp->status,
-                    'can_edit'      =>$opdp->isEditAvailable(),
-                    'status_name'   =>$opdp->getStatusName(),
-                ];
-            }
-        }
-
-        $new_array = $this->array_sort($result_group, 'time', SORT_ASC);
-
-        return $new_array;
-//        return $result_group;
-    }
-
-
     public function getProvinceIdAttribute()
     {
 //       $sa =explode(' ', $this->address);
@@ -549,47 +482,34 @@ class Order extends Model
             return "";
     }
 
+    /**
+     * 获取配送地址街道id
+     * @return int
+     */
     public function getStreetIdAttribute()
     {
-        $district_id = $this->district_id;
+        $nId = 0;
 
-        $sa = multiexplode(' ', $this->address);
-        if(array_key_exists(3, $sa))
-            $street = $sa[3];
-        else
-            $street = "";
+        if (!empty($this->deliveryArea)) {
+            $nId = $this->deliveryArea->village->parent->id;
+        }
 
-        if(!$street)
-            return 0;
-
-        $street_m = Address::where('name', $street)->where('parent_id', $district_id)->first();
-
-        if($street_m)
-            return $street_m->id;
-        else
-            return 0;
+        return $nId;
     }
 
+    /**
+     * 获取配送地址小区id
+     * @return int
+     */
     public function getXiaoquIdAttribute()
     {
-        $parent_id = $this->street_id;
+        $nId = 0;
 
-        $sa = multiexplode(' ', $this->address);
+        if (!empty($this->deliveryArea)) {
+            $nId = $this->deliveryArea->village->id;
+        }
 
-        if(array_key_exists(4, $sa))
-            $xq = $sa[4];
-        else
-            $xq = "";
-
-
-        if(!$xq)
-            return 0;
-
-        $xq_m = Address::where('name', $xq)->where('parent_id', $parent_id)->first();
-        if($xq_m)
-            return $xq_m->id;
-        else
-            return 0;
+        return $nId;
     }
 
 
@@ -678,6 +598,14 @@ class Order extends Model
     }
 
     /**
+     * 获取DSDeliveryArea
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryArea() {
+        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id');
+    }
+
+    /**
      * 获取征订员名称
      * @return string
      */
@@ -736,27 +664,18 @@ class Order extends Model
      */
     public function getMilkmanAttribute()
     {
-        //
-        // 抽取地址信息
-        //
-        $addr_to_xiaoqu = "";
+        $milkman = null;
 
-        $addr_list = multiexplode(' ', $this->address);
-        if (count($addr_list) >= 5)
-        {
-            for($i = 0; $i < 5; $i++)
-            {
-                $addr_to_xiaoqu .=$addr_list[$i]." ";
-            }
-        }
-        $addr_to_xiaoqu = trim($addr_to_xiaoqu);
+        $mdp = $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryPlan')
+            ->withTrashed()
+            ->orderby('deliver_at', 'desc')
+            ->first();
 
-        if (empty($addr_to_xiaoqu)) {
-            return null;
+        if (!empty($mdp)) {
+            $milkman = $mdp->milkman;
         }
 
-        // 获取配送员
-        return $this->deliveryStation->get_milkman_of_address($addr_to_xiaoqu);
+        return $milkman;
     }
 
     /**
@@ -936,5 +855,21 @@ class Order extends Model
         if ($needSave) {
             $this->save();
         }
+    }
+
+    /**
+     * 获取配送员对该地址的配送顺序
+     * @return int
+     */
+    public function getDeliverAddressOrder() {
+        $nOrder = 9999;
+
+        if (!empty($this->deliveryArea)) {
+            if (!empty($this->deliveryArea->milkmanDeliveryArea)) {
+                $nOrder = $this->deliveryArea->milkmanDeliveryArea->order;
+            }
+        }
+
+        return $nOrder;
     }
 }

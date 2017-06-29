@@ -345,12 +345,6 @@ class OrderCtrl extends Controller
 
             $result = $this->pauseOrder($start_date, $end_date, $order, false);
 
-            // 状态设置
-            if (strtotime($start_date) <= strtotime('today') && strtotime('today') <= strtotime($end_date)) {
-                $order->status = Order::ORDER_STOPPED_STATUS;
-                $order->save();
-            }
-
             return $result;
         }
     }
@@ -373,60 +367,42 @@ class OrderCtrl extends Controller
 
         $order_products = $order->order_products;
 
-        foreach ($order_products as $op) {
-            //
-            // 处理上次暂停的配送明细
-            //
-            $nCountPlus = 0;
-            if ($order->has_stopped) {
-                $dateStopStart = $order->stop_at;
-
-                // 开始订单时，日期范围是不同的
-                if ($forRestart) {
-                    $dateStopStart = $start_date;
-                }
-
-                $qb = MilkManDeliveryPlan::onlyTrashed()
-                    ->where('order_product_id', $op->id)
-                    ->where('deliver_at', '>=', $dateStopStart)
-                    ->where('deliver_at', '<=', $order->order_stop_end_date);
-
-                // 计算多余量
-                $nCountPlus = $qb->sum('changed_plan_count');
-
-                // 恢复这期间的配送明细
-                $qb->restore();
-            }
-        }
+        $order->stop_at = $start_date;
+        $order->restart_at = $end_date;
 
         // 暂停时间设置
-        $strRestartDate = $end_date;
         if (!$forRestart) {
-            $last = new DateTime($end_date);
-            $last_date = $last->modify('+1 day');
-            $strRestartDate = $last_date->format('Y-m-d');
+            $order->restart_at = getNextDateString($end_date);
         }
-
-        $order->stop_at = $start_date;
-        $order->restart_at = $strRestartDate;
         $order->save();
 
         foreach ($order_products as $op) {
+            // 获取该奶品的最后配送明细
+            $dpLast = $op->getLastDeliveryPlan();
+            $dateLast = new DateTime($dpLast->deliver_at);
+
+            // 如果暂停开始日期超出最后日期，忽略掉
+            if ($start > $dateLast) {
+                continue;
+            }
+
             //
-            // 重新规划配送明细
+            // 获取数量
             //
+            $nCountExtra = 0;
+
+            // 当天开启的就直接
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
-                ->where('deliver_at', '>=', $start_date)
-                ->where('deliver_at', '<', $strRestartDate);
+                ->where('deliver_at', '>=', $start);
 
             // 计算多余量
             $nCountExtra = $qb->sum('changed_plan_count');
 
-            // 软删除这期间的配送明细
+            // 删除暂停范围的配送明细
             $qb->delete();
 
             // 调整配送明细
-            $op->processExtraCount(null, $nCountExtra - $nCountPlus);
+            $op->processExtraCount(null, $nCountExtra);
         }
 
         return response()->json(['status' => 'success', 'order_status' => $order->status, 'stop_start' => $start_date, 'stop_end' => $end_date]);
@@ -700,6 +676,7 @@ class OrderCtrl extends Controller
                                       $address,
                                       $order_property_id,
                                       $milkman_id,
+                                      $deliveryarea_id,
                                       $delivery_station_id,
                                       $order_checker_id,
                                       $receipt_number,
@@ -839,6 +816,11 @@ class OrderCtrl extends Controller
 
         if (!empty($station_id)) {
             $order->station_id = $station_id;
+        }
+
+        // 配送地区id
+        if (!empty($deliveryarea_id)) {
+            $order->deliveryarea_id = $deliveryarea_id;
         }
 
         $order->receipt_number = $receipt_number;
@@ -1022,6 +1004,7 @@ class OrderCtrl extends Controller
 
         //station info
         $milkman_id = $request->input('milkman_id');
+        $deliveryarea_id = $request->input('deliveryarea_id');
         $delivery_station_id = $request->input('station');
 
         if (!$milkman_id) {
@@ -1060,6 +1043,7 @@ class OrderCtrl extends Controller
             $address,
             $order_property_id,
             $milkman_id,
+            $deliveryarea_id,
             $delivery_station_id,
             $order_checker_id,
             $receipt_number,
@@ -1167,18 +1151,70 @@ class OrderCtrl extends Controller
         }
     }
 
-    //show detial of every order, especially after saved order
-    function show_detail_order_in_gongchang($order_id)
+    /**
+     * 获取配送明细
+     * @return array
+     */
+    public function getOrderDeliveryPlan(Request $request, $orderId)
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $result_group=[];
+
+        // 配送明细只针对订单的配送
+        $op_dps = MilkManDeliveryPlan::where('order_id', $orderId)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            // 不显示订单修改导致取消的明细
+            ->where(function($query) {
+                $query->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL);
+                $query->orwhere('cancel_reason', '<>', MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER);
+            })
+            ->orderBy('deliver_at')
+            ->paginate();
+
+        $remainCounts = [];
+
+        foreach($op_dps as &$opdp)
+        {
+            // 查看剩余数量
+            if (!isset($remainCounts[strval($opdp->order_product_id)])) {
+                // 获取剩余数量
+                $nCountDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
+                    ->where('deliver_at', '<', $opdp->deliver_at)
+                    ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                    ->sum('delivered_count');
+
+                $nCountNotDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
+                    ->where('deliver_at', '<', $opdp->deliver_at)
+                    ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                    ->sum('changed_plan_count');
+
+                $remainCounts[strval($opdp->order_product_id)] = $opdp->orderProduct->total_count - ($nCountDelivered + $nCountNotDelivered);
+            }
+
+            if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                $count = $opdp->delivered_count;
+            else
+                $count = $opdp->changed_plan_count;
+
+            $remainCounts[strval($opdp->order_product_id)] -= $count;
+
+            $opdp['count'] = $count;
+            $opdp['remain'] = $remainCounts[strval($opdp->order_product_id)];
+        }
+
+        return $op_dps;
+    }
+
+    //show detial of every order, especially after saved order
+    function show_detail_order_in_gongchang(Request $request, $order_id)
+    {
+        $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         //check this order is current factory's order
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'dingdanluru';
         $parent = 'dingdan';
@@ -1201,7 +1237,7 @@ class OrderCtrl extends Controller
     }
 
     //show detail of order in naizhan
-    function show_detail_order_in_naizhan($order_id)
+    function show_detail_order_in_naizhan(Request $request, $order_id)
     {
         $station = DeliveryStation::find($this->getCurrentStationId());
         $factory = Factory::find($this->getCurrentFactoryId(false));
@@ -1210,7 +1246,7 @@ class OrderCtrl extends Controller
         $order = Order::find($order_id);
         $order_products = $order->order_products;
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'dingdan';
         $parent = 'dingdan';
@@ -1341,13 +1377,6 @@ class OrderCtrl extends Controller
      */
     private function insert_customer_for_order(Request $request) {
 
-        //get all stations in this factory
-        $stations = $this->factory->active_stations;
-        $station_ids = [];
-        foreach ($stations as $station) {
-            $station_ids[] = $station->id;
-        }
-
         $name = $request->input('customer');
         $phone = $request->input('phone');
 
@@ -1383,15 +1412,11 @@ class OrderCtrl extends Controller
 
         // 设置客户信息
         $customer = $this->getCustomer($phone, $addr, $this->factory->id);
-
-        foreach ($station_milkman as $delivery_station_id => $milkman_id) {
-            $station = DeliveryStation::find($delivery_station_id);
-
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $milkman_id;
-        }
-
+        $customer->station_id = $station_milkman[0];
+        $customer->milkman_id = $station_milkman[1];
         $customer->name = $name;
+
+        $station = DeliveryStation::find($station_milkman[0]);
 
         // 新建的客户信息需要保存
         if (empty($customer->id)) {
@@ -1399,13 +1424,14 @@ class OrderCtrl extends Controller
         }
 
         return response()->json([
-            'status'        => 'success',
-            'customer_id'   => $customer->id,
-            'station_name'  => $station->name,
-            'station_id'    => $station->id,
-            'milkman_id'    => $customer->milkman_id,
-            'remain_amount' => $customer->remain_amount,
-            'date_start'    => $station->getChangeStartDate()
+            'status'            => 'success',
+            'customer_id'       => $customer->id,
+            'station_name'      => $station->name,
+            'station_id'        => $station->id,
+            'milkman_id'        => $customer->milkman_id,
+            'deliveryarea_id'   => $station_milkman[2],
+            'remain_amount'     => $customer->remain_amount,
+            'date_start'        => $station->getChangeStartDate()
         ]);
     }
 
@@ -2184,7 +2210,7 @@ class OrderCtrl extends Controller
         $start = $request->input('start');
         if (!empty($start)) {
             // 筛选
-            $queryOrder->where('start_at', '>=', $start);
+            $queryOrder->where('ordered_at', '>=', $start);
 
             // 添加筛选参数
             $retData['start'] = $start;
@@ -2192,7 +2218,7 @@ class OrderCtrl extends Controller
         $end = $request->input('end');
         if (!empty($end)) {
             // 筛选
-            $queryOrder->where('start_at', '<=', $end);
+            $queryOrder->where('ordered_at', '<=', $end);
 
             // 添加筛选参数
             $retData['end'] = $end;
@@ -2513,7 +2539,7 @@ class OrderCtrl extends Controller
     }
 
     //show waiting dingdan in detail in gongchang
-    function show_detail_waiting_dingdan_in_gongchang($order_id)
+    function show_detail_waiting_dingdan_in_gongchang(Request $request, $order_id)
     {
         $order = Order::find($order_id);
         $order_products = $order->order_products;
@@ -2521,7 +2547,7 @@ class OrderCtrl extends Controller
         // 解析收货地址
         $order->resolveAddress();
 
-        $grouped_plans_per_product = $order->grouped_plans_per_product;
+        $grouped_plans_per_product = $this->getOrderDeliveryPlan($request, $order_id);
 
         $child = 'daishenhedingdan';
         $parent = 'dingdan';
@@ -2674,9 +2700,9 @@ class OrderCtrl extends Controller
             $station_ids[] = $fstation->id;
         }
 
-        $delivery_areas = DSDeliveryArea::where('address', 'like', $address . '%')->get();
+        $delivery_area = DSDeliveryArea::where('address', $address)->first();
 
-        if (count($delivery_areas) == 0) {
+        if ($delivery_area == null) {
             //客户并不住在可以递送区域
             return OrderCtrl::NOT_EXIST_DELIVERY_AREA;
         }
@@ -2684,26 +2710,22 @@ class OrderCtrl extends Controller
         $result = [];
 
         $delivery_station_count = 0;
-        foreach ($delivery_areas as $delivery_area) {
 
-            $delivery_station_id = $delivery_area->station_id;
+        $delivery_station_id = $delivery_area->station_id;
 
-            $delivery_station = DeliveryStation::find($delivery_station_id);
+        $delivery_station = DeliveryStation::find($delivery_station_id);
 
-            if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
+        if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
 
-                $delivery_station_count++;
+            $delivery_station_count++;
 
-                // 保存奶站信息
-                $station = $delivery_station;
+            //get this station's milkman that supports this address
+            $milkman = $delivery_station->get_milkman_of_address($address);
 
-                //get this station's milkman that supports this address
-                $milkman = $delivery_station->get_milkman_of_address($address);
-
-                if ($milkman) {
-                    $milkman_id = $milkman->id;
-                    $result[$delivery_station_id] = $milkman_id;
-                }
+            if ($milkman) {
+                $result[] = $delivery_station_id;
+                $result[] = $milkman->id;
+                $result[] = $delivery_area->id;
             }
         }
 

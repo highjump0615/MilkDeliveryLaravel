@@ -38,6 +38,14 @@ class DSDeliveryArea extends Model
     }
 
     /**
+     * 获取milkmandeliveryarea
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function milkmanDeliveryArea() {
+        return $this->hasOne('App\Model\DeliveryModel\MilkManDeliveryArea', 'deliveryarea_id');
+    }
+
+    /**
      * 获取地址各级名称
      * @return string
      */

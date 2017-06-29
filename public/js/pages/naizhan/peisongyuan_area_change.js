@@ -9,18 +9,8 @@ $(document).ready(function () {
         leftSelected: '#js_left_Selected_1',
         leftAll: '#js_left_All_1',
         moveUp: '#multiselect_move_up',
-        moveDown: '#multiselect_move_down'
-
-    });
-
-    $('.js-multiselect2').multiselect({
-        left: "#js_multiselect_from_2",
-        right: '#js_multiselect_to_2',
-        rightAll: '#js_right_All_2',
-        rightSelected: '#js_right_Selected_2',
-        leftSelected: '#js_left_Selected_2',
-        leftAll: '#js_left_All_2',
-
+        moveDown: '#multiselect_move_down',
+        sort: false
     });
 });
 
@@ -40,20 +30,40 @@ $(document).on('click', '[data-action="modify_xiaoqu"]', function () {
     var right_select = $('select#js_multiselect_to_1');
     $(right_select).empty();
 
-    $.each(used_obj[street_id][1], function (xiaoqu_id, xiaoqu_name) {
-        var option = '<option value="' + xiaoqu_id + '">' + xiaoqu_name + '</option>';
+    $.each(used_obj[street_id][1], function (idx, xiaoqu) {
+        var option = '<option value="' + xiaoqu.id + '">' + xiaoqu.name + '</option>';
         $(right_select).append(option);
     });
 
-    $.each(avail_obj[street_id][1], function (xiaoqu_id, xiaoqu_name) {
-        if (!(used_obj[street_id][1]).hasOwnProperty(xiaoqu_id)) {
-            var option = '<option value="' + xiaoqu_id + '">' + xiaoqu_name + '</option>';
+    $.each(avail_obj[street_id][1], function (idx, xiaoqu) {
+        if (!isVillageExist(used_obj[street_id][1], xiaoqu.id)) {
+            var option = '<option value="' + xiaoqu.id + '">' + xiaoqu.name + '</option>';
             $(left_select).append(option);
         }
     });
 
     $('#change_modal_form').modal('show');
 });
+
+/**
+ * 小区列表里是否存在指定的小区
+ * @param villages
+ * @param vid
+ * @returns {boolean}
+ */
+function isVillageExist(villages, vid) {
+    var bFound = false;
+
+    for (var i = 0; i < villages.length; i++) {
+        if (villages[i].id == vid) {
+            bFound = true;
+            break;
+        }
+    }
+
+    return bFound;
+}
+
 //Change Xiaoqu of station's delivery area
 $('#submit_change_form').on('click', function () {
 
@@ -137,61 +147,6 @@ function delete_delivery_area(button) {
     })
 }
 
-$(document).on('click', '#add_address', function () {
-
-    //add street list to the select
-    $('#add_street_list').empty();
-
-    $.each(avail_obj, function (street_id, street) {
-
-        if (used_obj.hasOwnProperty(street_id)) {
-//                    var option = '<option disabled value="' + street_id + '">' + street[0] + '<i class="fa fa-asterisk">*</i></option>';
-            return true;    // continue
-        } else {
-            var option = '<option value="' + street_id + '">' + street[0] + '</option>';
-        }
-        $('#add_street_list').append(option);
-    });
-
-    var street_id = $('#add_street_list').val();
-    if(!street_id){
-        $('#errmsg').show();
-        setTimeout(function() { $("#errmsg").hide(); }, 5000);
-        return;
-    }
-
-    //get used xiaoqu and show them in right panel
-    var left_select = $('select#js_multiselect_from_2');
-    $(left_select).empty();
-
-    var right_select = $('select#js_multiselect_to_2');
-    $(right_select).empty();
-
-    $.each(avail_obj[street_id][1], function (xiaoqu_id, xiaoqu_name) {
-        var option = '<option value="' + xiaoqu_id + '">' + xiaoqu_name + '</option>';
-        $(left_select).append(option);
-    });
-
-    $('#add_modal_form').modal('show');
-});
-
 $(document).on('click', '#add-street', function () {
     $('#add_modal_form').modal('show');
-});
-
-$(document).on('change', '#add_street_list', function () {
-    var street_id = $(this).val();
-
-    //get used xiaoqu and show them in right panel
-    var left_select = $('select#js_multiselect_from_2');
-    $(left_select).empty();
-
-    var right_select = $('select#js_multiselect_to_2');
-    $(right_select).empty();
-
-    $.each(avail_obj[street_id][1], function (xiaoqu_id, xiaoqu_name) {
-        var option = '<option value="' + xiaoqu_id + '">' + xiaoqu_name + '</option>';
-        $(left_select).append(option);
-    });
-
 });
