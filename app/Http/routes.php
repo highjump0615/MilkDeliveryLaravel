@@ -770,6 +770,8 @@ Route::group(['middleware' => ['zongpingtai']], function () {
     Route::get('/zongpingtai/xitong/import','ImportCtrl@showImport');
     Route::post('/zongpingtai/xitong/import/upload', 'ImportCtrl@uploadFile');
 
+    Route::get('/zongpingtai/xitong/import/updateorder', 'ImportCtrl@updateOrder');
+
     Route::get('/zongpingtai/xitong/zhandiansheding', function (Request $request) {
         $child = 'zhandiansheding';
         $parent = 'xitong';

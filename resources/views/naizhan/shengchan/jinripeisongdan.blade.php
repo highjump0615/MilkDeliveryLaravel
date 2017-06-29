@@ -1,5 +1,9 @@
 @extends('naizhan.layout.master')
 
+@section('css')
+	<link href="<?=asset('css/print.css') ?>" rel="stylesheet">
+@endsection
+
 @section('content')
 	@include('naizhan.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -63,11 +67,11 @@
                             <thead style="background-color:#33cccc;">
 								<tr>
 									<th data-sort-ignore="true">奶品名称</th>
-									<th data-sort-ignore="true">计划订单(瓶)</th>
-									<th data-sort-ignore="true">赠品数量(瓶)</th>
-									<th data-sort-ignore="true">配送团购量(瓶)</th>
-									<th data-sort-ignore="true">配送渠道量(瓶)</th>
-									<th data-sort-ignore="true">店内零售(瓶)</th>
+									<th data-sort-ignore="true">计划订单</th>
+									<th data-sort-ignore="true">赠品数量</th>
+									<th data-sort-ignore="true">配送团购量</th>
+									<th data-sort-ignore="true">配送渠道量</th>
+									<th data-sort-ignore="true">店内零售</th>
 									<th data-sort-ignore="true">合计</th>
 									<th data-sort-ignore="true">变化量统计</th>
 								</tr>
@@ -130,8 +134,12 @@
 										@endif
 										{{$i}}
 									</td>
-									<td>{{$oi->address}}</td>
-									<td>{{$oi->product}}</td>
+									<td>{{$oi->getAddressSmall()}}</td>
+									<td>
+										@foreach($oi->products as $pd)
+											{{$pd}}
+										@endforeach
+									</td>
 									@if($oi->delivery_type==1)
 										<td>{{$oi->customer->name}}</td>
 									@else

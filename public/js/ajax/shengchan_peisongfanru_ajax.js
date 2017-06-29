@@ -28,8 +28,9 @@ $(document).on('change','#date_select',function(){
 
 $(document).on('click','#save',function(){
     confirmdelivery();
-    savebottlebox();
-    $(this).hide();
+
+    $(this).prop('disabled', true);
+    $(this).html('正在保存...');
 });
 
 function savebottlebox() {
@@ -61,9 +62,13 @@ function savebottlebox() {
             dataType:'json',
             success: function (data) {
                 console.log(data);
+
+                location.reload();
             },
             error:function (data) {
                 console.log('Error:',data);
+
+                restoreSaveButton();
             }
         });
     })
@@ -111,12 +116,23 @@ function confirmdelivery() {
         data: JSON.stringify(table_info),
         success: function (data) {
             console.log(data);
-            location.reload();
+
+            savebottlebox();
         },
         error:function (data) {
             console.log('Error:',data);
+
+            restoreSaveButton();
         }
     });
+}
+
+/**
+ * 恢复保存按钮
+ */
+function restoreSaveButton() {
+    $('#save').prop('disabled', false);
+    $('#save').html('保存');
 }
 
 $('#date_select .input-group.date').datepicker({

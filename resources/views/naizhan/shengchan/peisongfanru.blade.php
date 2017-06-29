@@ -110,7 +110,7 @@
 									<td id="{{$pro['order_product_id']}}">
 										{{$pro['name']}}*{{$pro['count']}}
 									</td>
-									<td @if($deliver_date == $current_date && !$is_todayrefund) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
+									<td @if($pro['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
 										@if($is_todayrefund) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
 									</td>
 									<td class="report"
@@ -122,16 +122,6 @@
 										<td rowspan="{{count($di->product)}}">
 											@if($di->milkbox_install > 0){{$di->milkbox_install}}@endif
 										</td>
-									{{--<td rowspan="{{count($di->product)}}" id="status{{$di->id}}">--}}
-										{{--@if($di->flag == 0)--}}
-											{{--<button id="confirm{{$di->id}}" class="btn btn-success btn-sm confirm" value="{{$di->id}}" oreder_type="{{$di->delivery_type}}">确认</button>--}}
-											{{--@if($di->delivery_type == 1)--}}
-											{{--<button class="btn btn-success btn-sm" onclick="window.location='{{URL::to('/naizhan/dingdan/xiugai/?'.$di->id)}}'">修改订单</button>--}}
-											{{--@endif--}}
-										{{--@else--}}
-											{{--交货了--}}
-										{{--@endif--}}
-									{{--</td>--}}
 									@endif
 									<td rowspan="{{count($di->product)}}">{{$pro['comment']}}</td>
 								</tr>
@@ -164,7 +154,7 @@
 											@endforeach
 										@else
 											@foreach($milkman_bottle_refunds as $mb)
-												<tr>
+												<tr id="{{$mb->bottle_type}}">
 													<td>{{$mb->bottle_name}}</td>
 													<td id="{{$mb->count}}">{{$mb->count}}</td>
 												</tr>
