@@ -42,16 +42,6 @@ $(document).ready(function () {
         });
         $(this).find('td.f_banniandan').html(f_banniandan);
 
-        var f_gift = 0;
-        $(this).find('td.gift').each(function () {
-            var g_val = parseInt($(this).text());
-            if(isNaN(g_val)){
-                g_val = 0;
-            }
-            f_gift +=g_val;
-        });
-        $(this).find('td.f_gift').html(f_gift);
-
         var f_channel = 0;
         $(this).find('td.channel').each(function () {
             var c_val = parseInt($(this).text());

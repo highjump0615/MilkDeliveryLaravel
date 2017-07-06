@@ -40,7 +40,7 @@
 						<div class="feed-element col-lg-5" id="date_1" style="padding-top: 5px;">
 							<label class="col-md-2 control-label" style="padding-top:7px;">日期:</label>
 							<div class="input-group date col-md-6">
-								<input type="text" class="form-control" id="start_date" value=""><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+								<input type="text" class="form-control" id="start_date" value="{{$start_date}}"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
 							</div>
 						</div>
 						<div class="col-lg-3"  style="padding-top:5px;">
@@ -63,34 +63,34 @@
 									<th colspan="{{count($products)+1}}">月单</th>
 									<th colspan="{{count($products)+1}}">季单</th>
 									<th colspan="{{count($products)+1}}">半年单</th>
-									<th colspan="{{count($products)+1}}">配赠数量</th>
 									<th colspan="{{count($products)+1}}">团购或渠道数量</th>
 									<th colspan="{{count($products)+1}}">配送数量</th>
 									<th rowspan="2">回收空瓶数量</th>
 								</tr>
 								<tr>
+									<!-- 月单 -->
 									@foreach($products as $p)
-									<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
+									<!-- 季单 -->
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
+									<!-- 半年单 -->
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
+									<!-- 团购或渠道数量 -->
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
+									<!-- 配送数量 -->
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
-									@endforeach
-									<th data-sort-ignore="true">合计</th>
-									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 								</tr>
@@ -100,34 +100,47 @@
 							@foreach($result as $date=>$md)
 								<?php $i++; ?>
 								<tr>
+									<!-- 序号 -->
 									<td>{{$i}}</td>
+									<!-- 日期 -->
 									<td>{{$date}}</td>
-									<td>{{$md['orders']}}</td>
-									@foreach($md['yuedan'] as $p_id=>$yuedan)
-										<td class="yuedan {{$p_id}}">{{$yuedan}}</td>
+									<!-- 配送客户数 -->
+									<td>{{getEmptyArrayValue($result, $date, 0)}}</td>
+									<!-- 月单 -->
+									@foreach ($products as $p)
+										<td class="yuedan {{$p->id}}">
+											{{getEmptyArrayValue($result, $date, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, $p->id)}}
+										</td>
 									@endforeach
 									<td class="f_yuedan"></td>
-									@foreach($md['jidan'] as $p_id=>$jidan)
-										<td class="jidan {{$p_id}}">{{$jidan}}</td>
+									<!-- 季单 -->
+									@foreach ($products as $p)
+										<td class="jidan {{$p->id}}">
+											{{getEmptyArrayValue($result, $date, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, $p->id)}}
+										</td>
 									@endforeach
 									<td class="f_jidan"></td>
-									@foreach($md['banniandan'] as $p_id=>$banniandan)
-										<td class="banniandan {{$p_id}}">{{$banniandan}}</td>
+									<!-- 半年单 -->
+									@foreach ($products as $p)
+										<td class="banniandan {{$p->id}}">
+											{{getEmptyArrayValue($result, $date, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, $p->id)}}
+										</td>
 									@endforeach
 									<td class="f_banniandan"></td>
-									@foreach($md['gift'] as $p_id=>$gift)
-										<td class="gift {{$p_id}}">{{$gift}}</td>
-									@endforeach
-									<td class="f_gift"></td>
-									@foreach($md['channel'] as $p_id=>$channel)
-										<td class="channel {{$p_id}}">{{$channel}}</td>
+									<!-- 团购或渠道 -->
+									@foreach ($products as $p)
+										<td class="channel {{$p->id}}">
+											{{getEmptyArrayValue($result, $date, 2, $p->id)}}
+										</td>
 									@endforeach
 									<td class="f_channel"></td>
+									<!-- 配送数量 -->
 									@foreach($products as $p)
 										<td class="f_{{$p->id}} total" product_type="{{$p->id}}"></td>
 									@endforeach
 									<td class="f_totalsum"></td>
-									<td class="">{{$md['bottle_refunds']}}</td>
+									<!-- 回收空瓶数量 -->
+									<td>{{getEmptyArrayValue($result, $date, 3)}}</td>
 								</tr>
 							@endforeach
                             </tbody>
