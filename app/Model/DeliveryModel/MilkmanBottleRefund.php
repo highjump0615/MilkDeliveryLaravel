@@ -19,11 +19,26 @@ class MilkmanBottleRefund extends Model
     ];
 
     protected $appends = [
-        'bottle_name',
     ];
 
-    public function getBottleNameAttribute(){
-        return FactoryBottleType::find($this->bottle_type)->name;
+    /**
+     * 获取奶瓶
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function bottleType() {
+        return $this->belongsTo('App\Model\FactoryModel\FactoryBottleType', 'bottle_type');
+    }
+
+    public function getBottleName(){
+        return $this->bottleType->name;
+    }
+
+    /**
+     * 获取配送员
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function milkman(){
+        return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
     }
 
 //    public function bottle(){
