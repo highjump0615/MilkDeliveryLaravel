@@ -89,7 +89,7 @@
                             <tbody>
 							@foreach($product_info as $pi)
 								<tr class="milk">
-									<td>{{$pi->name}}</td>
+									<td>{{$pi->simple_name}}</td>
 									<td class="total">{{$pi->t_yuedan}}</td>
 									<td class="remain">{{$pi->s_yuedan - $pi->r_yuedan}}</td>
 									<td class="total">{{$pi->t_jidan}}</td>

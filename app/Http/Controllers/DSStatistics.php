@@ -152,19 +152,27 @@ class DSStatistics extends Controller
         ]);
     }
 
+    /**
+     * 打开订单剩余量统计页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showDingdanshengyuliang(Request $request){
         $child = 'dingdanshenyuliang';
         $parent = 'tongji';
         $current_page = 'dingdanshenyuliang';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
+        //
+        // 初始化日期范围
+        //
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getCurDateString();
         $startDate_str = $currentDate->format('Y-01-01');
+
         if($start_date == null){
             $start_date = $startDate_str;
         }
@@ -172,7 +180,13 @@ class DSStatistics extends Controller
             $end_date = $currentDate_str;
         }
 
-        $product_info = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
+
+        $product_info = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get();
+
         $t_yuedan = 0;
         $t_jidan = 0;
         $t_banniandan = 0;
