@@ -72,3 +72,28 @@ function getDateFromString($string) {
 function getStringFromDate($date) {
     return $date->format('Y-m-d');
 }
+
+/**
+ * 默认0
+ * @param $value
+ * @return int
+ */
+function getEmptyArrayValue() {
+    $args = func_get_args();
+    $aryValue = $args[0];
+
+    if (empty($aryValue)) {
+        return 0;
+    }
+
+    for ($i = 1; $i < func_num_args(); $i++) {
+        if (isset($aryValue[$args[$i]])) {
+            $aryValue = $aryValue[$args[$i]];
+        }
+        else {
+            return 0;
+        }
+    }
+
+    return $aryValue;
+}
