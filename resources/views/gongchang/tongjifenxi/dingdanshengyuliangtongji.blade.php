@@ -68,7 +68,7 @@
 			<div class="ibox float-e-margins">
 				<div class="ibox-content">
 
-					<table id="order_type_table" class="footable table table-bordered" data-page-size="{{$count*2+6}}">
+					<table id="order_type_table" class="footable table table-bordered" data-page-size="{{count($products)*2+6}}">
 						<thead>
 						<tr>
 							<th rowspan="2" data-sort-ignore="true">序号</th>
@@ -96,56 +96,135 @@
 						<?php $i = 0; ?>
 						@foreach($stations as $st)
 							<?php $i++; $j =0; ?>
-							@foreach($st->product as $p)
+							@foreach ($products as $pd)
 								<?php $j++; ?>
 								<tr class="milk">
 									@if($j == 1)
-										<td rowspan="{{count($st->product)+3}}">{{$i}}</td>
-										<td rowspan="{{count($st->product)+3}}">{{$st->city}}</td>
-										<td rowspan="{{count($st->product)+3}}">{{$st->district}}</td>
-										<td rowspan="{{count($st->product)+3}}">{{$st->name}}</td>
+										<!-- 序号 -->
+										<td rowspan="{{count($products)+3}}">{{$i}}</td>
+										<!-- 区域 -->
+										<td rowspan="{{count($products)+3}}">{{$st[0]['province']}}</td>
+										<!-- 分区 -->
+										<td rowspan="{{count($products)+3}}">{{$st[0]['district']}}</td>
+										<!-- 奶站名称 -->
+										<td rowspan="{{count($products)+3}}">{{$st[0]['name']}}</td>
 									@endif
-									<td>{{$p->name}}</td>
-									<td class="total">{{$p->t_yuedan}}</td>
-									<td class="remain">{{$p->t_yuedan - $p->r_yuedan}}</td>
-									<td class="total">{{$p->t_jidan}}</td>
-									<td class="remain">{{$p->t_jidan - $p->r_jidan}}</td>
-									<td class="total">{{$p->t_banniandan}}</td>
-									<td class="remain">{{$p->t_banniandan - $p->r_banniandan}}</td>
+									<!-- 奶品 -->
+									<td>{{$pd->simple_name}}</td>
+									<!-- 月单总量 -->
+									<td class="total">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, $pd->id, 0)}}
+									</td>
+									<!-- 月单剩余量 -->
+									<td class="remain">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, $pd->id, 1)}}
+									</td>
+									<!-- 季单总量 -->
+									<td class="total">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, $pd->id, 0)}}
+									</td>
+									<!-- 季单剩余量 -->
+									<td class="remain">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, $pd->id, 1)}}
+									</td>
+									<!-- 半年单总量 -->
+									<td class="total">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, $pd->id, 0)}}
+									</td>
+									<!-- 半年单剩余量 -->
+									<td class="remain">
+										{{getEmptyArrayValue($st, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, $pd->id, 1)}}
+									</td>
+									<!-- 合计总量 -->
 									<td class="f_total"></td>
+									<!-- 合计剩余量 -->
 									<td class="f_remain"></td>
 								</tr>
 							@endforeach
 							<tr class="milk">
 								<td>订单产品数量合计</td>
-								<td class="total">{{$st->t_yuedan}}</td>
-								<td class="remain">{{$st->t_yuedan - $st->r_yuedan}}</td>
-								<td class="total">{{$st->t_jidan}}</td>
-								<td class="remain">{{$st->t_jidan - $st->r_jidan}}</td>
-								<td class="total">{{$st->t_banniandan}}</td>
-								<td class="remain">{{$st->t_banniandan - $st->r_banniandan}}</td>
+								<!-- 月单总量 -->
+								<td class="total">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 0)}}
+								</td>
+								<!-- 月单剩余量 -->
+								<td class="remain">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 1)}}
+								</td>
+								<!-- 季单总量 -->
+								<td class="total">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 0)}}
+								</td>
+								<!-- 季单剩余量 -->
+								<td class="remain">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 1)}}
+								</td>
+								<!-- 半年单总量 -->
+								<td class="total">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 0)}}
+								</td>
+								<!-- 半年单剩余量 -->
+								<td class="remain">
+									{{getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 1)}}
+								</td>
 								<td class="f_total"></td>
 								<td class="f_remain"></td>
 							</tr>
 							<tr class="milk_amount">
 								<td>单数合计</td>
-								<td class="total">{{round($st->t_yuedan/30, 2)}}</td>
-								<td class="remain">{{round((($st->t_yuedan-$st->r_yuedan)/30),2)}}</td>
-								<td class="total">{{round($st->t_jidan/90)}}</td>
-								<td class="remain">{{round((($st->t_jidan-$st->r_jidan)/90),2)}}</td>
-								<td class="total">{{round($st->t_banniandan/180)}}</td>
-								<td class="remain">{{round((($st->t_banniandan-$st->r_banniandan)/180),2)}}</td>
+								<!-- 月单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 0)/30, 2)}}
+								</td>
+								<!-- 月单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 1)/30, 2)}}
+								</td>
+								<!-- 季单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 0)/90, 2)}}
+								</td>
+								<!-- 季单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 1)/90,2)}}
+								</td>
+								<!-- 半年单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 0)/180, 2)}}
+								</td>
+								<!-- 半年单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 2, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 1)/180,2)}}
+								</td>
 								<td class="f_total"></td>
 								<td class="f_remain"></td>
 							</tr>
 							<tr class="milk_amount">
 								<td>订单金额合计</td>
-								<td class="total">{{$st->t_yuedan_amount}}</td>
-								<td class="remain">{{$st->t_yuedan_amount - $st->r_delivered_yuedan_amount}}</td>
-								<td class="total">{{$st->t_jidan_amount}}</td>
-								<td class="remain">{{$st->t_jidan_amount - $st->r_delivered_jidan_amount}}</td>
-								<td class="total">{{$st->t_banniandan_amount}}</td>
-								<td class="remain">{{$st->t_banniandan_amount - $st->r_delivered_banniandan_amount}}</td>
+								<!-- 月单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 0), 2)}}
+								</td>
+								<!-- 月单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, 1), 2)}}
+								</td>
+								<!-- 季单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 0), 2)}}
+								</td>
+								<!-- 季单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, 1), 2)}}
+								</td>
+								<!-- 半年单总量 -->
+								<td class="total">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 0), 2)}}
+								</td>
+								<!-- 半年单剩余量 -->
+								<td class="remain">
+									{{round(getEmptyArrayValue($st, 3, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN, 1), 2)}}
+								</td>
 								<td class="f_total"></td>
 								<td class="f_remain"></td>
 							</tr>
