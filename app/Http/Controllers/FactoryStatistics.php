@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Model\BasicModel\Address;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\DeliveryModel\DeliveryStation;
+use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FactoryModel\Factory;
 use App\Model\FinanceModel\DSCalcBalanceHistory;
 use App\Model\OrderModel\OrderChanges;
@@ -245,95 +246,163 @@ class FactoryStatistics extends Controller
         ]);
     }
 
-    /* 奶厂 / 奶品配送统计 */
+    /**
+     * 打开奶品配送统计页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaipinpeisongtongji(Request $request){
+        // 参数
         $station_name = $request->input('station_name');
         $area_name = $request->input('area_name');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
         $child = 'naipinpeisongtongji';
         $parent = 'tongjifenxi';
         $current_page = 'naipinpeisongtongji';
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
-        $currentYear_str = $currentDate->format('Y-01-01');
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
+        //
+        // 初始化参数
+        //
+        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
+        $currentDate_str = getCurDateString();
+        $currentYear_str = $currentDate->format('Y-01-01');
+
         if($start_date == null){
             $start_date = $currentYear_str;
         }
         if($end_date == null){
             $end_date = $currentDate_str;
         }
-        if($station_name == null)
-            $station_name = "";
 
-        $count = 0;
-        $address = Address::where('level',1)->where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $address = Address::where('level',1)
+            ->where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get();
 
-        $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('address','LIKE',$area_name.'%')->where('is_deleted',0)->get();
-        foreach ($stations as $st){
-                $product_info = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $product_info = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get(['id', 'simple_name']);
 
-                foreach ($product_info as $pi){
-                    $order_info = DB::select(DB::raw("select sum(p.delivered_count) as total_count, o.payment_type from milkmandeliveryplan p, orderproducts op, orders o
-                    where p.type=1 and p.station_id=:station_id and op.id=p.order_product_id  and o.id = p.order_id and op.product_id=:product_id and
-                     deliver_at between '$start_date' and '$end_date' group by o.payment_type"),array('station_id'=>$st->id,'product_id'=>$pi->id));
-                    foreach ($order_info as $ci){
-                        if($ci->payment_type == 1){
-                            $pi['xianjin'] = $ci->total_count;
-                        }
-                        elseif($ci->payment_type == 2){
-                            $pi['card'] = $ci->total_count;
-                        }
-                        elseif($ci->payment_type == 3){
-                            $pi['weixin'] = $ci->total_count;
-                        }
-                    }
+        $queryBase = MilkManDeliveryPlan::wherebetween('deliver_at', [$start_date, $end_date])
+            ->join('deliverystations as ds', 'ds.id', '=', 'milkmandeliveryplan.station_id')
+            ->where('ds.factory_id', $current_factory_id);
 
-                    $delivery_info = DB::select(DB::raw("select sum(retail) as retail_count,sum(test_drink) as test_count,
-                    sum(group_sale) as group_count,sum(channel_sale) as channel_count from dsdeliveryplan
-                    where station_id=:station_id and product_id=:product_id and deliver_at between '$start_date' and '$end_date'"),
-                        array('station_id'=>$st->id,'product_id'=>$pi->id));
-                    foreach ($delivery_info as $di){
-                        $pi['retail'] = $di->retail_count;
-                        $pi['test_drink'] = $di->test_count;
-                        $pi['group_sale'] = $di->group_count;
-                        $pi['channel_sale'] = $di->channel_count;
-                    }
+        // 奶站名称筛选
+        if (!empty($station_name)) {
+            $queryBase->where('ds.name','LIKE','%'.$station_name.'%');
+        }
+        // 地区名称筛选
+        if (!empty($area_name)) {
+            $queryBase->where('ds.address','LIKE',$area_name.'%');
+        }
 
+        $stations = array();
+
+        //
+        // 查询配送订单
+        //
+        $queryDeliveryPlan = clone $queryBase;
+        $queryDeliveryPlan = $queryDeliveryPlan->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('orderproducts as op', 'op.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->join('orders as o', 'o.id', '=', 'milkmandeliveryplan.order_id')
+            ->groupBy('o.payment_type', 'op.product_id', 'milkmandeliveryplan.station_id')
+            ->selectRaw('ds.address, ds.name, milkmandeliveryplan.station_id, op.product_id, o.payment_type, sum(delivered_count) as count')
+            ->get()
+            ->groupBy('station_id');
+
+        foreach ($queryDeliveryPlan as $nStId=>$byStation){
+            // 解析地址
+            $addresses = explode(" ", $byStation[0]['address']);
+
+            // 奶站信息
+            $aryStationData = array();
+            $aryStationData['province'] = $addresses[0];
+            $aryStationData['district'] = $addresses[1];
+            $aryStationData['name'] = $byStation[0]['name'];
+
+            $stations[$nStId][0] = $aryStationData;
+
+            //
+            // 获取每个奶品的数量
+            //
+            $aryCountByProduct = array();
+            $countsByProduct = $byStation->groupBy('product_id');
+
+            foreach ($countsByProduct as $nProductId=>$countsProduct) {
+                //
+                // 根据支付方式
+                //
+                $aryCountByType = array();
+
+                $byType = $countsProduct->groupBy('payment_type');
+                foreach ($byType as $nTypeId=>$countPlans) {
+                    $aryCountByType[$nTypeId] = $countsProduct->sum('count');
                 }
 
-                $st['product'] = $product_info;
+                $aryCountByProduct[$nProductId] = $aryCountByType;
+            }
 
-                $count = count($st['product']);
-                $addr = explode(" ",$st->address);
-                if(count($addr)>0)
-                    $st['province'] = $addr[0];
-                else
-                    $st['province'] = '';
-                if(count($addr)>2)
-                    $st['district'] = $addr[2];
-                else
-                    $st['district'] = '';
+            $stations[$nStId][1] = $aryCountByProduct;
+        }
 
+        //
+        // 查询自营订单
+        //
+        $querySelfPlan = clone $queryBase;
+        $querySelfPlan = $querySelfPlan->where('type', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('selforderproduct as op', 'op.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->groupBy('op.product_id', 'milkmandeliveryplan.station_id', 'milkmandeliveryplan.type')
+            ->selectRaw('milkmandeliveryplan.station_id, op.product_id, sum(delivered_count) as count')
+            ->get()
+            ->groupBy('station_id');
+
+        foreach ($querySelfPlan as $nStId=>$byStation){
+            //
+            // 获取每个奶品的数量
+            //
+            $aryCountByProduct = array();
+            $countsByProduct = $byStation->groupBy('product_id');
+
+            foreach ($countsByProduct as $nProductId=>$countsProduct) {
+                //
+                // 根据自营方式
+                //
+                $aryCountByType = array();
+
+                $byType = $countsProduct->groupBy('type');
+                foreach ($byType as $nTypeId=>$countPlans) {
+                    $aryCountByType[$nTypeId] = $countsProduct->sum('count');
+                }
+
+                $aryCountByProduct[$nProductId] = $aryCountByType;
+            }
+
+            $stations[$nStId][2] = $aryCountByProduct;
         }
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶品配送统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.tongjifenxi.naipinpeisongtongji', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'stations' => $stations,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
-            'station_name'=>$station_name,
-            'area_name'=>$area_name,
-            'count'=> $count,
-            'address'=>$address,
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'stations'      => $stations,
+            'start_date'    =>$start_date,
+            'end_date'      =>$end_date,
+            'station_name'  =>$station_name,
+            'area_name'     =>$area_name,
+            'address'       =>$address,
+            'products'      =>$product_info,
         ]);
     }
 
