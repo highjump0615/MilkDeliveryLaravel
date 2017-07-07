@@ -98,7 +98,7 @@
 										<td rowspan="{{count($st->product)+3}}">{{$st->district}}</td>
 										<td rowspan="{{count($st->product)+3}}">{{$st->name}}</td>
 									@endif
-									<td>{{$p->name}}</td>
+									<td>{{$p->simple_name}}</td>
 									<td class="total">{{$p->yuedan_xin}}</td>
 									<td class="remain">{{$p->yuedan_xu}}</td>
 									<td class="total">{{$p->jidan_xin}}</td>
