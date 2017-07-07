@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Model\BasicModel\PaymentType;
+use App\Model\DeliveryModel\MilkManDeliveryPlan;
 use App\Model\FinanceModel\DSBusinessCreditBalanceHistory;
 use App\Model\FinanceModel\DSCalcBalanceHistory;
 use App\Model\FinanceModel\DSDeliveryCreditBalanceHistory;
@@ -55,22 +56,18 @@ class FinanceCtrl extends Controller
         return $sum;
     }
 
-    /*
-     * GONGCHANG_FINANCE
-     * */
-
-    //G1: First page
+    /**
+     * 打开奶厂奶站账户台账页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_finance_page_in_gongchang()
     {
         $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
         $stations = $factory->active_stations;
-
         // 计算财务信息
-        foreach ($stations as $s) {
-            $this->getSummary($s);
-        }
+        $this->getSummary($stations);
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
@@ -134,28 +131,114 @@ class FinanceCtrl extends Controller
      * 计算台账财务数据
      * @param $station
      */
-    private function getSummary(&$station) {
-        $nCount = 0;
-        $dCost = 0;
+    private function getSummary(&$stations) {
+        // 奶站id数组
+        $nStationIds = array();
 
-        // 期初余额
-        $station->getBottleCountBeforeThisTerm($nCount, $dCost);
-        $station['fin_before_count'] = $nCount;
-        $station['fin_before_cost'] = round($dCost, 2);
+        //
+        // 初始化数据
+        //
+        foreach ($stations as $station) {
+            // 期初余额数量
+            $station['fin_before_count'] = 0;
+            $station['fin_before_cost'] = 0;
+            // 本期订单金额增加
+            $station['fin_added_count'] = 0;
+            $station['fin_added_cost'] = 0;
+            // 本期完成订单余额
+            $station['fin_done_count'] = 0;
+            $station['fin_done_cost'] = 0;
 
+            $nStationIds[] = $station->id;
+        }
+
+        $dateStart = date('Y-m-01');
+        $dateEnd = getCurDateString();
+
+        //
+        // 期初余额数量
+        //
+        // 查询配送明细，条件为前期完成的相反
+        $plansBefore = MilkManDeliveryPlan::where('deliver_at', '>=', $dateStart)
+            ->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->whereHas('orderDelivery', function($query) use ($dateStart, $nStationIds) {
+                $query->whereIn('delivery_station_id', $nStationIds);
+                $query->where('ordered_at', '<', $dateStart);
+                $query->where(function($query){
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                });
+            })
+            ->groupBy('station_id')
+            ->selectRaw('station_id, sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
+            ->get()
+            ->groupBy('station_id');
+
+        foreach ($plansBefore as $nStId=>$countsByStation) {
+            foreach ($stations as $station) {
+                if ($station->id == $nStId) {
+                    $station['fin_before_count'] = getEmptyArrayValue($countsByStation, 0, "count");
+                    $station['fin_before_cost'] = round(getEmptyArrayValue($countsByStation, 0, "cost"), 2);
+                    break;
+                }
+            }
+        }
+
+        //
         // 本期订单金额增加
-        $station->getBottleCountIncreasedThisTerm($nCount, $dCost);
-        $station['fin_added_count'] = $nCount;
-        $station['fin_added_cost'] = round($dCost, 2);
+        //
+        $plansIncreased = MilkManDeliveryPlan::whereHas('orderDelivery', function($query) use ($dateStart, $dateEnd, $nStationIds) {
+                $query->where('ordered_at', '>=', $dateStart);
+                $query->where('ordered_at', '<=', $dateEnd);
+                $query->where(function($query) use ($nStationIds) {
+                    $query->whereIn('delivery_station_id', $nStationIds);
+                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+                });
+            })
+            ->groupBy('station_id')
+            ->selectRaw('station_id, sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
+            ->get();
 
+        foreach ($plansIncreased as $nStId=>$countsByStation) {
+            foreach ($stations as $station) {
+                if ($station->id == $nStId) {
+                    $station['fin_added_count'] = getEmptyArrayValue($countsByStation, 0, "count");
+                    $station['fin_added_cost'] = round(getEmptyArrayValue($countsByStation, 0, "cost"), 2);
+                    break;
+                }
+            }
+        }
+
+        //
         // 本期完成订单余额
-        $station->getBottleDoneThisTerm($nCount, $dCost);
-        $station['fin_done_count'] = $nCount;
-        $station['fin_done_cost'] = round($dCost, 2);
+        //
+        // 查询配送明细
+        $plansDone = MilkManDeliveryPlan::whereIn('station_id', $nStationIds)
+            ->where('deliver_at', '>=', $dateStart)
+            ->where('deliver_at', '<=', $dateEnd)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->groupBy('station_id')
+            ->selectRaw('station_id, sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
+            ->get();
+
+        foreach ($plansDone as $nStId=>$countsByStation) {
+            foreach ($stations as $station) {
+                if ($station->id == $nStId) {
+                    $station['fin_done_count'] = getEmptyArrayValue($countsByStation, 0, "count");
+                    $station['fin_done_cost'] = round(getEmptyArrayValue($countsByStation, 0, "cost"), 2);
+                    break;
+                }
+            }
+        }
 
         // 期末金额
-        $station['fin_after_count'] = $station['fin_before_count'] + $station['fin_added_count'] - $station['fin_done_count'];
-        $station['fin_after_cost'] = $station['fin_before_cost'] + $station['fin_added_cost'] - $station['fin_done_cost'];
+        foreach ($stations as $station) {
+            $station['fin_after_count'] = $station['fin_before_count'] + $station['fin_added_count'] - $station['fin_done_count'];
+            $station['fin_after_cost'] = $station['fin_before_cost'] + $station['fin_added_cost'] - $station['fin_done_cost'];
+        }
     }
 
     /**
@@ -1365,9 +1448,7 @@ class FinanceCtrl extends Controller
 
         $stations[0] = $station;
         // 计算财务信息
-        foreach ($stations as $s) {
-            $this->getSummary($s);
-        }
+        $this->getSummary($stations);
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_STATION, '奶站台帐页面', SysLog::SYSLOG_OPERATION_VIEW);
