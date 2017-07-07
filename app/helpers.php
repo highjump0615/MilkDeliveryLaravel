@@ -97,3 +97,12 @@ function getEmptyArrayValue() {
 
     return $aryValue;
 }
+
+/**
+ * 如果val是null,返回0
+ * @param $val
+ * @return int
+ */
+function getEmptyValue($val) {
+    return $val ?: 0;
+}

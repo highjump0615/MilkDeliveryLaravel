@@ -399,3 +399,14 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
     color: red;
     font-size: 18px;
 }
+
+/* UI优化添加的 */
+.form-horizontal .label-control {
+    float: left;
+    padding-right: 10px;
+}
+
+#form_filter {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
