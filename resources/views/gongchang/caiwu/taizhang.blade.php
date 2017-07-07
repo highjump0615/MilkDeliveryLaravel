@@ -92,39 +92,56 @@
 
             <div class="ibox-content col-md-12">
                 <!-- 奶厂操作 -->
-                @if (!$is_station)
+                <form class="form-horizontal" method="get" id="form_filter">
                 <div class="feed-element">
+                    <div class="col-md-4" id="data_range_select">
+                        <label class="label-control" style="padding-top:5px;">日期:</label>
+                        <div class="input-daterange input-group col-md-8" id="datepicker">
+                            <input type="text" class="input-sm form-control" name="start_date" value="{{$start_date}}"/>
+                            <span class="input-group-addon">至</span>
+                            <input type="text" class="input-sm form-control" name="end_date" value="{{$end_date}}"/>
+                        </div>
+                    </div>
+
+                    @if (!$is_station)
                     <label class="col-md-1 text-right" style="padding-top: 5px;">奶站名称:</label>
-                    <div class=" col-md-2">
-                        <select data-placeholder="Choose..." class="choose_station" style="width: 100%;">
-                            <option value="none"></option>
+                    <div class="col-md-2">
+                        <select data-placeholder="Choose..." class="choose_station" name="station" style="width: 100%;">
+                            <option value=""></option>
                             @if (isset($stations))
-                                @foreach($stations as $station)
-                                    <option value="{{$station->id}}">{{$station->name}}</option>
+                                @foreach($stations as $st)
+                                    <option value="{{$st->id}}"
+                                            @if (!empty($station) && $station == $st->id) selected @endif>
+                                        {{$st->name}}
+                                    </option>
                                 @endforeach
                             @endif
-
                         </select>
                     </div>
-                    <div class="col-md-2 col-md-offset-6 pull-right">
-                        <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选
+                    @endif
+
+                    <div class="col-md-2 pull-right">
+                        <button class="btn btn-success btn-outline" type="submit" data-action="show_selected">筛选
                         </button>
                         <!--<button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>-->
                     </div>
                 </div>
-                @endif
+                </form>
             </div>
 
             <div class="col-md-12" id="station_list">
                 @if (isset($stations))
-                    @foreach($stations as $station)
-                        <div class="ibox-content station" data-sid="{{$station->id}}">
+                    @foreach($stations as $st)
+                        @if (!empty($station) && $station != $st->id)
+                            @continue
+                        @endif
+                        <div class="ibox-content station" data-sid="{{$st->id}}">
                             <div class="station_head">
-                                <label class="station_name" style="font-size:20px;">{{$station->name}}</label>
+                                <label class="station_name" style="font-size:20px;">{{$st->name}}</label>
                                 &emsp;
-                                <label class="station_balance">配送业务信用额度：{{$station->init_delivery_credit_amount}}</label>
+                                <label class="station_balance">配送业务信用额度：{{$st->init_delivery_credit_amount}}</label>
                                 &emsp;
-                                <label class="station_balance">自营信用额度：{{$station->init_business_credit_amount}}</label>
+                                <label class="station_balance">自营信用额度：{{$st->init_business_credit_amount}}</label>
                             </div>
                             <div class="station_body">
 
@@ -134,21 +151,21 @@
                                     </div>
                                     <div class="col-sm-2">
                                         <input class="gray-bg text-center receivable_order_money" readonly
-                                               value="{{$station->receivable_order_money}}">
+                                               value="{{$st->receivable_order_money}}">
                                     </div>
                                     <div class="col-sm-2 text-right">
                                         <label class="">信用余额</label>
                                     </div>
                                     <div class="col-sm-2">
                                         <input readonly class="gray-bg text-center delivery_credit_balance"
-                                               value="{{$station->init_delivery_credit_amount+$station->delivery_credit_balance}}"/>
+                                               value="{{$st->init_delivery_credit_amount+$st->delivery_credit_balance}}"/>
                                     </div>
                                     <div class="col-sm-2 col-sm-offset-2">
                                         @if ($is_station)
                                             <a href="{{URL::to('/naizhan/caiwu/taizhang/benzhandingdan/')}}"
                                                class="btn btn-success">查看订单金额统计</a>
                                         @else
-                                            <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$station->id)}}"
+                                            <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$st->id)}}"
                                                class="btn btn-success">查看订单金额统计</a>
                                         @endif
                                     </div>
@@ -160,7 +177,7 @@
                                     </div>
                                     <div class="col-sm-2">
                                         <input readonly class="gray-bg text-center credit_balance"
-                                               value="{{$station->calculation_balance}}"/>
+                                               value="{{$st->calculation_balance}}"/>
                                     </div>
                                     <div class="col-sm-1 col-sm-offset-1">
                                     </div>
@@ -171,7 +188,7 @@
                                             <a href="{{URL::to('/naizhan/caiwu/taizhang/zhanghuyue/')}}"
                                                class="btn btn-success">查看详情</a>
                                         @else
-                                            <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$station->id)}}"
+                                            <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$st->id)}}"
                                                class="btn btn-success">查看详情</a>
                                         @endif
                                     </div>
@@ -183,21 +200,21 @@
                                     </div>
                                     <div class="col-sm-2">
                                         <input readonly class="gray-bg text-center"
-                                               value="{{$station->business_credit_balance}}">
+                                               value="{{$st->business_credit_balance}}">
                                     </div>
                                     <div class="col-sm-2 text-right">
                                         <label class="">信用余额</label>
                                     </div>
                                     <div class="col-sm-2">
                                         <input readonly class="gray-bg text-center"
-                                               value="{{$station->business_credit_balance+$station->init_business_credit_amount}}"/>
+                                               value="{{$st->business_credit_balance+$st->init_business_credit_amount}}"/>
                                     </div>
                                     <div class="col-sm-2 col-sm-offset-2">
                                         @if ($is_station)
                                             <a href="{{URL::to('/naizhan/caiwu/ziyingzhanghujiru/')}}"
                                                class="btn btn-success">查看自营账户</a>
                                         @else
-                                            <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$station->id)}}"
+                                            <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$st->id)}}"
                                                class="btn btn-success">查看自营账户</a>
                                         @endif
                                     </div>
@@ -225,14 +242,14 @@
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <td>{{$station->fin_before_count}}</td>
-                                        <td>{{$station->fin_before_cost}}</td>
-                                        <td>{{$station->fin_added_count}}</td>
-                                        <td>{{$station->fin_added_cost}}</td>
-                                        <td>{{$station->fin_done_count}}</td>
-                                        <td>{{$station->fin_done_cost}}</td>
-                                        <td>{{$station->fin_after_count}}</td>
-                                        <td>{{$station->fin_after_cost}}</td>
+                                        <td>{{$st->fin_before_count}}</td>
+                                        <td>{{$st->fin_before_cost}}</td>
+                                        <td>{{$st->fin_added_count}}</td>
+                                        <td>{{$st->fin_added_cost}}</td>
+                                        <td>{{$st->fin_done_count}}</td>
+                                        <td>{{$st->fin_done_cost}}</td>
+                                        <td>{{$st->fin_after_count}}</td>
+                                        <td>{{$st->fin_after_cost}}</td>
                                     </tr>
                                     </tbody>
                                 </table>
