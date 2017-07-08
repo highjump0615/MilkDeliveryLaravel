@@ -395,15 +395,7 @@ class StationManageCtrl extends Controller
             // 添加选择好的
             foreach ($villagesSelected as $vid) {
                 if (!in_array($vid, $deliverAreaIds)) {
-                    $xiaoqu = Address::find($vid);
-                    if ($xiaoqu) {
-                        $address = $xiaoqu->getFullName();
-                        $dsarea = new DSDeliveryArea;
-                        $dsarea->address = $address;
-                        $dsarea->address_id = $xiaoqu->id;
-                        $dsarea->station_id = $dsid;
-                        $dsarea->save();
-                    }
+                    $this->make_delivery_area_for_xiaoqu($dsid, $vid);
                 }
             }
 
@@ -677,14 +669,20 @@ class StationManageCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
 
+        $delivery_areas = DSDeliveryArea::get()
+            ->groupBy('station_id');
+
         //Delivery area of this station: street and xiaoqu
         $area_address = array();
 
         foreach($stations as $s) {
             $station_id = $s->id;
-            $delivery_areas = DSDeliveryArea::where('station_id', $station_id)->get();
 
-            foreach ($delivery_areas as $da) {
+            if (!isset($delivery_areas[$station_id])) {
+                continue;
+            }
+
+            foreach ($delivery_areas[$station_id] as $da) {
                 if ($da->address != null) {
                     $xiaoqu = $da->village;
 
@@ -834,14 +832,7 @@ class StationManageCtrl extends Controller
 
         if ($count > 0) {
             foreach ($xiaoqus as $xid) {
-                $xiaoqu = Address::find($xid);
-                if ($xiaoqu) {
-                    $full_address = $xiaoqu->full_address_name;
-                    $delivery_area = new DSDeliveryArea;
-                    $delivery_area->station_id = $station_id;
-                    $delivery_area->address = $full_address;
-                    $delivery_area->save();
-                }
+                $this->make_delivery_area_for_xiaoqu($station_id, $xid);
             }
             return Response::json(['status' => 'success']);
 
@@ -850,39 +841,67 @@ class StationManageCtrl extends Controller
         }
     }
 
-    //Change delivery area of station
+    /**
+     * 保存奶站配送范围
+     * @param Request $request
+     * @return mixed
+     */
     public function change_delivery_area(Request $request)
     {
-
         $station_id = $request->input('station_id');
         $street_id = $request->input('street_id_to_change');
 
         $xiaoqus = $request->input('to');
-        $changed_count = count($xiaoqus);
 
-        //Delete pre-exist delivery areas
-        $street = Address::find($street_id);
-        $street_name = $street->name;
-        $district_name = $street->district->name;
-        $city_name = $street->city->name;
-        $province_name = $street->province->name;
+        //
+        // 获取原有的DeliveryArea记录
+        //
+        $areas = DSDeliveryArea::where('station_id', $station_id)
+            ->whereHas('village', function($query) use ($street_id) {
+                $query->where('parent_id', $street_id);
+            })
+            ->get(['id', 'address_id']);
 
-        $areas = DSDeliveryArea::where('station_id', $station_id)->
-        where('address', 'like', $province_name . '%' . $city_name . '%' . $district_name . '%' . $street_name . '%')->get();
-
+        //
+        // 删除
+        //
         foreach ($areas as $area) {
-            $area->delete();
+            if (!in_array($area->address_id, $xiaoqus)) {
+                $area->delete();
+            }
         }
 
-        if ($changed_count != 0) {
-            //Make new delivery area
-            foreach ($xiaoqus as $xiaoqu_id) {
+        //
+        // 添加
+        //
+        $areasDeleted = DSDeliveryArea::onlyTrashed()
+            ->where('station_id', $station_id)
+            ->whereHas('village', function($query) use ($street_id) {
+                $query->where('parent_id', $street_id);
+            })
+            ->get(['id', 'address_id']);
+        // 恢复已删除的
+        foreach ($areasDeleted as $area) {
+            if (in_array($area->address_id, $xiaoqus)) {
+                $area->restore();
+            }
+        }
+        // 添加全新的
+        foreach ($xiaoqus as $xiaoqu_id) {
+            $bExist = false;
+            foreach ($areas as $area) {
+                if ($area->address_id == $xiaoqu_id) {
+                    $bExist = true;
+                    break;
+                }
+            }
+
+            if (!$bExist) {
                 $this->make_delivery_area_for_xiaoqu($station_id, $xiaoqu_id);
             }
         }
 
         return response()->json(['status' => 'success']);
-
     }
 
     //Make new delivery area for xiaoqu with station
@@ -892,13 +911,13 @@ class StationManageCtrl extends Controller
         if (!$xiaoqu)
             return false;
 
-        $address = $xiaoqu->full_address_name;
+        $address = $xiaoqu->getFullName();
 
         $da = new DSDeliveryArea;
         $da->station_id = $sid;
         $da->address = $address;
+        $da->address_id = $xid;
         $da->save();
-
     }
 
     //Show

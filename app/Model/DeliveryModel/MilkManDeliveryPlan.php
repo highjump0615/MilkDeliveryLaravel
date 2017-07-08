@@ -166,7 +166,7 @@ class MilkManDeliveryPlan extends Model
      * @return mixed
      */
     public function orderProduct() {
-        return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id');
+        return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id')->withTrashed();
     }
 
     /**
