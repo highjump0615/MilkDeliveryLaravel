@@ -70,7 +70,7 @@
                         <a href="{{URL::to('/gongchang/dingdan/dingdanluru')}}"
                            class="btn btn-success col-md-4" type="button">订单录入</a>
                     </div>
-                    <div class="col-md-2 col-md-offset-6">
+                    <div class="col-md-3 col-md-offset-5 button-div">
                         <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
                         <button class="btn btn-success" type="button" data-action="show_selected">筛选</button>
@@ -109,7 +109,7 @@
                                         <td class="o_number">{{$orders[$i]->number}}</td>
                                         <td class="o_customer_name">{{$orders[$i]->customer_name}}</td>
                                         <td class="o_phone">{{$orders[$i]->phone}}</td>
-                                        <td class="o_addr">{{$orders[$i]->addresses}}</td>
+                                        <td class="o_addr align-left">{{$orders[$i]->addresses}}</td>
                                         <td class="o_type">{{$orders[$i]->all_order_types}}</td>
                                         <td class="o_total">{{$orders[$i]->total_amount}}</td>
                                         <td class="o_ordered">{{$orders[$i]->ordered_at}}</td>

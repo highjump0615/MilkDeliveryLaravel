@@ -2162,6 +2162,26 @@ class OrderCtrl extends Controller
             $retData['number'] = $number;
         }
 
+        // 地址
+        $address = $request->input('address');
+        if (!empty($address)) {
+            // 筛选
+            $queryOrder->where('address', 'like', '%' . $address . '%');
+
+            // 添加筛选参数
+            $retData['address'] = $address;
+        }
+
+        // 票据号
+        $receipt = $request->input('receipt');
+        if (!empty($receipt)) {
+            // 筛选
+            $queryOrder->where('receipt_number', 'like', '%' . $receipt . '%');
+
+            // 添加筛选参数
+            $retData['receipt'] = $receipt;
+        }
+
         // 征订员
         $checker = $request->input('checker');
         if (!empty($checker)) {
