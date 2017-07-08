@@ -3,11 +3,13 @@
 namespace App\Model\DeliveryModel;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DSDeliveryArea extends Model
 {
+    use SoftDeletes;
+
     protected $table = "dsdeliveryarea";
-    public $timestamps = false;
 
     protected $fillable =[
         'address',
