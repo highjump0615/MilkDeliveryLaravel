@@ -92,7 +92,7 @@
 
             <div class="ibox-content col-md-12">
                 <!-- 奶厂操作 -->
-                <form class="form-horizontal" method="get" id="form_filter">
+                <form class="form-horizontal no-vert-padding" method="get" id="form_filter">
                 <div class="feed-element">
                     <div class="col-md-4" id="data_range_select">
                         <label class="label-control" style="padding-top:5px;">日期:</label>

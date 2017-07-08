@@ -134,7 +134,7 @@
 										@endif
 										{{$i}}
 									</td>
-									<td>{{$oi->getAddressSmall()}}</td>
+									<td>{{$oi->getAddressSmall(\App\Model\BasicModel\Address::LEVEL_VILLAGE)}}</td>
 									<td>
 										@foreach($oi->products as $pd)
 											{{$pd}}
