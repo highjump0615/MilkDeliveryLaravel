@@ -46,13 +46,13 @@
 						@foreach($customers as $cu)
 							<tr>
 								<td>{{$i + $customers->firstItem()}}</td>
-								<td class="area">{{$cu->area_addr}}</td>
-								<td>{{$cu->sector_addr}}</td>
+								<td class="area align-left">{{$cu->area_addr}}</td>
+								<td class="align-left">{{$cu->sector_addr}}</td>
 								<td class="user">{{$cu->name}}</td>
 								<td class="phone">{{$cu->phone}}</td>
 								<td>{{$cu->station_name}}</td>
 								<td>{{$cu->milkman_name}}</td>
-								<td>{{$cu->detail_addr}}</td>
+								<td class="align-left">{{$cu->detail_addr}}</td>
 								<td>{{$cu->order_status}}</td>
 								<td>{{$cu->order_count}}</td>
 								<td>{{$cu->order_balance}}</td>
