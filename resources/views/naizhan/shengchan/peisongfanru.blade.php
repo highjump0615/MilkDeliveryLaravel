@@ -155,7 +155,7 @@
 										@else
 											@foreach($milkman_bottle_refunds as $mb)
 												<tr id="{{$mb->bottle_type}}">
-													<td>{{$mb->bottle_name}}</td>
+													<td>{{$mb->getBottleName()}}</td>
 													<td id="{{$mb->count}}">{{$mb->count}}</td>
 												</tr>
 											@endforeach

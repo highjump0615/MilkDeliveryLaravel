@@ -43,12 +43,12 @@
 
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
-                    <table id="delivery_area_table" class="footable table table-bordered" data-page-size="5">
+                    <table id="delivery_area_table" class="footable table table-bordered" data-page-size="10">
                         <thead>
                         <tr>
-                            <th data-sort-ignore="true">街道</th>
+                            <th style="width:110px" data-sort-ignore="true">街道</th>
                             <th data-sort-ignore="true">配送范围</th>
-                            <th data-sort-ignore="true">操作</th>
+                            <th style="width:130px" data-sort-ignore="true">操作</th>
                         </tr>
                         </thead>
                         <tbody>

@@ -63,7 +63,7 @@
                                         <td class="o_number">{{$orders[$i]->number}}</td>
                                         <td class="o_customer_name">{{$orders[$i]->customer_name}}</td>
                                         <td class="o_phone">{{$orders[$i]->phone}}</td>
-                                        <td class="o_addr">{{$orders[$i]->addresses}}</td>
+                                        <td class="o_addr align-left">{{$orders[$i]->addresses}}</td>
                                         <td class="o_type">{{$orders[$i]->all_order_types}}</td>
                                         <td class="o_total">{{$orders[$i]->total_amount}}</td>
                                         <td class="o_checker">{{$orders[$i]->order_checker_name}}</td>

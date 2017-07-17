@@ -43,13 +43,13 @@
                     <table class="table table-bordered" id="address_tb">
                         <thead>
                         <tr>
-                            <th data-sort-ignore="true">序号</th>
-                            <th data-sort-ignore="true" class="fixedaddr">省</th>
-                            <th data-sort-ignore="true" class="fixedaddr">市</th>
-                            <th data-sort-ignore="true" class="fixedaddr">区</th>
-                            <th data-sort-ignore="true">街道</th>
+                            <th style="width: 50px;" data-sort-ignore="true">序号</th>
+                            <th style="width: 70px;" data-sort-ignore="true" class="fixedaddr">省</th>
+                            <th style="width: 110px;" data-sort-ignore="true" class="fixedaddr">市</th>
+                            <th style="width: 70px;" data-sort-ignore="true" class="fixedaddr">区</th>
+                            <th style="width: 120px;" data-sort-ignore="true">街道</th>
                             <th data-sort-ignore="true">小区</th>
-                            <th data-sort-ignore="true">操作</th>
+                            <th style="width: 170px;" data-sort-ignore="true">操作</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -89,7 +89,7 @@
                                             data-district="{{$street->district->name}}">
                                             {{$street->name}}
                                         </td>
-                                        <td class="xiaoqu_td"
+                                        <td class="xiaoqu_td align-left"
                                             data-content="{{ $street->sub_addresses_str }}">{{ $street->sub_addresses_str }}
                                         </td>
                                         <td>

@@ -152,19 +152,27 @@ class DSStatistics extends Controller
         ]);
     }
 
+    /**
+     * 打开订单剩余量统计页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showDingdanshengyuliang(Request $request){
         $child = 'dingdanshenyuliang';
         $parent = 'tongji';
         $current_page = 'dingdanshenyuliang';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
+        //
+        // 初始化日期范围
+        //
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getCurDateString();
         $startDate_str = $currentDate->format('Y-01-01');
+
         if($start_date == null){
             $start_date = $startDate_str;
         }
@@ -172,7 +180,13 @@ class DSStatistics extends Controller
             $end_date = $currentDate_str;
         }
 
-        $product_info = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
+
+        $product_info = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get();
+
         $t_yuedan = 0;
         $t_jidan = 0;
         $t_banniandan = 0;
@@ -301,276 +315,284 @@ class DSStatistics extends Controller
         ]);
     }
 
+    /**
+     * 打开奶品配送日统计
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showNaipinpeisongri(Request $request){
         $child = 'naipinpeisongri';
         $parent = 'tongji';
         $current_page = 'naipinpeisongri';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $endDate_str = $currentDate->format('Y-m-d');
         $currentDate_str = $currentDate->format('Y-m-01');
+
         $start_date = $request->input('start_date');
         if($start_date == null){
             $start_date = $currentDate_str;
         }
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
+
+        $current_station_id = $this->getCurrentStationId();
+        $current_factory_id = $this->getCurrentFactoryId(false);
+
         $customer_delivers = array();
-        $milkmandelivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at','>=',$start_date)->
-        where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->get();
-        $getByDates = $milkmandelivery_plans->groupby(function ($sort){return $sort->deliver_at;});
-        foreach ($getByDates as $date=>$bydate){
-            $customer_delivers_products = array();
 
-            $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
-            foreach ($products as $p){
-                $yuedan = 0;
-                $jidan = 0;
-                $baninadan = 0;
-                foreach ($bydate as $bd){
-                    if($p->id == $bd->order_product->product->id){
-                        if($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN){
-                            $yuedan +=$bd->deliverd_count;
-                        }
-                        elseif($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN){
-                            $jidan +=$bd->deliverd_count;
-                        }
-                        elseif($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN){
-                            $baninadan +=$bd->deliverd_count;
-                        }
-                    }
-                }
-                $customer_delivers_products['yuedan'][$p->id] = $yuedan;
-                $customer_delivers_products['jidan'][$p->id] = $jidan;
-                $customer_delivers_products['banniandan'][$p->id] = $baninadan;
-                $customer_delivers_products['gift'][$p->id] = 0;
-                $customer_delivers_products['channel'][$p->id] = 0;
-            }
-            $customer_delivers[$date]=$customer_delivers_products;
-        }
-
-
-        $station_delivers = array();
-        $getFromDSDeliveryPlans = DSDeliveryPlan::where('station_id',$current_station_id)->where('deliver_at','>=',$start_date)->get()->groupby(function ($sort){return $sort->deliver_at;});
-        foreach ($getFromDSDeliveryPlans as $date=>$gdp){
-            $station_delivers_products = array();
-
-            $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
-            foreach ($products as $p){
-                $gift = 0;
-                $channel = 0;
-                foreach ($gdp as $g){
-                    if($p->id == $g->product_id){
-                        $gift += $g->retail + $g->test_drink;
-                        $channel += $g->group_sale + $g->channel_sale;
-                    }
-                }
-                $station_delivers_products['yuedan'][$p->id] = 0;
-                $station_delivers_products['jidan'][$p->id] = 0;
-                $station_delivers_products['banniandan'][$p->id] = 0;
-                $station_delivers_products['gift'][$p->id] = $gift;
-                $station_delivers_products['channel'][$p->id] = $channel;
-            }
-            $station_delivers[$date]=$station_delivers_products;
-        }
+        $queryBase = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->where('deliver_at','>=',$start_date)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED);
 
         $result = array();
-        foreach ($customer_delivers as $date=>$cd){
-            foreach ($cd as $type=>$y){
-                $result[$date][$type]=$y;
+
+        //
+        // 配送客户数
+        //
+        $countsOrder = clone $queryBase;
+        $countsOrder = $countsOrder->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->groupBy('order_id', 'deliver_at')
+            ->get(['deliver_at', 'order_id'])
+            ->groupBy('deliver_at');
+
+        foreach ($countsOrder as $date=>$bydate) {
+            $result[$date][0] = count($bydate);
+        }
+
+        //
+        // 配送数量
+        //
+        $milkmandelivery_plans = clone $queryBase;
+        $milkmandelivery_plans = $milkmandelivery_plans->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('orderproducts as o', 'o.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->selectRaw('o.product_id, o.order_type, deliver_at, sum(delivered_count) as count')
+            ->groupBy('deliver_at', 'o.product_id', 'o.order_type')
+            ->get()
+            ->groupBy('deliver_at');
+
+        foreach ($milkmandelivery_plans as $date=>$bydate) {
+            //
+            // 获取月单、季单、半年单
+            //
+            $countsByType = $bydate->groupBy('order_type');
+            foreach ($countsByType as $nTypeId=>$byType) {
+                //
+                // 根据奶品分类
+                //
+                $countsByProduct = $byType->groupBy('product_id');
+                foreach ($countsByProduct as $nProductId=>$byProduct) {
+                    $result[$date][1][$nTypeId][$nProductId] = $byProduct->sum('count');
+                }
             }
         }
-        foreach ($station_delivers as $date=>$sd){
-            foreach ($sd as $type=>$y){
-                $result[$date][$type]=$y;
+
+        //
+        // 自营数量
+        //
+        $countsSelf = clone $queryBase;
+        $countsSelf = $countsSelf->where('type', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('selforderproduct as o', 'o.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->groupBy('deliver_at', 'o.product_id')
+            ->selectRaw('o.product_id, deliver_at, sum(delivered_count) as count')
+            ->get()
+            ->groupBy('deliver_at');
+
+        foreach ($countsSelf as $date=>$bydate) {
+            //
+            // 根据奶品分类
+            //
+            $countsByProduct = $bydate->groupBy('product_id');
+            foreach ($countsByProduct as $nProductId=>$byProduct) {
+                $result[$date][2][$nProductId] = $byProduct->sum('count');
             }
         }
 
-        foreach ($result as $date=>$rs){
-            $customer_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('deliver_at', $date)->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->
-            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->groupby(function ($sort) {
-                return $sort->order_id;
-            })->count();
+        //
+        // 回收空瓶数量
+        //
+        $boxRefunds = MilkmanBottleRefund::where('time', '>=', $start_date)
+            ->whereHas('milkman', function($query) use ($current_station_id) {
+                $query->where('station_id', $current_station_id);
+            })
+            ->get();
 
-            $channel_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('deliver_at',$date)->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->wherebetween('type', [2, 3])->groupby(function ($sort) {
-                return $sort->order_id;
-            })->count();
-
-            $bottle_refunds = DSBottleRefund::where('station_id',$current_station_id)->where('time',$date)->get()->sum('milkman_return');
-
-            $result[$date]['orders'] = $customer_orders + $channel_orders;
-            $result[$date]['bottle_refunds'] = $bottle_refunds;
+        foreach ($boxRefunds as $br) {
+            $result[$br->time][3] = $br->count;
         }
 
-        // 添加系统日志
-        $this->addSystemLog(User::USER_BACKEND_STATION, '奶品配送日统计', SysLog::SYSLOG_OPERATION_VIEW);
+        $products_name = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get(['id','simple_name']);
 
-        $products_name = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get(['id','name']);
         return view('naizhan.tongji.naipinpeisongri', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'products' =>$products_name,
-            'result'=>$result,
+            // 页面信息
+            'pages'         => $pages,
+            'child'         => $child,
+            'parent'        => $parent,
+            'current_page'  => $current_page,
+
+            // 数据
+            'start_date'    =>$start_date,
+            'products'      =>$products_name,
+            'result'        =>$result,
         ]);
     }
 
+    /**
+     * 打开配送员业务统计页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showPeisongyuanwei(Request $request){
+
         $child = 'peisongyuanwei';
         $parent = 'tongji';
         $current_page = 'peisongyuanwei';
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
+
+        $current_factory_id = $this->getCurrentFactoryId(false);
+        
+        $products = Product::where('factory_id', $current_factory_id)
+            ->where('is_deleted', 0)
+            ->get();
 
         $milkman_name = $request->input('milkman_name');
-        if($milkman_name == null){
-            $milkman_id ='';
-        }
         $milkman_number = $request->input('milkman_number');
-        if($milkman_number == null){
-            $milkman_number = '';
-        }
-        
+
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
         $startDate_str = $currentDate->format('Y-m-01');
+
         $start_date = $request->input('start_date');
         if($start_date == null){
             $start_date = $startDate_str;
         }
+
         $end_date = $request->input('end_date');
         if($end_date == null){
-            $end_date = $currentDate_str;
+            $end_date = getCurDateString();
         }
 
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $current_factory_id = Auth::guard('naizhan')->user()->factory_id;
-        
-        $milkman_delivers = array();
+        $current_station_id = $this->getCurrentStationId();
 
-        $milkman_info = MilkMan::where('station_id', $current_station_id)
-            ->where('name','LIKE','%'.$milkman_name.'%')
-            ->where('number','LIKE','%'.$milkman_number.'%')
-            ->get(['id']);
+        // 配送员
+        $milkmans = MilkMan::where('station_id', $current_station_id);
+        // 配送员名称筛选
+        if (!empty($milkman_name)) {
+            $milkmans->where('name', 'LIKE', '%'.$milkman_name.'%');
+        }
+        // 配送员编号筛选
+        if (!empty($milkman_number)) {
+            $milkmans->where('number', 'LIKE', '%'.$milkman_number.'%');
+        }
+        $milkmans = $milkmans->get(['id', 'name']);
 
-        foreach ($milkman_info as $key=>$mi) {
-            $milkmandelivery_plans = MilkManDeliveryPlan::where('station_id', $current_station_id)->where('milkman_id', $mi->id)->wherebetween('deliver_at', [$start_date, $end_date])->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
-
-            $customer_delivers_products = array();
-            $customer_delivers_products['milkman_name'] = MilkMan::find($mi->id)->name;
-            $customer_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->wherebetween('deliver_at', [$start_date, $end_date])->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id', $mi->id)->
-            where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->groupby(function ($sort) {
-                return $sort->order_id;
-            })->count();
-            $channel_orders = MilkManDeliveryPlan::where('station_id', $current_station_id)->wherebetween('deliver_at', [$start_date, $end_date])->
-            where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id', $mi->id)->
-            wherebetween('type', [2, 3])->groupby(function ($sort) {
-                return $sort->order_id;
-            })->count();
-            $customer_delivers_products['orders_count'] = $customer_orders + $channel_orders;
-            $customer_delivers_products['bottle_refund'] = MilkmanBottleRefund::where('milkman_id', $mi->id)->wherebetween('time', [$start_date, $end_date])->get()->sum('count');
-
-            $products = Product::where('factory_id', $current_factory_id)->where('is_deleted', 0)->get();
-            foreach ($products as $p) {
-                $yuedan = 0;
-                $jidan = 0;
-                $baninadan = 0;
-                $channel = 0;
-                foreach ($milkmandelivery_plans as $bd) {
-                    if ($bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
-                        if ($p->id == $bd->order_product->product->id) {
-                            if ($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN) {
-                                $yuedan += $bd->deliverd_count;
-                            } elseif ($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN) {
-                                $jidan += $bd->deliverd_count;
-                            } elseif ($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN) {
-                                $baninadan += $bd->deliverd_count;
-                            }
-                        }
-                    } elseif ($bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP || $bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL) {
-                        if ($p->id == $bd->order_product->product->id) {
-                            $channel += $bd->delivered_count;
-                        }
-                    }
+        $queryDeliveryPlan = MilkManDeliveryPlan::where('station_id', $current_station_id)
+            ->with(['milkman' => function($query) use ($milkman_name, $milkman_number) {
+                // 配送员名称筛选
+                if (!empty($milkman_name)) {
+                    $query->where('name', 'LIKE', '%'.$milkman_name.'%');
                 }
-                $customer_delivers_products['yuedan'][$p->id] = $yuedan;
-                $customer_delivers_products['jidan'][$p->id] = $jidan;
-                $customer_delivers_products['banniandan'][$p->id] = $baninadan;
-                $customer_delivers_products['channel'][$p->id] = $channel;
-            }
-            $milkman_delivers[$key] = $customer_delivers_products;
-        }
-        
-//        $milkmandelivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)->wherebetween('deliver_at',[$start_date,$end_date])->
-//        where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->get();
-//        $getBymilkman = $milkmandelivery_plans->groupby(function ($sort){return $sort->milkman_id;});
-//        foreach ($getBymilkman as $milkman=>$bymilkman){
-//            $customer_delivers_products = array();
-//            $customer_delivers_products['milkman_name'] = MilkMan::find($milkman)->name;
-//            $customer_orders =  MilkManDeliveryPlan::where('station_id',$current_station_id)->wherebetween('deliver_at',[$start_date,$end_date])->
-//            where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id',$milkman)->
-//            where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)->get()->groupby(function ($sort){return $sort->order_id;})->count();
-//            $channel_orders  =  MilkManDeliveryPlan::where('station_id',$current_station_id)->wherebetween('deliver_at',[$start_date,$end_date])->
-//            where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)->where('milkman_id',$milkman)->
-//            wherebetween('type',[2,3])->get()->groupby(function ($sort){return $sort->order_id;})->count();
-//            $customer_delivers_products['orders_count'] = $customer_orders + $channel_orders;
-//            $customer_delivers_products['bottle_refund'] = MilkmanBottleRefund::where('milkman_id',$milkman)->wherebetween('time',[$start_date,$end_date])->get()->sum('count');
-//
-//            $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
-//            foreach ($products as $p){
-//                $yuedan = 0;
-//                $jidan = 0;
-//                $baninadan = 0;
-//                $channel = 0;
-//                foreach ($bymilkman as $bd){
-//                    if($bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
-//                        if($p->id == $bd->order_product->product->id){
-//                            if($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN){
-//                                $yuedan +=$bd->deliverd_count;
-//                            }
-//                            elseif($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN){
-//                                $jidan +=$bd->deliverd_count;
-//                            }
-//                            elseif($bd->order_type = OrderProduct::ORDER_PRODUCT_ORDERTYPE_BANNIANDAN){
-//                                $baninadan +=$bd->deliverd_count;
-//                            }
-//                        }
-//                    }
-//                    elseif ($bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP || $bd->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL){
-//                        if($p->id == $bd->order_product->product->id){
-//                            $channel +=$bd->delivered_count;
-//                        }
-//                    }
-//                }
-//                $customer_delivers_products['yuedan'][$p->id] = $yuedan;
-//                $customer_delivers_products['jidan'][$p->id] = $jidan;
-//                $customer_delivers_products['banniandan'][$p->id] = $baninadan;
-//                $customer_delivers_products['channel'][$p->id] = $channel;
-//            }
-//            $milkman_delivers[$milkman]=$customer_delivers_products;
-//        }
+                // 配送员编号筛选
+                if (!empty($milkman_number)) {
+                    $query->where('number', 'LIKE', '%'.$milkman_number.'%');
+                }
+            }])
+            ->wherebetween('deliver_at', [$start_date, $end_date])
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED);
 
-        $products = Product::where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
+        //
+        // 获取配送客户数
+        //
+        $queryDeliveryPlanUser = clone $queryDeliveryPlan;
+        $countsOrder = $queryDeliveryPlanUser->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('orderproducts as o', 'o.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->groupBy('milkmandeliveryplan.order_id')
+            ->selectRaw('milkman_id, o.product_id, o.order_type, sum(delivered_count) as count')
+            ->get()
+            ->groupBy('milkman_id');
+
+        $aryCountOrder = array();
+        foreach ($countsOrder as $nmId => $countsMilkman) {
+            // 配送客户数
+            $aryCountOrder[$nmId][0] = count($countsMilkman);
+
+            $aryCountByType = array();
+
+            //
+            // 获取月单、季单、半年单
+            //
+            $countsOrderType = $countsMilkman->groupBy('order_type');
+            foreach ($countsOrderType as $nTypeId => $countsType) {
+                //
+                // 获取每个奶品的数量
+                //
+                $aryCountByProduct = array();
+
+                $countsOrderProduct = $countsType->groupBy('product_id');
+
+                foreach ($countsOrderProduct as $nProductId => $countsProduct) {
+                    $aryCountByProduct[$nProductId] = $countsProduct->sum('count');
+                }
+
+                $aryCountByType[$nTypeId] = $aryCountByProduct;
+            }
+
+            $aryCountOrder[$nmId][1] = $aryCountByType;
+        }
+
+        //
+        // 查询自营订单数量
+        //
+        $queryDeliveryPlanSelf = clone $queryDeliveryPlan;
+        $countsOrder = $queryDeliveryPlanSelf->where('type', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->join('selforderproduct as o', 'o.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->groupBy('o.product_id')
+            ->selectRaw('milkman_id, count(delivered_count) as count')
+            ->get()
+            ->groupBy('milkman_id');
+
+        foreach ($countsOrder as $nmId => $countsMilkman) {
+
+            $aryCountByProduct = array();
+            foreach ($countsMilkman as $nProductId => $countsProduct) {
+                $aryCountByProduct[$nProductId] = $countsProduct->sum('count');
+            }
+
+            $aryCountOrder[$nmId][2] = $aryCountByProduct;
+        }
+
+        //
+        // 回收空瓶数量
+        //
+        $boxRefunds = MilkmanBottleRefund::wherebetween('time', [$start_date, $end_date])
+            ->whereHas('milkman', function($query) use ($current_station_id) {
+                $query->where('station_id', $current_station_id);
+            })
+            ->groupBy('milkman_id')
+            ->selectRaw('milkman_id, sum(count) as count')
+            ->get();
+
+        foreach ($boxRefunds as $br) {
+            $aryCountOrder[$br->milkman_id][3] = $br['count'];
+        }
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_STATION, '配送员业务统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('naizhan.tongji.peisongyuanwei', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'products'=>$products,
-            'milkman_delivers'=>$milkman_delivers,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
-            'milkman_name'=>$milkman_name,
-            'milkman_number'=>$milkman_number,
+            // 页面信息
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+
+            // 数据
+            'milkmans'           => $milkmans,
+            'products'          => $products,
+            'milkman_delivers'  => $aryCountOrder,
+            'start_date'        => $start_date,
+            'end_date'          => $end_date,
+            'milkman_name'      => $milkman_name,
+            'milkman_number'    => $milkman_number,
         ]);
     }
     //

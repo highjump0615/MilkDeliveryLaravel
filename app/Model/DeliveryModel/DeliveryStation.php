@@ -15,7 +15,7 @@ use App\Model\OrderModel\OrderCheckers;
 use DateTime;
 use DateTimeZone;
 
-class DeliveryStation extends Authenticatable
+class DeliveryStation extends Model
 {
     protected $table = 'deliverystations';
     protected $fillable = [
@@ -48,14 +48,12 @@ class DeliveryStation extends Authenticatable
 
     protected $appends = [
         'total_count',
-        'received_order_money',
         'receivable_order_money',
         'orders_in_month',
 
         'payment_calc_type_str',
 
         //Money
-        'money_orders_really_got',
         'money_orders_really_got_sum',
         'money_orders_of_others',
         'money_orders_of_mine',
@@ -83,7 +81,6 @@ class DeliveryStation extends Authenticatable
 
         //Term Init Amount
         'term_start_amount',
-        'term_start_order_count',
 
         //Self Business Hitory
         'self_business_history',
@@ -104,9 +101,6 @@ class DeliveryStation extends Authenticatable
 
         //Station type Name
         'type_name',
-
-        //get milkman of this stations
-        'milkmans',
     ];
 
     const DELIVERY_STATION_TYPE_STATION_NORMAL = 1;
@@ -116,113 +110,28 @@ class DeliveryStation extends Authenticatable
     const DELIVERY_STATION_STATUS_ACTIVE = 1;
     const DELIVERY_STATION_STATUS_INACTIVE = 0;
 
+    private $mDateStart;
+    private $mDateEnd;
+
     /**
-     * 期初余额数量
-     * @param $count 数量
-     * @param $cost 金额
+     * DeliveryStation constructor.
+     * @param array $attributes
      */
-    public function getBottleCountBeforeThisTerm(&$count, &$cost) {
-        $count = 0;
-        $cost = 0;
-        $aryOrderId = array();
+    public function __construct($attributes = []) {
+        parent::__construct($attributes);
 
-        // 本期日期范围
-        $last_m = date('Y-m-01');
-
-        // 查询配送明细，条件为前期完成的相反
-        $plans = MilkManDeliveryPlan::where('deliver_at', '>=', $last_m)
-            ->where('status', '<>', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->whereHas('orderDelivery', function($query) use ($last_m) {
-                $query->where('delivery_station_id', $this->id);
-                $query->where('ordered_at', '<', $last_m);
-                $query->where(function($query){
-                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-                });
-            })
-            ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->first();
-
-        // 返回数据
-        if (!empty($plans->count)) {
-            $count = $plans->count;
-        }
-        if (!empty($plans->cost)) {
-            $cost = $plans->cost;
-        }
+        $this->mDateStart = date('Y-m-01');
+        $this->mDateEnd = getCurDateString();
     }
 
     /**
-     * 本期订单金额增加
-     * @param $count
-     * @param $cost
+     * 设置日期范围
+     * @param $dateStart
+     * @param $dateEnd
      */
-    public function getBottleCountIncreasedThisTerm(&$count, &$cost) {
-        $count = 0;
-        $cost = 0;
-
-        // 本期日期范围
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
-        // 查询本期订单的配送明细
-        $plans = MilkManDeliveryPlan::whereHas('orderDelivery', function($query) use ($first_m, $last_m) {
-                $query->where('delivery_station_id', $this->id);
-                $query->where('ordered_at', '>=', $first_m);
-                $query->where('ordered_at', '<=', $last_m);
-                $query->where(function($query){
-                    $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                    $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                    $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-                });
-            })->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->first();
-
-        // 返回数据
-        if (!empty($plans->count)) {
-            $count = $plans->count;
-        }
-        if (!empty($plans->cost)) {
-            $cost = $plans->cost;
-        }
-    }
-
-    /**
-     * 本期完成订单余额
-     * @param $count
-     * @param $cost
-     */
-    public function getBottleDoneThisTerm(&$count, &$cost) {
-        $count = 0;
-        $cost = 0;
-
-        // 本期日期范围
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
-        // 查询配送明细
-        $plans = MilkManDeliveryPlan::where('station_id', $this->id)
-            ->where('deliver_at', '>=', $first_m)
-            ->where('deliver_at', '<=', $last_m)
-            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->selectRaw('sum(changed_plan_count) as count, sum(changed_plan_count*product_price) as cost')
-            ->first();
-
-        // 返回数据
-        if (!empty($plans->count)) {
-            $count = $plans->count;
-        }
-        if (!empty($plans->cost)) {
-            $cost = $plans->cost;
-        }
-    }
-
-    public function getMilkmansAttribute()
-    {
-        $milkmans = MilkMan::where('station_id', $this->id)->where('is_active', 1)->get();
-
-        return $milkmans;
+    public function setDateRange($dateStart, $dateEnd) {
+        $this->mDateStart = $dateStart;
+        $this->mDateEnd = $dateEnd;
     }
 
     //get milkman who can delivery the product to the address in this station
@@ -332,12 +241,9 @@ class DeliveryStation extends Authenticatable
 
     public function getBusinessInAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
-            ->whereDate('created_at', '>=', $first_m)
-            ->whereDate('created_at', '<=', $last_m)
+            ->whereDate('created_at', '>=', $this->mDateStart)
+            ->whereDate('created_at', '<=', $this->mDateEnd)
             ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_IN)
             ->get();
 
@@ -350,12 +256,9 @@ class DeliveryStation extends Authenticatable
 
     public function getBusinessOutAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $bus_histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
-            ->whereDate('created_at', '>=', $first_m)
-            ->whereDate('created_at', '<=', $last_m)
+            ->whereDate('created_at', '>=', $this->mDateStart)
+            ->whereDate('created_at', '<=', $this->mDateEnd)
             ->where('io_type', DSBusinessCreditBalanceHistory::DSBCBH_OUT)
             ->get();
 
@@ -369,12 +272,9 @@ class DeliveryStation extends Authenticatable
 
     public function getSelfBusinessHistoryAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $histories = DSBusinessCreditBalanceHistory::where('station_id', $this->id)
-            ->whereDate('created_at', '>=', $first_m)
-            ->whereDate('created_at', '<=', $last_m)
+            ->whereDate('created_at', '>=', $this->mDateStart)
+            ->whereDate('created_at', '<=', $this->mDateEnd)
             ->orderby('created_at', 'desc')
             ->get();
 
@@ -400,22 +300,6 @@ class DeliveryStation extends Authenticatable
         //Current Calc Balance + OUT - IN
         $term_init = $this->calculation_balance + $this->calc_out_total - $this->calc_in_total;
         return $term_init;
-    }
-
-    //At term start, the order count remained
-    public function getTermStartOrderCountAttribute()
-    {
-        $first_m = date('Y-m-01');
-
-        $count_orders_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)->count();
-
-        $count_orders_done_before = Order::where('station_id', $this->id)->where('ordered_at', '<', $first_m)
-            ->where('status', Order::ORDER_FINISHED_STATUS)->count();
-
-        $term_start_order_count = $count_orders_before-$count_orders_done_before;
-
-        return $term_start_order_count;
-
     }
 
     //total money out during this term
@@ -459,17 +343,17 @@ class DeliveryStation extends Authenticatable
     //get other stations orders that has received wechat from station
     public function getOtherOrdersReallyGotAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
         $orders = Order::where('station_id', '!=', $this->id)
-            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
-            ->where('ordered_at', '<=', $last_m)->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
-            ->where('delivery_station_id', '=', $this->id)->get();
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
+            ->where('delivery_station_id', '=', $this->id)
+            ->get();
 
         return $orders;
     }
@@ -477,9 +361,9 @@ class DeliveryStation extends Authenticatable
     //get other stations orders
     public function getOtherOrdersAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-        $orders = Order::where('station_id', '!=', $this->id)->where('ordered_at', '>=', $first_m)->where('ordered_at', '<=', $last_m)
+        $orders = Order::where('station_id', '!=', $this->id)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -493,17 +377,15 @@ class DeliveryStation extends Authenticatable
     //get card orders that has received wechat from station
     public function getCardOrdersReallyGotAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
             })
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
             ->get();
 
@@ -513,12 +395,9 @@ class DeliveryStation extends Authenticatable
     //get card orders
     public function getCardOrdersAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -534,12 +413,9 @@ class DeliveryStation extends Authenticatable
     //get wechat orders that has received wechat from station
     public function getWechatOrdersReallyGotAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -555,12 +431,9 @@ class DeliveryStation extends Authenticatable
     //get wechat orders
     public function getWechatOrdersAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -606,12 +479,9 @@ class DeliveryStation extends Authenticatable
     //get money orders of mine
     public function getMoneyOrdersOfMineAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -626,12 +496,9 @@ class DeliveryStation extends Authenticatable
     //get money orders of others
     public function getMoneyOrdersOfOthersAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -644,32 +511,15 @@ class DeliveryStation extends Authenticatable
     }
 
     //get money orders that has received money from station
-    public function getMoneyOrdersReallyGotAttribute()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('status', Order::ORDER_FINISHED_STATUS)
-            ->get();
-
-        return $orders;
-    }
-
-    //get money orders that has received money from station
     public function getMoneyOrdersReallyGotSumAttribute()
     {
         $res = DSCalcBalanceHistory::where('station_id', $this->id)
             ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
-            ->whereMonth('created_at', '=', date('m'))
-            ->whereYear('created_at', '=', date('Y'))
-            ->get()
+            ->whereDate('created_at', '>=', $this->mDateStart)
+            ->whereDate('created_at', '<=', $this->mDateEnd)
             ->sum('amount');
 
-        return $res;
+        return getEmptyValue($res);
     }
 
     /**
@@ -677,10 +527,8 @@ class DeliveryStation extends Authenticatable
      * @return int
      */
     public function getMoneyNotReceivedStartOfMonth(){
-        $first_m = date('Y-m-01');
-
-        $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '<', $first_m)
+        $nOrderAmount = Order::where('station_id', $this->id)
+            ->where('ordered_at', '<', $this->mDateStart)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                     $query->where('status', '<>', Order::ORDER_WAITING_STATUS);
@@ -688,17 +536,17 @@ class DeliveryStation extends Authenticatable
                     $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                     $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
                 })
-            ->get();
+            ->sum('total_amount');
 
-        $order_total = $this->getSumOfOrders($orders);
+        $order_total = getEmptyValue($nOrderAmount);
 
-        $calc_histories = DSCalcBalanceHistory::where('station_id', $this->id)
-            ->where('time', '<', $first_m)
+        $nCalchistoryAmount = DSCalcBalanceHistory::where('station_id', $this->id)
+            ->where('time', '<', $this->mDateStart)
             ->where('io_type', DSCalcBalanceHistory::DSCBH_TYPE_IN)
             ->where('type', DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION)
-            ->get();
+            ->sum('amount');
 
-        $received_total = $this->getSumOfHistories($calc_histories);
+        $received_total = getEmptyValue($nCalchistoryAmount);
 
         return $order_total - $received_total;
     }
@@ -706,12 +554,9 @@ class DeliveryStation extends Authenticatable
     //get money orders
     public function getMoneyOrdersAttribute()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -725,12 +570,9 @@ class DeliveryStation extends Authenticatable
 
     public function getMoneyOrdersInput()
     {
-        $first_m = date('Y-m-01');
-        $last_m = getCurDateString();
-
         $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -742,17 +584,32 @@ class DeliveryStation extends Authenticatable
         return $orders;
     }
 
+    /**
+     * 获取本期订单的总金额
+     * @return mixed
+     */
+    public function getMoneyOrdersInputAmount()
+    {
+        $nAmount = Order::where('station_id', $this->id)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->where(function($query){
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+            })
+            ->sum('total_amount');
+
+        return getEmptyValue($nAmount);
+    }
+
     //get all orders of station in current month
     public function getOrdersInMonthAttribute()
     {
-        //to current day
-
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
         $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
@@ -848,23 +705,6 @@ class DeliveryStation extends Authenticatable
         return $order_checkers;
     }
 
-    //Insert money amount received really for money order
-    //From first day of month, to today, the total amount of received order money by inserting
-    public function getReceivedOrderMoneyAttribute()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        //From month first, to today, total amount of order money really received
-        $received_order_money_histories = DSDeliveryCreditBalanceHistory::where('station_id', $this->id)->where('time', '>=', $first_m)
-            ->where('time', '<=', $last_m)->where("type", DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_IN_MONEY)->get();
-        $total = 0;
-        foreach ($received_order_money_histories as $romh) {
-            $total += $romh->amount;
-        }
-        return $total;
-    }
-
     public function getSumOfOrders($orders)
     {
         $sum = 0;
@@ -887,8 +727,7 @@ class DeliveryStation extends Authenticatable
 
     public function getReceivableOrderMoneyAttribute()
     {
-        $money_orders = $this->getMoneyOrdersInput();
-        $money_orders_sum = $this->getSumOfOrders($money_orders);
+        $money_orders_sum = $this->getMoneyOrdersInputAmount();
 
         $money_orders_really_got_sum = $this->money_orders_really_got_sum;
 
@@ -900,18 +739,19 @@ class DeliveryStation extends Authenticatable
     //get other money orders
     public function get_other_orders_not_checked()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+        $orders = Order::where('factory_id', $this->factory_id)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })->get();
+            })
+            ->get();
+
         return $orders;
     }
 
@@ -932,11 +772,10 @@ class DeliveryStation extends Authenticatable
     //get total money orders to send others
     public function get_other_orders_money_total()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+        $orders = Order::where('factory_id', $this->factory_id)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
             ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -950,89 +789,6 @@ class DeliveryStation extends Authenticatable
             $total += $order->total_amount;
         }
         return $total;
-    }
-
-    public function get_other_orders_checked_money_total()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('station_id', $this->id)->whereRaw('station_id != delivery_station_id')
-            ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        $total = 0;
-        foreach ($orders as $order) {
-            $total += $order->total_amount;
-        }
-        return $total;
-    }
-
-    public function get_other_orders_unchecked_money_total()
-    {
-
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where('station_id', $this->id)
-            ->whereRaw('station_id != delivery_station_id')->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        $total = 0;
-        foreach ($orders as $order) {
-            $total += $order->total_amount;
-        }
-        return $total;
-    }
-
-    //get card money orders
-    public function get_card_orders()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('station_id', $this->id)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-        return $orders;
-    }
-
-    public function get_card_orders_not_checked()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('station_id', $this->id)
-            ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-        return $orders;
     }
 
     public function get_card_orders_not_checked_for_transaction()
@@ -1054,11 +810,9 @@ class DeliveryStation extends Authenticatable
     //get total money orders to send others
     public function get_card_orders_money_total()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('station_id', $this->id)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
@@ -1076,18 +830,17 @@ class DeliveryStation extends Authenticatable
 
     public function get_card_orders_checked_money_total()
     {
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->factory_id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_TRUE)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })->get();
+            })
+            ->get();
 
         $total = 0;
         foreach ($orders as $order) {
@@ -1098,19 +851,17 @@ class DeliveryStation extends Authenticatable
 
     public function get_card_orders_unchecked_money_total()
     {
-
-        $first_m = date('Y-m-01');
-        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->id)->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+        $orders = Order::where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
             ->where('station_id', $this->id)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query){
                 $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
                 $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
                 $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })->get();
+            })
+            ->get();
 
         $total = 0;
         foreach ($orders as $order) {

@@ -51,7 +51,7 @@
 									<td>{{$cu->sector_addr}}</td>
 									<td class="user">{{$cu->name}}</td>
 									<td class="phone">{{$cu->phone}}</td>
-									<td>{{$cu->detail_addr}}</td>
+									<td class="align-left">{{$cu->detail_addr}}</td>
 									{{--<td>{{$cu->station_name}}</td>--}}
 									<td>{{$cu->milkman_name}}</td>
 									<td>{{$cu->order_status}}</td>

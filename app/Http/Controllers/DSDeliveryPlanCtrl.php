@@ -1065,9 +1065,10 @@ class DSDeliveryPlanCtrl extends Controller
         // 配送员列表
         //
 
-        // 查询
+        // 查询, 没返录的配送员排在前面
         $deliveryPlanById = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
-            ->distinct()
+            ->orderBy('status')
+            ->groupBy('milkman_id')
             ->get(['milkman_id']);
 
         $aryMilkmanId = array();
@@ -1090,7 +1091,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 配送员信息，默认是第一个
         if (empty($current_milkman)) {
-            $current_milkman = $deliveryPlan->milkman_id;
+            $current_milkman = $aryMilkmanId[0];
         }
 
         // 奶瓶回收
