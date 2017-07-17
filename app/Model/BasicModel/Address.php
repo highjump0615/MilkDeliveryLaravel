@@ -33,7 +33,6 @@ class Address extends Model
   		//'sub_addresses',
         //'sub_active_addresses',
   		'sub_addresses_str',
-        'full_address_name',
   	];
 
     const ADDRESS_ACTIVE = 1;
@@ -144,36 +143,6 @@ class Address extends Model
         $id = $this->id;
 
         return Address::where('parent_id', $id)->where('name', $name)->first();
-    }
-
-    public function getFullAddressNameAttribute()
-    {
-        $level = $this->level;
-
-        if($level == 1) {
-            return $this->name;
-        }
-
-        $province = $this->province->name;
-
-        if($level == 2) {
-            return $province.' '.$this->name;
-        }
-
-        $city = $this->city->name;
-
-        if($level == 3) {
-            return $province.' '.$city.' '.$this->name;
-        }
-
-        $district = $this->district->name;
-
-        if($level == 4) {
-            return $province.' '.$city.' '.$district.' '.$this->name;
-        }
-
-        $street = $this->street->name;
-        return $province.' '.$city.' '.$district.' '.$street.' '.$this->name;
     }
 
     public function changeSubAddressName($origin_val, $new_val)

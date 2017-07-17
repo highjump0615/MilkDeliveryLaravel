@@ -80,7 +80,7 @@
                             <tbody>
 							@foreach($product_info as $pi)
 								<tr>
-									<td>{{$pi->name}}</td>
+									<td>{{$pi->simple_name}}</td>
 									<td>@if($pi->xin_property=='')0 @else {{$pi->xin_property}}@endif</td>
 									<td>@if($pi->xu_property == '') 0 @else {{$pi->xu_property}} @endif</td>
 									<td>@if($pi->t_type == '') 0 @else {{$pi->t_type}} @endif</td>

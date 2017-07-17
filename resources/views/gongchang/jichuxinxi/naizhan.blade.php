@@ -101,11 +101,7 @@
                                     <td class="address" data-province="{{$station->province_name}}" data-city="{{$station->city_name}}" data-district="{{$station->district_name}}">
                                         @if (isset($area_address[$station->id]))
                                         @foreach($area_address[$station->id] as $street_id=>$street)
-                                            {{$street[0]}}:
-                                            @foreach($street[1] as $xiaoqu_id => $xiaoqu_name)
-                                                {{$xiaoqu_name}}
-                                            @endforeach
-                                            <br>
+                                            {{$street[0]}}
                                         @endforeach
                                         @endif
                                     </td>
@@ -123,10 +119,10 @@
                         <table id="filter_table" class="footable table table-bordered" data-page-size="10">
                             <thead>
                             <tr>
-                                <th data-sort-ignore="true">序号</th>
-                                <th data-sort-ignore="true">图片</th>
-                                <th data-sort-ignore="true">编号</th>
-                                <th data-sort-ignore="true">名称</th>
+                                <th data-sort-ignore="true" style="width:5%">序号</th>
+                                <th data-sort-ignore="true" style="width:7%">图片</th>
+                                <th data-sort-ignore="true" style="width:6%">编号</th>
+                                <th data-sort-ignore="true" style="width:30%">名称</th>
                                 <th data-sort-ignore="true">配送范围</th>
                             </tr>
                             </thead>

@@ -28,7 +28,7 @@
                 ])
 
                 <div class="feed-element">
-                    <div class="col-md-2 col-md-offset-10">
+                    <div class="col-md-3 col-md-offset-9 button-div">
                         <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
                         <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>

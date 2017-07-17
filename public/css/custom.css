@@ -399,3 +399,54 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
     color: red;
     font-size: 18px;
 }
+
+/* UI优化添加的 */
+.form-horizontal .label-control {
+    float: left;
+    padding-right: 10px;
+}
+
+.no-vert-padding {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.no-top-padding {
+    padding-top: 0px;
+}
+
+/* 筛选条 */
+#form_filter .item {
+    width: 20%;
+    padding: 0px 10px;
+    float: left;
+}
+#form_filter .item.double {
+    width: 40%;
+}
+#form_filter .item label {
+    width: 30%;
+    margin-right: 10px;
+    float: left;
+    font-weight: normal;
+}
+#form_filter .item.double label {
+    width: 15%;
+}
+#form_filter .item .input-data {
+    width: 60%;
+}
+
+/* 页面内容最小宽度 */
+.wrapper {
+    padding: 0px 10px;
+    overflow: auto;
+}
+.wrapper > .wrapper-content {
+    min-width: 1200px;
+}
+
+/* 表格左对齐 */
+.align-left {
+    text-align: left;
+}

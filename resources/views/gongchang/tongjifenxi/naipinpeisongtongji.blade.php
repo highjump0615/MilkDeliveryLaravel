@@ -78,7 +78,7 @@
 				<div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table id="table1" class="footable table table-bordered" data-page-size="{{$count *3}}">
+                        <table id="table1" class="footable table table-bordered" data-page-size="{{count($products)*3}}">
                             <thead>
 								<tr>
 									<th data-sort-ignore="true">序号</th>
@@ -98,25 +98,37 @@
                             <tbody>
 							<?php $i = 0; ?>
 							@foreach($stations as $st)
-								<?php $i++; $j = 0; ?>
-								@foreach($st->product as $p)
-									<?php $j++; ?>
+                                <?php $i++; $j = 0; ?>
+								@foreach ($products as $pd)
 								<tr>
-									@if($j == 1)
-									<td rowspan="{{count($st->product)}}">{{$i}}</td>
-									<td rowspan="{{count($st->product)}}">{{$st->province}}</td>
-									<td rowspan="{{count($st->product)}}">{{$st->district}}</td>
-									<td rowspan="{{count($st->product)}}">{{$st->name}}</td>
+									@if ($j == 0)
+									<!-- 序号 -->
+									<td rowspan="{{count($products)}}">{{$i}}</td>
+									<!-- 区域 -->
+									<td rowspan="{{count($products)}}">{{$st[0]['province']}}</td>
+									<!-- 分区 -->
+									<td rowspan="{{count($products)}}">{{$st[0]['district']}}</td>
+									<!-- 奶站名称 -->
+									<td rowspan="{{count($products)}}">{{$st[0]['name']}}</td>
 									@endif
-									<td>{{$p->name}}</td>
-									<td>{{$p->weixin}}</td>
-									<td>{{$p->card}}</td>
-									<td>{{$p->xianjin}}</td>
-									<td>{{$p->retail}}</td>
-									<td>{{$p->test_drink}}</td>
-									<td>{{$p->group_sale}}</td>
-									<td>{{$p->channel_sale}}</td>
+									<!-- 奶品 -->
+									<td>{{$pd->simple_name}}</td>
+									<!-- 微信支付（瓶） -->
+									<td>{{getEmptyArrayValue($st, 1, $pd->id, \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT)}}</td>
+									<!-- 奶卡支付（瓶） -->
+									<td>{{getEmptyArrayValue($st, 1, $pd->id, \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_CARD)}}</td>
+									<!-- 现金支付（瓶） -->
+									<td>{{getEmptyArrayValue($st, 1, $pd->id, \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_MONEY_NORMAL)}}</td>
+									<!-- 站内零售（瓶） -->
+									<td>{{getEmptyArrayValue($st, 2, $pd->id, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)}}</td>
+									<!-- 试饮赠品（瓶） -->
+									<td>{{getEmptyArrayValue($st, 2, $pd->id, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)}}</td>
+									<!-- 团购业务（瓶） -->
+									<td>{{getEmptyArrayValue($st, 2, $pd->id, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)}}</td>
+									<!-- 渠道销售数量（瓶） -->
+									<td>{{getEmptyArrayValue($st, 2, $pd->id, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)}}</td>
 								</tr>
+                                <?php $j++; ?>
 								@endforeach
 							@endforeach
                             </tbody>

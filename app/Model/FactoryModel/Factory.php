@@ -248,24 +248,6 @@ class Factory extends Model
         return $total;
     }
 
-
-    //get card orders of others
-    public function get_card_orders()
-    {
-        $first_m = date('Y-m-01');
-        $last_m = date('Y-m-d');
-
-        $orders = Order::where('factory_id', $this->id)
-            ->where('ordered_at', '>=', $first_m)
-            ->where('ordered_at', '<=', $last_m)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
-            ->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS)
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
-            ->get();
-
-        return $orders;
-    }
-
     //get card orders not checked
     public function get_card_orders_not_checked()
     {

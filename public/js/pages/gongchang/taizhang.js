@@ -5,6 +5,15 @@
 var nAddType = 0;
 
 $(document).ready(function () {
+    // 初始化日期范围
+    $('#data_range_select .input-daterange').datepicker({
+        keyboardNavigation: false,
+        forceParse: false,
+        autoclose: true,
+        calendarWeeks: false,
+        clearBtn: true,
+    });
+
     // 显示modal事件
     $('#insert_order').on('hidden.bs.modal', function () {
         $(this).find('input').val('');
@@ -94,20 +103,6 @@ function increase_delivery_credit_balance(station_id, amount) {
 
     return;
 }
-
-$('[data-action="show_selected"]').click(function () {
-    var current_station = $('.choose_station').val();
-
-    $('.station').each(function () {
-        if ($(this).data('sid') == current_station || current_station == "none") {
-            $(this).show();
-        }
-        else {
-            $(this).hide();
-        }
-    });
-});
-
 
 $('button[data-action = "print"]').click(function () {
 

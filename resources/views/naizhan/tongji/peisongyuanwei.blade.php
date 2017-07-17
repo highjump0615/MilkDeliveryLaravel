@@ -62,56 +62,73 @@
 								</tr>
 								<tr>
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->name}}</th>
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
 									@endforeach
 									<th data-sort-ignore="true">合计</th>
 								</tr>
                             </thead>
                             <tbody>
 							<?php $i =0; ?>
-							@foreach($milkman_delivers as $name=>$md)
+							@foreach ($milkmans as $milkman)
 								<?php $i++; ?>
 								<tr>
+									<!-- 序号 -->
 									<td>{{$i}}</td>
-									<td>{{$md['milkman_name']}}</td>
-									<td>{{$md['orders_count']}}</td>
-									@foreach($md['yuedan'] as $p_id=>$yuedan)
-										<td class="yuedan {{$p_id}}">{{$yuedan}}</td>
+									<!-- 配送员 -->
+									<td>{{$milkman->name}}</td>
+									<!-- 配送客户数 -->
+									<td>{{getEmptyArrayValue($milkman_delivers, $milkman->id, 0)}}</td>
+									<!-- 月单 -->
+									@foreach ($products as $pd)
+										<td class="yuedan {{$pd->id}}">
+											{{getEmptyArrayValue($milkman_delivers, $milkman->id, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_YUEDAN, $pd->id)}}
+										</td>
 									@endforeach
 									<td class="f_yuedan"></td>
-									@foreach($md['jidan'] as $p_id=>$jidan)
-										<td class="jidan {{$p_id}}">{{$jidan}}</td>
+									<!-- 季单 -->
+									@foreach ($products as $pd)
+										<td class="jidan {{$pd->id}}">
+											{{getEmptyArrayValue($milkman_delivers, $milkman->id, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, $pd->id)}}
+										</td>
 									@endforeach
 									<td class="f_jidan"></td>
-									@foreach($md['banniandan'] as $p_id=>$banniandan)
-										<td class="banniandan {{$p_id}}">{{$banniandan}}</td>
+									<!-- 半年单 -->
+									@foreach ($products as $pd)
+										<td class="banniandan {{$pd->id}}">
+											{{getEmptyArrayValue($milkman_delivers, $milkman->id, 1, \App\Model\OrderModel\OrderProduct::ORDER_PRODUCT_ORDERTYPE_JIDAN, $pd->id)}}
+										</td>
 									@endforeach
 									<td class="f_banniandan"></td>
-									@foreach($md['channel'] as $p_id=>$channel)
-										<td class="channel {{$p_id}}">{{$channel}}</td>
+									<!-- 团购或渠道 -->
+									@foreach ($products as $pd)
+										<td class="channel {{$pd->id}}">
+											{{getEmptyArrayValue($milkman_delivers, $milkman->id, 2, $pd->id)}}
+										</td>
 									@endforeach
 									<td class="f_channel"></td>
+									<!-- 配送数量 -->
 									@foreach($products as $p)
 										<td class="f_{{$p->id}} total" product_type="{{$p->id}}"></td>
 									@endforeach
 									<td class="f_totalsum"></td>
-									<td>{{$md['bottle_refund']}}</td>
+									<!-- 回收空瓶数量 -->
+									<td>{{getEmptyArrayValue($milkman_delivers, $milkman->id, 3)}}</td>
 								</tr>
 							@endforeach
                             </tbody>

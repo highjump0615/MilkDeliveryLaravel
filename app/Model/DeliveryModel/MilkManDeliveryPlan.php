@@ -169,6 +169,10 @@ class MilkManDeliveryPlan extends Model
         return $this->belongsTo('App\Model\OrderModel\OrderProduct', 'order_product_id')->withTrashed();
     }
 
+    /**
+     * 获取配送员
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function milkman(){
         return $this->belongsTo('App\Model\DeliveryModel\MilkMan');
     }

@@ -202,18 +202,18 @@ class Order extends Model
      * 获取小区和具体地址
      * @return string
      */
-    public function getAddressSmall() {
+    public function getAddressSmall($level) {
         $main_addr = "";
-        $addr_list = explode(' ', $this->address);
+        $addr_list = explode(" ", $this->address);
 
-        // 小区
-        if (!empty($addr_list[4])) {
-            $main_addr = $addr_list[4];
-        }
+        for ($i = $level - 1; $i < Address::LEVEL_VILLAGE + 1; $i++) {
+            if ($i >= $level) {
+                $main_addr .= " ";
+            }
 
-        // 具体地址
-        if (!empty($addr_list[5])) {
-            $main_addr .= " " . $addr_list[5];
+            if (!empty($addr_list[$i])) {
+                $main_addr .= $addr_list[$i];
+            }
         }
 
         return $main_addr;
@@ -512,25 +512,13 @@ class Order extends Model
         return $nId;
     }
 
-
-
+    /**
+     * 获取订单地址
+     * @return mixed|string
+     */
     public function getAddressesAttribute()
     {
-        if($this->address)
-        {
-            return $this->address;
-        }
-        else if($this->customer_id)
-        {
-            $customer = Customer::find($this->customer_id);
-
-            if($customer)
-                return $customer->address;
-            else
-                return "";
-        }
-        else
-            return "";
+        return $this->getAddressSmall(Address::LEVEL_STREET);
     }
 
     /**
