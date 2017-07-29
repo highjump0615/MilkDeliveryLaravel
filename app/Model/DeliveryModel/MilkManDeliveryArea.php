@@ -22,6 +22,6 @@ class MilkManDeliveryArea extends Model
     }
 
     public function deliveryArea() {
-        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id');
+        return $this->belongsTo('App\Model\DeliveryModel\DSDeliveryArea', 'deliveryarea_id')->withTrashed();
     }
 }
