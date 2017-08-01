@@ -33,20 +33,19 @@ class NotificationsAdmin extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         $categories = FactoryNotification::getCategory();
-        $mfnotification = FactoryNotification::where('factory_id',$current_factory_id)->orderby('created_at', 'desc')->get();
+        $query = FactoryNotification::where('factory_id',$current_factory_id)
+            ->orderby('created_at', 'desc');
 
-        foreach ($mfnotification as $dn){
-            $dn['category_name'] = FactoryNotification::getCategoryName($dn->category);
-        }
+        $aryBaseData = $this->getNotificationList($query, $request);
 
-        return view('gongchang.xinxi.zhongxin', [
+        return view('gongchang.xinxi.zhongxin', array_merge($aryBaseData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'mfnotification' => $mfnotification,
+
             'categories'=>$categories,
-        ]);
+        ]));
     }
 
     public function changetoActiveGongchang(Request $request){
@@ -83,6 +82,59 @@ class NotificationsAdmin extends Controller
     }
 
     /**
+     * 获取带筛选的信息
+     * @param $queryNotify
+     * @param Request $request
+     * @return array
+     */
+    private function getNotificationList($queryNotify, Request $request) {
+
+        $retData = array();
+
+        // 阅读状态
+        $read = $request->input('read');
+        if (isset($read) && $read < 2) {
+            // 筛选
+            $queryNotify->where('read', $read);
+
+            // 添加筛选参数
+            $retData['read'] = $read;
+        }
+
+        // 消息分类
+        $category = $request->input('category');
+        if (!empty($category)) {
+            // 筛选
+            $queryNotify->where('category', $category);
+
+            // 添加筛选参数
+            $retData['category'] = $category;
+        }
+
+        // 日期
+        $start = $request->input('start');
+        if (!empty($start)) {
+            // 筛选
+            $queryNotify->whereDate('created_at', '>=', $start);
+
+            // 添加筛选参数
+            $retData['start'] = $start;
+        }
+        $end = $request->input('end');
+        if (!empty($end)) {
+            // 筛选
+            $queryNotify->whereDate('created_at', '<=', $end);
+
+            // 添加筛选参数
+            $retData['end'] = $end;
+        }
+
+        $retData['notifications'] = $queryNotify->paginate();
+
+        return $retData;
+    }
+
+    /**
      * 打开奶站消息中心
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -97,20 +149,20 @@ class NotificationsAdmin extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         $categories = DSNotification::getCategory();
-        $dsnotification = DSNotification::where('station_id',$current_station_id)->orderby('created_at','desc')->get();
 
-        foreach ($dsnotification as $dn){
-            $dn['category_name'] = DSNotification::getCategoryName($dn->category);
-        }
+        $query = DSNotification::where('station_id',$current_station_id)
+            ->orderby('created_at', 'desc');
 
-        return view('naizhan.xiaoxi.zhongxin', [
+        $aryBaseData = $this->getNotificationList($query, $request);
+
+        return view('naizhan.xiaoxi.zhongxin', array_merge($aryBaseData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'dsnotification' => $dsnotification,
+
             'categories'=>$categories,
-        ]);
+        ]));
     }
 
     public function showNaizhanXiangxi($id){
