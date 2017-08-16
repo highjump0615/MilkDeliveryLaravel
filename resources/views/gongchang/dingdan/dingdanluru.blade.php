@@ -56,14 +56,14 @@
             </ol>
         </div>
         <br>
-        <div class="row">
+        <div class="row" style="position:relative">
             <!-- customer insert-->
             <div id="customer_info">
                 <form method="POST" enctype="multipart/form-data" id="customer_form">
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">订单性质:</label>
-                        <div class="col-md-2">
-                            <select required id="order_property" name="order_property" class="form-control">
+                        <div class="col-md-2" style="margin-left: -9%;">
+                            <select  style="width:91%" required id="order_property" name="order_property" class="form-control">
                                 @if (isset($order_property))
                                     @foreach($order_property as $orp)
                                         <!-- 续单需要默认选择 -->
@@ -78,25 +78,25 @@
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
-                        <label class="control-label col-md-2">收货人:</label>
-                        <div class="col-md-2">
-                            <input type="text" required id="customer" name="customer" class="form-control"
+                        <label style="margin-left: 1%;width: 15.66666667%;" class="control-label col-md-2">收货人:</label>
+                        <div class="col-md-2" style="margin-left: -9%;">
+                            <input  style="width:92%" type="text" required id="customer" name="customer" class="form-control"
                                    @if (isset($customer)) value="{{$customer->name}}" @endif>
                         </div>
                     </div>
                     <div class="feed-element col-md-12">
-                        <label class="control-label col-md-2">电话:</label>
-                        <div class="col-md-2">
-                            <input required type="text" id="phone" name="phone" class="form-control"
+                        <label style="margin-left: 2%;width: 14.66666667%;" class="control-label col-md-2">电话:</label>
+                        <div class="col-md-2" style="margin-left: -9%;">
+                            <input style="width:92%" required type="text" id="phone" name="phone" class="form-control"
                                    @if (isset($order)) value="{{$order->phone}}" @endif >
                         </div>
                     </div>
 
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">收货地址：</label>
-                        <div class="col-md-10" style="padding-left: 0px;">
-                            <div class="col-md-2">
-                                <select required id="province" name="c_province" class="province_list form-control">
+                        <div class="col-md-10" style="padding-left: 0px;margin-left: -9%;">
+                            <div class="col-md-2" style="float:none;margin-bottom: 10px;">
+                                <select style="    width: 115%;" required id="province" name="c_province" class="province_list form-control">
                                     @if (isset($province))
                                         <?php
                                         $province_name = "";
@@ -116,34 +116,34 @@
                                     @endif
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <select required id="city" name="c_city" class="city_list col-md-2 form-control">
+                            <div class="col-md-2" style="margin-bottom: 10px;">
+                                <select  style="    width: 115%;" required id="city" name="c_city" class="city_list col-md-2 form-control">
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <select required id="district" name="c_district" class="district_list form-control">
+                            <div class="col-md-2" style="float:none;margin-bottom: 10px;clear:both">
+                                <select  style="    width: 115%;" required id="district" name="c_district" class="district_list form-control">
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <select required id="street" name="c_street" class="street_list form-control">
+                            <div class="col-md-3" style="float:none;margin-bottom: 10px;">
+                                <select  style="    width: 73%;" required id="street" name="c_street" class="street_list form-control">
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <select id="xiaoqu" required name="c_xiaoqu" class="xiaoqu_list form-control">
+                            <div class="col-md-3" style="float:none">
+                                <select  style="    width: 73%;" id="xiaoqu" required name="c_xiaoqu" class="xiaoqu_list form-control">
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="feed-element col-md-12">
-                        <div class="col-md-3 col-md-offset-2">
+                        <div class="col-md-3 col-md-offset-2"  style="    margin-left: 7.5%;">
                             <input type="text" placeholder="填写详细地址" id="sub_addr" name="c_sub_addr"
                                    class="form-control"
                                    @if (isset($order)) value="{{$order->getAddrHouseNumber()}}" @endif>
                         </div>
                     </div>
-                    <div class="feed-element col-md-12">
-                        <div class="col-md-2 col-md-offset-2">
+                    <div class="feed-element col-md-12" style="margin-top: 3px;">
+                        <div class="col-md-2 col-md-offset-2" style="margin-left: 7.589%;">
                             <button class="btn btn-success btn-w-m" type="submit">确定</button>
                         </div>
                     </div>
@@ -156,18 +156,18 @@
                 @endif
 
                 <!--Station Info-->
-                <div id="station_info">
+                <div id="station_info" style="position:absolute;left: 31%;top: 3%">
 
-                    <div class="col-md-12 gray-bg section-name">
+                    <!-- <div class="col-md-12 gray-bg section-name">
                         <label class="col-md-12">奶站信息</label>
-                    </div>
+                    </div> -->
 
                     <div class="feed-element col-md-12">
-                        <label class="control-label col-md-2">奶站:</label>
+                        <label style="width:15.3666667%;margin-left: 1.3%" class="control-label col-md-2">奶站:</label>
                         <div class="col-md-3">
-                            <select required class="form-control" id="station_list" name="station">
+                            <select style="width:80%;margin-left: -31%;" required class="form-control" id="station_list" name="station">
                                 @if (isset($order))
-                                    <option data-milkman="{{$milkman->id}}" data-deliveryarea="{{$order->deliveryarea_id}}" value="{{$order->delivery_station_id}}" selected>
+                                    <option data-milkman="{{$milkman->id}}" value="{{$order->delivery_station_id}}" selected>
                                         {{$order->delivery_station_name}}
                                     </option>
                                 @endif
@@ -177,7 +177,7 @@
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">征订员:</label>
                         <div class="col-md-3">
-                            <select required class="form-control" id="order_checker_list" name="order_checker">
+                            <select style="width:80%;margin-left: -31%;" required class="form-control" id="order_checker_list" name="order_checker">
                                 @if (isset($order_checkers))
                                     @foreach ($order_checkers as $orderchecker)
                                     <?php
@@ -199,7 +199,7 @@
                     @if (!($is_edit && isset($order) && $order->payment_type == \App\Model\BasicModel\PaymentType::PAYMENT_TYPE_WECHAT))
                     <div class="feed-element col-md-12">
                         <label class="control-label col-md-2">票据号:</label>
-                        <div class="col-md-3">
+                        <div class="col-md-3" style="width:20.5%;margin-left: -6.7%;">
                             <input required type="text" name="receipt_number" class="form-control"
                                    id="receipt_number"
                                    @if (isset($order) && $is_edit) value="{{$order->receipt_number}}" @endif/>
@@ -213,12 +213,24 @@
                                     id="capture_camera"
                             ><i class="fa fa-camera"></i>
                             </button>
+                            <button style="position:absolute;margin-left:3%;margin-right: 3%;cursor:pointer;margin-top: 0.5%;"   type="button" 
+                                class="btn btn-sm btn-success pull-left"
+                                data-toggle="modal" href="javascript:">本地上传
+                            <input  style="position: absolute;
+    font-size: 30px;
+    right: 0;
+    top: 0;
+    opacity: 0;" type="file" name="receipt_path" onchange='PreviewImage(this)' />
+                        </button>
                         </div>
                     </div>
-                    <div class="feed-element col-md-12">
+
+                    
+
+                    <div class="feed-element col-md-12" style="margin-top: -14%;margin-left: 43%;">
                         <div class="col-md-6 col-md-offset-2">
                             <!-- 票据号照片 -->
-                            <div id="my_camera">
+                            <div id="my_camera" style="    margin-left: -37%;">
                                 @if(isset($order) && $order->receipt_path !="")
                                     <img src="<?=asset('img/order/' . $order->receipt_path)?>" />
                                 @endif
@@ -240,19 +252,20 @@
 
                 <!--Order Info -->
                 <div id="order_info">
-                    <div class="col-md-12 gray-bg section-name">
+                    <!-- <div class="col-md-12 gray-bg section-name">
                         <label class="col-sm-12">订单内容</label>
-                    </div>
-                    <div class="feed-element col-md-12">
+                    </div> -->
+                    <!-- <div class="feed-element col-md-12">
                         <label class="col-md-1 control-label" style="padding-top:7px;">起送日期</label>
                         <div class="input-group col-md-2">
                             <input required type="text" class="form-control" id="order_start_at" name="order_start_at"
                                    readonly="readonly" />
                         </div>
-                    </div>
-                    <div class="feed-element col-md-12">
+                    </div> -->
+
+                    <div class="feed-element col-md-12" style="position: absolute;left: 30%;top: 23%;">
                         <div class="col-md-1">
-                            <label>奶箱安装</label>
+                            <label>奶箱安装:</label>
                         </div>
                         <div class="col-md-3">
                             <input type="checkbox" class="js-switch" id="milk_box_install"
@@ -262,11 +275,11 @@
                     </div>
 
                     <!-- 只能在奶厂录入奶卡订单 -->
-                    <div class="feed-element col-md-12">
+                    <div class="feed-element col-md-12"  style="position: absolute;left: 30%;top: 29%;">
                         <div class="col-md-1" id="check_2">
-                            <label @if ($is_edit || isset($station)) style="opacity: 0.5;" @endif>奶卡支付</label>
+                            <label @if ($is_edit || isset($station)) style="opacity: 0.5;" @endif>奶卡支付:</label>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-2" style="    width: 6.9%;">
                             <input id="milk_card_check" name="milk_card_check" class="js-switch js-check-change"
                                    type="checkbox"
                                    @if (isset($order) && $order->order_by_milk_card) checked="checked" @endif
@@ -274,7 +287,7 @@
                             <input type="hidden" name="card_check_success" id="card_check_success" value="1">
                         </div>
 
-                        <button type="button"
+                        <button   type="button" 
                                 class="btn btn-sm btn-success pull-left"
                                 data-toggle="modal" href="#card_info"
                                 @if ($is_edit || isset($station)) disabled @endif>
@@ -289,11 +302,11 @@
 
                     <br>
 
-                    <div class="feed-element col-md-12">
-                        <label class="control-label col-md-1">配送时间</label>
+                    <div class="feed-element col-md-12"  style="position: absolute;left: 30%;top: 35.5%;">
+                        <label class="control-label col-md-1">配送时间:</label>
                         &nbsp;
                         <div class="col-md-2">
-                            <select required class="form-control" id="delivery_noon" name="delivery_noon">
+                            <select style="    width: 80%;" required class="form-control" id="delivery_noon" name="delivery_noon">
                                 <option value="{{\App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING}}"
                                         @if (isset($order) && $order->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
                                         selected
@@ -310,80 +323,14 @@
                         </div>
                     </div>
 
-                    <div class="feed-element col-md-12">
-                        <div class="feed-element col-md-12">
-                            <div class="col-md-2">
-                                <button class="btn btn-outline btn-success" onclick="add_product();" type="button"><i
-                                        class="fa fa-plus"></i> 添加奶品
-                                </button>
-                            </div>
-
-                            @if ($is_edit && $isPassed)
-                                <!-- 订单修改 -->
-                                <div class="col-md-2 col-md-offset-8"> 
-                                    <label>订单余额: <span class="current_total_sp">{{$order->remain_order_money}}</span></label> 
-                                </div>
-                            @endif
-                        </div>
-                        <div class="ibox-content" style="padding: 20px 0; margin: 0 -15px;">
-                            <table class="table" id="product_table" style="font-size: 14px;">
-                                <!-- 奶品选择头部 -->
-                                <thead>
-                                <tr>
-                                    <td class="col-sm-2">
-                                        奶品
-                                    </td>
-                                    <td class="col-sm-1">
-                                        订单类型
-                                    </td>
-                                    <td class="col-sm-1">
-                                        数量
-                                    </td>
-                                    <td class="col-sm-2">
-                                        起送日期
-                                    </td>
-                                    <td class="col-sm-1">
-                                        配送规则
-                                    </td>
-                                    <td class="col-sm-1">
-                                        每次（瓶）
-                                    </td>
-                                    <td class="col-sm-2">
-                                        配送日期
-                                    </td>
-                                    <td class="col-sm-1">
-                                        单数
-                                    </td>
-                                    <td class="col-sm-1">
-                                        金额
-                                    </td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                </thead>
-
-                                <!-- 奶品信息 -->
-                                <tbody>
-                                @if (isset($order_products)) 
-                                    <!-- 订单修改 -->
-                                    @foreach ($order_products as $op)
-                                        <!-- 筛选选择项 -->
-                                        @include('gongchang.dingdan.dingdanluru.addproduct', [
-                                            'order_product' => $op,
-                                        ])
-                                    @endforeach
-                                @else
-                                    <!-- 订单录入 -->
-                                    @include('gongchang.dingdan.dingdanluru.addproduct')
-                                @endif
-                                </tbody>
-                            </table>
+                    <div class="feed-element col-md-12"  style="position: absolute;left: 30%;top: 42.5%;">
+                        <label style="margin-left: 2%;width: 15.26666667%;" class="control-label col-md-2">备注:</label>
+                        <div class="col-md-2" style="margin-left: -9%;">
+                            <input  style="width:81%" type="text" required id="comment" name="comment" class="form-control"
+                                   @if (isset($comment)) value="{{$comment->comment}}" @else value="无" @endif>
                         </div>
                     </div>
-
-                    <div class="col-md-12">
-                        <div class="col-lg-9 col-md-8"></div>
-                        <div class="col-lg-3 col-md-4 statics">
+<div class="col-lg-3 col-md-4 statics" style="    float: right;right: 10%; margin-top: -6%;">
                             <div>
                                 <label for="total_amount" class="control-label col-md-7">
                                     @if ($is_edit && $isPassed)
@@ -411,7 +358,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label for="real_amount" class="control-label col-md-7">本次应收金额：</label>
+                                    <label style="    margin-left: -8%;    width: 66.2%;" for="real_amount" class="control-label col-md-7">本次应收金额：</label>
                                     <div class="col-md-5">
                                         <input required readonly id="acceptable_amount" name="acceptable_amount"
                                                value="0"/>
@@ -419,11 +366,87 @@
                                 </div>
                             @endif
                         </div>
+                    <div class="col-md-2" style="margin-top: -2.4%;    width: 8%;">
+                                <button class="btn btn-outline btn-success" onclick="add_product();" type="button"><i
+                                        class="fa fa-plus"></i> 添加奶品
+                                </button>
+                            </div>
+                    <div class="feed-element col-md-12" style="position:relative">
+                        <div class="feed-element col-md-12" style="margin-left: 50%;">
+                            
+
+                            @if ($is_edit && $isPassed)
+                                <!-- 订单修改 -->
+                                <div class="col-md-2 col-md-offset-8"> 
+                                    <label>订单余额: <span class="current_total_sp">{{$order->remain_order_money}}</span></label> 
+                                </div>
+                            @endif
+                        </div>
+                        <div class="col-md-12">
+                        <div class="col-lg-9 col-md-8"></div>
+                        
                     </div>
+                        <!-- <div class="ibox-content" style="padding: 20px 0; margin: 0 -15px;"> -->
+                            <table class="table" id="product_table"  border="0" cellspacing="0" cellpadding="0" style="font-size: 14px;width: 83%;">
+                                <!-- 奶品选择头部 -->
+                                <thead>
+                                <tr style="height:30px">
+                                    <td class="col-sm-2" style="border:1px solid #ccc;">
+                                        奶品
+                                    </td>
+                                    <td class="col-sm-1" style="border:1px solid #ccc">
+                                        订单类型
+                                    </td>
+                                    <td class="col-sm-1" style="border:1px solid #ccc;">
+                                        数量
+                                    </td>
+                                    <td class="col-sm-2" style="border:1px solid #ccc;">
+                                        起送日期
+                                    </td>
+                                    <td class="col-sm-1" style="width:8.6%;border:1px solid #ccc">
+                                        配送规则
+                                    </td>
+                                    <td class="col-sm-1" style="border:1px solid #ccc;">
+                                        每次（瓶）
+                                    </td>
+                                    <td class="col-sm-2" style="border:1px solid #ccc;">
+                                        配送日期
+                                    </td>
+                                    <td class="col-sm-1" style="border:1px solid #ccc;">
+                                        单数
+                                    </td>
+                                    <td class="col-sm-1" style="border:1px solid #ccc;">
+                                        金额
+                                    </td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                </thead>
+
+                                <!-- 奶品信息 -->
+                                <tbody>
+                                @if (isset($order_products)) 
+                                    <!-- 订单修改 -->
+                                    @foreach ($order_products as $op)
+                                        <!-- 筛选选择项 -->
+                                        @include('gongchang.dingdan.dingdanluru.addproduct', [
+                                            'order_product' => $op,
+                                        ])
+                                    @endforeach
+                                @else
+                                    <!-- 订单录入 -->
+                                    @include('gongchang.dingdan.dingdanluru.addproduct')
+                                @endif
+                                </tbody>
+                            </table>
+                        <!-- </div> -->
+                    </div>
+
+                    
                 </div>
                 <div class="feed-element col-md-12" style="margin-top: 40px;">
-                    <div class="col-md-2 col-md-offset-10">
-                        <button type="submit" class="btn btn-success btn-w-m" type="submit">
+                    <div style="margin-left: 74%;" class="col-md-2 col-md-offset-10">
+                        <button  type="submit" class="btn btn-success btn-w-m" type="submit">
                             提交@if ($is_edit)修改 @endif
                         </button>
                     </div>
@@ -461,6 +484,7 @@
 
     <!-- 添加奶瓶object js, 这个要比datepicker早加载 -->
     <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/jquery-2.1.1.js') ?>"></script>
 
 @endsection
 
@@ -514,6 +538,48 @@
         @endif
 
         var copy_tr_data = $("#first_data").html();
+
+
+        //上传图片立即预览
+    function PreviewImage(imgFile) {
+        var filextension = imgFile.value.substring(imgFile.value
+            .lastIndexOf("."), imgFile.value.length);
+        filextension = filextension.toLowerCase();
+        if ((filextension != '.jpg') && (filextension != '.gif')
+            && (filextension != '.jpeg') && (filextension != '.png')
+            && (filextension != '.bmp')) {
+            alert("对不起，系统仅支持标准格式的照片，请您调整格式后重新上传，谢谢 !");
+            imgFile.focus();
+        } else {
+            var path;
+            if (document.all)//IE
+            {
+                imgFile.select();
+                path = document.selection.createRange().text;
+                document.getElementById('my_camera').innerHTML =
+                        '<img id="photo_info" src=""/>';
+                document.getElementById("photo_info").innerHTML = "";
+                document.getElementById("photo_info").style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled='true',sizingMethod='scale',src=\""
+                    + path + "\")";//使用滤镜效果
+            } else//FF
+            {
+                document.getElementById('my_camera').innerHTML =
+                        '<img width=400 height=300 id="photo_info" src=""/>';
+                path = window.URL.createObjectURL(imgFile.files[0]);// FF 7.0以上
+                //path = imgFile.files[0].getAsDataURL();// FF 3.0
+//                document.getElementById("photo_info").innerHTML = "<img id='img1' width='120px' height='100px' src='"+path+"'/>";
+                //document.getElementById("img1").src = path;
+                $('#photo_info').attr('src',path);
+            }
+        }
+    }
+
+
+        $(document).keydown(function(event){
+  switch(event.keyCode){
+     case 13:return false; 
+     }
+});
 
     </script>
 
