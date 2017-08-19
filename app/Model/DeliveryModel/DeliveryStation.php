@@ -140,22 +140,17 @@ class DeliveryStation extends Model
     {
         $sid  = $this->id;
 
-        $milkmans = MilkMan::where('station_id', $sid)->where('is_active', 1)->get();
         $result_milkman = null;
 
-        foreach($milkmans as $milkman)
-        {
-            $milkman_id = $milkman->id;
-            $area = MilkManDeliveryArea::where('milkman_id', $milkman_id)
-                ->where('address', $address)
-                ->first();
+        $area = MilkManDeliveryArea::where('address', $address)
+            ->whereHas('milkman', function($query) use ($sid) {
+                $query->where('station_id', $sid);
+                $query->where('is_active', 1);
+            })
+            ->first();
 
-            if ($area)
-            {
-                $result_milkman = $milkman;
-                break;
-            }
-
+        if ($area) {
+            $result_milkman = $area->milkman;
         }
 
         return $result_milkman;
