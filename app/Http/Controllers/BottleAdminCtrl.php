@@ -227,6 +227,25 @@ class BottleAdminCtrl extends Controller
     }
 
     /**
+     * 获取奶瓶规格名称
+     * @param $bottles
+     * @param $bid
+     * @return string
+     */
+    public function getBottleName($bottles, $bid) {
+        $strName = "";
+
+        foreach ($bottles as $bottle) {
+            if ($bottle->id == $bid) {
+                $strName = $bottle->name;
+                break;
+            }
+        }
+
+        return $strName;
+    }
+
+    /**
      * 配送员瓶框回收记录
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -236,6 +255,7 @@ class BottleAdminCtrl extends Controller
         $milkman_id = $request->input('milkman_id');
 
         $current_station_id = $this->getCurrentStationId();
+        $station = DeliveryStation::find($current_station_id);
 
         // 页面信息
         $child = 'peisongyuanpingkuang';
@@ -244,9 +264,9 @@ class BottleAdminCtrl extends Controller
         $pages = Page::where('backend_type', Page::NAIZHAN)->where('parent_page', '0')->orderby('order_no')->get();
 
         // 配送员
-        if($milkman_id == ''){
+        if (emptY($milkman_id)){
             $milkman = MilkMan::where('station_id',$current_station_id)->first();
-            if($milkman != null){
+            if(!empty($milkman)){
                 $milkman_id = $milkman->id;
             }
         }
@@ -259,90 +279,44 @@ class BottleAdminCtrl extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        if ($start_date == ''){
+        if (empty($start_date)){
             $start_date = $first_day_of_current_month;
         }
-        if ($end_date == ''){
+        if (empty($end_date)){
             $end_date = $current_date_str;
         }
 
-        // 配送数量
         $milkmans = MilkMan::where('station_id',$current_station_id)->get();
-        $milkman_delivered_counts = MilkManDeliveryPlan::where('milkman_id',$milkman_id)
-            ->where('delivered_count','<>','')
-            ->orderby('deliver_at','spec')
+
+        // 奶瓶规格
+        $bottles = FactoryBottleType::where('factory_id', $station->factory_id)
             ->get();
 
-        $delivered_info = array();
-        $i = 0;
-
-        foreach ($milkman_delivered_counts as $mdc){
-            if($start_date <= $mdc->deliver_at && $end_date >= $mdc->deliver_at){
-                $delivered_info[$i]['deliver_at'] = $mdc->deliver_at;
-                $delivered_info[$i]['bottle_type'] = $this->getBottleType($mdc->order_product->product->bottle_type);
-                $delivered_info[$i]['product_count'] = $mdc->delivered_count;
-                $i++;
-            }
-        }
-
-//        foreach ($milkman_delivered_counts as $mdc){
-//            if($start_date != ''){
-//                if($end_date != ''){
-//                    if($start_date <= $mdc->deliver_at && $end_date >= $mdc->deliver_at){
-//                        $delivered_info[$i]['deliver_at'] = $mdc->deliver_at;
-//                        $delivered_info[$i]['bottle_type'] = $this->getBottleType($mdc->order_product->product->bottle_type);
-//                        $delivered_info[$i]['product_count'] = $mdc->delivered_count;
-//                        $i++;
-//                    }
-//                }
-//                else{
-//                    if($start_date <= $mdc->deliver_at){
-//                        $delivered_info[$i]['deliver_at'] = $mdc->deliver_at;
-//                        $delivered_info[$i]['bottle_type'] = $this->getBottleType($mdc->order_product->product->bottle_type);
-//                        $delivered_info[$i]['product_count'] = $mdc->delivered_count;
-//                        $i++;
-//                    }
-//                }
-//            }
-//            else{
-//                if($end_date != ''){
-//                    if($end_date >= $mdc->deliver_at){
-//                        $delivered_info[$i]['deliver_at'] = $mdc->deliver_at;
-//                        $delivered_info[$i]['bottle_type'] = $this->getBottleType($mdc->order_product->product->bottle_type);
-//                        $delivered_info[$i]['product_count'] = $mdc->delivered_count;
-//                        $i++;
-//                    }
-//                }
-//                else{
-//                    $delivered_info[$i]['deliver_at'] = $mdc->deliver_at;
-//                    $delivered_info[$i]['bottle_type'] = $this->getBottleType($mdc->order_product->product->bottle_type);
-//                    $delivered_info[$i]['product_count'] = $mdc->delivered_count;
-//                    $i++;
-//                }
-//            }
-//        }
+        // 配送数量
+        $milkman_delivered_counts = MilkManDeliveryPlan::where('milkman_id',$milkman_id)
+            ->join('orderproducts as op', 'op.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->join('products as p', 'p.id', '=', 'op.product_id')
+            ->wherebetween('milkmandeliveryplan.deliver_at', [$start_date, $end_date])
+            ->where('milkmandeliveryplan.status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+            ->groupBy('milkmandeliveryplan.deliver_at', 'p.bottle_type')
+            ->selectRaw('milkmandeliveryplan.deliver_at, p.bottle_type, sum(delivered_count) as delivered_count')
+            ->get();
 
         // 回收量
-        $refund_info = array();
-        $j = 0;
-        $milkmanbottlerefunds = MilkmanBottleRefund::where('milkman_id',$milkman_id)->orderby('time','bottle_type')->get();
-        foreach ($milkmanbottlerefunds as $mb){
-            if($start_date <= $mb->time && $end_date >= $mb->time){
-                $refund_info[$j]['refund_date'] = $mb->time;
-                $refund_info[$j]['bottle_type'] = $this->getBottleType($mb->bottle_type);
-                $refund_info[$j]['refund_count'] = $mb->count;
-                $j++;
-            }
-        }
+        $milkmanbottlerefunds = MilkmanBottleRefund::where('milkman_id',$milkman_id)
+            ->wherebetween('time', [$start_date, $end_date])
+            ->groupBy('time', 'bottle_type')
+            ->selectRaw('time, bottle_type, sum(count) as refund_count')
+            ->get();
 
         $total_info = array();
-        foreach ($delivered_info as $di){
-            $total_info[$di['deliver_at']][$di['bottle_type']]['delivered'] = $di['product_count'];
-            $total_info[$di['deliver_at']][$di['bottle_type']]['refund'] = '';
+        foreach ($milkman_delivered_counts as $di){
+            $strBottleName = $this->getBottleName($bottles, $di['bottle_type']);
+            $total_info[$di['deliver_at']][$strBottleName]['delivered'] = $di['delivered_count'];
         }
-        foreach ($refund_info as $ri){
-            $total_info[$ri['refund_date']][$ri['bottle_type']]['refund'] = $ri['refund_count'];
-            $total_info[$ri['refund_date']][$ri['bottle_type']]['delivered'] = '';
+        foreach ($milkmanbottlerefunds as $ri){
+            $strBottleName = $this->getBottleName($bottles, $ri['bottle_type']);
+            $total_info[$ri['time']][$strBottleName]['refund'] = $ri['refund_count'];
         }
 
         return view('naizhan.pingkuang.peisongyuanpingkuang', [
@@ -357,6 +331,8 @@ class BottleAdminCtrl extends Controller
             'end_date'              =>$end_date,
             'milkman_id'            =>$milkman_id,
         ]);
+
+//        return "234";
     }
 
     /**

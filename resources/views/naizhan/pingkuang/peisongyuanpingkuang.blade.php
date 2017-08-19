@@ -69,9 +69,16 @@
 									<td rowspan="{{count($mb)+1}}">{{$date}}</td>
 									@endif
 									<td>{{$type}}</td>
-									<td>{{$m['refund']}}</td>
-									<td>@if($m['delivered'] == '') 0 @else {{$m['delivered']}} @endif</td>
-									<?php $refund_sum += $m['refund']; $delivered_sum += $m['delivered'];?>
+									<td>@if (empty($m['refund'])) 0 @else {{$m['refund']}} @endif</td>
+									<td>@if (empty($m['delivered'])) 0 @else {{$m['delivered']}} @endif</td>
+									<?php
+										if (!empty($m['refund'])) {
+											$refund_sum += $m['refund'];
+										}
+                                        if (!empty($m['delivered'])) {
+											$delivered_sum += $m['delivered'];
+										}
+									?>
 								</tr>
 								@endforeach
 								<tr>
