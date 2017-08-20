@@ -216,47 +216,6 @@ $('.editable_amount').on('keyup',function(){
     calc_total();
 });
 
-function save_distribute() {
-    var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_distribution';
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-        }
-    });
-
-    for(i = 0; i < count; i++){
-        var id = $(this).attr('id');
-        var station_id = $(this).attr('value');
-        var nRemain = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
-
-        var formData = {
-            product_id: product_id[i],
-            retail: retail_totals[i],
-            test_drink: drink_totals[i],
-            group_sale: group_totals[i],
-            channel_sale: channel_totals[i],
-            remain: nRemain
-        };
-        console.log(formData);
-
-        var type = "POST";
-
-        $.ajax({
-            type: type,
-            url: update_url,
-            data: formData,
-            dataType: 'json',
-            success: function (data) {
-                console.log(data);
-            },
-            error: function (data) {
-                console.log('Error:', data);
-            }
-        });
-    }
-    $(this).hide();
-}
-
 /**
  * 自动调配
  */
@@ -322,16 +281,65 @@ $(document).on('click','.auto_distribute',function(e){
     })
 });
 
+
+function save_distribute(button) {
+    var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_distribution';
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+        }
+    });
+
+    var table_info = [];
+
+    for(i = 0; i < count; i++){
+        var id = $(this).attr('id');
+        var station_id = $(this).attr('value');
+        var nRemain = produced_totals[i] - sum_totals[i] - (delivered_total[i] - order_totals[i]);
+
+        var formData = {
+            product_id: product_id[i],
+            retail: retail_totals[i],
+            test_drink: drink_totals[i],
+            group_sale: group_totals[i],
+            channel_sale: channel_totals[i],
+            remain: nRemain
+        };
+
+        table_info.push(formData);
+    }
+
+    var type = "POST";
+
+    $.ajax({
+        type: type,
+        url: update_url,
+        contentType: 'json',
+        processData: false,
+        data: JSON.stringify(table_info),
+        success: function (data) {
+            if (data.status === 'success') {
+                saveChangedDistribution();
+            }
+            else {
+                $('.alert-danger span').html(data.message);
+                $('.alert-danger').removeClass('hidden');
+
+                // 恢复按钮
+                $(button).removeAttr('disabled');
+            }
+        },
+        error: function (data) {
+            console.log('Error:', data);
+        }
+    });
+
+}
+
 /**
- * 生成配送列表
+ * 保存有变化的配送明细
  */
-$(document).on('click','.shengchan-peisong',function(e){
-
-    // 防止二次点击，把按钮禁止
-    $(this).attr('disabled', 'disabled');
-
-    save_distribute();
-
+function saveChangedDistribution() {
     var update_url = API_URL + 'naizhan/shengchan/peisongguanli/save_changed_distribution';
     $.ajaxSetup({
         headers: {
@@ -374,4 +382,15 @@ $(document).on('click','.shengchan-peisong',function(e){
             console.log('Error:', data);
         }
     });
+}
+
+/**
+ * 生成配送列表
+ */
+$(document).on('click','.shengchan-peisong',function(e){
+
+    // 防止二次点击，把按钮禁止
+    $(this).attr('disabled', 'disabled');
+
+    save_distribute(this);
 });
