@@ -320,32 +320,12 @@ class DSDeliveryPlanCtrl extends Controller
     /**
      * 保存奶站配送信息
      * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function save_distribution(Request $request){
 
         $current_station_id = $this->getCurrentStationId();
-
         $currentDate_str = getCurDateString();
-
-        $product_id = $request->input('product_id');
-        $remain = $request->input('remain');
-
-        //
-        // 生成今日配送单
-        //
-        $delivery_distribution = DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $product_id, false);
-
-        if (!$delivery_distribution) {
-            $delivery_distribution = new DSDeliveryPlan;
-            $delivery_distribution->station_id = $current_station_id;
-            $delivery_distribution->deliver_at = $currentDate_str;
-            $delivery_distribution->product_id = $product_id;
-            $delivery_distribution->remain = $remain;
-        }
-
-        // 写入生成配送单标志
-        $delivery_distribution->generated = 1;
-        $delivery_distribution->save();
 
         //
         // 设置配送员
@@ -358,9 +338,43 @@ class DSDeliveryPlanCtrl extends Controller
             ->get();
 
         foreach ($deliveryPlans as $dp) {
+            if (empty($dp->orderDelivery->milkman)) {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => '无法生成配送单，订单（' . $dp->orderDelivery->number . '）未匹配配送员。'
+                ]);
+            }
+
             $dp->milkman_id = $dp->orderDelivery->milkman_id;
             $dp->save();
         }
+
+        //
+        // 生成今日配送单
+        //
+        $table_info = json_decode($request->getContent(),true);
+
+        foreach ($table_info as $ti){
+            $delivery_distribution = DSDeliveryPlan::getDeliveryPlanGenerated(
+                $current_station_id,
+                $ti['product_id'],
+                false
+            );
+
+            if (!$delivery_distribution) {
+                $delivery_distribution = new DSDeliveryPlan;
+                $delivery_distribution->station_id = $current_station_id;
+                $delivery_distribution->deliver_at = $currentDate_str;
+                $delivery_distribution->product_id = $ti['product_id'];
+                $delivery_distribution->remain = $ti['remain'];
+            }
+
+            // 写入生成配送单标志
+            $delivery_distribution->generated = 1;
+            $delivery_distribution->save();
+        }
+
+        return response()->json(['status' => 'success']);
     }
 
     /**
@@ -370,26 +384,6 @@ class DSDeliveryPlanCtrl extends Controller
      */
     public function save_changed_distribution(Request $request){
 
-        $current_station_id = $this->getCurrentStationId();
-
-        $strCurrentDate = getCurDateString();
-/*
-        $delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$strCurrentDate)
-            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->where('status',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
-            ->get();
-
-        //
-        // delivery_count里填数量
-        //
-        foreach($delivery_plans as $dp){
-            if ($dp->plan_count == $dp->changed_plan_count){
-                $dp->delivery_count = $dp->plan_count;
-                $dp->save();
-            }
-        }
-*/
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
             $changed_delivery = MilkManDeliveryPlan::find($ti['id']);
