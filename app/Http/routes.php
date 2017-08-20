@@ -482,8 +482,6 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::post('api/naizhan/naizhan/fanwei-chakan/modifyPeisongyuanArea', 'MilkManCtrl@modifyPeisongyuanArea');
     /*add delivery street*/
     Route::post('naizhan/naizhan/fanwei-chakan/street', 'MilkManCtrl@addDeliveryArea');
-    /*sort PeisongyuanArea*/
-    Route::post('api/naizhan/naizhan/fanwei-chakan/sortPeisongyuanArea', 'MilkManCtrl@sortPeisongyuanArea');
     /*show xiaoxinzhongxin*/
     Route::get('/naizhan/xiaoxi/zhongxin', 'NotificationsAdmin@showNaizhanZhongxin');
     /*change to active*/
