@@ -87,11 +87,11 @@
 								<?php $i++; ?>
 								<tr>
 									<td>{{$mp['name']}}</td>
-									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER]}}</td>
-									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK]}}</td>
-									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP]}}</td>
-									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL]}}</td>
-									<td>{{$mp[\App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL]}}</td>
+									<td>{{getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)}}</td>
+									<td>{{getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)}}</td>
+									<td>{{getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)}}</td>
+									<td>{{getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)}}</td>
+									<td>{{getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL)}}</td>
 									<td></td>
 									@if($i==1)
 									<td rowspan="{{count($mi['milkman_products'])}}">
@@ -134,7 +134,8 @@
 										@endif
 										{{$i}}
 									</td>
-									<td>{{$oi->getAddressSmall(\App\Model\BasicModel\Address::LEVEL_VILLAGE)}}</td>
+									<!-- 地址 -->
+									<td class="text-left pl-15">{{$oi->getAddressSmall(\App\Model\BasicModel\Address::LEVEL_VILLAGE)}}</td>
 									<td>
 										@foreach($oi->products as $pd)
 											{{$pd}}
