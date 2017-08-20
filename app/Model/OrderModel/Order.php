@@ -654,13 +654,11 @@ class Order extends Model
     {
         $milkman = null;
 
-        $mdp = $this->hasMany('App\Model\DeliveryModel\MilkManDeliveryPlan')
-            ->withTrashed()
-            ->orderby('deliver_at', 'desc')
+        $milkmanArea = MilkManDeliveryArea::where('deliveryarea_id', $this->deliveryarea_id)
             ->first();
 
-        if (!empty($mdp)) {
-            $milkman = $mdp->milkman;
+        if (!empty($milkmanArea)) {
+            $milkman = $milkmanArea->milkman;
         }
 
         return $milkman;

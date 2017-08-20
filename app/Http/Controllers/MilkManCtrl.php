@@ -222,10 +222,7 @@ class MilkManCtrl extends Controller
     }
 
     public function deletePeisongyuan($peisongyuan){
-        $milkman_delivery_areas = MilkManDeliveryArea::where('milkman_id',$peisongyuan)->get();
-        foreach ($milkman_delivery_areas as $mda){
-            $mda->delete();
-        }
+        MilkManDeliveryArea::where('milkman_id',$peisongyuan)->delete();
 
         $deletePeisongyuan = MilkMan::destroy($peisongyuan);
         return Response::json($deletePeisongyuan);
@@ -347,11 +344,9 @@ class MilkManCtrl extends Controller
         $province_name = $street->province->name;
 
 
-        $milkman_areas = MilkManDeliveryArea::where('milkman_id',$milkman_id)
-            ->where('address','LIKE',$province_name.' '.$city_name.' '.$district_name.' '.$street->name.'%')->get();
-        foreach ($milkman_areas as $ma){
-            $ma->delete();
-        }
+        MilkManDeliveryArea::where('milkman_id',$milkman_id)
+            ->where('address','LIKE',$province_name.' '.$city_name.' '.$district_name.' '.$street->name.'%')
+            ->delete();
 
         return Response::json(['status'=>'success']);
     }
@@ -404,28 +399,4 @@ class MilkManCtrl extends Controller
         $ma->save();
     }
 
-    public function sortPeisongyuanArea(Request $request){
-        $current_station_id = Auth::guard('naizhan')->user()->station_id;
-        $milkman = $request->input('milkman_id');
-        $street = $request->input('street');
-        $xiaoqi = $request->input('xiaoqi');
-        $milkman_area = MilkManDeliveryArea::where('milkman_id',$milkman)->where('address','LIKE','%'.$street.'%')->get();
-        foreach ($milkman_area as $ma){
-            $ma->delete();
-        }
-        $i = 0;
-        foreach ($xiaoqi as $x){
-            $i++;
-            $milkman_delivery_area = new MilkManDeliveryArea;
-            $milkman_delivery_area->milkman_id = $milkman;
-            $milkman_delivery_area->address = DSDeliveryArea::where('station_id',$current_station_id)
-                ->where('address','LIKE','%'.$street." ".$x.'%')
-                ->first()
-                ->address;
-            $milkman_delivery_area->order = $i;
-            $milkman_delivery_area->save();
-        }
-        return Response::json(['street'=>$street]);
-    }
-    //
 }

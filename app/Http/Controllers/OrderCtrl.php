@@ -886,7 +886,7 @@ class OrderCtrl extends Controller
 
         // 配送奶站
         $nDeliveryStationId = $delivery_station_id;
-        if (empty($nMilkmanId)) {
+        if (empty($nDeliveryStationId)) {
             $nDeliveryStationId = $order->delivery_station_id;
         }
 
@@ -1090,7 +1090,7 @@ class OrderCtrl extends Controller
     public function addMilkmanDeliveryPlan($milkmanId, $stationId, $startAt, $orderProduct, $status, $count) {
         $dp = new MilkManDeliveryPlan;
 
-        $dp->milkman_id = $milkmanId;
+//        $dp->milkman_id = $milkmanId;
         $dp->station_id = $stationId;
         $dp->order_id = $orderProduct->order_id;
         $dp->order_product_id = $orderProduct->id;
