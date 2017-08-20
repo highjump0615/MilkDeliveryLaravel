@@ -21,6 +21,11 @@
 					<label style="color: red; font-size: 18px;">今日还没签收, 无法生成配送列表</label>
 				@endif
 
+                <div class="alert alert-danger alert-dismissable hidden">
+                    <button area-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <span></span>
+                </div>
+
 				<div class="ibox float-e-margins">
                     <div class="ibox">
                     	<div class="row">
