@@ -345,8 +345,22 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 写入生成配送单标志
         $delivery_distribution->generated = 1;
-
         $delivery_distribution->save();
+
+        //
+        // 设置配送员
+        //
+        $deliveryPlans = MilkManDeliveryPlan::where('station_id',$current_station_id)
+            ->with('orderDelivery')
+            ->where('deliver_at', $currentDate_str)
+            ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->get();
+
+        foreach ($deliveryPlans as $dp) {
+            $dp->milkman_id = $dp->orderDelivery->milkman_id;
+            $dp->save();
+        }
     }
 
     /**

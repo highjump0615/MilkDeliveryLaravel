@@ -460,7 +460,7 @@ class OrderProduct extends Model
                         // 添加个全新的
                         $deliveryPlan = new MilkManDeliveryPlan;
 
-                        $deliveryPlan->milkman_id = $this->order->milkman_id;
+//                        $deliveryPlan->milkman_id = $this->order->milkman_id;
                         $deliveryPlan->station_id = $this->order->delivery_station_id;
                         $deliveryPlan->order_id = $this->order_id;
                         $deliveryPlan->order_product_id = $this->id;
@@ -473,6 +473,8 @@ class OrderProduct extends Model
 
                         $deliveryPlan->deliver_at = $this->getNextDeliverDate($this->order->restart_at, false);
                     }
+
+                    $deliveryPlan->milkman_id = null;
 
                     $deliveryPlan->produce_at = $this->getProductionDate($deliveryPlan->deliver_at);
 
