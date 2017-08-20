@@ -773,54 +773,6 @@ class DSDeliveryPlanCtrl extends Controller
     }
 
     /**
-     * 今日配送单 - 配送员统计
-     * @param $milkman_id
-     * @return array
-     */
-    public function MilkmanProductInfo($milkman_id){
-        $current_station_id = $this->getCurrentStationId();
-
-        $deliver_date_str = getCurDateString();
-
-        $milkman_delivery_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
-            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
-            ->where('milkman_id',$milkman_id)
-            ->get();
-
-        // 配送员当日配送的奶品数组
-        // 键是产品id
-        $products = array();
-
-        foreach ($milkman_delivery_plans as $mdp) {
-            $prodData = null;
-
-            $index = $mdp->order_product->product->id;
-            if (array_key_exists($index, $products)) {
-                $prodData = $products[$index];
-            }
-
-            if (!$prodData) {
-                $prodData = array();
-
-                // 初始化
-                $prodData['name'] = $mdp->order_product->product->simple_name;
-                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER] = 0;
-                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP] = 0;
-                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL] = 0;
-                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK] = 0;
-                $prodData[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL] = 0;
-            }
-
-            $prodData[$mdp->type] += $mdp->delivery_count;
-
-            $products[$index] = $prodData;
-        }
-
-        return $products;
-    }
-
-    /**
      * 打开今日配送单
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -854,6 +806,11 @@ class DSDeliveryPlanCtrl extends Controller
             ]);
         }
 
+        // 配送员
+        $milkmans = MilkMan::where('is_active', 1)
+            ->where('station_id', $current_station_id)
+            ->get();
+
         // 配送任务根据配送员分组
         $milkman_delivery_plans = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)
             ->with(array('orderDelivery' => function($query) {
@@ -867,6 +824,24 @@ class DSDeliveryPlanCtrl extends Controller
             ->groupBy(function ($sort) {
                 return $sort->milkman_id;
             });
+
+        // 配送员统计
+        $countsDelivery = MilkManDeliveryPlan::where('station_id', $current_station_id)
+            ->join('orderproducts as op', 'milkmandeliveryplan.order_product_id', '=', 'op.id')
+            ->join('products as p', 'op.product_id', '=', 'p.id')
+            ->where('deliver_at', $deliver_date_str)
+            ->wherebetween('milkmandeliveryplan.status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
+            ->groupBy('milkmandeliveryplan.type', 'op.product_id', 'milkmandeliveryplan.milkman_id')
+            ->selectRaw('milkmandeliveryplan.milkman_id, sum(delivery_count) as deliverCount, type, op.product_id, p.simple_name')
+            ->get();
+
+        $productsData = array();
+
+        foreach ($countsDelivery as $cd) {
+            // 添加配送员的统计信息
+            $productsData[$cd->milkman_id][$cd->product_id]['name'] = $cd->simple_name;
+            $productsData[$cd->milkman_id][$cd->product_id][$cd->type] = $cd->deliverCount;
+        }
 
         foreach ($milkman_delivery_plans as $m => $dps_by_milkman) {
             // 变化量统计数据
@@ -952,14 +927,24 @@ class DSDeliveryPlanCtrl extends Controller
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
 
-            // 配送员信息
-            $milkman = MilkMan::find($m);
-            $milkman_info[$m]['milkman_id'] = $milkman->id;
-            $milkman_info[$m]['milkman_name'] = $milkman->name;
-            $milkman_info[$m]['milkman_number'] = $milkman->phone;
-            $milkman_info[$m]['milkman_products'] = $this->MilkmanProductInfo($milkman->id);
+            $milkman = null;
 
-            $milkman_info[$m]['milkman_changestatus'] = $changestatus;
+            // 配送员信息
+            foreach ($milkmans as $mm) {
+                if ($mm->id == $m) {
+                    $milkman = $mm;
+                    break;
+                }
+            }
+
+            if (!empty($milkman)) {
+                $milkman_info[$m]['milkman_id'] = $milkman->id;
+                $milkman_info[$m]['milkman_name'] = $milkman->name;
+                $milkman_info[$m]['milkman_number'] = $milkman->phone;
+                $milkman_info[$m]['milkman_products'] = $productsData[$milkman->id];
+
+                $milkman_info[$m]['milkman_changestatus'] = $changestatus;
+            }
         }
 
         return view('naizhan.shengchan.jinripeisongdan',[
