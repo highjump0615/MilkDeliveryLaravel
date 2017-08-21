@@ -166,7 +166,7 @@
                         <label style="width:15.3666667%;margin-left: 1.3%" class="control-label col-md-2">奶站:</label>
                         <div class="col-md-3">
                             <select style="width:80%;margin-left: -31%;" required class="form-control" id="station_list" name="station">
-                                @if (isset($order))
+                                @if (isset($order) && !empty($milkman))
                                     <option data-milkman="{{$milkman->id}}" value="{{$order->delivery_station_id}}" selected>
                                         {{$order->delivery_station_name}}
                                     </option>
