@@ -185,7 +185,7 @@
 										<td>{{$cp->deliver_at}}</td>
 										<td>{{$cp->order->number}}</td>
 										<td>{{$cp->order->customer->name}}</td>
-										<td>{{trim($cp->order->address," ")}}</td>
+										<td class="text-left pl-15">{{$cp->order->addresses}}</td>
 										<td>{{$cp->order_product->product->simple_name}}</td>
 										<td>{{$cp->plan_count}}</td>
 										<td>{{$cp->changed_plan_count}}</td>
@@ -195,7 +195,7 @@
 											<td>{{$cp->delivery_count}}</td>
 										@endif
 										<td>{{$cp->order->phone}}</td>
-										<td>{{$cp->milkman->name}}</td>
+										<td>{{$cp->order->milkman->name}}</td>
 										@if($is_distributed!=1)
 											<td>未调配</td>
 										@else

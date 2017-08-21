@@ -1932,12 +1932,12 @@ class OrderCtrl extends Controller
 
                 //find orders who has the same address and change
 
-                $orders = Order::where('customer_id', $customer->id)->get();
-
-                foreach ($orders as $order) {
-                    $order->address = $new_address;
-                    $order->save();
-                }
+//                $orders = Order::where('customer_id', $customer->id)->get();
+//
+//                foreach ($orders as $order) {
+//                    $order->address = $new_address;
+//                    $order->save();
+//                }
 
                 return response()->json(['status' => 'success']);
             } else
