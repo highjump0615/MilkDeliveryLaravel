@@ -2739,6 +2739,9 @@ class OrderCtrl extends Controller
 
             $delivery_station_count++;
 
+            // 保存奶站信息
+            $station = $delivery_station;
+
             //get this station's milkman that supports this address
             $milkman = $delivery_station->get_milkman_of_address($address);
 
