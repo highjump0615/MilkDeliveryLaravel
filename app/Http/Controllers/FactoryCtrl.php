@@ -140,6 +140,7 @@ class FactoryCtrl extends Controller
         $app_paysignkey     = $request->input('app_paysignkey');
         $wechat_type        = $request->input('wechat_type');
         $qrcode             = $request->input('qrcode');
+        $prodOffset         = $request->input('prod_offset');
 
         if (!$factory) {
             $factory = new Factory;
@@ -171,6 +172,11 @@ class FactoryCtrl extends Controller
         $factory->wechat_type       = $wechat_type;
         $factory->qrcode            = $qrcode;
         $factory->is_deleted        = 0;
+
+        // 配送周期
+        if (!empty($prodOffset)) {
+            $factory->prod_offset = $prodOffset;
+        }
 
         if ($request->hasFile('logo')) {
             $file = Input::file('logo');

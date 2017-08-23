@@ -1,6 +1,11 @@
 @extends('zongpingtai.layout.master')
 
 @section('css')
+	<style type="text/css">
+		.wrapper-content {
+			padding-bottom: 10px;
+		}
+	</style>
 @endsection
 
 @section('content')
@@ -79,6 +84,23 @@
 						<label class="control-label col-lg-2 col-md-3">到期时间:</label>
 						<div class="input-group date col-md-3">
 							<input required name="end_at" type="text" class="form-control" id="end_date" value="{{$factory->end_at}}"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						</div>
+					</div>
+				</div>
+
+				{{-- 奶厂设置 --}}
+				<div class="wrapper-content">
+					<div class="feed-element">
+						<label class="col-sm-12 gray-bg" style="padding:5px;background-color: #f3f3f4;"> 奶厂设置</label>
+					</div>
+					<div class="feed-element col-md-12">
+						<label class="control-label col-lg-2 col-md-3">配送周期:</label>
+						<div class="col-lg-3 col-md-4">
+							<input name="prod_offset"
+								   type="number"
+								   min="0"
+								   style="width:100%;"
+								   value="{{$factory->prod_offset}}">
 						</div>
 					</div>
 				</div>

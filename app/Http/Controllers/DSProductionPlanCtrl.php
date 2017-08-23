@@ -137,6 +137,7 @@ class DSProductionPlanCtrl extends Controller
         $current_station_id = $this->getCurrentStationId();
 
         $current_station = DeliveryStation::find($current_station_id);
+        $factory = $current_station->factory;
         $current_station_addr = $current_station->address;
 
         $child = 'jihuaguanli';
@@ -161,7 +162,7 @@ class DSProductionPlanCtrl extends Controller
             ->count();
 
         // 奶品数组
-        $product_list = $current_station->factory->products;
+        $product_list = $factory->products;
         foreach ($product_list as $pl) {
             // 获取奶品的价格
             $pl["current_price"] = $pl->getSettlePrice($current_station_addr);
@@ -178,16 +179,14 @@ class DSProductionPlanCtrl extends Controller
             }
 
             // 计算出库日期
-            $dateCurrent = getDateFromString($currentDateStr);
-            $strOutDate = $dateCurrent->format('Y-m-d');
-
             $nDuration = $pl->production_period/24 + 1;
-
-            $strOutDate = str_replace('-','/', $strOutDate);
-            $dateOut = date('Y-m-d',strtotime($strOutDate."+".$nDuration."days"));
+            $dateOut = getDateWithOffsetString($nDuration, $currentDateStr);
 
             $pl["out_date"] = $dateOut;
         }
+
+        // 考虑配送偏移日期
+        $currentDate_str = getDateWithOffsetString($factory->prod_offset, $currentDate_str);
 
         // 获取配送明细
         $plans = MilkManDeliveryPlan::with('orderProduct')
@@ -381,21 +380,17 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         $current_station_id = $this->getCurrentStationId();
+        $currentStation = DeliveryStation::find($current_station_id);
+        $factory = $currentStation->factory;
 
         $produce_start_at = getNextDateString($request->input('date'));
+        $produce_start_at = getDateWithOffsetString($factory->prod_offset, $produce_start_at);
 
-        $milkmandeliveryplans = MilkManDeliveryPlan::where('station_id',$current_station_id)->where('produce_at',$produce_start_at)->get();
-        foreach ($milkmandeliveryplans as $mp){
-            if($mp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED){
-                $mp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
-                $checkOrders = Order::find($mp->order_id);
-                if($checkOrders->status == Order::ORDER_PASSED_STATUS){
-                    $checkOrders->status = Order::ORDER_ON_DELIVERY_STATUS;
-                    $checkOrders->save();
-                }
-                $mp->save();
-            }
-        }
+        // 更新状态
+        MilkManDeliveryPlan::where('station_id', $current_station_id)
+            ->where('produce_at', $produce_start_at)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED)
+            ->update(['status' => MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT]);
 
         $business_balance = $this->addStationPlan($request, true);
 

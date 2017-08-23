@@ -455,3 +455,14 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
 .pl-15 {
     padding-left: 15px !important;
 }
+
+/* padding-top */
+.pt-10 {
+    padding-top: 10px !important;
+}
+
+.alert {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    margin-bottom: 15px;
+}
