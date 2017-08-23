@@ -259,9 +259,10 @@ class MilkManDeliveryPlan extends Model
         $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $nProductId = $this->getProductId();
 
+        $factory = $this->station->factory;
+
         // 计算提交日期
-        $strDateProduce = str_replace('-','/', $this->produce_at);
-        $dateSubmit = date('Y-m-d',strtotime($strDateProduce."-1 days"));
+        $dateSubmit = getDateWithOffsetString(-1 - $factory->prod_offset, $this->produce_at);
         $datetimeSubmit = DateTime::createFromFormat('Y-m-j', $dateSubmit);
 
         // 默认是通过状态

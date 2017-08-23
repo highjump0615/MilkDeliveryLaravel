@@ -23,17 +23,7 @@ function getCurDateString() {
  */
 function getPrevDateString($strDate = null) {
 
-    // 默认是今日
-    $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-
-    if (!empty($strDate)) {
-        $dateCurrent = getDateFromString($strDate);
-    }
-
-    $dateCurrent->add(\DateInterval::createFromDateString('yesterday'));
-    $strDate = getStringFromDate($dateCurrent);
-
-    return $strDate;
+    return getDateWithOffsetString(-1, $strDate);
 }
 
 /**
@@ -41,15 +31,34 @@ function getPrevDateString($strDate = null) {
  * @return string
  */
 function getNextDateString($strDate = null) {
+    return getDateWithOffsetString(1, $strDate);
+}
+
+/**
+ * 获取偏移计算后的日期
+ * @param $offset
+ * @param null $strDate
+ * @return mixed|null
+ */
+function getDateWithOffsetString($offset, $strDate = null) {
 
     // 默认是今日
     $dateCurrent = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-
     if (!empty($strDate)) {
         $dateCurrent = getDateFromString($strDate);
     }
 
-    $dateCurrent->add(\DateInterval::createFromDateString('tomorrow'));
+    $delta = new \DateInterval(sprintf('P%dD', abs($offset)));
+
+    // 增加
+    if ($offset > 0) {
+        $dateCurrent->add($delta);
+    }
+    // 减少
+    else {
+        $dateCurrent->sub($delta);
+    }
+
     $strDate = getStringFromDate($dateCurrent);
 
     return $strDate;
