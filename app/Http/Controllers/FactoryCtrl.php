@@ -158,7 +158,9 @@ class FactoryCtrl extends Controller
 
         $factory->end_at            = $end_at;
         $factory->factory_id        = $factory_id;
-        $factory->factory_password  = bcrypt($factory_password);
+        if (!empty($factory_password)) {
+            $factory->factory_password  = bcrypt($factory_password);
+        }
         $factory->public_name       = $public_name;
         $factory->public_id         = $public_id;
         $factory->wechat_id         = $wechat_id;
@@ -195,7 +197,9 @@ class FactoryCtrl extends Controller
         $current_factory_id = $factory->id;
 
         $factory_user->name = $factory_id;
-        $factory_user->password = bcrypt($factory_password);
+        if (!empty($factory_password)) {
+            $factory_user->password = bcrypt($factory_password);
+        }
         $factory_user->status = Factory::FACTORY_STATUS_ACTIVE ;
         $factory_user->factory_id = $current_factory_id;
         $factory_user->user_role_id = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;
