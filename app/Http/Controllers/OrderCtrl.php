@@ -2699,11 +2699,7 @@ class OrderCtrl extends Controller
                 return response()->json(['status' => 'fail', 'message' => '没有产品价格']);
             }
 
-            $product_count = $request->input('product_count');
-
-            $one_order_product_total_price = $product_count * $product_price;
-
-            return response()->json(['status' => 'success', 'order_product_price' => $one_order_product_total_price]);
+            return response()->json(['status' => 'success', 'order_product_price' => $product_price]);
         }
     }
 
