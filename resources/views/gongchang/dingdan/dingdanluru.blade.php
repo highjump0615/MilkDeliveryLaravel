@@ -583,6 +583,6 @@
 
     </script>
 
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js?170830') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_insert.js') ?>"></script>
 @endsection
