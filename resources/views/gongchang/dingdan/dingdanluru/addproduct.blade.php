@@ -1,4 +1,9 @@
 <tr id="first_data" class="one_product">
+    <!-- 日期 -->
+    @if (!empty($order_product))
+    <input type="hidden" name="created_at" value="{{$order_product->created_at}}" />
+    @endif
+
     <!-- 奶品 -->
     <td>
         <select required class="form-control order_product_id"

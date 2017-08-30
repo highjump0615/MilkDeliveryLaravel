@@ -200,7 +200,11 @@ function calculate_current_product_value(tr, needFetch) {
             'product_id': product_id, 'order_type': order_type, 'product_count': product_count,
             /*'customer_id': customer_id,*/ 'province': province, 'city': city, 'district': district
         };
-        console.log(sendData);
+
+        // 添加日期
+        if ($(tr).find('input[name="created_at"]').length) {
+            $.extend(sendData, {'created_at': $(tr).find('input[name="created_at"]').val()});
+        }
 
         $.ajax({
             url: API_URL + 'order/get_order_product_price',
@@ -423,6 +427,10 @@ function add_new_product_line() {
 
     //after add new product, caculate the product price automatically
     tr = $('#product_table tbody tr:last');
+
+    // 删除日期input
+    $(tr).find('input[name="created_at"]').remove();
+
     $(tr).find('.factory_order_type').trigger('change');
     $(tr).find('.order_delivery_type').trigger('change');
 

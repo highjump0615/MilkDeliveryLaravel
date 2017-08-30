@@ -76,9 +76,6 @@ Route::get('/gongchang', function () {
 
 Route::group(['middleware' => ['gongchang']], function () {
 
-    //get all product names
-    Route::get('api/get_exist_product_names', 'ProductCtrl@get_all_product_names');
-
     //Gongchang/Jichuxinxi/Shangpin Canshshezi
     Route::get('/gongchang/jichuxinxi/shangpin/shangpincanshushezhi', 'ProductSettingsCtrl@show_product_settings_page');
     Route::post('api/gongchang/jichuxinxi/shangpin/shangpincanshushezhi/set_use_delivery_type', 'ProductSettingsCtrl@set_use_delivery_type');
@@ -137,9 +134,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //gongchang/Jichuxinxi/Shanpin/shanpinxiangqing
     Route::get('/gongchang/jichuxinxi/shangpin/shangpinxiangqing/{product_id}', array('as' => 'detail_product', 'uses' => 'ProductCtrl@show_detail_product'));
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product', 'ProductCtrl@update_product');
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product_price', 'ProductCtrl@update_product_price');
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product_price_template_one', 'ProductCtrl@update_product_price_template_one');
 
 
     //Gongchang/Jichuxinxi/naipinluru

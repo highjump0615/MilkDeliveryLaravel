@@ -4,83 +4,8 @@
 
     <link href="<?=asset('css/plugins/chosen/chosen.css') ?>" rel="stylesheet">
 
-    <style>
+    @include('gongchang.jichuxinxi.shangpin.style')
 
-        .image-preview {
-            height: 100px;
-            width: 100px;
-            position: relative;
-            overflow: hidden;
-            background-color: #ffffff;
-            margin-left: 10px;
-            color: #ecf0f1;
-            border: 1px solid gray;
-            display: inline-block;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-image: url('{{ URL::asset('js/plugins/imgupload/add_new.png') }}');
-        }
-
-        .image-preview input {
-            line-height: 200px;
-            font-size: 200px;
-            position: absolute;
-            opacity: 0;
-            z-index: 10;
-        }
-
-        .image-preview label {
-            position: absolute;
-            z-index: 5;
-            opacity: 0;
-            cursor: pointer;
-            background-color: #bdc3c7;
-            width: 200px;
-            height: 50px;
-            font-size: 20px;
-            line-height: 50px;
-            text-transform: uppercase;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            margin: auto;
-            text-align: center;
-        }
-
-        div.file-panel {
-            position: absolute;
-            height: 0;
-            filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr='#80000000', endColorstr='#80000000') \0;
-            background: rgba(0, 0, 0, 0.5);
-            width: 100%;
-            top: 0;
-            left: 0;
-            overflow: hidden;
-            z-index: 300;
-        }
-
-        div.file-panel span.cancel {
-            background-position: -48px -24px;
-        }
-
-        div.file-panel span {
-            width: 24px;
-            height: 24px;
-            display: inline;
-            float: right;
-            text-indent: -9999px;
-            overflow: hidden;
-            margin: 5px 1px 1px;
-            cursor: pointer;
-            background: url('{{ URL::asset('js/plugins/imgupload/icons.png') }}') no-repeat;
-        }
-
-        #update_price_bt {
-            display: none;
-        }
-
-    </style>
 @endsection
 
 @section('content')
@@ -347,7 +272,8 @@
                                                                                 <div class="col-md-2 text-right">
                                                                                     <button type="button"
                                                                                             class="btn btn-success btn-outline"
-                                                                                            data-action="edit_template">
+                                                                                            data-action="edit_template"
+                                                                                            data-tab-index="{{$i+1}}">
                                                                                         <i class="fa fa-pencil"></i>修改
                                                                                     </button>
                                                                                 </div>
@@ -394,104 +320,7 @@
                                     </div>
                                 </div>
 
-                                <div id="product_area_set">
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">模板名称 </label>
-                                        <div class="col-md-2">
-                                            <input type="text" id="template_name" class="form-control col-md-2">
-                                        </div>
-
-                                    </div>
-                                    <div class="form-group area_select" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label" style="padding-top: 7px;">销售区域:</label>
-                                        <div class="col-md-2">
-                                            <select class="form-control province_list">
-                                                @if (isset($provinces))
-                                                    @for ($i = 0; $i < count($provinces); $i++)
-                                                        @if($i == 0)
-                                                            <option value="{{$provinces[$i]->name}}"
-                                                                    selected>{{$provinces[$i]->name}}</option>
-                                                        @else
-                                                            <option value="{{$provinces[$i]->name}}"
-                                                            >{{$provinces[$i]->name}}</option>
-                                                        @endif
-                                                    @endfor
-                                                @endif
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <select class="form-control city_list">
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <select data-placeholder=""
-                                                    class="form-control chosen-select district_list"
-                                                    multiple style="width: 100%;">
-                                            </select>
-                                        </div>
-
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">零售价 </label>
-                                        <div class="col-md-2">
-                                            <input type="number" min="0.1" step="any" id="retail_price"
-                                                   class="form-control col-md-2">
-                                        </div>
-                                        <label class="control-label">元</label>
-                                    </div>
-
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">月单 </label>
-                                        <div class="col-md-2">
-                                            <input type="number" min="0.1" step="any" id="month_price"
-                                                   class="form-control col-md-2">
-                                        </div>
-                                        <label class="control-label">元</label>
-                                    </div>
-
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">季单 </label>
-                                        <div class="col-md-2">
-                                            <input type="number" min="0.1" step="any" id="season_price"
-                                                   class="form-control col-md-2">
-                                        </div>
-                                        <label class="control-label">元</label>
-                                    </div>
-
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">半年单</label>
-                                        <div class="col-md-2">
-                                            <input type="number" min="0.1" step="any" id="half_year_price"
-                                                   class="form-control col-md-2">
-                                        </div>
-                                        <label class="control-label">元</label>
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 15px !important;">
-                                        <label class="col-md-3 control-label">结算价 </label>
-                                        <div class="col-md-2">
-                                            <input type="number" min="0.1" step="any" id="settle_price"
-                                                   class="form-control col-md-2">
-                                        </div>
-                                        <label class="control-label col-md-1" style="padding:0; text-align: left;">元</label>
-
-                                        <div class="form-group col-md-6" style="text-align:left;">
-                                            <button type="button" id="add_price_bt" class="btn btn-outline btn-success"
-                                                    style="margin-right: 10px;" onclick="add_price_template()"><i
-                                                        class="fa fa-plus"></i>添加价格模板
-                                            </button>
-                                            <button type="button" id="update_price_bt"
-                                                    class="btn btn-outline btn-success"
-                                                    style="margin-right: 10px;">
-                                                <i class="fa fa-save"></i>修改价格模板
-                                            </button>
-                                            <button type="button" class="btn btn-outline btn-success"
-                                                    onclick="init_price_template()">取消
-                                            </button>
-                                        </div>
-
-                                    </div>
-
-                                </div>
+                                @include('gongchang.jichuxinxi.shangpin.template')
 
                                 <div class="form-group col-md-12" style="margin-bottom: 30px;">
                                     <div class="row" style="margin-bottom: 15px;">
@@ -506,7 +335,7 @@
                             <div class="form-group" style="margin-bottom: 30px;">
                                 <div class="col-md-offset-4 col-md-4">
                                     <div class="col-md-6">
-                                        <button class="btn btn-success btn-md" onclick="update_product()"
+                                        <button class="btn btn-success btn-md" onclick="insert_product()"
                                                 style="width: 100%;">更新
                                         </button>
                                         <!--button class="btn btn-success btn-md" onclick="save_temp()" style="width: 100%;">保存</button-->
@@ -538,17 +367,13 @@
 
     <!--upload preview-->
     <script type="text/javascript" src="<?=asset('js/plugins/imgupload/jquery.uploadPreview.js')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?170830')?>"></script>
 
     <script defer>
 
-        var update_page = true;
-
-        var init_tab_count = "{{$new_count}}";
         var names = [];
-        var ue, current_product_id, current_product_name;
+        var ue;
         ue = UE.getEditor('editor');
-        var price_temp_changed = false;
 
         function show_ue_content(ue_data, ue) {
             if (ue_data == "")
@@ -632,8 +457,6 @@
         $(window).load(function () {
             current_product_id = "{{$product->id}}";
 
-            current_product_name = "{{$product->name}}";
-
             show_product_images(current_product_id);
 
             var ue_data = $.parseHTML("{{$product->uecontent}}");
@@ -643,5 +466,6 @@
         });
 
     </script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_show.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_show.js?170830')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?170830')?>"></script>
 @endsection
