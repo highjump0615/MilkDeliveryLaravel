@@ -2635,7 +2635,7 @@ class OrderCtrl extends Controller
     }
 
     //Get Product Price with Customer id and address
-    public function get_product_price_by_cid($pid, $otype, $cid)
+    public function get_product_price_by_cid($pid, $otype, $cid, $date = null)
     {
         $addr = Customer::find($cid)->address;
         $price = $province = $city = $district = null;
@@ -2646,16 +2646,25 @@ class OrderCtrl extends Controller
         $district = $addr_array[2];
 
         if ($province && $city && $district) {
-            $price = $this->get_product_price_by_pcd($pid, $otype, $province, $city, $district);
+            $price = $this->get_product_price_by_pcd($pid, $otype, $province, $city, $district, $date);
         }
         return $price;
     }
 
-
-    function get_product_price_by_pcd($pid, $otype, $province, $city, $district)
+    /**
+     * 根据地区获取价格
+     * @param $pid
+     * @param $otype
+     * @param $province
+     * @param $city
+     * @param $district
+     * @param null $date
+     * @return null
+     */
+    function get_product_price_by_pcd($pid, $otype, $province, $city, $district, $date = null)
     {
         $addr = $province . " " . $city . " " . $district;
-        $pp = ProductPrice::priceTemplateFromAddress($pid, $addr);
+        $pp = ProductPrice::priceTemplateFromAddress($pid, $addr, $date);
 //        $pp = ProductPrice::where('product_id', $pid)->where('sales_area', 'like', $province . '%' . $city . '%' . $district . '%')->get()->first();
         $price = null;
         if ($pp) {
@@ -2679,6 +2688,8 @@ class OrderCtrl extends Controller
             $order_type = $request->input('order_type');
             $customer_id = $request->input('customer_id');
 
+            $date = $request->input('created_at');
+
             $product_price = null;
 
             if (!$customer_id) {
@@ -2689,10 +2700,18 @@ class OrderCtrl extends Controller
                 $district = trim($request->input('district'));
                 $district = str_replace('　', '', $district);
 
-                $product_price = $this->get_product_price_by_pcd($product_id, $order_type, $province, $city, $district);
+                $product_price = $this->get_product_price_by_pcd($product_id,
+                    $order_type,
+                    $province,
+                    $city,
+                    $district,
+                    $date);
 
             } else {
-                $product_price = $this->get_product_price_by_cid($product_id, $order_type, $customer_id);
+                $product_price = $this->get_product_price_by_cid($product_id,
+                    $order_type,
+                    $customer_id,
+                    $date);
             }
 
             if (!$product_price) {

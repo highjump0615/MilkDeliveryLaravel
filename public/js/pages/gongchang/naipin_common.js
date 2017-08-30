@@ -1,8 +1,21 @@
-var price_temp_changed; //share for insert and update
+var price_temp_changed = false; //share for insert and update
+var current_product_id = 0;
 
-var update_page = false;
 var selected_city_for_update = "";
-var selected_district_array;
+var selected_district_array = new Array();
+
+/**
+ * 获取价格模板id
+ * @param tabPane
+ */
+function getPriceId(tabPane) {
+    var priceId = 0;
+    if ($(tabPane).find('.price_tp_id').length) {
+        priceId = parseInt($(tabPane).find('.price_tp_id').val());
+    }
+
+    return priceId;
+}
 
 $(document).ready(function () {
 
@@ -11,9 +24,6 @@ $(document).ready(function () {
 
     var elem = document.querySelector('.js-switch');
     var switchery = new Switchery(elem, {color: '#1AB394'});
-
-    //get exists products name for integrity
-    get_existing_product_names();
 
     $.uploadPreview({
         cancel_bt: ".cancel",
@@ -32,27 +42,6 @@ $(document).ready(function () {
     $('.province_list').trigger('change');
 
 });
-
-function get_existing_product_names() {
-    //get exists products name for integrity
-    $.ajax({
-        type: "GET",
-        url: API_URL + "get_exist_product_names",
-        success: function (data) {
-            if (data.status == "success") {
-                names = data.names;
-                console.log("existing proudct names: " + names);
-
-            } else {
-                console.log("get product names fail: " + data);
-            }
-        },
-        error: function (data) {
-            console.log("get product names error: " + data);
-        }
-    });
-
-}
 
 //get city and distirct on selected province and city
 $('.province_list').change(function () {
@@ -80,19 +69,10 @@ $('.province_list').change(function () {
                 for (var i = 0; i < cities.length; i++) {
                     city_name = cities[i];
 
-                    if (update_page) {
-                        if (selected_city_for_update != "" && selected_city_for_update == city_name) {
-                            citydata = '<option value="' + city_name + '" selected>' + city_name + '</option>';
-                        } else {
-                            citydata = '<option value="' + city_name + '">' + city_name + '</option>';
-                        }
-
+                    if (selected_city_for_update != "" && selected_city_for_update == city_name) {
+                        citydata = '<option value="' + city_name + '" selected>' + city_name + '</option>';
                     } else {
-                        if (i == 0) {
-                            citydata = '<option value="' + city_name + '" selected>' + city_name + '</option>';
-                        } else {
-                            citydata = '<option value="' + city_name + '">' + city_name + '</option>';
-                        }
+                        citydata = '<option value="' + city_name + '">' + city_name + '</option>';
                     }
 
                     $(city_list).append(citydata);
@@ -140,31 +120,19 @@ $('.city_list').change(function () {
                 var districts = data.district;
                 var districtdata;
 
-                if (update_page && selected_district_array && selected_district_array.length > 0) {
-                    for (var i = 0; i < districts.length; i++) {
+                for (var i = 0; i < districts.length; i++) {
 
-                        var district_name = districts[i];
+                    var district_name = districts[i];
 
-                        if (selected_district_array.indexOf(district_name) > -1) {
-                            districtdata = '<option selected value="' + district_name + '">' + district_name + '</option>';
-                        } else {
-                            districtdata = '<option value="' + district_name + '">' + district_name + '</option>';
-                        }
-
-                        $(district_list).append(districtdata);
-
-                        show_chosen();
-                    }
-
-                } else {
-                    for (var i = 0; i < districts.length; i++) {
-                        var district_name = districts[i];
-
+                    if (selected_district_array.indexOf(district_name) > -1) {
+                        districtdata = '<option selected value="' + district_name + '">' + district_name + '</option>';
+                    } else {
                         districtdata = '<option value="' + district_name + '">' + district_name + '</option>';
-
-                        $(district_list).append(districtdata);
-                        show_chosen();
                     }
+
+                    $(district_list).append(districtdata);
+
+                    show_chosen();
                 }
             }
         },
@@ -205,18 +173,23 @@ function delete_price_template(close_bt){
     li.remove();
 
     //if there is not active tab, then give fisrt tab class:acitve
-    var first = tabcontent.find('.tab-pane').first();
-    if (first) {
-        var first_li = tabscontainer.find('.nav-tabs li').first();
-        $(first_li).addClass('active');
-        first.addClass('active');
+    if (tabcontent.find('.active').length === 0) {
+        var first = tabcontent.find('.tab-pane').first();
+        if (first) {
+            var first_li = tabscontainer.find('.nav-tabs li').first();
+            $(first_li).addClass('active');
+            first.addClass('active');
+        }
     }
 
     if ($('.tab-pane').length == 0)
         $('.tabs-container .nav-tabs.closeable-tabs').css('border', 'none');
 
     price_temp_changed = true;
-};
+
+    // 初始化下面的内容
+    init_price_template();
+}
 
 function ue_getContent() {
     var arr = [];
@@ -273,19 +246,16 @@ function init_price_template() {
 
     $('.district_list').val('').trigger('chosen:updated');
 
-    if (update_page) {
-        //hide the update price template button
-        $('#add_price_bt').show();
-        $('#update_price_bt').hide();
-
-        $('#update_price_bt').attr('data-pricetp-id', 0);
-    }
+    //hide the update price template button
+    $('#add_price_bt').show();
+    $('#update_price_bt').hide();
+    $('#update_price_bt').attr('data-tab-index', 0);
 }
 
-function add_price_template() {
-
-    //get tab count
-    var tabcount = $('.tab-content .tab-pane').size();
+/**
+ * 创建/更新价格模板
+ */
+function add_price_template(tabIndex, priceId) {
 
     var template_name = $('#template_name').val();
     if (template_name == "" || !template_name) {
@@ -335,77 +305,72 @@ function add_price_template() {
         return;
     }
 
-    var tabindex = init_tab_count + 1;
+    var nCount = $('.nav-tabs li').length;
 
     var activeclass = "active";
     var expanded = "true";
 
+    if (tabIndex === 0) {
+        tabIndex = nCount + 1;
+
+        var li_data = '<li class="' + activeclass + '">\
+                <a data-toggle="tab" aria-expanded="' + expanded + '" href="#tab-' + tabIndex + '">' + template_name + '</a>\
+                <a class="close-tab" ><i class="fa fa-times"></i></a>\
+            </li>';
+
+        var tab_data = '<div id="tab-' + tabIndex + '" class="tab-pane ' + activeclass + '"></div>';
+
+        $('ul.nav-tabs.closeable-tabs').append(li_data);
+        $('.tab-content').append(tab_data);
+    }
+
+    //
+    // 隐藏所有的Tab
+    //
     $('.nav-tabs li').each(function () {
-        $(this).removeClass('active');
+        $(this).removeClass(activeclass);
         $(this).find('a [data-toggle="tab"]').attr('aria-expanded', false);
     });
     $('.tab-content .tab-pane').each(function () {
-        $(this).removeClass('active');
+        $(this).removeClass(activeclass);
     });
 
+    //
+    // 显示该Tab
+    //
+    var strSelector = '.nav-tabs li:nth-child(' + tabIndex + ')';
+    $(strSelector).addClass(activeclass);
+    $(strSelector).find('a [data-toggle="tab"]').attr('aria-expanded', true);
 
-    var li_data = '<li class="' + activeclass + '">\
-                    <a data-toggle="tab" aria-expanded="' + expanded + '" href="#tab-' + tabindex + '">' + template_name + '</a>\
-                    <a class="close-tab" ><i class="fa fa-times"></i></a>\
-                </li>';
+    strSelector = '.tab-content .tab-pane:nth-child(' + tabIndex + ')';
+    $(strSelector).addClass(activeclass);
 
-    if (update_page) {
-        //for update page
-        var tab_data = '<div id="tab-' + tabindex + '" class="tab-pane ' + activeclass + '">\
-                <div class="panel-body">\
-                    <div class="col-md-3">\
-                        <label><span class="province_sp">' + province + '</span>&nbsp;&nbsp;<span class="city_sp">' + city + '</span></label>\
-                    </div>\
-                    <div class="col-sm-7">\
-                        <label>包含分区:&nbsp; <span class="district_sp">' + district_area + '</span></label><br>\
-                    </div>\
-                    <div class="col-sm-2 text-right">\
-                        <button type="button" class="btn btn-success btn-outline" data-action="edit_template"><i class="fa fa-pencil"></i>修改</button>\
-                    </div>\
-                    <br>\
-                    <div class="col-sm-offset-3 col-sm-9">\
-                        <input type="hidden" name="template_name" class="name_sp" value="' + template_name + '"/><br>\
-                        <label>零售价:&nbsp; <span class="retail_sp">' + price1 + '</span>元</label><br>\
-                        <label>月单:&nbsp; <span class="month_sp">' + price2 + '</span>元</label><br>\
-                        <label>季单:&nbsp; <span class="season_sp">' + price3 + '</span>元</label><br>\
-                        <label>半年单:&nbsp; <span class="half_year_sp">' + price4 + '</span>元</label><br>\
-                        <label>结算价:&nbsp; <span class="settle_sp">' + price5 + '</span>元</label>\
-                    </div>\
-                </div>\
-            </div>';
-    } else {
-        //for insert page
-        var tab_data = '<div id="tab-' + tabindex + '" class="tab-pane ' + activeclass + '">\
-                <div class="panel-body">\
-                    <div class="col-md-3">\
-                        <label><span class="province_sp">' + province + '</span>&nbsp;&nbsp;<span class="city_sp">' + city + '</span></label>\
-                    </div>\
-                    <div class="col-sm-7">\
-                        <label>包含分区:&nbsp; <span class="district_sp">' + district_area + '</span></label><br>\
-                    </div>\
-                    <div class="col-sm-2">\
-                    </div>\
-                    <br>\
-                    <div class="col-sm-offset-3 col-sm-9">\
-                        <input type="hidden" name="template_name" class="name_sp" value="' + template_name + '"/>\
-                        <label>零售价:&nbsp; <span class="retail_sp">' + price1 + '</span>元</label><br>\
-                        <label>月单:&nbsp; <span class="month_sp">' + price2 + '</span>元</label><br>\
-                        <label>季单:&nbsp; <span class="season_sp">' + price3 + '</span>元</label><br>\
-                        <label>半年单:&nbsp; <span class="half_year_sp">' + price4 + '</span>元</label><br>\
-                        <label>结算价:&nbsp; <span class="settle_sp">' + price5 + '</span>元</label>\
-                    </div>\
-                </div>\
-            </div>';
-    }
+    // 填充内容
+    var strContent = '<div class="panel-body">\
+            <div class="col-md-3">\
+                <label><span class="province_sp">' + province + '</span>&nbsp;&nbsp;<span class="city_sp">' + city + '</span></label>\
+            </div>\
+            <div class="col-sm-7">\
+                <label>包含分区:&nbsp; <span class="district_sp">' + district_area + '</span></label><br>\
+            </div>\
+            <div class="col-sm-2 text-right">\
+                <button type="button" class="btn btn-success btn-outline" data-action="edit_template" data-tab-index="' + tabIndex + '">\
+                    <i class="fa fa-pencil"></i>修改\
+                </button>\
+            </div>\
+            <br>\
+            <input type="hidden" class="price_tp_id" value="' + priceId + '"/>\
+            <div class="col-sm-offset-3 col-sm-9">\
+                <input type="hidden" name="template_name" class="name_sp" value="' + template_name + '"/>\
+                <label>零售价:&nbsp; <span class="retail_sp">' + price1 + '</span>元</label><br>\
+                <label>月单:&nbsp; <span class="month_sp">' + price2 + '</span>元</label><br>\
+                <label>季单:&nbsp; <span class="season_sp">' + price3 + '</span>元</label><br>\
+                <label>半年单:&nbsp; <span class="half_year_sp">' + price4 + '</span>元</label><br>\
+                <label>结算价:&nbsp; <span class="settle_sp">' + price5 + '</span>元</label>\
+            </div>\
+        </div>';
 
-    $('ul.nav-tabs.closeable-tabs').append(li_data);
-    $('.tab-content').append(tab_data);
-    init_tab_count += 1;
+    $(strSelector).html(strContent);
 
     if ($('.tab-pane').length == 0)
         $('.tabs-container .nav-tabs.closeable-tabs').css('border', 'none');
@@ -416,7 +381,7 @@ function add_price_template() {
 }
 
 function init_all_price_template_data() {
-    init_tab_count = 0;
+
     init_price_template();
     var init_temp_data = '<div class="col-md-12  form-group">\
                             <div class="tabs-container col-md-10">\
