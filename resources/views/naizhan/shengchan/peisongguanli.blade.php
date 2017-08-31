@@ -223,7 +223,7 @@
 											<td>{{$cp->delivery_count}}</td>
 										@endif
 										<td>{{$cp->order->phone}}</td>
-										<td>{{$cp->order->milkman->name}}</td>
+										<td>@if (!empty($cp->order->milkman)) {{$cp->order->milkman->name}} @endif</td>
 										@if($is_distributed!=1)
 											<td>未调配</td>
 										@else
