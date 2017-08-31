@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\BasicModel\Address;
 use App\Model\BasicModel\Customer;
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\DeliveryType;
@@ -34,7 +35,8 @@ use Illuminate\Support\Facades\DB;
 use App\Model\OrderModel\Order;
 use App\Http\Requests;
 use Illuminate\Support\Facades\Response;
-use App\Http\Controllers\Controller;
+
+use Excel;
 
 
 class DSDeliveryPlanCtrl extends Controller
@@ -1010,6 +1012,9 @@ class DSDeliveryPlanCtrl extends Controller
             }
         }
 
+        // 在session保存数据
+        $request->session()->put('deliver_list', $milkman_info);
+
         return view('naizhan.shengchan.jinripeisongdan',[
             'pages'         =>$pages,
             'child'         =>$child,
@@ -1020,6 +1025,74 @@ class DSDeliveryPlanCtrl extends Controller
         ]);
     }
 
+    /**
+     * 导出今日配送单
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportDeliverList(Request $request) {
+
+        // 从session获取数据
+        $milkmanInfo = $request->session()->get('deliver_list');
+
+        Excel::create('deliverList', function ($excel) use ($milkmanInfo) {
+            $strDate = getCurDateString();
+            $excel->sheet('今日配送单' . $strDate, function ($sheet) use ($milkmanInfo) {
+                $rowHeader = ['序号', '地址', '配送内容', '收货人', '配送时间', '电话', '备注'];
+                foreach ($milkmanInfo as $mi) {
+                    // 配送员信息
+                    $rowData = ['配送员', $mi['milkman_name'], $mi['milkman_number']];
+                    $sheet->appendRow($rowData);
+
+                    // 配送内容
+                    $sheet->appendRow($rowHeader);
+                    $i = 0;
+                    foreach ($mi['delivery_info'] as $oi) {
+                        $rowData = [];
+
+                        // 序号
+                        $i++;
+                        $rowData[] = $i;
+
+                        // 地址
+                        $rowData[] = $oi->getAddressSmall(Address::LEVEL_VILLAGE);
+
+                        // 配送内容
+                        $strDeliver = "";
+                        foreach($oi->products as $pd) {
+                            $strDeliver .= $pd . " ";
+                        }
+                        $rowData[] = $strDeliver;
+
+                        // 收件人
+                        if ($oi->delivery_type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
+                            $strCustomer = $oi->customer->name;
+                        }
+                        else {
+                            $strCustomer = $oi->customer_name;
+                        }
+                        $rowData[] = $strCustomer;
+
+                        // 配送时间
+                        $rowData[] = $oi->getDeliveryTimeDesc();
+
+                        // 电话
+                        $rowData[] = $oi->phone;
+
+                        // 备注
+                        $rowData[] = $oi->comment_delivery;
+
+                        $sheet->appendRow($rowData);
+                    }
+
+                    // 空行
+                    $sheet->appendRow(['']);
+                }
+            });
+        })->store('xls', 'exports');
+
+        return \response()->download(public_path() . '/exports/deliverList.xls')->deleteFileAfterSend(true);
+    }
 
     public function undelivered_process($mkdp)
     {

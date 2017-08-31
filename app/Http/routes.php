@@ -437,6 +437,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('api/naizhan/shengchan/ziyingdingdan/getXiaoqu', 'DSDeliveryPlanCtrl@getXiaoquName');
     /*show Jinripeisongdan*/
     Route::get('/naizhan/shengchan/jinripeisongdan', 'DSDeliveryPlanCtrl@showJinripeisongdan');
+    Route::get('/naizhan/shengchan/jinripeisongdan/export', 'DSDeliveryPlanCtrl@exportDeliverList');
     /*Show Peisongfanru Page*/
     Route::get('/naizhan/shengchan/peisongfanru', 'DSDeliveryPlanCtrl@showPeisongfanru');
     /*Save milkman_refund bottles*/

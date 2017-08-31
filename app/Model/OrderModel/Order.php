@@ -858,4 +858,16 @@ class Order extends Model
 
         return $nOrder;
     }
+
+    /**
+     * 获取配送时间描述
+     * @return string
+     */
+    public function getDeliveryTimeDesc() {
+        if ($this->delivery_time == Order::ORDER_DELIVERY_TIME_MORNING) {
+            return '上午';
+        }
+
+        return '下午';
+    }
 }

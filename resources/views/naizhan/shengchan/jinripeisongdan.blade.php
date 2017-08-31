@@ -41,7 +41,7 @@
 						<div class="col-md-4 col-md-offset-2">
 							{{--<button type="button" class="btn btn-success btn-m-d">筛选</button>--}}
 							{{--&nbsp;--}}
-							{{--<a href="">导出</a>--}}
+							<a href="{{url('/naizhan/shengchan/jinripeisongdan/export')}}" class="btn btn-success btn-m-d">导出</a>
 							&nbsp;
 							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
 						</div>
@@ -146,13 +146,7 @@
 									@else
 										<td>{{$oi->customer_name}}</td>
 									@endif
-									<td>
-										@if($oi->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_MORNING)
-											上午
-										@elseif($oi->delivery_time == \App\Model\OrderModel\Order::ORDER_DELIVERY_TIME_AFTERNOON)
-											下午
-										@endif
-									</td>
+									<td>{{$oi->getDeliveryTimeDesc()}}</td>
 									<td>{{$oi->phone}}</td>
 									<td>{{$oi->comment_delivery}}</td>
 								</tr>
