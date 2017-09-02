@@ -300,7 +300,11 @@ class OrderCtrl extends Controller
         }
     }
 
-    //restart stopped dingdan
+    /**
+     * 开启暂停订单
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public
     function restart_dingdan(Request $request)
     {
@@ -367,11 +371,12 @@ class OrderCtrl extends Controller
 
         $order_products = $order->order_products;
 
-        $order->stop_at = $start_date;
-        $order->restart_at = $end_date;
-
         // 暂停时间设置
-        if (!$forRestart) {
+        if ($forRestart) {
+            $order->restart_at = $end_date;
+        }
+        else {
+            $order->stop_at = $start_date;
             $order->restart_at = getNextDateString($end_date);
         }
         $order->save();
@@ -399,7 +404,7 @@ class OrderCtrl extends Controller
             $nCountExtra = $qb->sum('changed_plan_count');
 
             // 删除暂停范围的配送明细
-            $qb->delete();
+            $qb->forceDelete();
 
             // 调整配送明细
             $op->processExtraCount(null, $nCountExtra);
@@ -2807,6 +2812,10 @@ class OrderCtrl extends Controller
         return;
     }
 
+    /**
+     * 删除订单
+     * @param $order_id
+     */
     public function delete_order($order_id)
     {
         $order = Order::find($order_id);
@@ -2817,11 +2826,7 @@ class OrderCtrl extends Controller
         if($order)
         {
             //delete order product
-            $order_products = $order->order_products;
-            foreach($order_products as $op)
-            {
-                $op->forceDelete();
-            }
+            $order->order_products()->forceDelete();
 
             //delete order
             $order->delete();
