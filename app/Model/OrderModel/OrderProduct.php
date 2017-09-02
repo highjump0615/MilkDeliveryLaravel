@@ -369,13 +369,11 @@ class OrderProduct extends Model
             // 如果算出来的日期属于暂停期间, 重新计算
             if($this->order)
             {
-                if ($this->order->has_stopped) {
-                    $dateStop = $this->order->stop_at;
-                    $dateRestart = $this->order->order_stop_end_date;
+                $dateStop = $this->order->stop_at;
+                $dateRestart = $this->order->order_stop_end_date;
 
-                    if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
-                        $bRestart = true;
-                    }
+                if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
+                    $bRestart = true;
                 }
             }
 
