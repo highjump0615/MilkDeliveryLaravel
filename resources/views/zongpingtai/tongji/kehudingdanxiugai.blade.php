@@ -177,5 +177,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/kehudingdanxiugai.js')?>"></script>
+	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/kehudingdanxiugai.js?170905')?>"></script>
 @endsection

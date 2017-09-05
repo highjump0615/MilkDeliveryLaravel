@@ -36,17 +36,23 @@ class FactoryStatistics extends Controller
         $parent = 'tongjifenxi';
         $current_page = 'daoqidingdantongji';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
         $currentMonth_str = $currentDate->format('Y-m-01');
 
-        $station_name = $request->input('station_name');
-        $station_number = $request->input('station_number');
+        $address = Address::where('level',1)
+            ->where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get();
 
+        // 参数
+        $station_name = $request->input('station_name');
+        $area_name = $request->input('area_name');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
+
         if($start_date == null){
             $start_date = $currentMonth_str;
         }
@@ -54,176 +60,59 @@ class FactoryStatistics extends Controller
             $end_date = $currentDate_str;
         }
 
-        $input_province = $request->input('province');
-        $input_city = $request->input('city');
-        $input_district = $request->input('district');
-        if($station_name == null){
-            $station_name = '';
-        }
-        if($station_number == null){
-            $station_number = '';
-        }
-
-        $factory_id = Auth::guard('gongchang')->user()->factory_id;
-        $province = ProvinceData::all();
         $ended_orders = array();
 
-        if($input_province != null && $input_city != null){
-            $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->
-                where('number','LIKE','%'.$station_number.'%')->get(['id']);
-            foreach ($deliverystations as $key=>$ds){
-                $orders = Order::where('station_id',$ds->id)->where('status',Order::ORDER_FINISHED_STATUS)->wherebetween('ordered_at',[$start_date,$end_date])->
-                where('address','LIKE', '%'.$input_province." ".$input_city." ".$input_district.'%')->where('is_deleted',0)->get();
-                foreach ($orders as $or){
-                    $orderproducts = OrderProduct::where('order_id',$or->id);
-                    $yuedan = 0;
-                    $jidan =0;
-                    $banniandan = 0;
-                    foreach ($orderproducts as $op){
-                        if($op->order_type = OrderType::ORDER_TYPE_MONTH){
-                            $yuedan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_SEASON){
-                            $jidan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_HALF_YEAR){
-                            $banniandan =1;
-                        }
-                    }
+        //
+        // 查询已完成的订单
+        //
+        $orders = Order::with('order_products')
+            ->where('status',Order::ORDER_FINISHED_STATUS)
+            ->whereHas('deliveryStation', function($query) use ($station_name, $area_name) {
+                $query->where('name','LIKE','%'.$station_name.'%');
+                $query->where('address','LIKE','%'.$area_name.'%');
+            })
+            ->wherebetween('ordered_at',[$start_date,$end_date])
+            ->where('is_deleted',0)
+            ->orderBy('created_at', 'desc')
+            ->paginate();
 
-                    $order_type_status = [];
-                    $chk = 0;
-                    if($yuedan == 1){
-                        if($chk == 0) {
-                            $order_type_status = $order_type_status.'月单';
-                            $chk++;
-                        }
-                    }
-                    if($jidan == 1){
-                        if($chk == 0)
-                            $order_type_status =$order_type_status.'季单';
-                        else
-                            $order_type_status =$order_type_status.'/季单';
-                    }
-                    if($banniandan == 1){
-                        if($chk == 1)
-                            $order_type_status =$order_type_status.'半年单';
-                        else
-                            $order_type_status =$order_type_status.'/半年单';
-                    }
-                    $or['order_type'] = $order_type_status;
-
+        foreach ($orders as $or){
+            $yuedan = 0;
+            $jidan =0;
+            $banniandan = 0;
+            foreach ($or->order_products as $op){
+                if($op->order_type = OrderType::ORDER_TYPE_MONTH){
+                    $yuedan = 1;
                 }
-                $ended_orders[$key] = $orders;
-            }
-        }
-        elseif ($input_province != null && $input_city == null){
-            $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->
-            where('number','LIKE','%'.$station_number.'%')->get(['id']);
-            foreach ($deliverystations as $key=>$ds){
-                $orders = Order::where('station_id',$ds->id)->where('status',Order::ORDER_FINISHED_STATUS)->wherebetween('ordered_at',[$start_date,$end_date])->
-                where('address','LIKE', '%'.$input_province.'%')->where('is_deleted',0)->get();
-                foreach ($orders as $or){
-                    $orderproducts = OrderProduct::where('order_id',$or->id);
-                    $yuedan = 0;
-                    $jidan =0;
-                    $banniandan = 0;
-                    foreach ($orderproducts as $op){
-                        if($op->order_type = OrderType::ORDER_TYPE_MONTH){
-                            $yuedan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_SEASON){
-                            $jidan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_HALF_YEAR){
-                            $banniandan =1;
-                        }
-                    }
-
-                    $order_type_status = '';
-                    $chk = 0;
-                    if($yuedan == 1){
-                        if($chk == 0) {
-                            $order_type_status = $order_type_status.'月单';
-                            $chk++;
-                        }
-                    }
-                    if($jidan == 1){
-                        if($chk == 0)
-                            $order_type_status =$order_type_status.'季单';
-                        else
-                            $order_type_status =$order_type_status.'/季单';
-                    }
-                    if($banniandan == 1){
-                        if($chk == 1)
-                            $order_type_status =$order_type_status.'半年单';
-                        else
-                            $order_type_status =$order_type_status.'/半年单';
-                    }
-                    $or['order_type'] = $order_type_status;
-
+                if($op->order_type == OrderType::ORDER_TYPE_SEASON){
+                    $jidan = 1;
                 }
-                $ended_orders[$key] = $orders;
-            }
-        }
-        elseif ($input_province == null){
-            $deliverystations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->
-            where('number','LIKE','%'.$station_number.'%')->get(['id']);
-            foreach ($deliverystations as $key=>$ds){
-                $orders = Order::where('station_id',$ds->id)->where('status',Order::ORDER_FINISHED_STATUS)->wherebetween('ordered_at',[$start_date,$end_date])->where('is_deleted',0)->get();
-                $abc = 0;
-                foreach ($orders as $or){
-                    $abc++;
-                    $orderproducts = OrderProduct::where('order_id',$or->id);
-                    $yuedan = 0;
-                    $jidan =0;
-                    $banniandan = 0;
-                    foreach ($orderproducts as $op){
-                        if($op->order_type = OrderType::ORDER_TYPE_MONTH){
-                               $yuedan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_SEASON){
-                            $jidan = 1;
-                        }
-                        if($op->order_type == OrderType::ORDER_TYPE_HALF_YEAR){
-                            $banniandan =1;
-                        }
-                    }
-
-                    $order_type_status = '';
-                    $chk = 0;
-                    if($yuedan == 1){
-                        if($chk == 0) {
-                            $order_type_status = $order_type_status.'月单';
-                            $chk++;
-                        }
-                    }
-                    if($jidan == 1){
-                        if($chk == 0)
-                            $order_type_status =$order_type_status.'季单';
-                        else
-                            $order_type_status =$order_type_status.'/季单';
-                    }
-                    if($banniandan == 1){
-                        if($chk == 1)
-                            $order_type_status =$order_type_status.'半年单';
-                        else
-                            $order_type_status =$order_type_status.'/半年单';
-                    }
-                    $or['order_type'] = $order_type_status;
+                if($op->order_type == OrderType::ORDER_TYPE_HALF_YEAR){
+                    $banniandan =1;
                 }
-                $ended_orders[$key] = $orders;
             }
-        }
 
-        if($input_province == null){
-            $input_province = "";
-        }
-        if($input_city == null){
-            $input_city = "";
-        }
-        if($input_district == null){
-            $input_district = "";
+            $order_type_status = "";
+            $chk = 0;
+            if($yuedan == 1){
+                if($chk == 0) {
+                    $order_type_status = $order_type_status.'月单';
+                    $chk++;
+                }
+            }
+            if($jidan == 1){
+                if($chk == 0)
+                    $order_type_status =$order_type_status.'季单';
+                else
+                    $order_type_status =$order_type_status.'/季单';
+            }
+            if($banniandan == 1){
+                if($chk == 1)
+                    $order_type_status =$order_type_status.'半年单';
+                else
+                    $order_type_status =$order_type_status.'/半年单';
+            }
+            $or['order_type'] = $order_type_status;
         }
 
         // 添加系统日志
@@ -234,13 +123,11 @@ class FactoryStatistics extends Controller
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'province' =>$province,
-            'order_info' => $ended_orders,
+
+            'order_info' => $orders,
+            'address' => $address,
             'station_name' => $station_name,
-            'station_number' => $station_number,
-            'input_province' => $input_province,
-            'input_city' => $input_city,
-            'input_district' => $input_district,
+            'area_name' => $area_name,
             'start_date' => $start_date,
             'end_date' => $end_date,
         ]);
@@ -409,26 +296,31 @@ class FactoryStatistics extends Controller
 
     /* 奶厂 / 客户行为统计 */
     public function showKehuxingweitongji(Request $request){
+
+        // 页面数据
         $child = 'kehuxingweitongji';
         $parent = 'tongjifenxi';
         $current_page = 'kehuxingweitongji';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $addr = Address::where('level',1)->get();
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
 
-        $province = ProvinceData::all();
+        $addr = Address::where('level',1)->get();
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
         $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
         $date_start = $date_start->format('Y-m-d');
         $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $date_end = $date_end->format('Y-m-d');
 
+        // 参数
         $station_name = $request->input('station_name');
-        $station_number = $request->input('station_number');
-        $addrs = $request->input('province')." ".$request->input('city');
+        $area_name = $request->input('area_name');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addrs.'%')->get();
+        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)
+            ->where('name','LIKE','%'.$station_name.'%')
+            ->where('address','LIKE','%'.$area_name.'%')
+            ->get();
 
         if($start_date == ''){
             $start_date = $date_start;
@@ -717,13 +609,10 @@ class FactoryStatistics extends Controller
             'current_page' => $current_page,
             'address'=>$addr,
             'stations'=>$result,
-            'province'=>$province,
-            'current_station_name'=>$station_name,
-            'current_station_number'=>$station_number,
-            'current_province'=>$request->input('province'),
-            'current_city'=>$request->input('city'),
-            'currrent_start_date'=>$start_date,
-            'current_end_date'=>$end_date,
+            'station_name'=>$station_name,
+            'area_name'=>$area_name,
+            'start_date'=>$start_date,
+            'end_date'=>$end_date,
         ]);
     }
 
@@ -733,21 +622,25 @@ class FactoryStatistics extends Controller
         $parent = 'tongjifenxi';
         $current_page = 'kehudingdanxiugui';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
-        $province = ProvinceData::all();
+        $addr = Address::where('level',1)->get();
+
         $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
         $date_start = $date_start->format('Y-m-d');
         $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $date_end = $date_end->format('Y-m-d');
 
+        // 参数
         $station_name = $request->input('station_name');
-        $station_number = $request->input('station_number');
-        $addrs = $request->input('province')." ".$request->input('city');
+        $area_name = $request->input('area_name');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('number','LIKE','%'.$station_number.'%')->where('address','LIKE','%'.$addrs.'%')->get();
+        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)
+            ->where('name','LIKE','%'.$station_name.'%')
+            ->where('address','LIKE','%'.$area_name.'%')
+            ->get();
 
         if($start_date == ''){
             $start_date = $date_start;
@@ -919,18 +812,19 @@ class FactoryStatistics extends Controller
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户订单修改统计', SysLog::SYSLOG_OPERATION_VIEW);
 
         return view('gongchang.tongjifenxi.kehudingdanxiugui', [
-            'pages' => $pages,
-            'child' => $child,
-            'parent' => $parent,
-            'current_page' => $current_page,
-            'stations'=>$result,
-            'province'=>$province,
-            'current_station_name'=>$station_name,
-            'current_station_number'=>$station_number,
-            'current_province'=>$request->input('province'),
-            'current_city'=>$request->input('city'),
-            'currrent_start_date'=>$start_date,
-            'current_end_date'=>$end_date,
+            // 菜单数据
+            'pages'             => $pages,
+            'child'             => $child,
+            'parent'            => $parent,
+            'current_page'      => $current_page,
+
+            // 数据
+            'stations'          => $result,
+            'address'           => $addr,
+            'station_name'      => $station_name,
+            'area_name'         => $area_name,
+            'start_date'        => $start_date,
+            'end_date'          => $end_date,
         ]);
     }
 
