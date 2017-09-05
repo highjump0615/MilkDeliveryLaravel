@@ -14,49 +14,10 @@
 			</ol>
 		</div>
 		<div class="row">
-<!--Table-->
-			<div class="ibox-content">
-				<div class="feed-element">
-					<div class="col-md-3">
-						<label>奶站名称:</label>
-						<input type="text" id="station_name" value="{{$station_name}}">
-					</div>
-					{{--<div class="col-md-3">--}}
-					{{--<label>编号:</label>--}}
-					{{--<input type="text" id="">--}}
-					{{--</div>--}}
-					<div class="col-md-3">
-						<label>区域:</label>
-						&nbsp;
-						<select data-placeholder="" class="chosen-select" id="area_name" tabindex="2" style="width: 180px; height: 30px;">
-							<option value="">全部</option>
-							@foreach($address as $addr)
-								@if($addr->name == $area_name)
-									<option selected value="{{$addr->name}}">{{$addr->name}}</option>
-								@else
-									<option value="{{$addr->name}}">{{$addr->name}}</option>
-								@endif
-							@endforeach
-						</select>
-					</div>
 
-					<div class="form-group col-md-4" id="data_range_select">
-						<label class="col-sm-2 control-label" style="padding-top:5px;">日期:</label>
-						<div class="input-daterange input-group col-md-8" id="datepicker">
-							<input type="text" class="input-sm form-control" name="start" id="start_date" value="{{$start_date}}"/>
-							<span class="input-group-addon">至</span>
-							<input type="text" class="input-sm form-control" name="end" id="end_date" value="{{$end_date}}"/>
-						</div>
-					</div>
-					<div class="col-md-2"  style="padding-top:5px;">
-						<button type="button" id="search" class="btn btn-success btn-md">筛选</button>
-						&nbsp;
-						<button class="btn btn-success btn-outline btn-m-d" data-action="export_csv">导出</button>
-						&nbsp;
-						<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
-					</div>
-				</div>
-			</div>
+			@include('gongchang.tongjifenxi.header', [
+				'dateRange' => true,
+			])
 
 			<div class="ibox float-e-margins">
 				<div class="ibox-content">
@@ -159,5 +120,5 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/pages/gongchang/dingdanleixingtongji.js') ?>"></script>
+	<script src="<?=asset('js/pages/gongchang/dingdanleixingtongji.js?170905') ?>"></script>
 @endsection

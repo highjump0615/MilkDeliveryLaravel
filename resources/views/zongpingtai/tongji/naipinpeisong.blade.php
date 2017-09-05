@@ -2,7 +2,7 @@
 
 @section('content')
 	@include('zongpingtai.theme.sidebar')
-	 <div id="page-wrapper" class="gray-bg dashbard-1">
+	<div id="page-wrapper" class="gray-bg dashbard-1">
 		@include('zongpingtai.theme.header')
 		<div class="row border-bottom">
 			<ol class="breadcrumb gray-bg" style="padding:5px 0 5px 50px;">
