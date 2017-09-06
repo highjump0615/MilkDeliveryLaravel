@@ -314,6 +314,8 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     /*show tongji-dingdanleixingtongji Page*/
     Route::get('/gongchang/tongjifenxi/dingdanleixingtongji', 'FactoryStatistics@showDingdanleixingtongji');
+    Route::get('/gongchang/tongjifenxi/deliversummary', 'FactoryStatistics@showDeliverSummary');
+
     /*工厂管理 / 基础信息管理 / 配送员管理 */
 
     Route::get('/gongchang/jichuxinxi/zhengdingyuan', 'CheckerCtrl@showCheckerPage')->name('show_checkers');

@@ -30,12 +30,12 @@ use App\Http\Controllers\Controller;
 
 class FactoryStatistics extends Controller
 {
-    /* 奶厂 / 到期订单统计 */
-    public function showDaoqidingdantongji(Request $request){
-        $child = 'daoqidingdantongji';
-        $parent = 'tongjifenxi';
-        $current_page = 'daoqidingdantongji';
-        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+    /**
+     * 获取基础信息
+     * @param Request $request
+     * @return array
+     */
+    public function getBaseData(Request $request) {
         $current_factory_id = $this->getCurrentFactoryId(true);
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
@@ -60,16 +60,37 @@ class FactoryStatistics extends Controller
             $end_date = $currentDate_str;
         }
 
-        $ended_orders = array();
+        return [
+            'address' => $address,
+            'station_name' => $station_name,
+            'area_name' => $area_name,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+    }
+
+    /* 奶厂 / 到期订单统计 */
+    public function showDaoqidingdantongji(Request $request){
+        $child = 'daoqidingdantongji';
+        $parent = 'tongjifenxi';
+        $current_page = 'daoqidingdantongji';
+        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
+        $aryBaseData = $this->getBaseData($request);
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
+
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         //
         // 查询已完成的订单
         //
         $orders = Order::with('order_products')
             ->where('status',Order::ORDER_FINISHED_STATUS)
-            ->whereHas('deliveryStation', function($query) use ($station_name, $area_name) {
-                $query->where('name','LIKE','%'.$station_name.'%');
-                $query->where('address','LIKE','%'.$area_name.'%');
+            ->where('factory_id',$current_factory_id)
+            ->whereHas('deliveryStation', function($query) use ($aryBaseData) {
+                $query->where('name', 'LIKE', '%' . $aryBaseData['station_name'] . '%');
+                $query->where('address', 'LIKE', '%' . $aryBaseData['area_name'] . '%');
             })
             ->wherebetween('ordered_at',[$start_date,$end_date])
             ->where('is_deleted',0)
@@ -118,19 +139,14 @@ class FactoryStatistics extends Controller
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '到期订单统计', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.tongjifenxi.daoqidingdantongji', [
+        return view('gongchang.tongjifenxi.daoqidingdantongji', array_merge($aryBaseData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
 
             'order_info' => $orders,
-            'address' => $address,
-            'station_name' => $station_name,
-            'area_name' => $area_name,
-            'start_date' => $start_date,
-            'end_date' => $end_date,
-        ]);
+        ]));
     }
 
     /**
@@ -1111,5 +1127,59 @@ class FactoryStatistics extends Controller
             'address'=>$address,
         ]);
     }
-    //
+
+    /**
+     * 打开配送汇总表
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showDeliverSummary(Request $request) {
+        $child = 'deliversummary';
+        $parent = 'tongjifenxi';
+        $current_page = 'deliversummary';
+        $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
+        $aryBaseData = $this->getBaseData($request);
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
+
+        $current_factory_id = $this->getCurrentFactoryId(true);
+
+        $queryBase = MilkManDeliveryPlan::wherebetween('deliver_at', [$start_date, $end_date])
+            ->join('deliverystations as ds', 'ds.id', '=', 'milkmandeliveryplan.station_id')
+            ->where('ds.factory_id', $current_factory_id);
+
+        // 奶站名称筛选
+        if (!empty($station_name)) {
+            $queryBase->where('ds.name','LIKE','%'.$station_name.'%');
+        }
+        // 地区名称筛选
+        if (!empty($area_name)) {
+            $queryBase->where('ds.address','LIKE',$area_name.'%');
+        }
+
+        //
+        // 查询已配送数量
+        //
+        $counts = $queryBase->join('orderproducts as op', 'op.id', '=', 'milkmandeliveryplan.order_product_id')
+            ->join('products as p', 'p.id', '=', 'op.product_id')
+            ->groupBy('op.product_id', 'milkmandeliveryplan.deliver_at')
+            ->selectRaw('milkmandeliveryplan.deliver_at, op.product_id, p.simple_name, sum(delivered_count) as count')
+            ->get()
+            ->groupBy('deliver_at');
+
+        $product_info = Product::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0)
+            ->get(['id', 'simple_name']);
+
+        return view('gongchang.tongjifenxi.deliversummary', array_merge($aryBaseData, [
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page,
+
+            'products' => $product_info,
+            'counts' => $counts,
+        ]));
+    }
 }
