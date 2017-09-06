@@ -63,7 +63,7 @@ class MilkManDeliveryPlan extends Model
 
     /**
      * 获取奶站
-     * @return DeliveryStation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function station(){
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');

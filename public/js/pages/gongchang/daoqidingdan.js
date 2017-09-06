@@ -1,7 +1,4 @@
 
-var city = '';
-var district = '';
-
 $(document).ready(function() {
 });
 
