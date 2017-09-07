@@ -25,46 +25,36 @@
 					<table id="table1" class="table table-bordered">
 						<thead>
 							<tr>
-								<th data-sort-ignore="true">序号</th>
-								<th data-sort-ignore="true">日期</th>
-								@foreach($products as $p)
-									<th data-sort-ignore="true">{{$p->simple_name}}</th>
+								<th data-sort-ignore="true" rowspan="2">序号</th>
+								<th data-sort-ignore="true" rowspan="2" style="min-width:107px;">姓名</th>
+								@foreach($dates as $dt)
+									<th data-sort-ignore="true" colspan="{{count($products)}}">{{$dt}}</th>
 								@endforeach
-								<th data-sort-ignore="true">应回收瓶</th>
-								<th data-sort-ignore="true">已回收瓶</th>
-								<th data-sort-ignore="true">差瓶</th>
+							</tr>
+							<tr>
+								@foreach($dates as $dt)
+									@foreach($products as $p)
+										<th data-sort-ignore="true">{{$p->simple_name}}</th>
+									@endforeach
+								@endforeach
 							</tr>
 						</thead>
 						<tbody>
-						<?php
-						$i = 0;
-						$dtIndex = $start_date;
-						?>
-						@while ($dtIndex <= $end_date)
+                        <?php $i = 0; ?>
+						@foreach($milkmans as $mm)
                             <?php $i++;?>
 							<tr>
+								<!-- 序号 -->
 								<td>{{$i}}</td>
-								<td>{{$dtIndex}}</td>
-								@foreach($products as $p)
-                                    <?php
-                                    $strCount = "";
-                                    if (!empty($counts[$dtIndex])) {
-									foreach ($counts[$dtIndex] as $cc) {
-										if ($cc->product_id == $p->id) {
-											$strCount = $cc->count;
-											break;
-										}
-									}
-									}
-                                    ?>
-									<td>{{$strCount}}</td>
+								<!-- 配送员 -->
+								<td>{{$mm->station->name}}--{{$mm->name}}</td>
+								@foreach($dates as $dt)
+									@foreach($products as $p)
+										<td>{{showEmptyValue(getEmptyArrayValue($counts, $mm->id, $dt, $p->id))}}</th>
+									@endforeach
 								@endforeach
-								<td></td>
-								<td></td>
-								<td></td>
 							</tr>
-							<?php $dtIndex = getNextDateString($dtIndex); ?>
-						@endwhile
+						@endforeach
 						</tbody>
 					</table>
 				</div>
