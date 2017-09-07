@@ -10,7 +10,7 @@
 				<li>
 					<a href="">统计分析</a>
 				</li>
-				<li class="active"><strong>配送员配送统计</strong></li>
+				<li class="active"><strong>奶站配送统计</strong></li>
 			</ol>
 		</div>
 
@@ -25,33 +25,22 @@
 					<table id="table1" class="table table-bordered">
 						<thead>
 							<tr>
-								<th data-sort-ignore="true" rowspan="2">序号</th>
-								<th data-sort-ignore="true" rowspan="2" style="min-width:107px;">姓名</th>
+								<th data-sort-ignore="true">序号</th>
+								<th data-sort-ignore="true" style="min-width:80px">奶站名称</th>
 								@foreach($dates as $dt)
-									<th data-sort-ignore="true" colspan="{{count($products)}}">{{$dt}}</th>
-								@endforeach
-							</tr>
-							<tr>
-								@foreach($dates as $dt)
-									@foreach($products as $p)
-										<th data-sort-ignore="true">{{$p->simple_name}}</th>
-									@endforeach
+									<th data-sort-ignore="true">{{$dt}}</th>
 								@endforeach
 							</tr>
 						</thead>
 						<tbody>
-                        <?php $i = 0; ?>
-						@foreach($milkmans as $mm)
+						<?php $i = 0; ?>
+						@foreach($stations as $st)
                             <?php $i++;?>
 							<tr>
-								<!-- 序号 -->
 								<td>{{$i}}</td>
-								<!-- 配送员 -->
-								<td>{{$mm->station->name}}--{{$mm->name}}</td>
+								<td>{{$st->name}}</td>
 								@foreach($dates as $dt)
-									@foreach($products as $p)
-										<td>{{showEmptyValue(getEmptyArrayValue($counts, $mm->id, $dt, $p->id))}}</td>
-									@endforeach
+									<td>{{showEmptyValue(getEmptyArrayValue($counts, $st->id, $dt))}}</td>
 								@endforeach
 							</tr>
 						@endforeach
@@ -72,7 +61,7 @@
     });
 
     $('button[data-action = "print"]').click(function () {
-        printContent('table1', gnUserTypeFactory, '配送员配送统计');
+        printContent('table1', gnUserTypeFactory, '奶站配送统计');
     });
 </script>
 @endsection

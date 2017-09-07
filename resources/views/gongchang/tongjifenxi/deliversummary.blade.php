@@ -10,7 +10,7 @@
 				<li>
 					<a href="">统计分析</a>
 				</li>
-				<li class="active"><strong>到期订单统计</strong></li>
+				<li class="active"><strong>配送汇总表</strong></li>
 			</ol>
 		</div>
 
@@ -40,7 +40,7 @@
 						$i = 0;
 						$dtIndex = $start_date;
 						?>
-						@while ($dtIndex <= $end_date)
+						@foreach($milkmans as $mm)
                             <?php $i++;?>
 							<tr>
 								<td>{{$i}}</td>

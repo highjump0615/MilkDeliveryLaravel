@@ -44,8 +44,8 @@
             <div class="pull-right"  style="padding-top:5px;">
                 <button type="submit" id="search" class="btn btn-sm btn-success">筛选</button>
                 &nbsp;
-                <button type="button" class="btn-outline btn btn-sm btn-success" data-action="export_csv">导出</button>
-                &nbsp;
+                {{--<button type="button" class="btn-outline btn btn-sm btn-success" data-action="export_csv">导出</button>--}}
+                {{--&nbsp;--}}
                 <button type="button" class="btn btn-outline btn-sm btn-success" data-action="print">打印</button>
                 &nbsp;
             </div>
