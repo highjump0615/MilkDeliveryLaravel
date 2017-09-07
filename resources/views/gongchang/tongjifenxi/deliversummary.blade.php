@@ -40,7 +40,7 @@
 						$i = 0;
 						$dtIndex = $start_date;
 						?>
-						@foreach($milkmans as $mm)
+						@while ($dtIndex <= $end_date)
                             <?php $i++;?>
 							<tr>
 								<td>{{$i}}</td>
