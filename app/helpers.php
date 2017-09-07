@@ -115,3 +115,12 @@ function getEmptyArrayValue() {
 function getEmptyValue($val) {
     return $val ?: 0;
 }
+
+/**
+ * 显示只有内容的
+ * @param $val
+ * @return string
+ */
+function showEmptyValue($val) {
+    return $val ?: "";
+}
