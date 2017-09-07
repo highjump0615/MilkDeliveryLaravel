@@ -12,6 +12,7 @@ use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\DeliveryModel\MilkMan;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
+use App\Model\FactoryModel\Factory;
 use App\Model\FinanceModel\DSBusinessCreditBalanceHistory;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\FactoryModel\FactoryBottleType;
@@ -1032,20 +1033,55 @@ class DSDeliveryPlanCtrl extends Controller
      */
     public function exportDeliverList(Request $request) {
 
+        $nFactoryId = $this->getCurrentFactoryId(false);
+        $strFactory = Factory::find($nFactoryId)->name;
+
         // 从session获取数据
         $milkmanInfo = $request->session()->get('deliver_list');
 
-        Excel::create('deliverList', function ($excel) use ($milkmanInfo) {
+        Excel::create('deliverList', function ($excel) use ($strFactory, $milkmanInfo) {
             $strDate = getCurDateString();
-            $excel->sheet('今日配送单' . $strDate, function ($sheet) use ($milkmanInfo) {
+            $excel->sheet('今日配送单' . $strDate, function ($sheet) use ($strFactory, $milkmanInfo) {
+                $nRow = 1;
+
+                // 添加奶厂名称
+                $sheet->appendRow([$strFactory]);
+                $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                $sheet->cell('A' . $nRow, function($cell) {
+                    $cell->setFontSize(16);
+                    $cell->setFontWeight('bold');
+                    $cell->setAlignment('center');
+                });
+                $nRow++;
+
+                // 空行
+                $sheet->appendRow(['']);
+                $nRow++;
+
                 $rowHeader = ['序号', '地址', '配送内容', '收货人', '配送时间', '电话', '备注'];
                 foreach ($milkmanInfo as $mi) {
                     // 配送员信息
-                    $rowData = ['配送员', $mi['milkman_name'], $mi['milkman_number']];
-                    $sheet->appendRow($rowData);
+                    $sheet->appendRow(['配送员:   ' . $mi['milkman_name'] . ' ' .$mi['milkman_number']]);
+                    $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                    $nRow++;
+
+                    // 汇总信息
+                    $strTotalCounts = "";
+                    foreach ($mi['milkman_products'] as $mp) {
+                        $nCount = getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL);
+                        $strTotalCounts .= $mp['name'] . ":" . $nCount . "  ";
+                    }
+                    $sheet->appendRow([$strTotalCounts]);
+                    $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                    $nRow++;
 
                     // 配送内容
                     $sheet->appendRow($rowHeader);
+                    $nRow++;
                     $i = 0;
                     foreach ($mi['delivery_info'] as $oi) {
                         $rowData = [];
@@ -1083,10 +1119,12 @@ class DSDeliveryPlanCtrl extends Controller
                         $rowData[] = $oi->comment_delivery;
 
                         $sheet->appendRow($rowData);
+                        $nRow++;
                     }
 
                     // 空行
                     $sheet->appendRow(['']);
+                    $nRow++;
                 }
             });
         })->store('xls', 'exports');
