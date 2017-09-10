@@ -133,7 +133,7 @@ class WechatesCtrl extends Controller
         return $result;
     }
 	//获取accessToken
-	private function accessToken($appid,$appsecret)
+	public function accessToken($appid,$appsecret)
 	{
 		$url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=$appid&secret=$appsecret";
         $accessTokenJson = $this->sendGetRequest($url);
@@ -173,34 +173,46 @@ class WechatesCtrl extends Controller
 	//自定义菜单
 	public function createMenu()
 	{
-		$wxmenu = Wxmenu::where('factoryid',$this->factoryid)->get();
-		$jsonmenu = '{ "button":[ ';
-		foreach($wxmenu as $wxvalue){
-			$jsonmenu .='{ "name":"'.$wxvalue->name.'", "type":"'.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect" } ,';
-		}
-		//.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state=yuying#wechat_redirect
-		$jsonmenu = substr($jsonmenu,0,-1); 
-		$jsonmenu .= ']}';
-		/*$jsonmenu = '{
-			  "button":[
-			  {
-				    "name":"奶吧",
-				    "type":"click",
-				    "key":"奶吧"
-			   },
-			   {
-				   "name":"快速订奶",
-				   "type":"click",
-				   "key":"快速订奶"
+//		$wxmenu = Wxmenu::where('factoryid',$this->factoryid)->get();
+//		$jsonmenu = '{ "button":[ ';
+//		foreach($wxmenu as $wxvalue){
+//			$jsonmenu .='{ "name":"'.$wxvalue->name.'", "type":"'.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect" } ,';
+//		}
+//		//.$wxvalue->type.'", "url":"https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$this->appId.'&redirect_uri=http://niu.vfushun.com/milk'.$wxvalue->url.'&response_type=code&scope=snsapi_userinfo&state=yuying#wechat_redirect
+//		$jsonmenu = substr($jsonmenu,0,-1);
+//		$jsonmenu .= ']}';
 
-			   },
-			   {
-				   "name":"个人中心",
-					"type":"click",
-					"key":"个人中心"
+        $strUrl = "http://www.xiannaipai.com/milk/public/weixin";
 
-			   }]
-		 }';*/
+		$jsonmenu = '{
+		    "button":[
+		    {
+		        "name": "奶吧",
+		        "type": "view",
+		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/qianye&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+            },
+            {
+                "name":"经销商",
+                "sub_button":[{
+                    "name": "计划管理",
+                    "type": "view",
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                },
+                {
+                    "name": "签收管理",
+                    "type": "view",
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                }]
+            },
+            {
+                "name":"获取红包",
+                "sub_button":[{
+                    "name": "分享",
+                    "type": "view",
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/share&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                }]
+            }]
+		 }';
 
 		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
 		$url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=".$accessToken;

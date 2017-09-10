@@ -26,8 +26,8 @@
         <p>{{$user->name}}</p>
     </div>
 
-    <div class="cen_1">
-        订单余额<b>￥{{$remain_amount}}</b> 剩余数量 <b>{{$remaining_bottle_count}}</b>
+    <div class="cen_1"
+        >订单余额<b>￥{{$remain_amount}}</b> 剩余数量 <b>{{$remaining_bottle_count}}</b>
     </div>
 
     <div class="cen_in">
