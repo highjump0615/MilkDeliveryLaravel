@@ -2614,7 +2614,7 @@ class WeChatCtrl extends Controller
                 "action_name" => "QR_STR_SCENE",
                 "action_info" => [
                     "scene" => [
-                        "scene_id" => $user->id,
+                        "scene_str" => $user->openid,
                     ]
                 ],
             ];

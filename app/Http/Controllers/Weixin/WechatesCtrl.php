@@ -83,22 +83,28 @@ class WechatesCtrl extends Controller
     private function receiveEvent($object)
     {
         $content = "";
+        $result = "";
+
         switch ($object->Event)
         {
             case "subscribe":   //关注事件
-				$this->WechatUsers($object->FromUserName);
+				$this->WechatUsers($object->FromUserName, $object->EventKey);
                 $content = "您好，欢迎关注".$this->factoryname;
                 break;
             case "unsubscribe": //取消关注事件
                 $content = "";
                 break;
         }
-        $result = $this->transmitText($object, $content);
+
+        if (!empty($content)) {
+            $result = $this->transmitText($object, $content);
+        }
+
         return $result;
     }
 
 	//微信用户添加(修改)数据库
-	private function WechatUsers($FromUserName){
+	private function WechatUsers($FromUserName, $eventKey) {
 		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
 		$jsoninfo    = $this->getFanInfo($accessToken,$FromUserName);
 
@@ -108,6 +114,15 @@ class WechatesCtrl extends Controller
 
 		if (empty($wxusers)) {
             $wxusers = new WechatUser;
+        }
+
+        // 获取parent
+        $strPrefix = "qrscene_";
+        $strContent = substr($eventKey, 0, strlen($strPrefix));
+        if (strcmp($strPrefix, $strContent) == 0) {
+            $strOpenId = substr($eventKey, strlen($strPrefix));
+            $wxParent = WechatUser::where('openid', $strOpenId)->first();
+            $wxusers->parent = $wxParent->id;
         }
 
 		$wxusers->openid     = $jsoninfo['openid'];
