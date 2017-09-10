@@ -60,7 +60,7 @@
 
         @if (!empty($appid))
         wx.config({
-            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
             appId: '{{$appid}}', // 必填，公众号的唯一标识
             timestamp: '{{$timestamp}}', // 必填，生成签名的时间戳
             nonceStr: '{{$nonce}}', // 必填，生成签名的随机串
@@ -72,11 +72,17 @@
             ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
         });
 
+        // Decode url
+        var strUrlEncoded = '{{$url}}';
+        var elem = document.createElement('textarea');
+        elem.innerHTML = strUrlEncoded;
+        var strUrlDecoded = elem.value;
+
         wx.ready(function() {
             wx.onMenuShareAppMessage({
                 title: '食尚新鲜',
                 desc: '圣母低温牛奶',
-                link: '{{$url}}',
+                link: strUrlDecoded,
                 imgUrl: '{{url("img/mark.png")}}',
                 success: function() {
                 },
