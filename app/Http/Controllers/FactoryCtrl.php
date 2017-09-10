@@ -189,8 +189,8 @@ class FactoryCtrl extends Controller
         }
         $factory->save();
 
-        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
-            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
+        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name)){
+            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $factory->id);
             $wechatObj->createMenu();
         }
 

@@ -29,7 +29,11 @@ use App\Model\WechatModel\WechatUser;
 use Auth;
 use DateTime;
 use DateTimeZone;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+
+require_once app_path() . "/Lib/Payweixin/WxPayApi.php";
 
 
 class WeChatCtrl extends Controller
@@ -268,11 +272,6 @@ class WeChatCtrl extends Controller
             ]);
         }
 
-    }
-
-    function cmp($a, $b)
-    {
-        return strcmp($a->deliver_at, $b->deliver_at);
     }
 
     /*
@@ -2576,4 +2575,139 @@ class WeChatCtrl extends Controller
         var_dump(session('change_order_product'));
     }
 
+    /**
+     * 获取分享二维码
+     * @param Request $request
+     * @param $factory
+     * @param $user
+     * @param $accessToken
+     * @return string
+     */
+    private function getQrCode(Request $request, $factory, $user, &$accessToken) {
+        $client = new Client();
+
+        //
+        // 获取access token
+        //
+        $accessToken = $request->session()->get('access_token');
+        if (empty($accessToken)) {
+            $strUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential"
+                . "&appid=" . $factory->app_id
+                . "&secret=" . $factory->app_secret;
+
+            $res = $client->request('GET', $strUrl)->getBody();
+            $jsonRes = json_decode($res);
+
+            $accessToken = $jsonRes->access_token;
+
+            // 写入到session
+            $request->session()->put('access_token', $accessToken);
+        }
+
+        //
+        // 获取二维码
+        //
+        $strTicketQr = $request->session()->get('ticket_qrcode');
+        if (empty($strTicketQr)) {
+            $params = [
+                "expire_seconds" => 2592000,
+                "action_name" => "QR_STR_SCENE",
+                "action_info" => [
+                    "scene" => [
+                        "scene_id" => $user->id,
+                    ]
+                ],
+            ];
+
+            $strUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" . $accessToken;
+            $res = $client->request('POST', $strUrl, ['json' => $params])->getBody();
+            $jsonRes = json_decode($res);
+
+            $strTicketQr = $jsonRes->ticket;
+
+            // 写入到session
+            $request->session()->put('ticket_qrcode', $strTicketQr);
+        }
+
+        // 二维码图片
+        return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" . $strTicketQr;
+    }
+
+    /**
+     * 打开分享页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showShare(Request $request) {
+
+        // 初始化
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $factory = Factory::find($factory_id);
+        $wechat_user_id = $this->getCurrentUserIdW($factory);
+        $wechat_user = WechatUser::find($wechat_user_id);
+
+        // 获取二维码
+        $strToken = "";
+        $strCodeUrl = $this->getQrCode($request, $factory, $wechat_user, $strToken);
+
+        $strTimeStamp = time();
+        $strNonce = \WxPayApi::getNonceStr();
+
+        //
+        // 获取jsapi_ticket
+        //
+        $strTicketJs = $request->session()->get('ticket_jsapi');
+        if (empty($strTicketJs)) {
+            $client = new Client();
+
+            $strUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" . $strToken . "&type=jsapi";
+            $res = $client->request('GET', $strUrl)->getBody();
+            $jsonRes = json_decode($res);
+
+            $strTicketJs = $jsonRes->ticket;
+
+            // 写入到session
+            $request->session()->put('ticket_jsapi', $strTicketJs);
+        }
+
+        // 签名
+        $strSign = "jsapi_ticket=" . $strTicketJs
+            . "&noncestr=" . $strNonce
+            . "&timestamp=" . $strTimeStamp
+            . "&url=" . $request->fullUrl();
+        $strSign = sha1($strSign);
+
+        return view('weixin.share', [
+            'user' => $wechat_user,
+            'qrcode' => $strCodeUrl,
+            'appid' => $factory->app_id,
+            'timestamp' => $strTimeStamp,
+            'nonce' => $strNonce,
+            'signature' => $strSign,
+            'url' => url("weixin/shareOther?user=" . $wechat_user_id . "&factory=" . $factory_id),
+        ]);
+    }
+
+    /**
+     * 打开分享给别人的页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showShareOther(Request $request) {
+
+        // 初始化
+        $factory_id = $request->input('factory');
+        $factory = Factory::find($factory_id);
+        $wechat_user_id = $request->input('user');
+        $wechat_user = WechatUser::find($wechat_user_id);
+
+        // 获取二维码
+        $strToken = "";
+        $strCodeUrl = $this->getQrCode($request, $factory, $wechat_user, $strToken);
+
+        return view('weixin.share', [
+            'user' => $wechat_user,
+            'qrcode' => $strCodeUrl,
+        ]);
+    }
 }

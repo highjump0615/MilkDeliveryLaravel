@@ -895,8 +895,6 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
 Route::get('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
 Route::post('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
-Route::get('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
-Route::post('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
 
 
 Route::group(['prefix'=>'/weixin'], function(){
@@ -993,6 +991,10 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::post('/api/check_verify_code', 'WeChatCtrl@check_verify_code');
 
     Route::get('/show_session', 'WeChatCtrl@show_session');
+
+    // 分销
+    Route::get('/share', 'WeChatCtrl@showShare');
+    Route::get('/shareOther', 'WeChatCtrl@showShareOther');
 
 });
 //
