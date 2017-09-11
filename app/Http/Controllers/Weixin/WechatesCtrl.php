@@ -125,8 +125,11 @@ class WechatesCtrl extends Controller
             $wxusers->parent = $wxParent->id;
         }
 
+        // 去掉emoji
+        $strNickname = preg_replace('/\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x81-\x83][\x80-\xBF]/', '', $jsoninfo['nickname']);
+
 		$wxusers->openid     = $jsoninfo['openid'];
-		$wxusers->name       = $jsoninfo['nickname'];
+		$wxusers->name       = $strNickname;
 		$wxusers->area       = $jsoninfo["province"]." ".$jsoninfo["city"];
 		$wxusers->image_url  = $jsoninfo['headimgurl'];
 		$wxusers->factory_id  = $this->factoryid;

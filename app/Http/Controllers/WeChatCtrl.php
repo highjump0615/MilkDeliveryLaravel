@@ -2586,11 +2586,14 @@ class WeChatCtrl extends Controller
     private function getQrCode(Request $request, $factory, $user, &$accessToken) {
         $client = new Client();
 
+        $dateNow = new DateTime("now");
+
         //
         // 获取access token
         //
         $accessToken = $request->session()->get('access_token');
-        if (empty($accessToken)) {
+        $tokenTimeout = $request->session()->get('timeout_token');
+        if (empty($accessToken) || $tokenTimeout < $dateNow) {
             $strUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential"
                 . "&appid=" . $factory->app_id
                 . "&secret=" . $factory->app_secret;
@@ -2602,6 +2605,9 @@ class WeChatCtrl extends Controller
 
             // 写入到session
             $request->session()->put('access_token', $accessToken);
+
+            $dateNow->add(new \DateInterval("PT7200S"));
+            $request->session()->put('timeout_token', $dateNow);
         }
 
         //
@@ -2656,8 +2662,11 @@ class WeChatCtrl extends Controller
         //
         // 获取jsapi_ticket
         //
+        $dateNow = new DateTime("now");
+
         $strTicketJs = $request->session()->get('ticket_jsapi');
-        if (empty($strTicketJs)) {
+        $ticketTimeout = $request->session()->get('timeout_ticket');
+        if (empty($strTicketJs) || $ticketTimeout < $dateNow) {
             $client = new Client();
 
             $strUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" . $strToken . "&type=jsapi";
@@ -2668,6 +2677,9 @@ class WeChatCtrl extends Controller
 
             // 写入到session
             $request->session()->put('ticket_jsapi', $strTicketJs);
+
+            $dateNow->add(new \DateInterval("PT7200S"));
+            $request->session()->put('timeout_ticket', $dateNow);
         }
 
         // 签名
