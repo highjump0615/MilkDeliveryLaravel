@@ -66,8 +66,24 @@
                             <select required id="order_property" name="order_property" class="form-control">
                                 @if (isset($order_property))
                                     @foreach($order_property as $orp)
-                                        <!-- 续单需要默认选择 -->
-                                        @if (!$is_edit && isset($order) && $orp->id == 2)
+                                        <?php
+                                        $bSelected = false;
+
+                                        if (isset($order)) {
+                                            // 续单需要默认选择
+                                            if (!$is_edit) {
+                                                if ($orp->id == \App\Model\OrderModel\OrderProperty::ORDER_PROPERTY_XUDAN_ORDER) {
+                                                    $bSelected = true;
+                                                }
+                                            }
+                                            // 订单修改
+                                            else if ($order->order_property_id == $orp->id) {
+                                                $bSelected = true;
+                                            }
+                                        }
+                                        ?>
+
+                                        @if ($bSelected)
                                             <option value="{{$orp->id}}" selected>{{$orp->name}}</option>
                                         @else
                                             <option value="{{$orp->id}}">{{$orp->name}}</option>
