@@ -167,7 +167,7 @@
                         <div class="col-md-3">
                             <select style="width:80%;margin-left: -31%;" required class="form-control" id="station_list" name="station">
                                 @if (isset($order) && !empty($milkman))
-                                    <option data-milkman="{{$milkman->id}}" value="{{$order->delivery_station_id}}" selected>
+                                    <option data-milkman="{{$milkman->id}}" data-deliveryarea="{{$order->deliveryarea_id}}" value="{{$order->delivery_station_id}}" selected>
                                         {{$order->delivery_station_name}}
                                     </option>
                                 @endif
