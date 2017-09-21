@@ -384,6 +384,10 @@ class OrderCtrl extends Controller
         foreach ($order_products as $op) {
             // 获取该奶品的最后配送明细
             $dpLast = $op->getLastDeliveryPlan();
+            if (empty($dpLast)) {
+                return response()->json(['status' => 'fail']);
+            }
+
             $dateLast = new DateTime($dpLast->deliver_at);
 
             // 如果暂停开始日期超出最后日期，忽略掉
@@ -394,7 +398,6 @@ class OrderCtrl extends Controller
             //
             // 获取数量
             //
-            $nCountExtra = 0;
 
             // 当天开启的就直接
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
