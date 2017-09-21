@@ -18,8 +18,6 @@ class WeChatsCtrl extends Controller
     public function index(Request $request)
     {
 		if(isset($_GET['typesid'])){
-			$openid = $_GET['openid'];
-
 			$typesid = $_GET['typesid'];
 			$factory = Factory::where('id',$typesid)->first(); 
 			$wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $typesid);
