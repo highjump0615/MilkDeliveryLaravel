@@ -1172,6 +1172,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     public function showDayinchukuchanWithStation(Request $request, $stationId) {
 
         $current_factory_id = $this->getCurrentFactoryId(true);
+        $factory = Factory::find($current_factory_id);
 
         // 页面信息
         $child = 'naizhanpeisong';
@@ -1272,6 +1273,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
             'sender_name'       =>$strSenderName,
             'car_number'        =>$strCarNum,
+
+            'factory_name'      =>$factory->name,
 //            'station_plan'=>$station_plan,
 //            'mfbottle_type'=>$mfbottle_type,
         ]);
