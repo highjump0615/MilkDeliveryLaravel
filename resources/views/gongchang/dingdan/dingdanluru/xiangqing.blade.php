@@ -283,7 +283,7 @@
                                 @if ($order->isAvailable())
                                 <td>
                                     @if($gpp->isEditAvailable())
-                                        <button type="button" class="btn btn-success xiugai_plan_bt" disabled>修改
+                                        <button type="button" class="btn btn-success xiugai_plan_bt btn-sm" disabled>修改
                                         </button>
                                     @endif
                                 </td>
