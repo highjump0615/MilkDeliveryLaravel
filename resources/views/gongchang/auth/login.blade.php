@@ -12,7 +12,7 @@
     <link href="<?=asset('font-awesome/css/font-awesome.css')?>" rel="stylesheet">
 
     <link href="<?=asset('css/animate.css') ?>" rel="stylesheet">
-    <link href="<?=asset('css/style.css') ?>" rel="stylesheet">
+    <link href="<?=asset('css/style.css?170923') ?>" rel="stylesheet">
 
 </head>
 
