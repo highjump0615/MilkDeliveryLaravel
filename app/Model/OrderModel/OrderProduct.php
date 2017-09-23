@@ -482,7 +482,7 @@ class OrderProduct extends Model
                     // 初始化数量
                     $deliveryPlan->delivered_count = 0;
                     $deliveryPlan->plan_count = 0;
-                    $this->delivery_count = 0;
+                    $deliveryPlan->delivery_count = 0;
 
                     // 获取下一个配送规则数量
                     $nNormalCount = $this->getDeliveryTypeCount($deliveryPlan->deliver_at);
