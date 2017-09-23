@@ -81,7 +81,7 @@
         wx.ready(function() {
             wx.onMenuShareAppMessage({
                 title: '食尚新鲜',
-                desc: '圣母低温牛奶',
+                desc: '圣牧低温牛奶',
                 link: strUrlDecoded,
                 imgUrl: '{{url("img/mark.png")}}',
                 success: function() {

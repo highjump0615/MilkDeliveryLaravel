@@ -274,6 +274,11 @@ class WeChatCtrl extends Controller
 
     }
 
+    function cmp($a, $b)
+    {
+        return strcmp($a->deliver_at, $b->deliver_at);
+    }
+
     /*
      * session('change_order_product'):
      * this info is for order change, has order_id and array for product info that is included in this order
