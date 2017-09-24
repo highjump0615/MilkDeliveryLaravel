@@ -40,7 +40,7 @@ h5 {
 }
 .nav > li > a {
   color: #a7b1c2;
-  padding: 14px 20px 14px 25px;
+  /*padding: 14px 20px 14px 25px;*/
 }
 .nav.navbar-right > li > a {
   color: #999c9e;
@@ -237,7 +237,7 @@ h5 {
   padding-left: 62px;
 }
 .nav-second-level li:last-child {
-  margin-bottom: 10px;
+  /*margin-bottom: 10px;*/
 }
 body:not(.fixed-sidebar):not(.canvas-menu).mini-navbar .nav li:hover > .nav-second-level,
 .mini-navbar .nav li:focus > .nav-second-level {

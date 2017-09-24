@@ -51,200 +51,6 @@ class ProductCtrl extends Controller
         ]);
     }
 
-    public function update_product(Request $request)
-    {
-        if ($request->ajax()) {
-
-            $name = $request->input('name');
-            $simple_name = $request->input('simple_name');
-            $category = $request->input('category');
-            $intro = $request->input('introduction');
-            $bottle_type = $request->input('bottle_type');
-            $guarantee_period = $request->input('guarantee_period');
-            $guarantee_req = $request->input('guarantee_req');
-            $material = $request->input('material');
-            $production_period = $request->input('production_period');
-            $product_basket_spec = $request->input('product_basket_spec');
-            $depot_need = $request->input('depot_need');
-            $property = $request->input('property');
-
-            $uecontent = $request->input('uecontent');
-
-            $product_id = $request->input('cpid');
-            $current_product = Product::find($product_id);
-            if (!$current_product)
-                return response()->json(['status' => 'fail', 'message' => '当前的产品不存在.']);
-
-            $current_product->name = $name;
-            $current_product->simple_name = $simple_name;
-
-            $category_id = ProductCategory::find($category)->id;
-
-            if (!$category_id)
-                return response()->json(['status' => 'fail', 'message' => '该类别不存在. 请检查类别列表.']);
-
-            $current_product->category = $category_id;
-
-            $current_product->introduction = $intro;
-            $current_product->bottle_type = $bottle_type;
-            $current_product->guarantee_period = $guarantee_period;
-            $current_product->guarantee_req = $guarantee_req;
-            $current_product->material = $material;
-            $current_product->production_period = $production_period;
-            $current_product->basket_spec = $product_basket_spec;
-            $current_product->property = $property;
-
-            if ($depot_need == 'true')
-                $current_product->bottle_back_factory = 1;
-            else
-                $current_product->bottle_back_factory = 0;
-
-            $current_product->uecontent = $uecontent;
-
-            //upload product image
-            $dest_dir = public_path() . '/img/product/logo';
-
-            if (!file_exists($dest_dir))
-                $result = File::makeDirectory($dest_dir, 0777, true);
-
-            for ($i = 1; $i <= 4; $i++) {
-                if ($request->hasFile('file' . $i)) {
-                    $file = $request->file('file' . $i);
-                    if ($file->isValid()) {
-                        $basename = $file->getClientOriginalName();
-                        $ext = $file->getClientOriginalExtension();
-                        $filename = basename($basename, '.' . $ext);
-                        $new_file_name = 'pid_' . $product_id . '_' . 'img_' . $i . '.' . $ext;
-                        $file->move($dest_dir, $new_file_name);
-
-                        switch ($i) {
-                            case 1:
-                                $current_product->photo_url1 = $new_file_name;
-                                break;
-                            case 2:
-                                $current_product->photo_url2 = $new_file_name;
-                                break;
-                            case 3:
-                                $current_product->photo_url3 = $new_file_name;
-                                break;
-                            case 4:
-                                $current_product->photo_url4 = $new_file_name;
-                                break;
-                            default:
-                                $current_product->photo_url1 = $new_file_name;
-                                break;
-                        }
-                    }
-                }
-            }
-
-            $current_product->save();
-            $product_id = $current_product->id;
-
-            if ($product_id) {
-                // 添加系统日志
-                $this->addSystemLog(User::USER_BACKEND_FACTORY, '商品管理', SysLog::SYSLOG_OPERATION_EDIT);
-
-                return response()->json(['status' => 'success', 'updated_product_id' => $product_id]);
-            }
-            else {
-                return response()->json(['status' => 'fail', 'message' => '虽然节能产品，错误发生. 请稍后再试.']);
-            }
-        }
-    }
-
-    public function update_product_price(Request $request)
-    {
-        $product_id = $request->input('product_id');
-        $price_tp = $request->input('price_template_data');
-
-        //delete previous template
-        ProductPrice::where('product_id', $product_id)->delete();
-
-        foreach ($price_tp as $price_one) {
-            $template_name = trim($price_one['template_name']);
-            $province = trim($price_one['province']);
-            $city = trim($price_one['city']);
-            $retail = trim($price_one['retail']);
-            $month = trim($price_one['month']);
-            $season = trim($price_one['season']);
-            $half = trim($price_one['half']);
-            $settle = trim($price_one['settle']);
-
-            $districts = trim($price_one['district']);
-            $districts_array = explode(',', $districts);
-
-
-            foreach ($districts_array as $i => $district) {
-                $districts_array[$i] = $province . " " . $city . " " . $district;
-            }
-            $districts = implode(',', $districts_array);
-
-            $product_price = new ProductPrice;
-            $product_price->template_name = $template_name;
-            $product_price->product_id = $product_id;
-            $product_price->sales_area = $districts;
-            $product_price->retail_price = $retail;
-            $product_price->month_price = $month;
-            $product_price->season_price = $season;
-            $product_price->half_year_price = $half;
-            $product_price->settle_price = $settle;
-            $product_price->save();
-        }
-        return response()->json(['status' => 'success']);
-    }
-
-    //update product's one template product price
-    public function update_product_price_template_one(Request $request)
-    {
-        if ($request->ajax()) {
-            $product_id = $request->input('product_id');
-
-            $template_id = $request->input('template_id');
-            $template_name = $request->input('template_name');
-            $province = $request->input('province');
-            $city = $request->input('city');
-            $district = $request->input('district');
-
-            $retail = $request->input('retail');
-            $month = $request->input('month');
-            $season = $request->input('season');
-            $half = $request->input('half');
-            $settle = $request->input('settle');
-
-            $districts_array = $request->input('district');
-            $districts_array = explode(',', $districts_array);
-
-            foreach ($districts_array as $i => $district) {
-                $districts_array[$i] = $province . " " . $city . " " . $district;
-            }
-            $districts = implode(',', $districts_array);
-
-            $product_price = ProductPrice::find($template_id);
-
-            if (!$product_price) {
-                //This is the new inserted from the xiangqing
-                //SO, you should create new product price
-                $product_price = new ProductPrice;
-
-            }
-
-            $product_price->product_id = $product_id;
-            $product_price->template_name = $template_name;
-            $product_price->sales_area = $districts;
-            $product_price->retail_price = $retail;
-            $product_price->month_price = $month;
-            $product_price->season_price = $season;
-            $product_price->half_year_price = $half;
-            $product_price->settle_price = $settle;
-            $product_price->save();
-
-            return response()->json(['status' => 'success']);
-
-
-        }
-    }
-
     public function check_same_category(Request $request)
     {
         if ($request->ajax()) {
@@ -287,7 +93,7 @@ class ProductCtrl extends Controller
         $factory_id = $this->getCurrentFactoryId(true);
         $factory = Factory::find($factory_id);
 
-        $province = $factory->factory_provinces;
+        $provinces = $factory->factory_provinces;
 
         $categories = ProductCategory::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
         $product_basket_specs = FactoryBoxType::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
@@ -306,21 +112,31 @@ class ProductCtrl extends Controller
             'current_page'          => $current_page,
 
             // 数据
-            'province'              => $province,
+            'provinces'             => $provinces,
             'categories'            => $categories,
             'product_basket_specs'  => $product_basket_specs,
             'bottle_types'          => $bottle_types
         ]);
     }
 
+    /**
+     * 添加/更新价格模板
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function insert_product_price_template(Request $request)
     {
         if ($request->ajax()) {
             $product_id = $request->input('product_id');
             $price_tp = $request->input('price_template_data');
 
+            $product = Product::find($product_id);
+            $product->prices()->delete();
+
             //price template save
             foreach ($price_tp as $price_one) {
+                $product_price = new ProductPrice;
+
                 $template_name = $price_one['template_name'];
                 $province = $price_one['province'];
                 $city = $price_one['city'];
@@ -338,7 +154,6 @@ class ProductCtrl extends Controller
                 }
                 $sales_area = implode(',', $districts_array);
 
-                $product_price = new ProductPrice;
                 $product_price->template_name = $template_name;
                 $product_price->product_id = $product_id;
                 $product_price->sales_area = $sales_area;
@@ -349,7 +164,18 @@ class ProductCtrl extends Controller
                 $product_price->settle_price = $settle;
 
                 $product_price->save();
+
+                // 设置parent
+                $priceId = $price_one['price_id'];
+                if (!empty($priceId)) {
+                    $product_price->parent_id = $priceId;
+                }
+                else {
+                    $product_price->parent_id = $product_price->id;
+                }
+                $product_price->save();
             }
+
             return response()->json(['status' => 'success', 'price_added_product_id' => $product_id]);
         }
     }
@@ -364,10 +190,11 @@ class ProductCtrl extends Controller
 
     public function insert_product(Request $request)
     {
-
         if ($request->ajax()) {
             $fuser = Auth::guard('gongchang')->user();
             $factory_id = $fuser->factory_id;
+
+            $nProductId = $request->input('cpid');
 
             $name = $request->input('name');
             $simple_name = $request->input('simple_name');
@@ -384,18 +211,28 @@ class ProductCtrl extends Controller
 
             $uecontent = $request->input('uecontent');
 
-            $new_product = new Product;
+            if (empty($nProductId)) {
+                $new_product = new Product;
+            }
+            else {
+                $new_product = Product::find($nProductId);
+            }
 
             $new_product->name = $name;
             $new_product->simple_name = $simple_name;
 
-            $categoryo = ProductCategory::where('factory_id', $factory_id)->where('id', $category)->first();
-            $category_id = $categoryo->id;
+            $categoryo = ProductCategory::where('factory_id', $factory_id)
+                ->where('id', $category)
+                ->first();
 
-            if (!$category_id)
-                return response()->json(['status' => 'fail', 'message' => '该类别不存在. 请检查类别列表.']);
+            if (empty($categoryo)) {
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => '该类别不存在. 请检查类别列表.'
+                ]);
+            }
 
-            $new_product->category = $category_id;
+            $new_product->category = $categoryo->id;
 
             $new_product->introduction = $intro;
             $new_product->bottle_type = $bottle_type;
@@ -404,7 +241,7 @@ class ProductCtrl extends Controller
             $new_product->material = $material;
             $new_product->production_period = $production_period;
             $new_product->basket_spec = $product_basket_spec;
-            $new_product->series_no = $this->get_series_no($factory_id, $category_id);
+            $new_product->series_no = $this->get_series_no($factory_id, $categoryo->id);
             $new_product->property = $property;
 
             $new_product->factory_id = $factory_id;
@@ -469,11 +306,12 @@ class ProductCtrl extends Controller
             }
 
             $new_product->save();
-            $product_id = $new_product->id;
 
             if ($product_id) {
                 // 添加系统日志
-                $this->addSystemLog(User::USER_BACKEND_FACTORY, '商品管理', SysLog::SYSLOG_OPERATION_ADD);
+                $this->addSystemLog(User::USER_BACKEND_FACTORY,
+                    '商品管理',
+                    (empty($nProductId)) ? SysLog::SYSLOG_OPERATION_ADD : SysLog::SYSLOG_OPERATION_EDIT);
 
                 return response()->json(['status' => 'success', 'saved_product_id' => $product_id]);
             }
@@ -585,18 +423,6 @@ class ProductCtrl extends Controller
             'file4'                 => $file4_path,
         ]);
 
-    }
-
-    public function get_all_product_names(Request $request)
-    {
-        if ($request->ajax()) {
-            $names = DB::table('products')->pluck('name');
-
-            if ($names)
-                return response()->json(['status' => 'success', 'names' => $names]);
-            else
-                return response()->json(['status' => 'fail']);
-        }
     }
 
     public function delete_product(Request $request)

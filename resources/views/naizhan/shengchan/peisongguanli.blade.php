@@ -1,5 +1,24 @@
 @extends('naizhan.layout.master')
 
+@section('css')
+	<style type="text/css">
+		#date_select {
+			margin-bottom: 10px;
+		}
+
+		#date_select label {
+			margin-bottom: 0;
+			margin-right: 20px;
+			margin-left: 20px;
+			line-height: 30px;
+		}
+
+		#date_select .date {
+			width: 200px;
+		}
+	</style>
+@endsection
+
 @section('content')
 	@include('naizhan.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">
@@ -16,14 +35,23 @@
 		</div>
 
 		<div class="row wrapper">
-			<div class="wrapper-content">
+			<div class="wrapper-content pt-10">
+				{{-- Deprecated --}}
 				@if ($is_received == 0)
 					<label style="color: red; font-size: 18px;">今日还没签收, 无法生成配送列表</label>
 				@endif
 
-                <div class="alert alert-danger alert-dismissable hidden">
+				<div id="date_select">
+					<label class="pull-left control-label">生成配送单日期:</label>
+					<div class="input-group date">
+						<input type="text" class="form-control" value="{{$date_current}}" id="search_date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+					</div>
+				</div>
+
+                <div class="alert alert-danger alert-dismissable @if(empty($errMsg)) hidden @endif">
                     <button area-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
-                    <span></span>
+                    <span>{{$errMsg}}</span>
                 </div>
 
 				<div class="ibox float-e-margins">
@@ -185,7 +213,7 @@
 										<td>{{$cp->deliver_at}}</td>
 										<td>{{$cp->order->number}}</td>
 										<td>{{$cp->order->customer->name}}</td>
-										<td>{{trim($cp->order->address," ")}}</td>
+										<td class="text-left pl-15">{{$cp->order->addresses}}</td>
 										<td>{{$cp->order_product->product->simple_name}}</td>
 										<td>{{$cp->plan_count}}</td>
 										<td>{{$cp->changed_plan_count}}</td>
@@ -195,7 +223,7 @@
 											<td>{{$cp->delivery_count}}</td>
 										@endif
 										<td>{{$cp->order->phone}}</td>
-										<td>{{$cp->milkman->name}}</td>
+										<td>@if (!empty($cp->order->milkman)) {{$cp->order->milkman->name}} @endif</td>
 										@if($is_distributed!=1)
 											<td>未调配</td>
 										@else
@@ -226,7 +254,9 @@
 					<div class="col-lg-10"></div>
 					<div class="col-lg-2">
 						@if($is_distributed != 1)
-							<button class="btn btn-success shengchan-peisong" style="width: 100%;" @if ($is_received == 0) disabled @endif>
+							<button class="btn btn-success shengchan-peisong"
+									style="width: 100%;"
+									@if ($is_received == 0 || !empty($errMsg)) disabled @endif>
 								生成今日配送单
 							</button>
 						@else
@@ -250,6 +280,26 @@
 		@if ($is_reported)
             gbReported = true;
 		@endif
+
+		$(document).ready(function() {
+            /**
+             * 初始化日期选择器
+             */
+            $('.input-group.date').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                autoclose: true,
+                startDate: new Date('{{$date_start}}'),
+                endDate: new Date('{{$date_end}}')
+            }).on('changeDate', function(e) {
+                // 用新的日期刷新页面
+                var strDate = $('#search_date').val();
+                window.location.href = SITE_URL + "naizhan/shengchan/peisongguanli?date=" + strDate;
+            });
+		});
+
 	</script>
 
 	<!--Save & Update User Information-->

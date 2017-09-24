@@ -76,6 +76,14 @@ class Product extends Model
     }
 
     /**
+     * 获取所有价格模板
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function prices() {
+        return $this->hasMany('App\Model\ProductModel\ProductPrice');
+    }
+
+    /**
      * 获取奶品的结算价格
      * @param $address
      * @return float

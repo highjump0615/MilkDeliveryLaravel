@@ -140,6 +140,7 @@ class FactoryCtrl extends Controller
         $app_paysignkey     = $request->input('app_paysignkey');
         $wechat_type        = $request->input('wechat_type');
         $qrcode             = $request->input('qrcode');
+        $prodOffset         = $request->input('prod_offset');
 
         if (!$factory) {
             $factory = new Factory;
@@ -157,7 +158,9 @@ class FactoryCtrl extends Controller
 
         $factory->end_at            = $end_at;
         $factory->factory_id        = $factory_id;
-        $factory->factory_password  = bcrypt($factory_password);
+        if (!empty($factory_password)) {
+            $factory->factory_password  = bcrypt($factory_password);
+        }
         $factory->public_name       = $public_name;
         $factory->public_id         = $public_id;
         $factory->wechat_id         = $wechat_id;
@@ -172,6 +175,11 @@ class FactoryCtrl extends Controller
         $factory->qrcode            = $qrcode;
         $factory->is_deleted        = 0;
 
+        // 配送周期
+        if (!empty($prodOffset)) {
+            $factory->prod_offset = $prodOffset;
+        }
+
         if ($request->hasFile('logo')) {
             $file = Input::file('logo');
             $name = rand(1, 9999) . '-' . $file->getClientOriginalName();
@@ -181,15 +189,17 @@ class FactoryCtrl extends Controller
         }
         $factory->save();
 
-        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name) && !empty($user_id)){
-            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $user_id);
+        if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name)){
+            $wechatObj = new WeChatesCtrl($app_id, $app_secret, $app_encoding_key, $app_token, $name, $factory->id);
             $wechatObj->createMenu();
         }
 
         $current_factory_id = $factory->id;
 
         $factory_user->name = $factory_id;
-        $factory_user->password = bcrypt($factory_password);
+        if (!empty($factory_password)) {
+            $factory_user->password = bcrypt($factory_password);
+        }
         $factory_user->status = Factory::FACTORY_STATUS_ACTIVE ;
         $factory_user->factory_id = $current_factory_id;
         $factory_user->user_role_id = UserRole::USERROLE_GONGCHANG_TOTAL_ADMIN;

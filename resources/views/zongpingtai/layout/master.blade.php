@@ -22,7 +22,7 @@
     <link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 
     <link href="<?=asset('css/animate.css') ?>" rel="stylesheet">
-    <link href="<?=asset('css/style.css') ?>" rel="stylesheet">
+    <link href="<?=asset('css/style.css?170923') ?>" rel="stylesheet">
     <link href="<?=asset('css/custom.css') ?>" rel="stylesheet">
 
     @yield('css')

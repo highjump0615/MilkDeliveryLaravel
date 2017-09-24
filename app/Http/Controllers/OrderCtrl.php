@@ -300,7 +300,11 @@ class OrderCtrl extends Controller
         }
     }
 
-    //restart stopped dingdan
+    /**
+     * 开启暂停订单
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public
     function restart_dingdan(Request $request)
     {
@@ -367,11 +371,12 @@ class OrderCtrl extends Controller
 
         $order_products = $order->order_products;
 
-        $order->stop_at = $start_date;
-        $order->restart_at = $end_date;
-
         // 暂停时间设置
-        if (!$forRestart) {
+        if ($forRestart) {
+            $order->restart_at = $end_date;
+        }
+        else {
+            $order->stop_at = $start_date;
             $order->restart_at = getNextDateString($end_date);
         }
         $order->save();
@@ -379,6 +384,10 @@ class OrderCtrl extends Controller
         foreach ($order_products as $op) {
             // 获取该奶品的最后配送明细
             $dpLast = $op->getLastDeliveryPlan();
+            if (empty($dpLast)) {
+                return response()->json(['status' => 'fail']);
+            }
+
             $dateLast = new DateTime($dpLast->deliver_at);
 
             // 如果暂停开始日期超出最后日期，忽略掉
@@ -389,7 +398,6 @@ class OrderCtrl extends Controller
             //
             // 获取数量
             //
-            $nCountExtra = 0;
 
             // 当天开启的就直接
             $qb = MilkManDeliveryPlan::where('order_product_id', $op->id)
@@ -399,7 +407,7 @@ class OrderCtrl extends Controller
             $nCountExtra = $qb->sum('changed_plan_count');
 
             // 删除暂停范围的配送明细
-            $qb->delete();
+            $qb->forceDelete();
 
             // 调整配送明细
             $op->processExtraCount(null, $nCountExtra);
@@ -1932,12 +1940,12 @@ class OrderCtrl extends Controller
 
                 //find orders who has the same address and change
 
-                $orders = Order::where('customer_id', $customer->id)->get();
-
-                foreach ($orders as $order) {
-                    $order->address = $new_address;
-                    $order->save();
-                }
+//                $orders = Order::where('customer_id', $customer->id)->get();
+//
+//                foreach ($orders as $order) {
+//                    $order->address = $new_address;
+//                    $order->save();
+//                }
 
                 return response()->json(['status' => 'success']);
             } else
@@ -2635,7 +2643,7 @@ class OrderCtrl extends Controller
     }
 
     //Get Product Price with Customer id and address
-    public function get_product_price_by_cid($pid, $otype, $cid)
+    public function get_product_price_by_cid($pid, $otype, $cid, $date = null)
     {
         $addr = Customer::find($cid)->address;
         $price = $province = $city = $district = null;
@@ -2646,16 +2654,25 @@ class OrderCtrl extends Controller
         $district = $addr_array[2];
 
         if ($province && $city && $district) {
-            $price = $this->get_product_price_by_pcd($pid, $otype, $province, $city, $district);
+            $price = $this->get_product_price_by_pcd($pid, $otype, $province, $city, $district, $date);
         }
         return $price;
     }
 
-
-    function get_product_price_by_pcd($pid, $otype, $province, $city, $district)
+    /**
+     * 根据地区获取价格
+     * @param $pid
+     * @param $otype
+     * @param $province
+     * @param $city
+     * @param $district
+     * @param null $date
+     * @return null
+     */
+    function get_product_price_by_pcd($pid, $otype, $province, $city, $district, $date = null)
     {
         $addr = $province . " " . $city . " " . $district;
-        $pp = ProductPrice::priceTemplateFromAddress($pid, $addr);
+        $pp = ProductPrice::priceTemplateFromAddress($pid, $addr, $date);
 //        $pp = ProductPrice::where('product_id', $pid)->where('sales_area', 'like', $province . '%' . $city . '%' . $district . '%')->get()->first();
         $price = null;
         if ($pp) {
@@ -2679,6 +2696,8 @@ class OrderCtrl extends Controller
             $order_type = $request->input('order_type');
             $customer_id = $request->input('customer_id');
 
+            $date = $request->input('created_at');
+
             $product_price = null;
 
             if (!$customer_id) {
@@ -2689,21 +2708,25 @@ class OrderCtrl extends Controller
                 $district = trim($request->input('district'));
                 $district = str_replace('　', '', $district);
 
-                $product_price = $this->get_product_price_by_pcd($product_id, $order_type, $province, $city, $district);
+                $product_price = $this->get_product_price_by_pcd($product_id,
+                    $order_type,
+                    $province,
+                    $city,
+                    $district,
+                    $date);
 
             } else {
-                $product_price = $this->get_product_price_by_cid($product_id, $order_type, $customer_id);
+                $product_price = $this->get_product_price_by_cid($product_id,
+                    $order_type,
+                    $customer_id,
+                    $date);
             }
 
             if (!$product_price) {
                 return response()->json(['status' => 'fail', 'message' => '没有产品价格']);
             }
 
-            $product_count = $request->input('product_count');
-
-            $one_order_product_total_price = $product_count * $product_price;
-
-            return response()->json(['status' => 'success', 'order_product_price' => $one_order_product_total_price]);
+            return response()->json(['status' => 'success', 'order_product_price' => $product_price]);
         }
     }
 
@@ -2738,6 +2761,9 @@ class OrderCtrl extends Controller
         if ($delivery_station && in_array($delivery_station_id, $station_ids)) {
 
             $delivery_station_count++;
+
+            // 保存奶站信息
+            $station = $delivery_station;
 
             //get this station's milkman that supports this address
             $milkman = $delivery_station->get_milkman_of_address($address);
@@ -2789,6 +2815,10 @@ class OrderCtrl extends Controller
         return;
     }
 
+    /**
+     * 删除订单
+     * @param $order_id
+     */
     public function delete_order($order_id)
     {
         $order = Order::find($order_id);
@@ -2799,11 +2829,7 @@ class OrderCtrl extends Controller
         if($order)
         {
             //delete order product
-            $order_products = $order->order_products;
-            foreach($order_products as $op)
-            {
-                $op->forceDelete();
-            }
+            $order->order_products()->forceDelete();
 
             //delete order
             $order->delete();

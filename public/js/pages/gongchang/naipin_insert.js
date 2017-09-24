@@ -1,4 +1,3 @@
-var init_tab_count = 0;
 var names = [];
 var ue;//ueditor
 
@@ -8,7 +7,32 @@ $(document).ready(function () {
     ue = UE.getEditor('editor');
 });
 
+/**
+ * 保存后，跳转到列表页面
+ */
+function redirectToList() {
+    // 更新
+    if (current_product_id > 0) {
+        show_success_msg("更新成功");
+    }
+    else {
+        show_success_msg("奶品录入成功");
+    }
+
+    window.location.replace(SITE_URL+'gongchang/jichuxinxi/shangpin');
+}
+
+/**
+ * 添加/更新产品价格模板
+ * @param pid
+ */
 function insert_product_price_template(pid) {
+    // 只处理价格信息有变化的清空下
+    if (!price_temp_changed) {
+        redirectToList();
+        return;
+    }
+
     var price_template_data = new Array();
 
     $('#product_area_set_result .tab-content .tab-pane').each(function () {
@@ -21,13 +45,22 @@ function insert_product_price_template(pid) {
         var season_price = $(this).find('.season_sp').text();
         var half_year_price = $(this).find('.half_year_sp').text();
         var settle_price = $(this).find('.settle_sp').text();
-        
+
+        var priceId = getPriceId(this);
+
         district = district.replace(/\s+/g, '');
 
         var price_tp = {
-            'template_name': template_name, 'province': province, 'city': city,
-            'district': district, 'retail': retail_price, 'month': month_price, 'season': season_price,
-            'half': half_year_price, 'settle': settle_price
+            'price_id': priceId,
+            'template_name': template_name,
+            'province': province,
+            'city': city,
+            'district': district,
+            'retail': retail_price,
+            'month': month_price,
+            'season': season_price,
+            'half': half_year_price,
+            'settle': settle_price
         };
 
         price_template_data.push(price_tp);
@@ -43,11 +76,7 @@ function insert_product_price_template(pid) {
         success: function (data) {
             console.log("result: " + data);
             if (data.status == "success") {
-                // var product_id = data.price_added_product_id;
-                show_success_msg("奶品录入成功");
-                // var url = SITE_URL+'gongchang/jichuxinxi/shangpin/shangpinxiangqing/'+product_id;
-                var url = SITE_URL+'gongchang/jichuxinxi/shangpin';
-                window.location.replace(url);
+                redirectToList();
             } else {
                 show_info_msg(data.message);
             }
@@ -85,7 +114,10 @@ function cancel_add_product() {
     ueditor_init();
 }
 
-function insert_product(){
+/**
+ * 添加纳品信息
+ */
+function insert_product() {
 
     //check data integrtiy-optional
     var name = $('#product_name').val();
@@ -109,8 +141,13 @@ function insert_product(){
     }
 
     var product_data = new FormData();//form data to send
+    var imgcount = $('.image-preview[data-attached = "1"]').length;
+    if(imgcount == 0)
+    {
+        show_warning_msg("请输入产品中的至少一个图像。");
+        return;
+    }
 
-    var imgcount =0;
     var file1=null, file2=null, file3=null, file4=null;
     var target1 = $('.image-preview[data-attached = "1"] .image-upload')[0];
     var target2 = $('.image-preview[data-attached = "1"] .image-upload')[1];
@@ -191,6 +228,8 @@ function insert_product(){
     product_data.append('depot_need', depot_need);
     product_data.append('uecontent', uecontent);
     product_data.append('property', property);
+
+    product_data.append('cpid', current_product_id);
 
     //insert product
     $.ajax({

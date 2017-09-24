@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\BasicModel\Address;
 use App\Model\BasicModel\Customer;
 use App\Model\DeliveryModel\DeliveryStation;
 use App\Model\DeliveryModel\DeliveryType;
@@ -11,6 +12,7 @@ use App\Model\DeliveryModel\DSProductionPlan;
 use App\Model\DeliveryModel\MilkMan;
 use App\Model\DeliveryModel\MilkmanBottleRefund;
 use App\Model\DeliveryModel\MilkManDeliveryPlan;
+use App\Model\FactoryModel\Factory;
 use App\Model\FinanceModel\DSBusinessCreditBalanceHistory;
 use App\Model\BasicModel\ProvinceData;
 use App\Model\FactoryModel\FactoryBottleType;
@@ -34,27 +36,26 @@ use Illuminate\Support\Facades\DB;
 use App\Model\OrderModel\Order;
 use App\Http\Requests;
 use Illuminate\Support\Facades\Response;
-use App\Http\Controllers\Controller;
+
+use Excel;
 
 
 class DSDeliveryPlanCtrl extends Controller
 {
     /**
-     * 显示配送管理页面
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * 获取配送计划数据
+     * @param $deliverDate
+     * @param $planResult
+     * @param $checkOnly
+     * @return int|mixed
      */
-    public function showPeisongguanli(Request $request){
+    private function getPlanResult($deliverDate, &$planResult, $checkOnly) {
 
         $current_station_id = $this->getCurrentStationId();
+        $currentDate_str = getPrevDateString($deliverDate);
 
-        $child = 'peisongguanli';
-        $parent = 'shengchan';
-        $current_page = 'peisongguanli';
-        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
-
-        $deliver_date_str = getCurDateString();
-        $currentDate_str = getPrevDateString();
+        // 是否已生成配送单
+        $is_distributed = 0;
 
         // 只有考虑已签收的计划
         $DSProduction_plans = DSProductionPlan::where('station_id',$current_station_id)
@@ -63,12 +64,9 @@ class DSDeliveryPlanCtrl extends Controller
             ->orderby('product_id')
             ->get();
 
-        // 是否已生成配送单
-        $is_distributed = 0;
-
         // 获取奶站配送计划
         $dsDeliveryPlans = DSDeliveryPlan::where('station_id', $current_station_id)
-            ->where('deliver_at', $deliver_date_str)
+            ->where('deliver_at', $deliverDate)
             ->get();
 
         //
@@ -76,7 +74,7 @@ class DSDeliveryPlanCtrl extends Controller
         //
         $dsDeliveryPlansPrev = array();
         $latestInfos = DSDeliveryPlan::where('station_id', $current_station_id)
-            ->where('deliver_at', '<', $deliver_date_str)
+            ->where('deliver_at', '<', $deliverDate)
             ->groupBy('product_id')
             ->selectRaw('product_id, max(deliver_at) as latest')
             ->get();
@@ -98,20 +96,17 @@ class DSDeliveryPlanCtrl extends Controller
         // 查询已配送完的配送订单
         $mmDeliveryPlansFinished = MilkManDeliveryPlan::with('orderProduct')
             ->where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
+            ->where('deliver_at',$deliverDate)
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get();
 
         $changed_counts = MilkManDeliveryPlan::with('orderProduct')
             ->where('station_id',$current_station_id)
-            ->where('deliver_at',$deliver_date_str)
+            ->where('deliver_at', $deliverDate)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED])
             ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->get();
-
-        // DSProductionPlan有可能不包括当天配送的所有数据、因为有配送变化量等，于是手工设置
-        $planResult = array();
 
         // 第一，根据配送订单查询数据
         foreach($changed_counts as $cc) {
@@ -152,6 +147,9 @@ class DSDeliveryPlanCtrl extends Controller
                     $cc
                 )
             );
+            if ($checkOnly && $is_distributed > 0) {
+                return $is_distributed;
+            }
 
             // 如果是没签收，订单数量的累加
             if (empty($planProduct->station_id)) {
@@ -180,6 +178,9 @@ class DSDeliveryPlanCtrl extends Controller
                     $mmDeliveryPlansFinished
                 )
             );
+            if ($checkOnly && $is_distributed > 0) {
+                return $is_distributed;
+            }
 
             // 添加到主数组
             $planResult[$dp->product_id] = $dp;
@@ -188,7 +189,7 @@ class DSDeliveryPlanCtrl extends Controller
         // 第三，只要有库存的就添加
         $prevDeliveryPlans = DSDeliveryPlan::where('station_id', $current_station_id)
             ->where('remain', '>', 0)
-            ->where('deliver_at', '<', $deliver_date_str)
+            ->where('deliver_at', '<', $deliverDate)
             ->distinct()
             ->get(['product_id']);
 
@@ -208,6 +209,9 @@ class DSDeliveryPlanCtrl extends Controller
                     $mmDeliveryPlansFinished
                 )
             );
+            if ($checkOnly && $is_distributed > 0) {
+                return $is_distributed;
+            }
 
             // 没有库存的，不用计算
             if ($dp->dp_remain_before <= 0) {
@@ -222,6 +226,49 @@ class DSDeliveryPlanCtrl extends Controller
         foreach ($planResult as $planProduct) {
             $planProduct["changed_amount"] = $planProduct["changed_plan_count"] - $planProduct->order_count;
         }
+
+        return $is_distributed;
+    }
+
+    /**
+     * 显示配送管理页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showPeisongguanli(Request $request){
+
+        $child = 'peisongguanli';
+        $parent = 'shengchan';
+        $current_page = 'peisongguanli';
+        $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
+
+        $current_station_id = $this->getCurrentStationId();
+
+        $strCurDate = getCurDateString();
+
+        // 设置处理日期
+        $deliver_date_str = $request->input('date');
+        if (empty($deliver_date_str)) {
+            $deliver_date_str = $strCurDate;
+        }
+
+        // 在session保存日期
+        $request->session()->put('dm_date', $deliver_date_str);
+
+        // DSProductionPlan有可能不包括当天配送的所有数据、因为有配送变化量等，于是手工设置
+        $planResult = array();
+        $errMsg = '';
+
+        // 如果要生成第二天的配送单，先检查当天的配送单是否已生成
+        if ($deliver_date_str > $strCurDate) {
+            $is_distributed = $this->getPlanResult($strCurDate, $planResult, true);
+            if (empty($is_distributed)) {
+                $errMsg = '没法生成当天的配送单，因为今日的配送单还没生成。';
+            }
+        }
+
+        $planResult = array();
+        $is_distributed = $this->getPlanResult($deliver_date_str, $planResult, false);
 
         // 有数量变化的配送明细，排除数量为0的配送明细
         $changed_plans = MilkManDeliveryPlan::where('station_id',$current_station_id)
@@ -242,6 +289,11 @@ class DSDeliveryPlanCtrl extends Controller
             'dsproduction_plans'    =>$planResult,
             'is_distributed'        =>$is_distributed,
             'changed_plans'         =>$changed_plans,
+
+            'date_current'          =>$deliver_date_str,
+            'date_start'            =>$strCurDate,
+            'date_end'              =>getDateWithOffsetString(1, $strCurDate),
+            'errMsg'                =>$errMsg,
         ]);
     }
 
@@ -249,7 +301,7 @@ class DSDeliveryPlanCtrl extends Controller
      * 配送管理页面计算一种奶品的参数
      * @param $planProduct
      * @param $dsDeliveryPlans Collection 奶站配送计划
-     * @param $dsDeliveryPlansPrev Collection 昨日库存量
+     * @param $dsDeliveryPlansPrev array 昨日库存量
      * @param $mmDeliveryPlansFinished Collection 已配送完的配送明细
      * @param MilkManDeliveryPlan|null $mmDeliveryPlan
      * @return int
@@ -325,7 +377,12 @@ class DSDeliveryPlanCtrl extends Controller
     public function save_distribution(Request $request){
 
         $current_station_id = $this->getCurrentStationId();
-        $currentDate_str = getCurDateString();
+
+        // 从session获取日期
+        $currentDate_str = $request->session()->get('dm_date');
+        if (empty($currentDate_str)) {
+            $currentDate_str = getCurDateString();
+        }
 
         //
         // 设置配送员
@@ -358,7 +415,8 @@ class DSDeliveryPlanCtrl extends Controller
             $delivery_distribution = DSDeliveryPlan::getDeliveryPlanGenerated(
                 $current_station_id,
                 $ti['product_id'],
-                false
+                false,
+                $currentDate_str
             );
 
             if (!$delivery_distribution) {
@@ -955,6 +1013,9 @@ class DSDeliveryPlanCtrl extends Controller
             }
         }
 
+        // 在session保存数据
+        $request->session()->put('deliver_list', $milkman_info);
+
         return view('naizhan.shengchan.jinripeisongdan',[
             'pages'         =>$pages,
             'child'         =>$child,
@@ -965,6 +1026,111 @@ class DSDeliveryPlanCtrl extends Controller
         ]);
     }
 
+    /**
+     * 导出今日配送单
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportDeliverList(Request $request) {
+
+        $nFactoryId = $this->getCurrentFactoryId(false);
+        $strFactory = Factory::find($nFactoryId)->name;
+
+        // 从session获取数据
+        $milkmanInfo = $request->session()->get('deliver_list');
+
+        Excel::create('deliverList', function ($excel) use ($strFactory, $milkmanInfo) {
+            $strDate = getCurDateString();
+            $excel->sheet('今日配送单' . $strDate, function ($sheet) use ($strFactory, $milkmanInfo) {
+                $nRow = 1;
+
+                // 添加奶厂名称
+                $sheet->appendRow([$strFactory]);
+                $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                $sheet->cell('A' . $nRow, function($cell) {
+                    $cell->setFontSize(16);
+                    $cell->setFontWeight('bold');
+                    $cell->setAlignment('center');
+                });
+                $nRow++;
+
+                // 空行
+                $sheet->appendRow(['']);
+                $nRow++;
+
+                $rowHeader = ['序号', '地址', '配送内容', '收货人', '配送时间', '电话', '备注'];
+                foreach ($milkmanInfo as $mi) {
+                    // 配送员信息
+                    $sheet->appendRow(['配送员:   ' . $mi['milkman_name'] . ' ' .$mi['milkman_number']]);
+                    $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                    $nRow++;
+
+                    // 汇总信息
+                    $strTotalCounts = "";
+                    foreach ($mi['milkman_products'] as $mp) {
+                        $nCount = getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_TESTDRINK)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_GROUP)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_CHANNEL)
+                            + getEmptyArrayValue($mp, \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_RETAIL);
+                        $strTotalCounts .= $mp['name'] . ":" . $nCount . "  ";
+                    }
+                    $sheet->appendRow([$strTotalCounts]);
+                    $sheet->mergeCells('A' . $nRow . ':G' . $nRow);
+                    $nRow++;
+
+                    // 配送内容
+                    $sheet->appendRow($rowHeader);
+                    $nRow++;
+                    $i = 0;
+                    foreach ($mi['delivery_info'] as $oi) {
+                        $rowData = [];
+
+                        // 序号
+                        $i++;
+                        $rowData[] = $i;
+
+                        // 地址
+                        $rowData[] = $oi->getAddressSmall(Address::LEVEL_VILLAGE);
+
+                        // 配送内容
+                        $strDeliver = "";
+                        foreach($oi->products as $pd) {
+                            $strDeliver .= $pd . " ";
+                        }
+                        $rowData[] = $strDeliver;
+
+                        // 收件人
+                        if ($oi->delivery_type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER) {
+                            $strCustomer = $oi->customer->name;
+                        }
+                        else {
+                            $strCustomer = $oi->customer_name;
+                        }
+                        $rowData[] = $strCustomer;
+
+                        // 配送时间
+                        $rowData[] = $oi->getDeliveryTimeDesc();
+
+                        // 电话
+                        $rowData[] = $oi->phone;
+
+                        // 备注
+                        $rowData[] = $oi->comment_delivery;
+
+                        $sheet->appendRow($rowData);
+                        $nRow++;
+                    }
+
+                    // 空行
+                    $sheet->appendRow(['']);
+                    $nRow++;
+                }
+            });
+        })->store('xls', 'exports');
+
+        return \response()->download(public_path() . '/exports/deliverList.xls')->deleteFileAfterSend(true);
+    }
 
     public function undelivered_process($mkdp)
     {

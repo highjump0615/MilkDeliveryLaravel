@@ -369,13 +369,11 @@ class OrderProduct extends Model
             // 如果算出来的日期属于暂停期间, 重新计算
             if($this->order)
             {
-                if ($this->order->has_stopped) {
-                    $dateStop = $this->order->stop_at;
-                    $dateRestart = $this->order->order_stop_end_date;
+                $dateStop = $this->order->stop_at;
+                $dateRestart = $this->order->order_stop_end_date;
 
-                    if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
-                        $bRestart = true;
-                    }
+                if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
+                    $bRestart = true;
                 }
             }
 
@@ -484,7 +482,7 @@ class OrderProduct extends Model
                     // 初始化数量
                     $deliveryPlan->delivered_count = 0;
                     $deliveryPlan->plan_count = 0;
-                    $this->delivery_count = 0;
+                    $deliveryPlan->delivery_count = 0;
 
                     // 获取下一个配送规则数量
                     $nNormalCount = $this->getDeliveryTypeCount($deliveryPlan->deliver_at);
