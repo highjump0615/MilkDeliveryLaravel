@@ -28,13 +28,6 @@ $(document).ready(function() {
     $('.footable').footable();
 });
 
-$(document).on('click','#search',function () {
-    var station_name = $('#station_name').val();
-    var area_name = $('#area_name option:selected').val();
-    var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/gongchang/tongjifenxi/dingdanshengyuliangtongji/?station_name="+station_name+"&area_name="+area_name+"&end_date="+end_date+"";
-})
-
 $('#date_1 .input-group.date').datepicker({
     todayBtn: "linked",
     keyboardNavigation: false,

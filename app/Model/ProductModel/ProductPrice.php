@@ -3,9 +3,12 @@
 namespace App\Model\ProductModel;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductPrice extends Model
 {
+    use SoftDeletes;
+
     protected $table= 'productprice';
     
     protected $fillable = [
@@ -19,9 +22,14 @@ class ProductPrice extends Model
         'settle_price',
     ];
 
-	public $timestamps = false;
-
-    public static function priceTemplateFromAddress($product_id, $target_address) {
+    /**
+     * 根据地区获取价格模板
+     * @param $product_id
+     * @param $target_address
+     * @param null $date
+     * @return null
+     */
+    public static function priceTemplateFromAddress($product_id, $target_address, $date = null) {
         
         $tar_addrs = explode(" ", $target_address);
 
@@ -38,17 +46,26 @@ class ProductPrice extends Model
             $district = $tar_addrs[0]." ".$tar_addrs[1]." ".$tar_addrs[2];
         }
 
-        $candidates = ProductPrice::where('product_id', $product_id)->where('sales_area', 'like', '%'.$district.'%')->get();
+        $queryPrice = ProductPrice::withTrashed()
+            ->where('product_id', $product_id)
+            ->where('sales_area', 'like', '%'.$district.'%')
+            ->orderBy('created_at', 'desc');
 
-        foreach($candidates as $pp) {
-            $addresses = explode(',', $pp->sales_area);
+        // 日期限制
+        if (!empty($date)) {
+            $queryPrice->where('created_at', '<', $date);
+        }
+
+        $candidates = $queryPrice->first();
+        if (!empty($candidates)) {
+            $addresses = explode(',', $candidates->sales_area);
             foreach($addresses as $address) {
                 $addr_parts = explode(' ', $address);
 
                 if($count >=3 && $tar_addrs[0] == $addr_parts[0] && $tar_addrs[1] == $addr_parts[1] && $tar_addrs[2] == $addr_parts[2] ) {
-                    return $pp;
+                    return $candidates;
                 } else if($count == 2 && $tar_addrs[0] == $addr_parts[0] && $tar_addrs[1] == $addr_parts[1]){
-                    return $pp;
+                    return $candidates;
                 }
             }
         }

@@ -76,9 +76,6 @@ Route::get('/gongchang', function () {
 
 Route::group(['middleware' => ['gongchang']], function () {
 
-    //get all product names
-    Route::get('api/get_exist_product_names', 'ProductCtrl@get_all_product_names');
-
     //Gongchang/Jichuxinxi/Shangpin Canshshezi
     Route::get('/gongchang/jichuxinxi/shangpin/shangpincanshushezhi', 'ProductSettingsCtrl@show_product_settings_page');
     Route::post('api/gongchang/jichuxinxi/shangpin/shangpincanshushezhi/set_use_delivery_type', 'ProductSettingsCtrl@set_use_delivery_type');
@@ -137,9 +134,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //gongchang/Jichuxinxi/Shanpin/shanpinxiangqing
     Route::get('/gongchang/jichuxinxi/shangpin/shangpinxiangqing/{product_id}', array('as' => 'detail_product', 'uses' => 'ProductCtrl@show_detail_product'));
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product', 'ProductCtrl@update_product');
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product_price', 'ProductCtrl@update_product_price');
-    Route::post('api/gongchang/jichuxinxi/shangpin/shangpinxiangqing/update_product_price_template_one', 'ProductCtrl@update_product_price_template_one');
 
 
     //Gongchang/Jichuxinxi/naipinluru
@@ -192,7 +186,6 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     //Show Order Xiugai Page
     Route::get('/gongchang/dingdan/dingdanxiugai/{order_id}', 'OrderCtrl@show_order_revise_in_gongchang');
-    Route::post('api/gongchang/dingdan/dingdanxiugai/stop_order_for_some_period', 'OrderCtrl@stop_order_for_some_period');
 
     Route::post('api/gongchang/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');
 
@@ -320,6 +313,10 @@ Route::group(['middleware' => ['gongchang']], function () {
 
     /*show tongji-dingdanleixingtongji Page*/
     Route::get('/gongchang/tongjifenxi/dingdanleixingtongji', 'FactoryStatistics@showDingdanleixingtongji');
+    Route::get('/gongchang/tongjifenxi/deliversummary', 'FactoryStatistics@showDeliverSummary');
+    Route::get('/gongchang/tongjifenxi/milkmandeliver', 'FactoryStatistics@showMilkmanDeliverSummary');
+    Route::get('/gongchang/tongjifenxi/stationdeliver', 'FactoryStatistics@showStationDeliverSummary');
+
     /*工厂管理 / 基础信息管理 / 配送员管理 */
 
     Route::get('/gongchang/jichuxinxi/zhengdingyuan', 'CheckerCtrl@showCheckerPage')->name('show_checkers');
@@ -443,6 +440,7 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('api/naizhan/shengchan/ziyingdingdan/getXiaoqu', 'DSDeliveryPlanCtrl@getXiaoquName');
     /*show Jinripeisongdan*/
     Route::get('/naizhan/shengchan/jinripeisongdan', 'DSDeliveryPlanCtrl@showJinripeisongdan');
+    Route::get('/naizhan/shengchan/jinripeisongdan/export', 'DSDeliveryPlanCtrl@exportDeliverList');
     /*Show Peisongfanru Page*/
     Route::get('/naizhan/shengchan/peisongfanru', 'DSDeliveryPlanCtrl@showPeisongfanru');
     /*Save milkman_refund bottles*/
@@ -896,8 +894,6 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
 Route::get('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
 Route::post('/weixin/weixinservice', 'Weixin\WeChatsCtrl@index');
-Route::get('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
-Route::post('/weixin/createMenus', 'Weixin\WeChatsCtrl@createMenus');
 
 
 Route::group(['prefix'=>'/weixin'], function(){
@@ -994,6 +990,10 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::post('/api/check_verify_code', 'WeChatCtrl@check_verify_code');
 
     Route::get('/show_session', 'WeChatCtrl@show_session');
+
+    // 分销
+    Route::get('/share', 'WeChatCtrl@showShare');
+    Route::get('/shareOther', 'WeChatCtrl@showShareOther');
 
 });
 //

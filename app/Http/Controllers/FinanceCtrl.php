@@ -94,17 +94,16 @@ class FinanceCtrl extends Controller
         $stationsSelect = array();
 
         $nStationId = $request->input('station');
-        if (!empty($nStationId)) {
-            foreach ($stations as $st) {
+        foreach ($stations as $st) {
+            // 指定奶站
+            if (!empty($nStationId)) {
                 if ($st->id == $nStationId) {
                     $stationsSelect[] = $st;
                     break;
                 }
             }
         }
-        else {
-            $stationsSelect = $stations;
-        }
+
         // 计算财务信息
         $this->getSummary($stationsSelect);
 

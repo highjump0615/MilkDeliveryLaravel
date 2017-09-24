@@ -5,14 +5,6 @@
 $(document).ready(function(){
 });
 
-$(document).on('click','#search',function () {
-    var station_name = $('#station_name').val();
-    var area_name = $('#area_name option:selected').val();
-    var start_date = $('#start_date').val();
-    var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/gongchang/tongjifenxi/naipinpeisongtongji/?station_name="+station_name+"&area_name="+area_name+"&start_date="+start_date+"&end_date="+end_date+"";
-});
-
 $('.footable').footable();
 
 $('#data_range_select .input-daterange').datepicker({

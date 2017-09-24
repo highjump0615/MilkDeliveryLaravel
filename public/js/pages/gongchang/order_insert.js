@@ -95,7 +95,7 @@ $('.city_list').on('change', function () {
 
                 // 计算价格
                 $('#product_table tbody tr').each(function () {
-                    calculate_current_product_value(this);
+                    calculate_current_product_value(this, true);
                 });
 
             } else {

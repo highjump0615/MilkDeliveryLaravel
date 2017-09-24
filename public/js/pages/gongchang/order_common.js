@@ -1,6 +1,8 @@
 var gbIsEdit = false;
 var gnOrderId = 0;
 
+var gdPrices = new Array();
+
 $(document).ready(function () {
     //Web Camera: this should be here
     Webcam.set({
@@ -132,7 +134,7 @@ $('body').on('change', '#product_table tbody tr.one_product select.factory_order
     $(tr).find('.one_product_total_count').val(count);
     // $(tr).find('.one_product_total_count').attr('min', count);
 
-    calculate_current_product_value(tr);
+    calculate_current_product_value(tr, true);
     set_avg_count(tr);
 
 });
@@ -152,8 +154,19 @@ function getOrderTypeBottleNum(tr, index) {
     return parseInt($(select_order_count).val());
 }
 
+/**
+ * 设置价格
+ * @param tt
+ * @param price
+ * @param count
+ */
+function setPriceText(tt, price, count) {
+    var dPrice = price * count;
+    tt.val(dPrice.toFixed(2));
+}
+
 //Calculate the current product value
-function calculate_current_product_value(tr) {
+function calculate_current_product_value(tr, needFetch) {
 
     var product_count = $(tr).find('.one_product_total_count').val();
     if (product_count == undefined || product_count == 0) {
@@ -176,35 +189,53 @@ function calculate_current_product_value(tr) {
     var order_type = $(tr).find('select.factory_order_type').val();
 
     var product_id = $(tr).find('select.order_product_id').val();
+    var nIndex = $(tr).index();
 
-    var sendData = {
-        'product_id': product_id, 'order_type': order_type, 'product_count': product_count,
-        /*'customer_id': customer_id,*/ 'province': province, 'city': city, 'district': district
-    };
-    console.log(sendData);
+    if (nIndex < gdPrices.length && !needFetch) {
+        setPriceText(tt, gdPrices[$(tr).index()], product_count);
+        get_order_statics();
+    }
+    else {
+        var sendData = {
+            'product_id': product_id, 'order_type': order_type, 'product_count': product_count,
+            /*'customer_id': customer_id,*/ 'province': province, 'city': city, 'district': district
+        };
 
-    $.ajax({
-        url: API_URL + 'order/get_order_product_price',
-        method: 'GET',
-        data: sendData,
-        success: function (data) {
-            console.log(data);
-            if (data.status == "success") {
-                tt.val(data.order_product_price);
-                get_order_statics();
-            } else {
-                tt.val('');
-                reset_order_statics();
-
-                if (data.message)
-                    show_err_msg(data.message);
-            }
-        },
-        error: function (data) {
-            console.log(data);
-            tt.val('');
+        // 添加日期
+        if ($(tr).find('input[name="created_at"]').length) {
+            $.extend(sendData, {'created_at': $(tr).find('input[name="created_at"]').val()});
         }
-    });
+
+        $.ajax({
+            url: API_URL + 'order/get_order_product_price',
+            method: 'GET',
+            data: sendData,
+            success: function (data) {
+                console.log(data);
+                if (data.status == "success") {
+                    if (nIndex < gdPrices.length) {
+                        gdPrices[nIndex] = data.order_product_price;
+                    }
+                    else {
+                        gdPrices.push(data.order_product_price);
+                    }
+
+                    setPriceText(tt, data.order_product_price, product_count);
+                    get_order_statics();
+                } else {
+                    tt.val('');
+                    reset_order_statics();
+
+                    if (data.message)
+                        show_err_msg(data.message);
+                }
+            },
+            error: function (data) {
+                console.log(data);
+                tt.val('');
+            }
+        });
+    }
 }
 
 //Set DanSu for the product line
@@ -305,7 +336,7 @@ function reset_order_statics() {
 $('body').on('change', '#product_table tbody tr.one_product input.one_product_total_count', function () {
 
     var tr = $(this).closest('.one_product');
-    calculate_current_product_value(tr);
+    calculate_current_product_value(tr, false);
     set_avg_count(tr);
 
 });
@@ -331,7 +362,7 @@ $('body').on('change', '#product_table tbody tr.one_product select.order_product
     // $(tr).find('.factory_order_type').trigger('change');
 
     // 重新计算价格和单数
-    calculate_current_product_value(tr);
+    calculate_current_product_value(tr, true);
     set_avg_count(tr);
 });
 
@@ -366,6 +397,8 @@ $(document).on('click', 'button.remove_one_product', function () {
     var tr = $(this).closest('tr');
     var count = $('#product_table tbody tr.one_product').length;
     if (count > 1) {
+        // 删除价格列表的数据
+        gdPrices.splice($(tr).index(), 1);
         $(tr).remove();
 
         // 重新计算订单金额
@@ -394,6 +427,10 @@ function add_new_product_line() {
 
     //after add new product, caculate the product price automatically
     tr = $('#product_table tbody tr:last');
+
+    // 删除日期input
+    $(tr).find('input[name="created_at"]').remove();
+
     $(tr).find('.factory_order_type').trigger('change');
     $(tr).find('.order_delivery_type').trigger('change');
 

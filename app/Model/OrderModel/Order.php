@@ -396,17 +396,6 @@ class Order extends Model
         return $dps;
     }
 
-    public function getLastDeliveryPlans($plan_id)
-    {
-        $ldps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->where('status', '!=',  MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->where('id', '>', $plan_id)
-            ->orderBy('deliver_at', 'desc')
-            ->get();
-
-        return $ldps;
-    }
-
     public function getGroupedDeliveryPlansAttribute()
     {
         //order_id, station_id
@@ -857,5 +846,17 @@ class Order extends Model
         }
 
         return $nOrder;
+    }
+
+    /**
+     * 获取配送时间描述
+     * @return string
+     */
+    public function getDeliveryTimeDesc() {
+        if ($this->delivery_time == Order::ORDER_DELIVERY_TIME_MORNING) {
+            return '上午';
+        }
+
+        return '下午';
     }
 }
