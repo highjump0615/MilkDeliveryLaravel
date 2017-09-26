@@ -1341,6 +1341,11 @@ class WeChatCtrl extends Controller
 
     }
 
+    /**
+     * 打开填写收货地址页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function dizhitianxie(Request $request)
     {
         $factory_id = $this->getCurrentFactoryIdW($request);
