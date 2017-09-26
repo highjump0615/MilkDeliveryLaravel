@@ -143,7 +143,7 @@ class Controller extends BaseController
 
         // 本地环境下返回测试值
         if (App::environment('local')) {
-            return 127;
+            return 8;
         }
 
         $nUserId = session('wechat_user_id');
