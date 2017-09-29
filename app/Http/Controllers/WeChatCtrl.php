@@ -1376,58 +1376,83 @@ class WeChatCtrl extends Controller
             ->where('is_active', 1)
             ->get();
 
-        $ret = array();
+        $provinces = array();
+        $cities = array();
+        $districts = array();
+        $streets = array();
+        $villages = array();
 
         foreach ($addr as $a) {
-            if ($a->level == 1) {
-                $ret[86][$a->id] = $a->name;
-            } else {
-                $ret[$a->parent_id][$a->id] = $a->name;
+            $strParentId = strval($a->parent_id);
+            $addrValue = [
+                "text" => $a->name,
+                "value" => strval($a->id),
+            ];
+
+            if ($a->level == Address::LEVEL_PROVINCE) {
+                $provinces[] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_CITY) {
+                $cities[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_DISTRICT) {
+                $districts[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_STREET) {
+                $streets[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_VILLAGE) {
+                $villages[$strParentId][] = $addrValue;
             }
         }
 
-        $c_address = str_replace(' ', '/', $c_address);
+        // 返回内容
+        $aryData = [
+            'wxuser_id' => $wxuser_id,
+            'address_id' => $address_id,
+            'name' => $c_name,
+            'phone' => $c_phone,
+            'address' => $c_address,
+            'sub_address' => $c_sub_address,
+            'primary' => $c_primary,
+
+            // 地址列表
+            'provinces' => $provinces,
+            'cities' => $cities,
+            'districts' => $districts,
+            'streets' => $streets,
+            'villages' => $villages,
+        ];
 
         if ($request->has('order') and $request->has('type')) {
             $order = $request->input('order');
             $type = $request->input('type');
-            return view('weixin.dizhitianxie', [
-                'wxuser_id' => $wxuser_id,
-                'address_id' => $address_id,
-                'address_list' => $ret,
-                'name' => $c_name,
-                'phone' => $c_phone,
-                'address' => $c_address,
-                'sub_address' => $c_sub_address,
-                'primary' => $c_primary,
+
+            $aryData = array_merge($aryData, [
                 'order' => $order,
                 'type' => $type,
             ]);
-        } else {
-            return view('weixin.dizhitianxie', [
-                'wxuser_id' => $wxuser_id,
-                'address_id' => $address_id,
-                'address_list' => $ret,
-                'name' => $c_name,
-                'phone' => $c_phone,
-                'address' => $c_address,
-                'sub_address' => $c_sub_address,
-                'primary' => $c_primary,
-            ]);
         }
 
+        return view('weixin.dizhitianxie', $aryData);
     }
 
+    /**
+     * 填写地址提交
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function addOrUpdateAddress(Request $request)
     {
         $wxuser_id = $request->input('wxuser_id');
         $name = $request->input('name');
         $phone = $request->input('phone');
-        $address = $request->input('address');
+        $area = $request->input('area');
+        $street = $request->input('street');
         $sub_address = $request->input('sub_address');
         $primary = $request->input('primary');
 
-        $address = str_replace('/', ' ', $address);
+        $address = $area . " " . $street;
 
         if ($primary) {
             WechatAddress::where('wxuser_id', $wxuser_id)->update(['primary' => 0]);
