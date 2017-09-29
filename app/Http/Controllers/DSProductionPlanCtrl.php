@@ -1275,6 +1275,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
             'car_number'        =>$strCarNum,
 
             'factory_name'      =>$factory->name,
+            'bianhao'           =>'',
 //            'station_plan'=>$station_plan,
 //            'mfbottle_type'=>$mfbottle_type,
         ]);
