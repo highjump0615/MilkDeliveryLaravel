@@ -2,7 +2,7 @@
 <div class="menu">
     <ul class="menul">
         <li>
-            <a href="{{url('/weixin/qianye')}}"><i class="mni1"></i>奶吧</a>
+            <a href="{{url('/weixin/qianye')}}"><i class="mni1"></i>订奶</a>
         </li>
         <li>
             <a href="{{url('/weixin/shangpinliebiao')}}"><i class="mni2"></i>快速订奶</a>
