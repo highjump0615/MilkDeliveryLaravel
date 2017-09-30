@@ -46,7 +46,8 @@ class WeChatCtrl extends Controller
     private function getAddress($factory = null) {
         $address = session('address');
         if (empty($address) && !empty($factory)) {
-            $address = $factory->first_active_address;
+//            $address = $factory->first_active_address;
+            $address = "内蒙古 呼和浩特市";
             session(['address' => $address]);
         }
 
@@ -140,6 +141,11 @@ class WeChatCtrl extends Controller
         }
     }
 
+    /**
+     * 设置首页的地区
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function set_session_address(Request $request)
     {
         $province = $request->input('province');
