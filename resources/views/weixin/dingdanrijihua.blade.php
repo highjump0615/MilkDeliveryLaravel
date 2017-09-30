@@ -19,7 +19,7 @@
     <div class="ordrxg">
         <div id='calendar'></div>
 
-        <label class="pa2t" style="margin-top: 20px;">订单记录：</label>
+        <label class="pa2t" style="margin-top: 20px;">配送详情：</label>
         <dl class="ordjl">
             <table class="table table-bordered" data-page-size="10" id="internalActivities">
                 <thead>
@@ -38,8 +38,8 @@
                         <tr data-planid="{{$plan['plan_id']}}" data-date="{{$plan['deliver_at']}}">
                             <!--<td>{{$i+1}}</td>-->
                             <td>{{$plan['deliver_at']}}</td>
-                            <td>{{$plan['status_name']}}</td>
-                            <td>{{$plan['product_name']}}</td>
+                            <td>{{$plan->getStatusName()}}</td>
+                            <td>{{$plan->getProductSimpleName()}}</td>
                             @if($plan['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED )
                                 <td>{{$plan['delivered_count']}}</td>
                             @else
@@ -70,7 +70,7 @@
     <script type="text/javascript">
 
         var today = "{{$today}}";
-        var trs = $("#internalActivities tr");
+        var trs = $("#internalActivities tbody tr");
 //        var btnMore = $("#seeMoreRecords");
         var trsLength = trs.length;
         var currentIndex = 10;

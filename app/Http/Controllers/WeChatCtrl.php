@@ -1267,6 +1267,11 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+    /**
+     * 处理支付失败
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function zhifushibai(Request $request)
     {
         if ($request->has('order')) {
