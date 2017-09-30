@@ -205,7 +205,7 @@ class WechatesCtrl extends Controller
 		$jsonmenu = '{
 		    "button":[
 		    {
-		        "name": "奶吧",
+		        "name": "订奶",
 		        "type": "view",
 		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/qianye&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
             },

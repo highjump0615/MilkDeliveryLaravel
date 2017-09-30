@@ -32,7 +32,7 @@
                 </div>
             @else
                 <div class="adrtop pa2t">
-                    <p style="color:red;"><i class="fa fa-warning"></i>请插入您的信息</p>
+                    <p style="color:red;"><i class="fa fa-warning"></i>请编辑您的地址信息</p>
                 </div>
             @endif
         </div>
