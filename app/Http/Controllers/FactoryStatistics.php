@@ -965,17 +965,22 @@ class FactoryStatistics extends Controller
             ->groupBy('station_id');
 
         foreach ($queryDeliveryPlan as $nStId=>$byStation){
+
             //
             // 根据月单、季单、半年单
             //
             $byType = $byStation->groupBy('order_type');
             foreach ($byType as $nTypeId=>$countPlans) {
+
                 //
                 // 获取每个奶品的数量
                 //
                 $countsByProduct = $countPlans->groupBy('product_id');
                 foreach ($countsByProduct as $nProductId=>$countsProduct) {
                     // 剩余数量
+                    if (empty($stations[$nStId][1][$nTypeId][$nProductId][0])) {
+                        $stations[$nStId][1][$nTypeId][$nProductId][0] = 0;
+                    }
                     $stations[$nStId][1][$nTypeId][$nProductId][1] = $stations[$nStId][1][$nTypeId][$nProductId][0] - $countsProduct->sum('dcount');
                 }
 
