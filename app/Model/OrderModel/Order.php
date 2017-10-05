@@ -134,9 +134,23 @@ class Order extends Model
         $this->mStrProvince = $aryAddr[0];
         $this->mStrCity = $aryAddr[1];
         $this->mStrDistrict = $aryAddr[2];
-        $this->mStrStreet = $aryAddr[3];
-        $this->mStrVillage = $aryAddr[4];
-        $this->mStrHouseNumber = $aryAddr[5];
+        $this->mStrStreet = null;
+        $this->mStrVillage = null;
+
+        // 是否没选好
+        if (strcmp($aryAddr[3], "其他")) {
+            $this->mStrStreet = $aryAddr[3];
+            $this->mStrVillage = $aryAddr[4];
+            $this->mStrHouseNumber = !empty($aryAddr[5]) ? $aryAddr[5] : "";
+        }
+        else {
+            // 编制其他地址
+            $nPreLen = 0;
+            for ($i = 0; $i < 4; $i++) {
+                $nPreLen += strlen($aryAddr[$i]) + 1;
+            }
+            $this->mStrHouseNumber = substr($this->address, $nPreLen - 1);
+        }
     }
 
     //
@@ -206,7 +220,7 @@ class Order extends Model
         $main_addr = "";
         $addr_list = explode(" ", $this->address);
 
-        for ($i = $level - 1; $i < Address::LEVEL_VILLAGE + 1; $i++) {
+        for ($i = $level - 1; $i < count($addr_list); $i++) {
             if ($i >= $level) {
                 $main_addr .= " ";
             }
@@ -516,7 +530,7 @@ class Order extends Model
      */
     public function getCustomerNameAttribute()
     {
-        return $this->customer->name;
+        return $this->customer ? $this->customer->name : "";
     }
 
     

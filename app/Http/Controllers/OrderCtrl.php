@@ -680,6 +680,7 @@ class OrderCtrl extends Controller
                                       $station_id,
                                       $order_id,
                                       $customer_id,
+                                      $wxuser_id,
                                       $phone,
                                       $address,
                                       $order_property_id,
@@ -808,6 +809,10 @@ class OrderCtrl extends Controller
         // 客户id
         if (!empty($customer_id)) {
             $order->customer_id = $customer_id;
+        }
+        // 微信用户
+        if (!empty($wxuser_id)) {
+            $order->wxuser_id = $wxuser_id;
         }
         // 电话
         if (!empty($phone)) {
@@ -951,7 +956,7 @@ class OrderCtrl extends Controller
         }
 
         // save customer
-        if (!empty($customer_id)) {
+        if (!empty($customer_id) && !empty($delivery_station_id) && empty($nMilkmanId)) {
             $customer = Customer::find($customer_id);
             $customer->station_id = $delivery_station_id;
             $customer->milkman_id = $nMilkmanId;
@@ -1061,12 +1066,18 @@ class OrderCtrl extends Controller
             $payment_type = PaymentType::PAYMENT_TYPE_CARD;
         }
 
+        // 查看票据号，判断是否微信订单
+        if (empty($receipt_number)) {
+            $payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
+        }
+
         $order = null;
         $nResult = $this->insert_order_core(
             $factory_id,
             $station_id,
             $order_id,
             $customer_id,
+            null,
             $phone,
             $address,
             $order_property_id,

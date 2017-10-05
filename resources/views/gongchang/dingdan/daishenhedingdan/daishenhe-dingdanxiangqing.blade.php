@@ -30,12 +30,16 @@
                 <label class="col-sm-10">订单信息</label>
             </div>
             <div class="feed-element col-md-12">
-                <label class="col-md-2">订单号:</label>
-                <label>{{$order->number}}</label>
-            </div>
-            <div class="feed-element col-md-12">
-                <label class="col-md-2">订单状态:</label>
-                <label>{{$order->status_name}}</label>
+                <div class="col-md-4" style="padding-left: 0px;">
+                    <label class="col-md-6">订单号:</label>
+                    <label class="col-md-6">{{$order->number}}</label>
+                    <label class="col-md-6">订单状态:</label>
+                    <label class="col-md-6">{{$order->status_name}}</label>
+                </div>
+                <div class="feed-element col-md-5 col-md-offset-3">
+                    <a href="{{URL::to('/gongchang/dingdan/dingdanxiugai/'.$order->id)}}"
+                       class="btn btn-success btn-outline btn-sm col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                </div>
             </div>
             <div class="col-md-12 gray-bg">
                 <label class="col-sm-10">客户信息</label>
@@ -54,14 +58,7 @@
             </div>
             <div class="feed-element col-md-12">
                 <label class="col-md-2">收货地址:</label>
-                <label>{{$order->main_address}}</label>
-                <input id="sub_addr" data-origin="{{$order->getAddrHouseNumber()}}" type="text" disabled name="change_sub_addr"
-                       value="{{$order->getAddrHouseNumber()}}"/>
-                <button id="change_sub_addr" type="button" class="btn btn-success btn-outline"><i
-                            class="fa fa-pencil"></i>修改
-                </button>
-                <button id="save_sub_addr" type="button" class="btn btn-success btn-outline"><i class="fa fa-save"></i>保存
-                </button>
+                <label>{{$order->address}}</label>
             </div>
 
             <div class="col-md-12 gray-bg">

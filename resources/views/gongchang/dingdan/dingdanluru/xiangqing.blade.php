@@ -70,15 +70,15 @@
 
                         @if (isset($station))
                             <a href="{{URL::to('/naizhan/dingdan/xiugai/'.$order->id)}}"
-                               class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                               class="btn btn-success btn-outline btn-sm col-md-2"><i class="fa fa-pencil"></i>修改</a>
                         @else
                             <a href="{{URL::to('/gongchang/dingdan/dingdanxiugai/'.$order->id)}}"
-                               class="btn btn-success btn-outline btn-md col-md-2"><i class="fa fa-pencil"></i>修改</a>
+                               class="btn btn-success btn-outline btn-sm col-md-2"><i class="fa fa-pencil"></i>修改</a>
                         @endif
                     @endif
 
                     @if ($order->isStopped())
-                        <button class="btn btn-success btn-outline btn-md  col-md-3"
+                        <button class="btn btn-success btn-outline btn-sm col-md-3"
                                 data-orderid="{{$order->id}}"
                                 data-stop-at="{{$order->stop_at}}"
                                 data-restart-at="{{$order->order_stop_end_date}}"
@@ -87,7 +87,7 @@
                                 id="restart_order_bt">开始订单
                         </button>
                     @elseif ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <button class="btn btn-success btn-outline btn-md  col-md-3"
+                        <button class="btn btn-success btn-outline btn-sm col-md-3"
                                 data-orderid="{{$order->id}}" data-toggle="modal"
                                 data-target="#stop_order_modal"
                                 id="stop_order_bt">暂停订单
@@ -95,14 +95,14 @@
                     @endif
 
                     @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <button class="btn btn-success btn-outline btn-md  col-md-3"
+                        <button class="btn btn-success btn-outline btn-sm col-md-3"
                                 data-orderid="{{$order->id}}"
                                 id="postpone_order_bt">顺延订单
                         </button>
                     @endif
 
                     @if ($order->status == \App\Model\OrderModel\Order::ORDER_PASSED_STATUS || $order->status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS)
-                        <button class="btn btn-success btn-outline btn-md  col-md-2"
+                        <button class="btn btn-success btn-outline btn-sm col-md-2"
                                 data-orderid="{{$order->id}}"
                                 id="cancel_order_bt">退订
                         </button>

@@ -851,6 +851,7 @@ class WeChatCtrl extends Controller
                     null,
                     null,
                     null,
+                    null,
                     $total_amount,
                     null,
                     null,
@@ -2086,27 +2087,28 @@ class WeChatCtrl extends Controller
         // 决定奶站和配送员
         //
         $station = null;
+        $station_id = null;
+
+        $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
 
-        if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
-            return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围.']);
-        } else if ($station_milkman == OrderCtrl::NOT_EXIST_STATION) {
-            return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-        } else if ($station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
-            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
-        }
-
         // 设置客户信息
-        $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factory_id);
-
-        $customer->station_id = $station_milkman[0];
-        $customer->milkman_id = $station_milkman[1];
-
         $customer->name = $addr_obj->name;
+
+        if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA ||
+            $station_milkman == OrderCtrl::NOT_EXIST_STATION ||
+            $station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
+        }
+        else {
+            $customer->station_id = $station_milkman[0];
+            $customer->milkman_id = $station_milkman[1];
+        }
         $customer->save();
 
-        $customer_id = $customer->id;
+        if (!empty($station)) {
+            $station_id = $station->id;
+        }
 
         // OrderProducts
         $aryProductId = [];
@@ -2138,9 +2140,9 @@ class WeChatCtrl extends Controller
             $total_amount += $wop->total_amount;
         }
 
-        $station_id = $customer->station_id;
-
-        $order_checker = OrderCheckers::where('station_id', $station_id)->where('is_active', 1)->first();
+        $order_checker = OrderCheckers::where('station_id', $station_id)
+            ->where('is_active', 1)
+            ->first();
 
         //start at: wechat order product's first deliver at
         $start_at = $wechat_user->order_start_at($group_id);
@@ -2150,7 +2152,8 @@ class WeChatCtrl extends Controller
             $factory_id,
             $station_id,
             null,
-            $customer_id,
+            $customer->id,
+            $wxuser_id,
             $addr_obj->phone,
             $strAddress,
             OrderProperty::ORDER_PROPERTY_NEW_ORDER,
@@ -2163,7 +2166,7 @@ class WeChatCtrl extends Controller
             $total_amount,
             Order::ORDER_DELIVERY_TIME_MORNING,
             $start_at,
-            ($customer->has_milkbox) ? 1 : 0,
+            (!empty($customer) && $customer->has_milkbox) ? 1 : 0,
             PaymentType::PAYMENT_TYPE_WECHAT,
             0,
             null,
@@ -2183,7 +2186,7 @@ class WeChatCtrl extends Controller
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
-        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
+        $notification->sendToWechatNotification($customer->id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
         //if payment fails, delete order
         return response()->json(['status' => 'success', 'order_id' => $order->id]);
