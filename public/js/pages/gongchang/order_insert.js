@@ -1,4 +1,5 @@
 var g_aryCardId = [];
+var gbProductChanged = false;
 
 //First set the Address list
 $('.province_list').on('change', function () {
@@ -309,9 +310,20 @@ function isFreeOrderValid() {
 }
 
 //Insert Order
-$('#order_form').on('submit', function (e) {
+$('#product_form').on('submit', function (e) {
+    var that = this;
 
     e.preventDefault();
+
+    // 检查客户表单
+    if (!$('#customer_form')[0].reportValidity()) {
+        return false;
+    }
+
+    // 检查订单参数表单
+    if (!$('#order_form')[0].reportValidity()) {
+        return false;
+    }
 
     //card check
     var card_suc = $('#card_check_success').val();
@@ -342,7 +354,7 @@ $('#order_form').on('submit', function (e) {
 
     if(!pass)
     {
-        show_warning_msg("产品价格不计算")
+        show_warning_msg("产品价格不计算");
         return;
     }
 
@@ -385,7 +397,13 @@ $('#order_form').on('submit', function (e) {
         }
     }
 
+    // 订单参数信息
     var sendData = $('#order_form').serializeArray();
+
+    // 产品信息
+    if (gbProductChanged) {
+        sendData = $(this).serializeArray();
+    }
 
     if ($('input[name="milk_card_check"]').prop("checked")) {
 
@@ -406,17 +424,26 @@ $('#order_form').on('submit', function (e) {
     var milkman_id = $('#station_list option:selected').data('milkman');
     var deliveryarea_id = $('#station_list option:selected').data('deliveryarea');
 
-    $('#order_form button[type="submit"]').prop('disabled', true);
+    enableSubmitButton(that, false);
 
     sendData.push({'name': 'milkman_id', 'value': milkman_id});
     sendData.push({'name': 'deliveryarea_id', 'value': deliveryarea_id});
 
     //Customer Info
-    customer_data = $('#customer_form').serializeArray();
-
-    //add custom info to sendData
+    var customer_data = $('#customer_form').serializeArray();
     sendData = sendData.concat(customer_data);
-    console.log(sendData);
+
+    // 把数据转成FormData
+    var fd = new FormData();
+    $.each(sendData, function(key, input) {
+        fd.append(input.name, input.value);
+    });
+
+    // 票据号图片
+    var fileData = $('input[name="input-receipt"]')[0].files;
+    if (fileData.length > 0) {
+        fd.append('receipt_img', fileData[0]);
+    }
 
     // API链接
     var strApiUrl, strUrlAfter;
@@ -429,7 +456,9 @@ $('#order_form').on('submit', function (e) {
     $.ajax({
         type: "POST",
         url: strApiUrl,
-        data: sendData,
+        data: fd,
+        contentType: false,
+        processData: false,
         success: function (data) {
             console.log(data);
             if (data.status == 'success') {
@@ -460,15 +489,24 @@ $('#order_form').on('submit', function (e) {
                 if (data.message)
                     show_err_msg(data.message);
 
-                $('#order_form button[type="submit"]').prop('disabled', false);
+                enableSubmitButton(that, true);
             }
         },
         error: function (data) {
             console.log(data);
-            $('#order_form button[type="submit"]').prop('disabled', false);
+            enableSubmitButton(that, true);
         }
     });
 });
+
+/**
+ * 禁用/使用提交按钮
+ * @param form
+ * @param isEnable
+ */
+function enableSubmitButton(form, isEnable) {
+    $(form).find('button[type="submit"]').prop('disabled', !isEnable);
+}
 
 // Card Verfiy
 $('.verify-card').click(function () {
@@ -568,6 +606,7 @@ function enableReceipt(enabled) {
     $('#receipt_number').prop('disabled', enabled);
     $('#reset_camera').prop('disabled', enabled);
     $('#capture_camera').prop('disabled', enabled);
+    $('#btn-upload').prop('disabled', enabled);
 }
 
 $(document).ready(function () {
@@ -588,5 +627,5 @@ $(document).ready(function () {
         else {
             enableReceipt(false);
         }
-    }
+    };
 });

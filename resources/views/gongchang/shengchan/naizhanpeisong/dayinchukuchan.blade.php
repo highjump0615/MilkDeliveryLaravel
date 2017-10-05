@@ -179,8 +179,7 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
-   
+
 	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js') ?>"></script>
 
 @endsection

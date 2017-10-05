@@ -1,7 +1,7 @@
 @extends('weixin.layout.master')
 @section('title','订单列表')
 @section('css')
-    <link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
+    <link href="<?=asset('plugins/switchery/switchery.min.css') ?>" rel="stylesheet">
 @endsection
 @section('content')
 
@@ -163,7 +163,7 @@
 @endsection
 @section('script')
     <!-- Switchery -->
-    <script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
+    <script src="<?=asset('plugins/switchery/switchery.min.js') ?>"></script>
     <script>
         //Create Switchery
         if (Array.prototype.forEach) {

@@ -1,7 +1,5 @@
 @extends('gongchang.layout.master')
 @section('css')
-    <link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
-
     <link href="<?=asset('css/plugins/daterangepicker/daterangepicker-bs3.css') ?>" rel="stylesheet">
 @endsection
 @section('content')

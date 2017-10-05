@@ -4,17 +4,13 @@ select, input {
 }
 
 .statics input {
-    height: 30px;
+    /*height: 30px;*/
     border: 0;
 }
 
 .section-name label {
     height: 30px;
     line-height: 30px;
-}
-
-.switchery {
-    width: 60px;
 }
 
 #product_table tr td {
@@ -45,4 +41,66 @@ input.tip-input {
 #form-card-panel {
     display: none;
     line-height: 32px;
+}
+
+.label-item {
+    margin: 0;
+    line-height: 34px;
+    text-align: right;
+    font-weight: normal;
+}
+.label-item-sm {
+    line-height: 22px;
+}
+.label-item-md {
+    line-height: 30px;
+}
+
+#receipt-div {
+    margin-left: 10px;
+}
+
+#receipt-div button {
+    margin-left: 7px;
+}
+
+#receipt-div input {
+    display: none;
+}
+
+#receipt_number {
+    width: calc(100% - 95px);
+    float: left;
+}
+
+.checkbox-div {
+    width: 53px;
+    float: left;
+    line-height: 30px;
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+    padding: 5px 7px;
+}
+
+form {
+    padding: 0px;
+}
+
+#my_camera img {
+    max-width: 100%;
+    height: auto;
+}
+
+.statics label {
+    text-align: right;
+}
+
+#product_table thead tr {
+    height: 30px;
+}
+#product_table thead td {
+    border:1px solid #ccc;
 }
