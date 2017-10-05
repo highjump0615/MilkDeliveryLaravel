@@ -864,9 +864,27 @@ class OrderCtrl extends Controller
 
         $order->save();
 
+        // 配送员
+        $nMilkmanId = $milkman_id;
+        if (empty($nMilkmanId)) {
+            $nMilkmanId = $order->milkman_id;
+        }
+
+        // 配送奶站
+        $nDeliveryStationId = $delivery_station_id;
+        if (empty($nDeliveryStationId)) {
+            $nDeliveryStationId = $order->delivery_station_id;
+        }
+
+        //save order products
+        $count = count($product_ids);
+
         // 订单修改要删除以前的配送明细和奶品信息
         if ($order_id) {
-            $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
+            // 奶品数据有了变化，删除重新添加
+            if ($count > 0) {
+                $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
+            }
         }
         // 新订单生成订单编号
         else {
@@ -885,21 +903,6 @@ class OrderCtrl extends Controller
                     ]);
             }
         }
-
-        // 配送员
-        $nMilkmanId = $milkman_id;
-        if (empty($nMilkmanId)) {
-            $nMilkmanId = $order->milkman_id;
-        }
-
-        // 配送奶站
-        $nDeliveryStationId = $delivery_station_id;
-        if (empty($nDeliveryStationId)) {
-            $nDeliveryStationId = $order->delivery_station_id;
-        }
-
-        //save order products
-        $count = count($product_ids);
 
         for ($i = 0; $i < $count; $i++) {
             //
@@ -1022,6 +1025,23 @@ class OrderCtrl extends Controller
         $order_checker_id = $request->input('order_checker');
         $receipt_number = $request->input('receipt_number');
         $receipt_path = $request->input('receipt_path');
+
+        // 票据图片
+        if (empty($receipt_path)) {
+            if ($request->hasFile('receipt_img')) {
+                $strDestProductPath = public_path() . '/img/order/';
+                if (!file_exists($strDestProductPath)) {
+                    File::makeDirectory($strDestProductPath, 0777, true);
+                }
+
+                $file = $request->file('receipt_img');
+                if ($file->isValid()) {
+                    $ext = $file->getClientOriginalExtension();
+                    $receipt_path = "o" . time() . uniqid() . '.' . $ext;
+                    $file->move($strDestProductPath, $receipt_path);
+                }
+            }
+        }
 
         //Order amount for remaingng, acceptable
         $total_amount = $request->input('total_amount');
