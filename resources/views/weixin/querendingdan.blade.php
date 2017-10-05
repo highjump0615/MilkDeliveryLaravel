@@ -244,7 +244,7 @@
                         }
 
                         $(order_bt).prop('disabled', false);
-                        window.location = SITE_URL + "weixin/zhifushibai";
+//                        window.location = SITE_URL + "weixin/zhifushibai";
                     } else {
 
                         if (data.message) {

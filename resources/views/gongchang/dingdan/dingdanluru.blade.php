@@ -505,7 +505,7 @@
             gbIsStation = true;
         @endif
 
-        @if ($is_edit && isset($order))
+        @if ($is_edit && !empty($order) && !empty($order->deliveryStation))
             dateToday = new Date("{{$order->deliveryStation->getChangeStartDate()}}");
         @else
             dateToday = new Date(s_timeCurrent);

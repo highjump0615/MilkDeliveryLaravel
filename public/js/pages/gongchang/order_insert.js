@@ -402,7 +402,7 @@ $('#product_form').on('submit', function (e) {
 
     // 产品信息
     if (gbProductChanged) {
-        sendData = $(this).serializeArray();
+        sendData = sendData.concat($(this).serializeArray());
     }
 
     if ($('input[name="milk_card_check"]').prop("checked")) {

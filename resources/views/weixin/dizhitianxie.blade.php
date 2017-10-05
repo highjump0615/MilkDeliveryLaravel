@@ -172,6 +172,20 @@
          * @param districtId
          */
         function initStreetList(districtId) {
+
+            // 添加其他街道
+            streets_data[districtId].push({
+                'value': -1,
+                'text': '其他'
+            });
+            villages_data[-1] = [{
+                'value': -1,
+                'text': ''
+            }];
+
+            console.log(streets_data);
+            console.log(villages_data);
+
             areaStreet.init({
                 'trigger': '#street',
                 'valueTo': '#val_street',
@@ -188,9 +202,15 @@
         function initAddress(address) {
             var addresses = strAddress.split(' ');
 
-            // 设置text
+            // 设置地区text
             $('#area').val(addresses[0] + ' ' + addresses[1] + ' ' + addresses[2]);
-            $('#street').val(addresses[3] + ' ' + addresses[4]);
+
+            // 设置街道text
+            var strStreetDesc = addresses[3];
+            if (addresses[4]) {
+                strStreetDesc += ' ' + addresses[4];
+            }
+            $('#street').val(strStreetDesc);
 
             var strProvince = getValueFromText(provs_data, addresses[0]);
             if (!strProvince) {
