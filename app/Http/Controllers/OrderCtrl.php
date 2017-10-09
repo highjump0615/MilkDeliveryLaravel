@@ -890,6 +890,12 @@ class OrderCtrl extends Controller
             if ($count > 0) {
                 $this->delete_all_order_products_and_delivery_plans_for_update_order($order);
             }
+            // 没有变化，奶站重新设置
+            else {
+                $order->milkmanDeliveryPlan()->update([
+                    'station_id' => $order->delivery_station_id,
+                ]);
+            }
         }
         // 新订单生成订单编号
         else {
@@ -1995,6 +2001,11 @@ class OrderCtrl extends Controller
             $order = Order::find($order_id);
             if (!$order)
                 return response()->json(['status' => 'fail', 'message' => '找不到订单']);
+
+            // 查看奶站是否匹配好
+            if (empty($order->station_id) || empty($order->delivery_station_id)) {
+                return response()->json(['status' => 'fail', 'message' => '奶站没匹配到，没法通过']);
+            }
 
             //
             // 添加微信通知
