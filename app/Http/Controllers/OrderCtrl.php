@@ -2354,11 +2354,11 @@ class OrderCtrl extends Controller
         // 微信订单
         $wechat_amount = Order::where('is_deleted', 0)
             ->where('factory_id', $factory_id)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->sum('total_amount');
         $wechat_dcount = Order::where('is_deleted', 0)
             ->where('factory_id', $factory_id)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_CARD)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->count();
 
         // 没数据变量会变成null
