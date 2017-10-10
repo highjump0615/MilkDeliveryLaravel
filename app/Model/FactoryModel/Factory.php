@@ -89,11 +89,6 @@ class Factory extends Model
         return $stations;
     }
 
-    public function deliveryTypes()
-    {
-        return $this->belongsToMany('App\Model\DeliveryModel\DeliveryType', 'mfdeliverytype', 'factory_id', 'delivery_type');
-    }
-
     public function delivery_time()
     {
         return $this->hasOne('App\Model\FactoryModel\FactoryDeliveryTime');
