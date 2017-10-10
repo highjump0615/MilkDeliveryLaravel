@@ -254,22 +254,7 @@ class Order extends Model
 
         return $remain;
     }
-
-    /**
-     * 重写获取status字段
-     * @return int
-     */
-    public function getStatusAttribute(){
-        $nStatus = $this->attributes['status'];
-
-        // 假装设置STOPPED状态
-        if ($this->isStopped()) {
-            $nStatus = Order::ORDER_STOPPED_STATUS;
-        }
-
-        return $nStatus;
-    }
-
+    
     public function setStatusAttribute($value){
         $this->attributes['status'] = $value;
         $this->attributes['status_changed_at'] = getCurDateString();
