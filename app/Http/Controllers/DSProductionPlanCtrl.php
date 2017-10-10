@@ -466,6 +466,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         // 获取所有产品信息
         $products = Product::where('factory_id',$current_factory_id)
+            ->where('status', Product::PRODUCT_STATUS_ACTIVE)
             ->where('is_deleted',0)
             ->get(['id','simple_name','production_period']);
 
@@ -917,6 +918,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         $current_date_str = getPrevDateString($deliver_date_str);
 
         $products = Product::where('factory_id',$current_factory_id)
+            ->where('status', Product::PRODUCT_STATUS_ACTIVE)
             ->where('is_deleted',0)
             ->get(['id','simple_name']);
 
