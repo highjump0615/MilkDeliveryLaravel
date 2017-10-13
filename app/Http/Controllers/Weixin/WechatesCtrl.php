@@ -205,22 +205,9 @@ class WechatesCtrl extends Controller
 		$jsonmenu = '{
 		    "button":[
 		    {
-		        "name": "订奶",
+		        "name": "鲜奶配送",
 		        "type": "view",
 		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/qianye&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-            },
-            {
-                "name":"经销商",
-                "sub_button":[{
-                    "name": "计划管理",
-                    "type": "view",
-                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-                },
-                {
-                    "name": "签收管理",
-                    "type": "view",
-                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-                }]
             },
             {
                 "name":"获取红包",
@@ -229,6 +216,11 @@ class WechatesCtrl extends Controller
                     "type": "view",
                     "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/share&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
                 }]
+            },
+            {
+		        "name": "个人中心",
+		        "type": "view",
+		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/gerenzhongxin&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
             }]
 		 }';
 
