@@ -150,22 +150,24 @@ class Controller extends BaseController
 
         if (empty($nUserId) && !empty($factory)) {
             if (isset($_GET['code'])) {
-                $wechatObj = new WeChatesCtrl($factory->app_id, $factory->app_secret, $factory->app_encoding_key, $factory->app_token, $factory->name, $factory->id);
+                $wechatObj = WechatesCtrl::withFactory($factory);
                 $codees = $wechatObj->codes($_GET['code']);
 
                 //save wechat user id
-                $open_id = $codees['openid'];
+                if (!empty($codees['openid'])) {
+                    $open_id = $codees['openid'];
 
-                $wechat_user = WechatUser::where('openid', $open_id)->first();
-                if (!$wechat_user) {
-                    $wechat_user = new WechatUser;
-                    $wechat_user->openid = $open_id;
-                    $wechat_user->factory_id = $factory->id;
-                    $wechat_user->save();
+                    $wechat_user = WechatUser::where('openid', $open_id)->first();
+                    if (!$wechat_user) {
+                        $wechat_user = new WechatUser;
+                        $wechat_user->openid = $open_id;
+                        $wechat_user->factory_id = $factory->id;
+                        $wechat_user->save();
+                    }
+                    $nUserId = $wechat_user->id;
+
+                    session(['wechat_user_id' => $nUserId]);
                 }
-                $nUserId = $wechat_user->id;
-
-                session(['wechat_user_id' => $nUserId]);
             }
         }
 

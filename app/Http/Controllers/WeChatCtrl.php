@@ -2635,29 +2635,11 @@ class WeChatCtrl extends Controller
     private function getQrCode(Request $request, $factory, $user, &$accessToken) {
         $client = new Client();
 
-        $dateNow = new DateTime("now");
-
         //
         // 获取access token
         //
-        $accessToken = $request->session()->get('access_token');
-        $tokenTimeout = $request->session()->get('timeout_token');
-        if (empty($accessToken) || $tokenTimeout < $dateNow) {
-            $strUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential"
-                . "&appid=" . $factory->app_id
-                . "&secret=" . $factory->app_secret;
-
-            $res = $client->request('GET', $strUrl)->getBody();
-            $jsonRes = json_decode($res);
-
-            $accessToken = $jsonRes->access_token;
-
-            // 写入到session
-            $request->session()->put('access_token', $accessToken);
-
-            $dateNow->add(new \DateInterval("PT7200S"));
-            $request->session()->put('timeout_token', $dateNow);
-        }
+        $wctrl = WechatesCtrl::withFactory($factory);
+        $accessToken = $wctrl->accessToken();
 
         //
         // 获取二维码
@@ -2712,23 +2694,26 @@ class WeChatCtrl extends Controller
         // 获取jsapi_ticket
         //
         $dateNow = new DateTime("now");
+        $dateExpire = new DateTime($factory->access_token_expire_at);
 
-        $strTicketJs = $request->session()->get('ticket_jsapi');
-        $ticketTimeout = $request->session()->get('timeout_ticket');
-        if (empty($strTicketJs) || $ticketTimeout < $dateNow) {
+        // 从数据库获取
+        if (!empty($factory->ticket_api) && ($dateExpire > $dateNow)) {
+            $strTicketJs = $factory->ticket_api;
+        }
+        else {
             $client = new Client();
 
             $strUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" . $strToken . "&type=jsapi";
             $res = $client->request('GET', $strUrl)->getBody();
-            $jsonRes = json_decode($res);
+            $jsonRes = json_decode($res, true);
 
-            $strTicketJs = $jsonRes->ticket;
+            $strTicketJs = !empty($jsonRes['ticket']) ? $jsonRes['ticket'] : '';
 
-            // 写入到session
-            $request->session()->put('ticket_jsapi', $strTicketJs);
-
-            $dateNow->add(new \DateInterval("PT7200S"));
-            $request->session()->put('timeout_ticket', $dateNow);
+            if (!empty($strTicketJs)) {
+                // 保存到数据库
+                $factory->ticket_api = $strTicketJs;
+                $factory->save();
+            }
         }
 
         // 签名
