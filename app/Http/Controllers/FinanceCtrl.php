@@ -62,17 +62,28 @@ class FinanceCtrl extends Controller
     /**
      * 初始化日期范围
      * @param $request
+     * @param bool $fromSession
      */
-    private function initDateRange($request) {
+    private function initDateRange($request, $fromSession = false) {
         $this->mDateStart = $request->input('start_date');
+        if (empty($this->mDateStart) && $fromSession) {
+            $this->mDateStart = $request->session()->get('finance_date_start');
+        }
         if (empty($this->mDateStart)) {
             $this->mDateStart = date('Y-m-01');
         }
 
         $this->mDateEnd = $request->input('end_date');
+        if (empty($this->mDateEnd && $fromSession)) {
+            $this->mDateEnd = $request->session()->get('finance_date_end');
+        }
         if (empty($this->mDateEnd)) {
             $this->mDateEnd = getCurDateString();
         }
+
+        // 在session保存日期
+        $request->session()->put('finance_date_start', $this->mDateStart);
+        $request->session()->put('finance_date_end', $this->mDateEnd);
     }
 
     /**
@@ -248,17 +259,32 @@ class FinanceCtrl extends Controller
      * @param $station_id
      * @return array
      */
-    private function getOrderMoneyStatistics($station_id) {
+    private function getOrderMoneyStatistics($request, $station_id) {
         $station = DeliveryStation::find($station_id);
+
+        // 初始化日期范围
+        $this->initDateRange($request, true);
+        $station->setDateRange($this->mDateStart, $this->mDateEnd);
 
         //all orders in month
         $orders = $station->orders_in_month;
 
         //Money Orders
         //current station's orders
-        $money_orders = $station->getMoneyOrdersInput();
-        $money_orders_count = count($money_orders);
-        $money_orders_sum = $this->getSumOfOrders($money_orders);
+        $moneyOrders = Order::where('station_id', $station->id)
+            ->where('ordered_at', '>=', $this->mDateStart)
+            ->where('ordered_at', '<=', $this->mDateEnd)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
+            ->where(function($query){
+                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
+                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
+                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
+            })
+            ->selectRaw('count(*) as count, sum(total_amount) as totalamount')
+            ->get();
+
+        $money_orders_count = getEmptyArrayValue($moneyOrders, 0, "count");
+        $money_orders_sum = round(getEmptyArrayValue($moneyOrders, 0, "totalamount"), 2);
 
         //Really orders received money
         $money_orders_really_got_sum = $station->money_orders_really_got_sum;
@@ -368,9 +394,9 @@ class FinanceCtrl extends Controller
     }
 
     //G2: Show Selected Station's Order Money Status
-    public function show_station_order_money_in_gongchang($station_id)
+    public function show_station_order_money_in_gongchang(Request $request, $station_id)
     {
-        $aryData = $this->getOrderMoneyStatistics($station_id);
+        $aryData = $this->getOrderMoneyStatistics($request, $station_id);
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -382,7 +408,10 @@ class FinanceCtrl extends Controller
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'is_station' => false
+            'is_station' => false,
+
+            'start_date' => $this->mDateStart,
+            'end_date' => $this->mDateEnd,
         );
 
         return view('gongchang.caiwu.taizhang.naizhandingdanjinetongji', array_merge($aryData, $aryPage));
@@ -1475,11 +1504,11 @@ class FinanceCtrl extends Controller
     }
 
     //N2: Show Station's Order Money Status
-    public function show_station_order_money_in_naizhan()
+    public function show_station_order_money_in_naizhan(Request $request)
     {
         $station_id = $this->getCurrentStationId();
 
-        $aryData = $this->getOrderMoneyStatistics($station_id);
+        $aryData = $this->getOrderMoneyStatistics($request, $station_id);
 
         $child = 'taizhang';
         $parent = 'caiwu';
@@ -1491,7 +1520,10 @@ class FinanceCtrl extends Controller
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'is_station' => true
+            'is_station' => true,
+
+            'start_date' => $this->mDateStart,
+            'end_date' => $this->mDateEnd,
         );
 
         return view('naizhan.caiwu.taizhang.benzhandingdan', array_merge($aryData, $aryPage));
