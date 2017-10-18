@@ -100,14 +100,14 @@
 									<tr style="position: relative;">
 										<td colspan="2">
 												<label>奶站电话：</label>
-												<input type="text" id="input_naizhantel" value="{{$naizhantel}}" />
+												<input type="text" value="{{$station->phone}}" />
 												<!-- 奶站id -->
 											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>	
 												
 										<td >
 												<label>电话：</label>
-												<input type="text" id="input_tel" value="{{$tel}}" />
+												<input type="text" value="" />
 											<!-- 奶站id -->
 											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>
@@ -133,7 +133,7 @@
 									<tr>
 										<td>{{$sp->product_id}}</td>
 										<td>{{$sp->product_name}}</td>
-										<td>{{$guigename}}</td>
+										<td></td>
 										<td>{{$sp->product_name=='450袋鲜'? '袋' : '瓶'}}</td>
 										<td >{{$sp->actual_count}}</td>
 										<td></td>
