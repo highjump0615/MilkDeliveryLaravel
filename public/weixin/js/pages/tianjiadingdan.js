@@ -83,6 +83,8 @@ $('button#add_order').click(function () {
 
     var send_data = makeFormData();
     if (send_data != null) {
+        var order_id = $(this).data('order-id');
+        send_data.append('order_id', order_id);
         console.log(send_data);
 
         $.ajax({
