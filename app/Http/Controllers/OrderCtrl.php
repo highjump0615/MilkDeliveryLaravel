@@ -51,6 +51,7 @@ use App\Model\FactoryModel\FactoryOrderType;
 
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductPrice;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 use App\Model\BasicModel\Address;
@@ -2032,7 +2033,7 @@ class OrderCtrl extends Controller
                 $customer_name . "用户订单审核已经通过。");
 
             //set passed status for deliveryplans
-            $udps = $order->unfinished_delivery_plans;
+            $udps = $order->getUnfinishedDeliveryPlanQuery()->get();
             foreach ($udps as $udp) {
                 $udp->passCheck(true);
             }
@@ -2100,10 +2101,7 @@ class OrderCtrl extends Controller
                 $customer_name . "用户订单审核未通过。");
 
             // 删除其订单的配送明细
-            $udps = $order->unfinished_delivery_plans;
-            foreach ($udps as $udp) {
-                $udp->passCheck(false);
-            }
+            $order->getUnfinishedDeliveryPlanQuery()->delete();
 
             return response()->json(['status' => 'success', 'message' => '订单未通过成功.']);
         }
@@ -2298,6 +2296,9 @@ class OrderCtrl extends Controller
         $endDate = $request->input('end_date');
         if (!empty($endDate)) {
         }
+
+        // 保存到session
+        $request->session()->put('query_order', $retData);
 
         $retData['orders'] = $queryOrder->paginate();
 
@@ -2597,10 +2598,8 @@ class OrderCtrl extends Controller
 //                }
 
                 //Delete Delivery Plans for cancelled order
-                $udps = $order->unfinished_delivery_plans;
-                foreach ($udps as $udp) {
-                    $udp->forceDelete();
-                }
+                $order->getUnfinishedDeliveryPlanQuery()->forceDelete();
+
                 return response()->json(['status' => 'success', 'message' => '退订成功.']);
             } else {
                 return response()->json(['status' => 'fail', 'message' => '未找到订单.']);
@@ -2831,30 +2830,25 @@ class OrderCtrl extends Controller
     public function delete_all_order_products_and_delivery_plans_for_update_order($order)
     {
         //delete waiting and passed delivery  plan
-        MilkManDeliveryPlan::where('order_id', $order->id)->where(function ($query) {
-            $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
-            $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
-        })->forceDelete();
+        MilkManDeliveryPlan::where('order_id', $order->id)
+            ->where(function ($query) {
+                $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
+                $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
+            })
+            ->forceDelete();
 
-        $plans = $order->delivery_plans_sent_to_production_plan;
-        foreach ($plans as $plan) {
-            $plan->changed_plan_count = 0;
-            $plan->delivery_count = 0;
+        MilkManDeliveryPlan::where('order_id', $order->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
+            ->update([
+                'changed_plan_count' => 0,
+                'delivery_count' => 0,
 
-            // 改成取消状态
-            $plan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-            $plan->cancel_reason = MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER;
+                // 改成取消状态
+                'status' => MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL,
+                'cancel_reason' => MilkManDeliveryPlan::DP_CANCEL_CHANGEORDER,
+            ]);
 
-            $plan->save();
-        }
-
-        $order_products = $order->order_products;
-        foreach($order_products as $op)
-        {
-            $op->delete();
-        }
-
-        return;
+        $order->order_products()->delete();
     }
 
     /**
@@ -2876,8 +2870,121 @@ class OrderCtrl extends Controller
             //delete order
             $order->delete();
         }
-
     }
 
+    /**
+     * 导出订单列表
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function exportOrderList(Request $request) {
+        $factory_id = $this->getCurrentFactoryId(true);
+
+        $filepath = public_path() . "/exports/order" . time() . ".csv";
+
+        $query = "select 
+                '订单号', 
+                '收货人', 
+                '电话', 
+                '地址', 
+                '订单金额', 
+                '支付', 
+                '订单性质', 
+                '征订员', 
+                '奶站', 
+                '下单时间' as time,
+                '一级推荐人',
+                '二级推荐人'
+            union all
+            select 
+                o.number, 
+                c.name, 
+                o.phone, 
+                o.address, 
+                ifnull(o.total_amount, ''), 
+                pt.name,
+                op.name,
+                oc.name,
+                ifnull(s.name, ''),
+                o.created_at,
+                ifnull(w.openid, ''),
+                ifnull(w2.openid, '')
+            from orders o
+            join customer c on c.id = o.customer_id
+            join paymenttype pt on pt.id = o.payment_type
+            join orderproducts opd on opd.order_id = o.id
+            join orderproperty op on op.id = o.order_property_id
+            join ordercheckers oc on oc.id = o.order_checker_id
+            left join deliverystations s on s.id = o.delivery_station_id
+            left join wxusers w on w.id = o.wxuser_id
+            left join wxusers w2 on w2.id = w.parent
+            where o.factory_id = " . $factory_id;
+
+        // 从session获取筛选信息
+        $queryData = $request->session()->get('query_order');
+
+        // 收件人
+        if (!empty($queryData['customer'])) {
+            $query .= " and c.name like '%" . $queryData['customer'] . "%'";
+        }
+        // 电话
+        if (!empty($queryData['phone'])) {
+            $query .= " and o.phone like '%" . $queryData['phone'] . "%'";
+        }
+        // 奶站
+        if (!empty($queryData['station'])) {
+            $query .= " and s.id = " . $queryData['station'];
+        }
+        // 订单性质
+        if (!empty($queryData['property'])) {
+            $query .= " and o.order_property_id = " . $queryData['property'];
+        }
+        // 订单编号
+        if (!empty($queryData['number'])) {
+            $query .= " and o.number like '%" . $queryData['number'] . "%'";
+        }
+        // 地址
+        if (!empty($queryData['address'])) {
+            $query .= " and o.address like '%" . $queryData['address'] . "%'";
+        }
+        // 票据号
+        if (!empty($queryData['receipt'])) {
+            $query .= " and o.receipt_number like '%" . $queryData['receipt'] . "%'";
+        }
+        // 征订员
+        if (!empty($queryData['checker'])) {
+            $query .= " and oc.name like '%" . $queryData['checker'] . "%'";
+        }
+        // 订单类型
+        if (!empty($queryData['type'])) {
+            $query .= " and odp.order_type = " . $queryData['type'];
+        }
+        // 支付类型
+        if (!empty($queryData['ptype'])) {
+            $query .= " and o.payment_type = " . $queryData['ptype'];
+        }
+        // 订单状态
+        if (!empty($queryData['status'])) {
+            $query .= " and o.status = " . $queryData['status'];
+        }
+        // 下单日期
+        if (!empty($queryData['start'])) {
+            $query .= " and o.ordered_at >= '" . $queryData['start'] . "'";
+        }
+        if (!empty($queryData['end'])) {
+            $query .= " and o.ordered_at <= '" . $queryData['end'] . "'";
+        }
+
+        $query .= " order by time desc
+            into outfile '" . $filepath . "'
+            fields terminated by ','
+            escaped by '\"'
+            enclosed by '\"'
+            lines terminated by '\n';";
+
+        DB::statement($query);
+
+        return response()->download($filepath)->deleteFileAfterSend(true);
+    }
 }
 

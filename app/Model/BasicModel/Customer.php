@@ -59,25 +59,18 @@ class Customer extends Model
 
     public function getRemainingBottleCountAttribute()
     {
-        $total_remain_count = 0;
-        //get all orders from customer
-        $orders = Order::where('customer_id', $this->id)
-            ->where(function ($query) {
-                $query->where('status', Order::ORDER_PASSED_STATUS);
-                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
-            })->get()->all();
+        $total_remain_count = MilkManDeliveryPlan::wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+            ->whereHas('orderDelivery', function($queryOrder) {
+                $queryOrder->where('customer_id', $this->id);
+                $queryOrder->where(function ($query) {
+                    $query->where('status', Order::ORDER_PASSED_STATUS);
+                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                    $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
+                });
+            })
+            ->sum('delivery_count');
 
-        foreach($orders as $order)
-        {
-            $plans = $order->unfinished_delivery_plans;
-            foreach($plans as $plan)
-            {
-                $total_remain_count+=$plan->delivery_count;
-            }
-        }
-
-        return $total_remain_count;
+        return getEmptyValue($total_remain_count);
     }
 
     public function getHasMilkboxAttribute()

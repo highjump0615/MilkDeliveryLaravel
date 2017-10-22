@@ -510,7 +510,7 @@ class TotalStatisticsCtrl extends Controller
 
             $station = DeliveryStation::findOrFail($station_id);
             $stations[$station_id]['province_name'] = $station->province_name;
-            $stations[$station_id]['city_name'] = $station->city_name;
+            $stations[$station_id]['city_name'] = $station->getCityName();
             $stations[$station_id]['name'] = $station->name;
         }
 

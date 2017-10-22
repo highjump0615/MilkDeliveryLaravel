@@ -60,6 +60,9 @@ Route::post('api/gongchang/dingdan/cancel_order', 'OrderCtrl@cancel_order');
 // 开启订单
 Route::post('api/gongchang/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
 
+// 导出订单
+Route::get('api/order/export', 'OrderCtrl@exportOrderList');
+
 
 //Test
 Route::get('/test', 'WeChatCtrl@test');
