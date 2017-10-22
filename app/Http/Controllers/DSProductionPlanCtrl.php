@@ -457,10 +457,12 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
 
         // 获取时间段
         $strDate = $request->input('date');
-
         if (empty($strDate)) {
             $strDate = getCurDateString();
         }
+
+        // 在session保存日期
+        $request->session()->put('produce_date', $strDate);
 
         $strDateReal = getNextDateString($strDate);
 
@@ -617,10 +619,14 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
     public function SaveforProduce(Request $request){
         $current_factory_id = $this->getCurrentFactoryId(true);
 
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate->add(\DateInterval::createFromDateString('tomorrow'));
+        // 从session获取日期
+        $strDate = $request->session()->get('produce_date');
+        if (empty($strDate)) {
+            return Response::json(null, 400);
+        }
 
-        $currentDate_str = $currentDate->format('Y-m-d');
+        $currentDate_str = getNextDateString($strDate);
+
         $product_id = $request->input('product_id');
         $count = $request->input('count');
         $produce_period = $request->input('produce_period');
@@ -630,9 +636,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
         else{
             $produce_period = strval($produce_period);
-            $produce_period =$produce_period-1;
-            $date = str_replace('-','/',$currentDate_str);
-            $produce_end_date = date('Y-m-d',strtotime($date."+".$produce_period."days"));
+            $produce_period = $produce_period - 1;
+            $produce_end_date = getDateWithOffsetString($produce_period, $currentDate_str);
         }
 
         $dsproductionplans = DSProductionPlan::where('status',DSProductionPlan::DSPRODUCTION_SENT_PLAN)
@@ -871,8 +876,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
      */
     public function saveProducedCount(Request $request) {
 
-        // 在session保存日期
-        $strDate = $request->session()->get('date');
+        // 从session获取日期
+        $strDate = $request->session()->get('produced_date');
         if (empty($strDate)) {
             return Response::json(null, 400);
         }
@@ -913,7 +918,7 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
         }
 
         // 在session保存日期
-        $request->session()->put('date', $deliver_date_str);
+        $request->session()->put('produced_date', $deliver_date_str);
 
         $current_date_str = getPrevDateString($deliver_date_str);
 
