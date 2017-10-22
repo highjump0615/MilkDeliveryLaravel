@@ -56,9 +56,9 @@
 								<td>{{$o->phone}}</td>
 								<td>{{$o->order_type}}</td>
 								<td>{{$o->total_amount}}</td>
-								<td>{{$o->order_checker_name}}</td>
-								<td>{{$o->city_name}}</td>
-								<td>{{$o->district_name}}</td>
+								<td>{{$o->getCheckerName()}}</td>
+								<td>{{$o->getCityName()}}</td>
+								<td>{{$o->getDistrictName()}}</td>
 								<td>{{$o->station_name}}</td>
 								<td>{{$o->milkman['name']}} {{$o->milkman['phone']}}</td>
 								<td>{{$o->ordered_at}}</td>

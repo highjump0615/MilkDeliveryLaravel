@@ -66,9 +66,9 @@
                                         <td class="o_addr align-left">{{$orders[$i]->addresses}}</td>
                                         <td class="o_type">{{$orders[$i]->all_order_types}}</td>
                                         <td class="o_total">{{$orders[$i]->total_amount}}</td>
-                                        <td class="o_checker">{{$orders[$i]->order_checker_name}}</td>
-                                        <td class="o_city">{{$orders[$i]->city_name}}</td>
-                                        <td class="o_street">{{$orders[$i]->district_name}}</td>
+                                        <td class="o_checker">{{$orders[$i]->getCheckerName()}}</td>
+                                        <td class="o_city">{{$orders[$i]->getCityName()}}</td>
+                                        <td class="o_street">{{$orders[$i]->getDistrictName()}}</td>
                                         <td class="o_station">{{$orders[$i]->delivery_station_name}}</td>
                                         <td class="milkman">
                                             @if($orders[$i]->milkman)
@@ -77,7 +77,7 @@
                                         </td>
                                         <td class="o_ordered">{{$orders[$i]->ordered_at}}</td>
                                         <td class="o_paytype">{{$orders[$i]->payment_type_name}}</td>
-                                        <td class="o_property">{{$orders[$i]->order_property_name}}</td>
+                                        <td class="o_property">{{$orders[$i]->getOrderPropertyName()}}</td>
                                         <td>{{$orders[$i]->comment}}</td>
                                     </tr>
                                 @endfor

@@ -42,7 +42,6 @@ class OrderProduct extends Model
         'finished_count',
         'remain_count',
         'remain_amount',
-        'delivery_plans_sent_to_production_plan',
         'start_at_after_delivered'
     ];
 
@@ -62,14 +61,6 @@ class OrderProduct extends Model
             $next_date = $this->start_at;
         }
         return $next_date;
-    }
-
-    public function getDeliveryPlansSentToProductionPlanAttribute()
-    {
-        //delivery_plans_sent_to_production_plan
-        $dps = MilkManDeliveryPlan::where('order_product_id', $this->id)
-            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get();
-        return $dps;
     }
 
     public function product(){

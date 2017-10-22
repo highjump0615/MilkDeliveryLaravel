@@ -234,7 +234,7 @@ class WeChatCtrl extends Controller
                 ->get()->all();
 
             foreach ($orders as $order) {
-                $plans_order = $order->grouped_delivery_plans;
+                $plans_order = $order->getGroupedDeliveryPlans();
                 foreach ($plans_order as $plan) {
                     //
                     // determine bottle count based on status
@@ -1035,7 +1035,7 @@ class WeChatCtrl extends Controller
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->count();
 
         if ($order) {
-            $delivery_plans = $order->grouped_delivery_plans;
+            $delivery_plans = $order->getGroupedDeliveryPlans();
             return view('weixin.dingdanxiangqing', [
                 'order' => $order,
                 'plans' => $delivery_plans,

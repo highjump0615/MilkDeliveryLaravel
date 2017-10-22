@@ -46,7 +46,7 @@
             </div>
             <div class="feed-element col-md-12">
                 <label class="col-md-2">订单性质:</label>
-                <label>{{$order->order_property_name}}</label>
+                <label>{{$order->getOrderPropertyName()}}</label>
             </div>
             <div class="feed-element col-md-12">
                 <label class="control-label col-md-2">收货人:</label>
@@ -74,7 +74,7 @@
             </div>
             <div class="feed-element col-md-12">
                 <label class="control-label col-md-2">征订员:</label>
-                <label>{{$order->order_checker_name}}</label>
+                <label>{{$order->getCheckerName()}}</label>
             </div>
             <div class="feed-element col-md-12">
                 <label class="control-label col-md-2">票据号:</label>
