@@ -2975,7 +2975,8 @@ class OrderCtrl extends Controller
             $query .= " and o.ordered_at <= '" . $queryData['end'] . "'";
         }
 
-        $query .= " order by time desc
+        $query .= " group by o.id 
+            order by time desc
             into outfile '" . $filepath . "'
             fields terminated by ','
             escaped by '\"'
