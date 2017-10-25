@@ -408,7 +408,7 @@ class OrderCtrl extends Controller
             $nCountExtra = $qb->sum('changed_plan_count');
 
             // 删除暂停范围的配送明细
-            $qb->forceDelete();
+            $qb->delete();
 
             // 调整配送明细
             $op->processExtraCount(null, $nCountExtra);
