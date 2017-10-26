@@ -1163,6 +1163,7 @@ class DSDeliveryPlanCtrl extends Controller
     private function getMilkmanDeliveryQuery($stationId, $deliverAt) {
         return MilkManDeliveryPlan::where('station_id', $stationId)
             ->where('deliver_at', $deliverAt)
+            ->whereNotNull('milkman_id')
             ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED]);
     }
