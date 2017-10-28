@@ -42,6 +42,9 @@ use Excel;
 
 class DSDeliveryPlanCtrl extends Controller
 {
+    private $kDateReport = "report_date";
+    private $kDateDeliverManage = "dm_date";
+
     /**
      * 获取配送计划数据
      * @param $deliverDate
@@ -253,7 +256,7 @@ class DSDeliveryPlanCtrl extends Controller
         }
 
         // 在session保存日期
-        $request->session()->put('dm_date', $deliver_date_str);
+        $request->session()->put($this->kDateDeliverManage, $deliver_date_str);
 
         // DSProductionPlan有可能不包括当天配送的所有数据、因为有配送变化量等，于是手工设置
         $planResult = array();
@@ -379,7 +382,7 @@ class DSDeliveryPlanCtrl extends Controller
         $current_station_id = $this->getCurrentStationId();
 
         // 从session获取日期
-        $currentDate_str = $request->session()->get('dm_date');
+        $currentDate_str = $request->session()->get($this->kDateDeliverManage);
         if (empty($currentDate_str)) {
             $currentDate_str = getCurDateString();
         }
@@ -1178,13 +1181,14 @@ class DSDeliveryPlanCtrl extends Controller
         $current_station_id = $this->getCurrentStationId();
         $current_factory_id = $this->getCurrentFactoryId(false);
 
-        $current_date_str = getCurDateString();
-
         // 配送日期，默认是今日
         $deliver_date_str = $request->input('current_date');
-        if($deliver_date_str == ''){
+        if (empty($deliver_date_str)){
             $deliver_date_str = getCurDateString();
         }
+
+        // 在session保存日期
+        $request->session()->put($this->kDateReport, $deliver_date_str);
 
         // 页面信息
         $child = 'peisongfanru';
@@ -1208,7 +1212,6 @@ class DSDeliveryPlanCtrl extends Controller
                 'delivery_info'             =>array(),
                 'milkman'                   =>array(),
                 'deliver_date'              =>$deliver_date_str,
-                'current_date'              =>$current_date_str,
                 'current_milkman'           =>0,
                 'is_todayrefund'            =>false
             ];
@@ -1335,7 +1338,6 @@ class DSDeliveryPlanCtrl extends Controller
             'delivery_info'             =>$delivery_info,
             'milkman'                   =>$milkman,
             'deliver_date'              =>$deliver_date_str,
-            'current_date'              =>$current_date_str,
             'current_milkman'           =>$current_milkman,
             'bottle_types'              =>$bottle_types,
             'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
@@ -1390,10 +1392,13 @@ class DSDeliveryPlanCtrl extends Controller
         $bottle_type = $request->input('bottle_type');
         $count = $request->input('count');
 
+        // 从session获取日期
+        $strDate = $request->session()->get($this->kDateReport);
+
         $bottle_refunds = new MilkmanBottleRefund;
         $bottle_refunds->milkman_id = $current_milkman_id;
         $bottle_refunds->bottle_type = $bottle_type;
-        $bottle_refunds->time = getCurDateString();
+        $bottle_refunds->time = $strDate;
         $bottle_refunds->count = $count;
         $bottle_refunds->save();
 
@@ -1438,7 +1443,8 @@ class DSDeliveryPlanCtrl extends Controller
 
         $nStationId = $this->getCurrentStationId();
 
-        $deliver_date_str = getCurDateString();
+        // 从session获取日期
+        $deliver_date_str = $request->session()->get($this->kDateReport);
 
         $deliveryPlans = [];
 
@@ -1486,6 +1492,11 @@ class DSDeliveryPlanCtrl extends Controller
                 $order->remaining_amount = $order->remaining_amount - $milkmandeliverys->delivered_count * $milkmandeliverys->product_price;
                 $order->save();
 
+                // 如果当天没有配送完，顺延处理
+                if($milkmandeliverys->delivered_count != $milkmandeliverys->changed_plan_count){
+                    $this->undelivered_process($milkmandeliverys);
+                }
+
                 // 计算剩下数量
                 $total_order_counts = MilkManDeliveryPlan::where('order_id',$order_id)
                         ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
@@ -1501,24 +1512,23 @@ class DSDeliveryPlanCtrl extends Controller
                     $order->customer->save();
                 }
 
-                // 如果当天没有配送完，顺延处理
-                if($milkmandeliverys->delivered_count != $milkmandeliverys->changed_plan_count){
-                    $this->undelivered_process($milkmandeliverys);
-                }
-
                 //
                 // 更新库存数据
                 //
                 if (!isset($deliveryPlans[$milkmandeliverys->getProductId()])) {
-                    $deliveryPlans[$milkmandeliverys->getProductId()] = DSDeliveryPlan::getDeliveryPlanGenerated($nStationId, $milkmandeliverys->getProductId(), false, $deliver_date_str);
+                    $deliveryPlans[$milkmandeliverys->getProductId()] = 0;
                 }
 
-                $deliveryPlans[$milkmandeliverys->getProductId()]->remain -= $delivered_count;
+                $deliveryPlans[$milkmandeliverys->getProductId()] += $delivered_count;
             }
         }
 
-        foreach ($deliveryPlans as $dp) {
-            $dp->save();
+        // 更新数据库, 减少剩余数量
+        foreach ($deliveryPlans as $pid=>$dp) {
+            DSDeliveryPlan::where('station_id', $nStationId)
+                ->where('deliver_at', '>=', $deliver_date_str)
+                ->where('product_id', $pid)
+                ->decrement('remain', $dp);
         }
 
         //
@@ -1547,7 +1557,7 @@ class DSDeliveryPlanCtrl extends Controller
             $aryReceiveCount[strval($dfp->order_product->product->id)] += $dfp->delivered_count;
         }
 
-        $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString())
+        $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString($deliver_date_str))
             ->where('station_id', $this->getCurrentStationId())
             ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
             ->get();

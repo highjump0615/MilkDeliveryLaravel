@@ -114,7 +114,7 @@
 										@if($is_todayrefund) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
 									</td>
 									<td class="report"
-										@if($deliver_date == $current_date && !$is_todayrefund)
+										@if (!$is_todayrefund)
 											contenteditable="true"
 											style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"
 										@endif>{{$pro['report']}}</td>
@@ -145,7 +145,7 @@
 										</tr>
 										</thead>
 										<tbody>
-										@if($deliver_date == $current_date && !$is_todayrefund)
+										@if (!$is_todayrefund)
 											@foreach($bottle_types as $bt)
 												<tr id="{{$bt->bottle_type}}">
 													<td>{{\App\Model\FactoryModel\FactoryBottleType::find($bt->bottle_type)->name}}</td>
@@ -165,7 +165,7 @@
 								</div>
 							</div>
 							</div>
-							@if($deliver_date == $current_date && !$is_todayrefund)
+							@if (!$is_todayrefund)
 							<div style="text-align: center;">
 								<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
 							</div>

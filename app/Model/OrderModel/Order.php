@@ -646,14 +646,12 @@ class Order extends Model
         $ota= "";
 
         foreach ($typeCounts as $typeCount) {
-            $ot = $typeCount->order_type;
-
             if (!empty($ota)) {
                 $ota .= ", ";
             }
 
             // 添加类型和数量
-            $ota .= $typeCount->order_type_name . "*" . $typeCount->order_type;
+            $ota .= $typeCount->order_type_name . "*" . $typeCount->count;
         }
 
         return $ota;
