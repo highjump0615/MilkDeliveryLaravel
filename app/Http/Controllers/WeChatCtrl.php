@@ -2230,10 +2230,8 @@ class WeChatCtrl extends Controller
         $factory = Factory::find($factory_id);
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
-        $gap_day = intval($factory->gap_day);
 
-        $start_at_new = $today_date->modify("+" . $gap_day . " days");
-        $start_at_new = $start_at_new->format('Y-m-d');
+        $start_at_new = getNextDateString($order->order_end_date);
 
         $wopids = "";
 
@@ -2243,11 +2241,6 @@ class WeChatCtrl extends Controller
         $total_amount = 0;
         foreach ($order_products as $op) {
 
-            //start_at decision
-            $start_at = $op->start_at;
-            if (strtotime($start_at) < strtotime($start_at_new)) {
-                $start_at = $start_at_new;
-            }
             $wcop = new WechatOrderProduct;
             $wcop->wxuser_id = $wxuser_id;
             $wcop->factory_id = $factory_id;
@@ -2259,7 +2252,7 @@ class WeChatCtrl extends Controller
             $wcop->count_per_day = $op->count_per_day;
             $wcop->custom_order_dates = $op->custom_order_dates;
             $wcop->total_amount = $op->total_amount;
-            $wcop->start_at = $start_at;
+            $wcop->start_at = $start_at_new;
             $wcop->group_id = $group_id;
             $wcop->save();
 

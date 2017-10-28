@@ -276,9 +276,9 @@
             var group_id = $('#group_id').val();
 
             @if(isset($for))
-                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren&&for=xuedan';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&from=queren&for=xuedan';
             @else
-                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&from=queren';
             @endif
         })
 

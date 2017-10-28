@@ -22,7 +22,7 @@
 
     <link href="<?=asset('css/animate.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/style.css?170923') ?>" rel="stylesheet">
-    <link href="<?=asset('css/custom.css?171005') ?>" rel="stylesheet">
+    <link href="<?=asset('css/custom.css?171028') ?>" rel="stylesheet">
 
     @yield('css')
 

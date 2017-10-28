@@ -490,6 +490,10 @@ function initStartDateCalendar() {
  * @returns {Date}
  */
 function getStartDate() {
+    if (gbXudan) {
+        return gDateEnd;
+    }
+
     var able_date = new Date(dateToday);
 
     // 只有新订单才考虑3天后的问题

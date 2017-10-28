@@ -473,3 +473,7 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
 .m-hidden {
     display: none !important;
 }
+
+.div-inline {
+    display: inline-block;
+}
