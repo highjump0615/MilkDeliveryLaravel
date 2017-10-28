@@ -325,7 +325,7 @@
         </div>
 
         {{-- 产品列表 --}}
-        <div>
+        <div class="div-inline">
             <form method="POST" enctype="multipart/form-data" id="product_form">
                 <input type="file"
                        name="input-receipt"
@@ -528,6 +528,13 @@
         var copy_tr_data = $("#first_data").html();
         var gFileImgReceipt;
 
+        var gbXudan = false;
+        // 续单
+        @if (isset($order) && !$is_edit)
+            gbXudan = true;
+            var gDateEnd = new Date("{{getNextDateString($order->order_end_date)}}");
+        @endif
+
         // 上传图片操作
         $('#btn-upload').click(function() {
             $('input[name="input-receipt"]')[0].click();
@@ -585,6 +592,6 @@
 
     </script>
 
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js?171005') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js?171028') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_insert.js?171005') ?>"></script>
 @endsection

@@ -36,7 +36,12 @@
         @endif
         var today = new Date("{{$today}}");
 
-        var gstrCurrentStart = '{{$wop->start_at}}';
+        var gbXudan = false;
+        @if (!empty($for) && $for == "xuedan")
+            gbXudan = true;
+        @endif
+
+        var gstrCurrentStart = new Date("{{$wop->start_at}}");
         var gnDeliveryType = parseInt("{{$wop->delivery_type}}");
         var previous = "{{$previous}}";
 
@@ -46,7 +51,7 @@
 
     <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
     <script src="<?=asset('weixin/js/freeorder_calendar.js')?>"></script>
-    <script src="<?=asset('weixin/js/pages/productinfo.js')?>"></script>
+    <script src="<?=asset('weixin/js/pages/productinfo.js?171028')?>"></script>
     <script src="<?=asset('weixin/js/pages/editproductinfo.js')?>"></script>
     <script src="<?=asset('weixin/js/pages/bianjidingdan.js')?>"></script>
 

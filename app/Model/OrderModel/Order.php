@@ -307,6 +307,10 @@ class Order extends Model
         return $status_name;
     }
 
+    /**
+     * 订单配送结束日期
+     * @return string
+     */
     public function getOrderEndDateAttribute()
     {
         $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();

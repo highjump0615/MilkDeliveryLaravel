@@ -2,6 +2,10 @@
  * Created by Administrator on 3/25/17.
  */
 
+Date.prototype.toISOString = function(){
+    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
+};
+
 var obj = $('#uecontent');
 // 详细内容空间是否存在
 if (obj.length > 0) {
@@ -47,7 +51,7 @@ function check_bottle_count() {
     return false;
 }
 
-var able_date, default_start_date;
+var able_date, gStartDateMin;
 
 function initProductInfo() {
     var swiper = new Swiper('.swiper-container', {
@@ -59,16 +63,27 @@ function initProductInfo() {
     able_date = today;
     able_date.setDate(today.getDate() + gap_day);
 
-    Date.prototype.toISOString = function(){
-        return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
-    };
-
-    //set default day for start at
-    default_start_date = able_date.toISOString();
-
+    //
+    // 设置起送日期
+    //
     var strStartAtId = '#start_at';
-    $(strStartAtId).val(default_start_date);
-    $(strStartAtId).attr('min', default_start_date);
+
+    // 编辑订单时使用已选择好的日期
+    if (typeof gstrCurrentStart !== 'undefined') {
+        $(strStartAtId).val(gstrCurrentStart.toISOString());
+    }
+    else {
+        $(strStartAtId).val(able_date.toISOString());
+    }
+    // 续单时只能选择此日期以后的日期
+    if (typeof gbXudan !== 'undefined' && gbXudan) {
+        $(strStartAtId).attr('min', gstrCurrentStart.toISOString());
+        gStartDateMin = gstrCurrentStart;
+    }
+    else {
+        $(strStartAtId).attr('min', able_date.toISOString());
+        gStartDateMin = able_date;
+    }
 
     dnsel_changed("dnsel_item0");
 }
@@ -182,9 +197,9 @@ function makeFormData() {
         }
 
         var start_time = new Date(start_at);
-        if(start_time < able_date)
+        if(start_time < gStartDateMin)
         {
-            show_warning_msg("选择"+default_start_date+"之后的日期.");
+            show_warning_msg("选择" + gStartDateMin.toISOString() + "之后的日期.");
             return null;
         }
 
