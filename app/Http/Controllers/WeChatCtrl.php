@@ -436,7 +436,7 @@ class WeChatCtrl extends Controller
         }
 
         //Show remaining amount of order and order products for change
-        $order_remain_amount = $order->remaining_amount;
+        $order_remain_amount = $order->remain_order_money;
 
         //left_amount
         $left_amount = $order_remain_amount - $after_changed_amount;
