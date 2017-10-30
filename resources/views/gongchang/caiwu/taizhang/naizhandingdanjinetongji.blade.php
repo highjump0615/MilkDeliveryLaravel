@@ -1,5 +1,34 @@
 @extends('gongchang.layout.master')
+
 @section('css')
+    <style type="text/css">
+        .div-header {
+            display:inline-block;
+            width: 100%;
+            padding: 10px;
+        }
+        .div-header label {
+            line-height: 30px;
+            margin: 0;
+        }
+        .right-btn {
+            margin-right: 10px;
+        }
+        form {
+            padding: 0;
+        }
+        .form-date {
+            margin-left: 50px;
+        }
+        .input-daterange {
+            width: 230px;
+            margin-right: 10px;
+        }
+        .ibox-content {
+            padding-bottom: 0px;
+        }
+    </style>
+
 @endsection
 
 @section('content')
@@ -40,29 +69,45 @@
         </div>
 
         <div class="row white-bg">
-            <div class="ibox float-e-margins">
-                <div class="col-md-6"> 
-                    <label style="padding:10px; font-size:15px; width:100%;">&emsp;奶站订单金额统计：{{$station->name}}</label>
-                </div>
+            <div class="ibox">
+                <div class="div-header">
+                    <label class="pull-left"
+                           style="font-size:15px;"
+                        >&emsp;奶站订单金额统计：{{$station->name}}</label>
 
-                @if ($is_station)
-                <div class="col-md-6"> 
-                    <div class="col-lg-6" style="margin-right: -5px"> 
-                        <a class="btn btn-success" 
-                           href="{{ url('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/xianjinzhuanzhangjiru') }}" 
-                           type="type" style="width:100%;">
-                            查看其他奶站现金转账记录
-                        </a> 
-                    </div> 
-                    <div class="col-md-6"> 
-                        <a class="btn btn-success" 
-                           href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanjiru') }}" 
-                           type="type" style="width:100%; ">
-                            查看奶卡订单转账记录
-                        </a> 
-                    </div> 
-                </div> 
-                @endif
+                    <form class="pull-left form-date" method="get">
+                        <div class="pull-left" id="data_range_select">
+                            <label class="control-label pull-left">日期:&nbsp;&nbsp;</label>
+                            <div class="input-daterange input-group" id="datepicker">
+                                <input name="start_date"
+                                       type="text"
+                                       @if (!empty($start_date)) value="{{$start_date}}" @endif
+                                       class="input-sm form-control"/>
+                                <span class="input-group-addon">至</span>
+                                <input name="end_date"
+                                       type="text"
+                                       @if (!empty($end_date)) value="{{$end_date}}" @endif
+                                       class="input-sm form-control"/>
+                            </div>
+                        </div>
+                        <button type="submit"
+                                data-action="show_selected"
+                                class="btn btn-sm btn-success btn-outline">筛选</button>
+                    </form>
+
+                    @if ($is_station)
+                        <div class="pull-right right-btn">
+                            <a class="btn btn-success btn-sm"
+                               href="{{ url('/naizhan/caiwu/taizhang/qitanaizhanzhuanzhang/xianjinzhuanzhangjiru') }}"
+                               type="type">查看其他奶站现金转账记录</a>
+                        </div>
+                        <div class="pull-right right-btn">
+                            <a class="btn btn-success btn-sm"
+                               href="{{ url('/naizhan/caiwu/taizhang/naikakuanzhuanzhang/dingdanjiru') }}"
+                               type="type">查看奶卡订单转账记录</a>
+                        </div>
+                    @endif
+                </div>
 
                 <div class="ibox-content">
                     <table class="table table-bordered">
@@ -157,115 +202,108 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <div class="feed-element">
-                <div class="col-md-3 col-md-offset-1">
-                    <label class="col-md-4">摘要:</label>
-                    <div class=" col-md-8">
-                        <select id="filter_io" data-placeholder="Choose..." class="chosen-select"
-                                style="width:100%; height:30px;">
-                            <option value="none"></option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_TYPE_IN}}">收款</option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER}}">转出</option>
-                        </select>
+                <div class="feed-element">
+                    <div class="col-md-3 col-md-offset-1">
+                        <label class="col-md-4">摘要:</label>
+                        <div class=" col-md-8">
+                            <select id="filter_io" data-placeholder="Choose..." class="chosen-select"
+                                    style="width:100%; height:30px;">
+                                <option value="none"></option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_TYPE_IN}}">收款</option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OUT_OTHER}}">转出</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-right">
+                        <label class="col-md-3" style="padding-top:5px;">项目:</label>
+                        <div class=" col-md-9">
+                            <select id="filter_kind" data-placeholder="Choose..." class="chosen-select"
+                                    style="width:100%; height:30px;">
+                                <option value="none"></option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION}}">
+                                    本站实收金额
+                                </option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT}}">
+                                    代理商转账
+                                </option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD}}">奶卡转账
+                                </option>
+                                <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION}}">
+                                    其他奶站订单转入
+                                </option>
+                            <!--option value="{{\App\Model\FinanceModel\DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION}}">转出其他奶站订单款</option-->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" data-action="show_selected" class="btn btn-success btn-sm">筛选</button>
                     </div>
                 </div>
-                <div class="col-md-3 text-right">
-                    <label class="col-md-3" style="padding-top:5px;">项目:</label>
-                    <div class=" col-md-9">
-                        <select id="filter_kind" data-placeholder="Choose..." class="chosen-select"
-                                style="width:100%; height:30px;">
-                            <option value="none"></option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_MONEY_STATION}}">
-                                本站实收金额
-                            </option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_WECHAT}}">
-                                代理商转账
-                            </option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_CARD}}">奶卡转账
-                            </option>
-                            <option value="{{\App\Model\FinanceModel\DSCalcBalanceHistory::DSCBH_IN_ORDER_OTHER_STATION}}">
-                                其他奶站订单转入
-                            </option>
-                        <!--option value="{{\App\Model\FinanceModel\DSDeliveryCreditBalanceHistory::DSDCBH_TYPE_OUT_OTHER_STATION}}">转出其他奶站订单款</option-->
-                        </select>
+
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content">
+                        <!--TODO : show transfers-->
+                        <table id="order_table" class="footable table table-bordered" data-page-size="10"  data-limit-navigation="5">
+                            <thead>
+                            <tr>
+                                <th data-sort-ignore="true">摘要</th>
+                                <th data-sort-ignore="true">转入时间</th>
+                                <th data-sort-ignore="true">项目</th>
+                                <th data-sort-ignore="true">金额</th>
+                                <th data-sort-ignore="true">流水号</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @if(isset($calc_histories))
+                                @for($i = 0; $i<count($calc_histories); $i++)
+                                    <tr>
+                                        <td class="o_io"
+                                            data-io="{{$calc_histories[$i]->io_type}}">{{$calc_histories[$i]->io_name}}</td>
+                                        <td class="o_date">{{$calc_histories[$i]->created_at}}</td>
+                                        <td class="o_kind"
+                                            data-kind="{{$calc_histories[$i]->type}}">{{$calc_histories[$i]->type_name}}</td>
+                                        <td>{{$calc_histories[$i]->amount}}</td>
+                                        <td>{{$calc_histories[$i]->receipt_number}}</td>
+                                    </tr>
+                                @endfor
+                            @endif
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+
+                        <table id="filter_table" class="footable table table-bordered" data-page-size="10"  data-limit-navigation="5"
+                               style="display:none;">
+                            <thead>
+                            <tr>
+                                <th data-sort-ignore="true">摘要</th>
+                                <th data-sort-ignore="true">转入时间</th>
+                                <th data-sort-ignore="true">项目</th>
+                                <th data-sort-ignore="true">金额</th>
+                                <th data-sort-ignore="true">流水号</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
-                <div class="form-group col-md-4" id="data_range_select">
-                    <label class="col-sm-2 control-label" style="padding-top:5px;">日期:</label>
-                    <div class="input-daterange input-group col-md-8" id="datepicker">
-                        <input id="filter_start_date" type="text" class="input-sm form-control"/>
-                        <span class="input-group-addon">至</span>
-                        <input id="filter_end_date" type="text" class="input-sm form-control"/>
-                    </div>
-                </div>
-                <div class="col-md-1">
-                    <button type="button" data-action="show_selected" class="btn btn-success btn-md">筛选</button>
-                </div>
             </div>
-
-            <div class="ibox float-e-margins">
-                <div class="ibox-content">
-                    <!--TODO : show transfers-->
-                    <table id="order_table" class="footable table table-bordered" data-page-size="10"  data-limit-navigation="5">
-                        <thead>
-                        <tr>
-                            <th data-sort-ignore="true">摘要</th>
-                            <th data-sort-ignore="true">转入时间</th>
-                            <th data-sort-ignore="true">项目</th>
-                            <th data-sort-ignore="true">金额</th>
-                            <th data-sort-ignore="true">流水号</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @if(isset($calc_histories))
-                            @for($i = 0; $i<count($calc_histories); $i++)
-                                <tr>
-                                    <td class="o_io"
-                                        data-io="{{$calc_histories[$i]->io_type}}">{{$calc_histories[$i]->io_name}}</td>
-                                    <td class="o_date">{{$calc_histories[$i]->created_at}}</td>
-                                    <td class="o_kind"
-                                        data-kind="{{$calc_histories[$i]->type}}">{{$calc_histories[$i]->type_name}}</td>
-                                    <td>{{$calc_histories[$i]->amount}}</td>
-                                    <td>{{$calc_histories[$i]->receipt_number}}</td>
-                                </tr>
-                            @endfor
-                        @endif
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="5">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
-                    </table>
-
-                    <table id="filter_table" class="footable table table-bordered" data-page-size="10"  data-limit-navigation="5"
-                           style="display:none;">
-                        <thead>
-                        <tr>
-                            <th data-sort-ignore="true">摘要</th>
-                            <th data-sort-ignore="true">转入时间</th>
-                            <th data-sort-ignore="true">项目</th>
-                            <th data-sort-ignore="true">金额</th>
-                            <th data-sort-ignore="true">流水号</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="5">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
         </div>
     </div>
     </div>
@@ -293,9 +331,6 @@
             //get all selection
             var f_io = $('#filter_io').val();
             var f_kind = $('#filter_kind').val();
-
-            var f_start_date = $('#filter_start_date').val() + ' 00:00';
-            var f_end_date = $('#filter_end_date').val() + ' 24:00';
 
             //show only rows in filtered table that contains the above field value
             var filter_rows = [];
@@ -341,43 +376,6 @@
                     } else {
                         tr.attr("data-show-1", "0");
                         tr.attr("data-show-2", "0");
-                    }
-                }
-
-                if ((f_start_date == "" && f_end_date == "")) {
-                    tr.attr("data-show-3", "1");
-                } else if (f_start_date == "" && f_end_date != "") {
-
-                    var f2 = new Date(f_end_date);
-                    var oo = new Date(o_date);
-                    if (oo <= f2) {
-                        tr.attr("data-show-3", "1");
-                    } else {
-                        tr.attr("data-show-3", "0");
-                    }
-
-                } else if (f_start_date != "" && f_end_date == "") {
-
-                    var f1 = new Date(f_start_date);
-                    var oo = new Date(o_date);
-                    if (oo >= f1) {
-                        tr.attr("data-show-3", "1");
-                    } else {
-                        tr.attr("data-show-3", "0");
-                    }
-                } else {
-                    //f_start_date, f_end_date, o_date
-                    var f1 = new Date(f_start_date);
-                    var f2 = new Date(f_end_date);
-                    var oo = new Date(o_date);
-                    if (f1 <= f2 && f1 <= oo && oo <= f2) {
-                        tr.attr("data-show-3", "1");
-
-                    } else if (f1 >= f2 && f1 >= oo && oo >= f2) {
-                        tr.attr("data-show-3", "1");
-
-                    } else {
-                        tr.attr("data-show-3", "0");
                     }
                 }
 

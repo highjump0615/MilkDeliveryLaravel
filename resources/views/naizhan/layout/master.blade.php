@@ -14,7 +14,7 @@
     <link href="<?=asset('css/plugins/datepicker/datepicker3.css')?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/daterangepicker/daterangepicker-bs3.css')?>" rel="stylesheet">
 
-    <link href="<?=asset('css/plugins/added/switchery.css') ?>" rel="stylesheet">
+    <link href="<?=asset('plugins/switchery/switchery.min.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/plugins/footable/footable.core.css') ?>" rel="stylesheet">
 
     {{--<i-check box css>--}}
@@ -22,7 +22,7 @@
 
     <link href="<?=asset('css/animate.css') ?>" rel="stylesheet">
     <link href="<?=asset('css/style.css?170923') ?>" rel="stylesheet">
-    <link href="<?=asset('css/custom.css') ?>" rel="stylesheet">
+    <link href="<?=asset('css/custom.css?171028') ?>" rel="stylesheet">
 
     @yield('css')
 
@@ -40,8 +40,7 @@
 <script src="<?=asset('js/plugins/pace/pace.min.js') ?>"></script>
 
 <!-- Switchery -->
-<!--   <script src="js/plugins/switchery/switchery.js"></script>-->
-<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
+<script src="<?=asset('plugins/switchery/switchery.min.js') ?>"></script>
 
 <!-- Date range picker -->
 <script src="<?=asset('js/plugins/daterangepicker/daterangepicker.js') ?>"></script>

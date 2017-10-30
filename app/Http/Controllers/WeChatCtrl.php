@@ -46,7 +46,8 @@ class WeChatCtrl extends Controller
     private function getAddress($factory = null) {
         $address = session('address');
         if (empty($address) && !empty($factory)) {
-            $address = $factory->first_active_address;
+//            $address = $factory->first_active_address;
+            $address = "内蒙古 呼和浩特市";
             session(['address' => $address]);
         }
 
@@ -140,6 +141,11 @@ class WeChatCtrl extends Controller
         }
     }
 
+    /**
+     * 设置首页的地区
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function set_session_address(Request $request)
     {
         $province = $request->input('province');
@@ -228,7 +234,7 @@ class WeChatCtrl extends Controller
                 ->get()->all();
 
             foreach ($orders as $order) {
-                $plans_order = $order->grouped_delivery_plans;
+                $plans_order = $order->getGroupedDeliveryPlans();
                 foreach ($plans_order as $plan) {
                     //
                     // determine bottle count based on status
@@ -430,7 +436,7 @@ class WeChatCtrl extends Controller
         }
 
         //Show remaining amount of order and order products for change
-        $order_remain_amount = $order->remaining_amount;
+        $order_remain_amount = $order->remain_order_money;
 
         //left_amount
         $left_amount = $order_remain_amount - $after_changed_amount;
@@ -845,6 +851,7 @@ class WeChatCtrl extends Controller
                     null,
                     null,
                     null,
+                    null,
                     $total_amount,
                     null,
                     null,
@@ -1028,7 +1035,7 @@ class WeChatCtrl extends Controller
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->count();
 
         if ($order) {
-            $delivery_plans = $order->grouped_delivery_plans;
+            $delivery_plans = $order->getGroupedDeliveryPlans();
             return view('weixin.dingdanxiangqing', [
                 'order' => $order,
                 'plans' => $delivery_plans,
@@ -1261,6 +1268,11 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+    /**
+     * 处理支付失败
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function zhifushibai(Request $request)
     {
         if ($request->has('order')) {
@@ -1341,6 +1353,11 @@ class WeChatCtrl extends Controller
 
     }
 
+    /**
+     * 打开填写收货地址页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function dizhitianxie(Request $request)
     {
         $factory_id = $this->getCurrentFactoryIdW($request);
@@ -1371,58 +1388,83 @@ class WeChatCtrl extends Controller
             ->where('is_active', 1)
             ->get();
 
-        $ret = array();
+        $provinces = array();
+        $cities = array();
+        $districts = array();
+        $streets = array();
+        $villages = array();
 
         foreach ($addr as $a) {
-            if ($a->level == 1) {
-                $ret[86][$a->id] = $a->name;
-            } else {
-                $ret[$a->parent_id][$a->id] = $a->name;
+            $strParentId = strval($a->parent_id);
+            $addrValue = [
+                "text" => $a->name,
+                "value" => strval($a->id),
+            ];
+
+            if ($a->level == Address::LEVEL_PROVINCE) {
+                $provinces[] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_CITY) {
+                $cities[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_DISTRICT) {
+                $districts[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_STREET) {
+                $streets[$strParentId][] = $addrValue;
+            }
+            else if ($a->level == Address::LEVEL_VILLAGE) {
+                $villages[$strParentId][] = $addrValue;
             }
         }
 
-        $c_address = str_replace(' ', '/', $c_address);
+        // 返回内容
+        $aryData = [
+            'wxuser_id' => $wxuser_id,
+            'address_id' => $address_id,
+            'name' => $c_name,
+            'phone' => $c_phone,
+            'address' => $c_address,
+            'sub_address' => $c_sub_address,
+            'primary' => $c_primary,
+
+            // 地址列表
+            'provinces' => $provinces,
+            'cities' => $cities,
+            'districts' => $districts,
+            'streets' => $streets,
+            'villages' => $villages,
+        ];
 
         if ($request->has('order') and $request->has('type')) {
             $order = $request->input('order');
             $type = $request->input('type');
-            return view('weixin.dizhitianxie', [
-                'wxuser_id' => $wxuser_id,
-                'address_id' => $address_id,
-                'address_list' => $ret,
-                'name' => $c_name,
-                'phone' => $c_phone,
-                'address' => $c_address,
-                'sub_address' => $c_sub_address,
-                'primary' => $c_primary,
+
+            $aryData = array_merge($aryData, [
                 'order' => $order,
                 'type' => $type,
             ]);
-        } else {
-            return view('weixin.dizhitianxie', [
-                'wxuser_id' => $wxuser_id,
-                'address_id' => $address_id,
-                'address_list' => $ret,
-                'name' => $c_name,
-                'phone' => $c_phone,
-                'address' => $c_address,
-                'sub_address' => $c_sub_address,
-                'primary' => $c_primary,
-            ]);
         }
 
+        return view('weixin.dizhitianxie', $aryData);
     }
 
+    /**
+     * 填写地址提交
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function addOrUpdateAddress(Request $request)
     {
         $wxuser_id = $request->input('wxuser_id');
         $name = $request->input('name');
         $phone = $request->input('phone');
-        $address = $request->input('address');
+        $area = $request->input('area');
+        $street = $request->input('street');
         $sub_address = $request->input('sub_address');
         $primary = $request->input('primary');
 
-        $address = str_replace('/', ' ', $address);
+        $address = $area . " " . $street;
 
         if ($primary) {
             WechatAddress::where('wxuser_id', $wxuser_id)->update(['primary' => 0]);
@@ -2045,27 +2087,28 @@ class WeChatCtrl extends Controller
         // 决定奶站和配送员
         //
         $station = null;
+        $station_id = null;
+
+        $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
 
-        if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA) {
-            return response()->json(['status' => 'fail', 'message' => '该地区没有覆盖可配送的范围.']);
-        } else if ($station_milkman == OrderCtrl::NOT_EXIST_STATION) {
-            return response()->json(['status' => 'fail', 'message' => '没有奶站.']);
-        } else if ($station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
-            return response()->json(['status' => 'fail', 'message' => '没有递送人.']);
-        }
-
         // 设置客户信息
-        $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
         $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factory_id);
-
-        $customer->station_id = $station_milkman[0];
-        $customer->milkman_id = $station_milkman[1];
-
         $customer->name = $addr_obj->name;
+
+        if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA ||
+            $station_milkman == OrderCtrl::NOT_EXIST_STATION ||
+            $station_milkman == OrderCtrl::NOT_EXIST_MILKMAN) {
+        }
+        else {
+            $customer->station_id = $station_milkman[0];
+            $customer->milkman_id = $station_milkman[1];
+        }
         $customer->save();
 
-        $customer_id = $customer->id;
+        if (!empty($station)) {
+            $station_id = $station->id;
+        }
 
         // OrderProducts
         $aryProductId = [];
@@ -2097,9 +2140,9 @@ class WeChatCtrl extends Controller
             $total_amount += $wop->total_amount;
         }
 
-        $station_id = $customer->station_id;
-
-        $order_checker = OrderCheckers::where('station_id', $station_id)->where('is_active', 1)->first();
+        $order_checker = OrderCheckers::where('station_id', $station_id)
+            ->where('is_active', 1)
+            ->first();
 
         //start at: wechat order product's first deliver at
         $start_at = $wechat_user->order_start_at($group_id);
@@ -2109,7 +2152,8 @@ class WeChatCtrl extends Controller
             $factory_id,
             $station_id,
             null,
-            $customer_id,
+            $customer->id,
+            $wxuser_id,
             $addr_obj->phone,
             $strAddress,
             OrderProperty::ORDER_PROPERTY_NEW_ORDER,
@@ -2122,7 +2166,7 @@ class WeChatCtrl extends Controller
             $total_amount,
             Order::ORDER_DELIVERY_TIME_MORNING,
             $start_at,
-            ($customer->has_milkbox) ? 1 : 0,
+            (!empty($customer) && $customer->has_milkbox) ? 1 : 0,
             PaymentType::PAYMENT_TYPE_WECHAT,
             0,
             null,
@@ -2142,7 +2186,7 @@ class WeChatCtrl extends Controller
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
-        $notification->sendToWechatNotification($customer_id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
+        $notification->sendToWechatNotification($customer->id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
         //if payment fails, delete order
         return response()->json(['status' => 'success', 'order_id' => $order->id]);
@@ -2186,10 +2230,8 @@ class WeChatCtrl extends Controller
         $factory = Factory::find($factory_id);
         $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
         $today = $today_date->format('Y-m-d');
-        $gap_day = intval($factory->gap_day);
 
-        $start_at_new = $today_date->modify("+" . $gap_day . " days");
-        $start_at_new = $start_at_new->format('Y-m-d');
+        $start_at_new = getNextDateString($order->order_end_date);
 
         $wopids = "";
 
@@ -2199,11 +2241,6 @@ class WeChatCtrl extends Controller
         $total_amount = 0;
         foreach ($order_products as $op) {
 
-            //start_at decision
-            $start_at = $op->start_at;
-            if (strtotime($start_at) < strtotime($start_at_new)) {
-                $start_at = $start_at_new;
-            }
             $wcop = new WechatOrderProduct;
             $wcop->wxuser_id = $wxuser_id;
             $wcop->factory_id = $factory_id;
@@ -2215,7 +2252,7 @@ class WeChatCtrl extends Controller
             $wcop->count_per_day = $op->count_per_day;
             $wcop->custom_order_dates = $op->custom_order_dates;
             $wcop->total_amount = $op->total_amount;
-            $wcop->start_at = $start_at;
+            $wcop->start_at = $start_at_new;
             $wcop->group_id = $group_id;
             $wcop->save();
 
@@ -2591,29 +2628,11 @@ class WeChatCtrl extends Controller
     private function getQrCode(Request $request, $factory, $user, &$accessToken) {
         $client = new Client();
 
-        $dateNow = new DateTime("now");
-
         //
         // 获取access token
         //
-        $accessToken = $request->session()->get('access_token');
-        $tokenTimeout = $request->session()->get('timeout_token');
-        if (empty($accessToken) || $tokenTimeout < $dateNow) {
-            $strUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential"
-                . "&appid=" . $factory->app_id
-                . "&secret=" . $factory->app_secret;
-
-            $res = $client->request('GET', $strUrl)->getBody();
-            $jsonRes = json_decode($res);
-
-            $accessToken = $jsonRes->access_token;
-
-            // 写入到session
-            $request->session()->put('access_token', $accessToken);
-
-            $dateNow->add(new \DateInterval("PT7200S"));
-            $request->session()->put('timeout_token', $dateNow);
-        }
+        $wctrl = WechatesCtrl::withFactory($factory);
+        $accessToken = $wctrl->accessToken();
 
         //
         // 获取二维码
@@ -2668,23 +2687,26 @@ class WeChatCtrl extends Controller
         // 获取jsapi_ticket
         //
         $dateNow = new DateTime("now");
+        $dateExpire = new DateTime($factory->access_token_expire_at);
 
-        $strTicketJs = $request->session()->get('ticket_jsapi');
-        $ticketTimeout = $request->session()->get('timeout_ticket');
-        if (empty($strTicketJs) || $ticketTimeout < $dateNow) {
+        // 从数据库获取
+        if (!empty($factory->ticket_api) && ($dateExpire > $dateNow)) {
+            $strTicketJs = $factory->ticket_api;
+        }
+        else {
             $client = new Client();
 
             $strUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" . $strToken . "&type=jsapi";
             $res = $client->request('GET', $strUrl)->getBody();
-            $jsonRes = json_decode($res);
+            $jsonRes = json_decode($res, true);
 
-            $strTicketJs = $jsonRes->ticket;
+            $strTicketJs = !empty($jsonRes['ticket']) ? $jsonRes['ticket'] : '';
 
-            // 写入到session
-            $request->session()->put('ticket_jsapi', $strTicketJs);
-
-            $dateNow->add(new \DateInterval("PT7200S"));
-            $request->session()->put('timeout_ticket', $dateNow);
+            if (!empty($strTicketJs)) {
+                // 保存到数据库
+                $factory->ticket_api = $strTicketJs;
+                $factory->save();
+            }
         }
 
         // 签名

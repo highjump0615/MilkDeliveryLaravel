@@ -82,7 +82,8 @@
     <td>
         <div class="input-group date single_date">
             <input required type="text" class="form-control start_at" name="start_at[]"
-                   value="@if (isset($order_product)) {{$order_product->start_at}} @endif" />
+                   @if (isset($order) && !$is_edit) value="{{$order->order_end_date}}"
+                   @elseif (isset($order_product)) value="{{$order_product->start_at}}" @endif />
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
         </div>
     </td>

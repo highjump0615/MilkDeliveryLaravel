@@ -71,7 +71,7 @@
                            class="btn btn-success col-md-4" type="button">订单录入</a>
                     </div>
                     <div class="col-md-3 col-md-offset-5 button-div">
-                        <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
+                        <a href="{{url('/api/order/export')}}" class="btn btn-success btn-outline">导出</a>
                         <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
                         <button class="btn btn-success" type="button" data-action="show_selected">筛选</button>
                     </div>
@@ -115,8 +115,8 @@
                                         <td class="o_ordered">{{$orders[$i]->ordered_at}}</td>
                                         <td class="o_end">{{$orders[$i]->order_end_date}}</td>
                                         <td class="o_paytype">{{$orders[$i]->payment_type_name}}</td>
-                                        <td class="o_property">{{$orders[$i]->order_property_name}}</td>
-                                        <td class="o_checker">{{$orders[$i]->order_checker_name}}</td>
+                                        <td class="o_property">{{$orders[$i]->getOrderPropertyName()}}</td>
+                                        <td class="o_checker">{{$orders[$i]->getCheckerName()}}</td>
                                         <td class="o_station">{{$orders[$i]->delivery_station_name}}</td>
                                         <td class="milkman">
                                             @if($orders[$i]->milkman)

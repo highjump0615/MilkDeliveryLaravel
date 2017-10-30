@@ -1,9 +1,17 @@
 @extends('gongchang.layout.master')
+
 @section('css')
 	<link href="<?=asset('css/pages/gongchang/floatingtop.css') ?>" rel="stylesheet">
 	<link href="<?=asset('css/pages/gongchang/naizhanjihuashenhe.css') ?>" rel="stylesheet">
 	<link href="<?=asset('css/pages/gongchang/topfilterbar.css') ?>" rel="stylesheet">
+
+	<style type="text/css">
+		#total_produce tbody tr td:nth-child(6) {
+			padding: 1px;
+		}
+	</style>
 @endsection
+
 @section('content')
 	@include('gongchang.theme.sidebar')
 	 <div id="page-wrapper" class="gray-bg dashbard-1">

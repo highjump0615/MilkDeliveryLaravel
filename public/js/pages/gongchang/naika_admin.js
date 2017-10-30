@@ -108,7 +108,7 @@ function getCardInfo() {
 }
 
 $(document).ready(function () {
-    // 显示领用modal事件 
+    // 显示领用modal事件
     $('#modal-form').on('hidden.bs.modal', function () {
         hide_alert();
     });

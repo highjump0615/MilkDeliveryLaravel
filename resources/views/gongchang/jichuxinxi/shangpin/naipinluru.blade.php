@@ -252,5 +252,5 @@
 
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?170830')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_show.js?170830')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?170830')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?170930')?>"></script>
 @endsection	

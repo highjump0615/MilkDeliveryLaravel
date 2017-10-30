@@ -38,6 +38,7 @@ class FactoryStatistics extends Controller
      */
     public function getBaseData(Request $request) {
         $current_factory_id = $this->getCurrentFactoryId(true);
+        $factory = Factory::find($current_factory_id);
 
         $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
         $currentDate_str = $currentDate->format('Y-m-d');
@@ -49,7 +50,7 @@ class FactoryStatistics extends Controller
             ->get();
 
         // 参数
-        $station_name = $request->input('station_name');
+        $stationId = $request->input('station');
         $area_name = $request->input('area_name');
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
@@ -63,10 +64,11 @@ class FactoryStatistics extends Controller
 
         return [
             'address' => $address,
-            'station_name' => $station_name,
+            'station_id' => $stationId,
             'area_name' => $area_name,
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'station_names' => $factory->active_stations,
         ];
     }
 
@@ -90,8 +92,12 @@ class FactoryStatistics extends Controller
             ->where('status',Order::ORDER_FINISHED_STATUS)
             ->where('factory_id',$current_factory_id)
             ->whereHas('deliveryStation', function($query) use ($aryBaseData) {
-                $query->where('name', 'LIKE', '%' . $aryBaseData['station_name'] . '%');
-                $query->where('address', 'LIKE', '%' . $aryBaseData['area_name'] . '%');
+                if (!empty($aryBaseData['station_id'])) {
+                    $query->where('id', $aryBaseData['station_id']);
+                }
+                if (!empty($aryBaseData['area_name'])) {
+                    $query->where('address', 'LIKE', '%' . $aryBaseData['area_name'] . '%');
+                }
             })
             ->wherebetween('ordered_at',[$start_date,$end_date])
             ->where('is_deleted',0)
@@ -156,12 +162,6 @@ class FactoryStatistics extends Controller
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function showNaipinpeisongtongji(Request $request){
-        // 参数
-        $station_name = $request->input('station_name');
-        $area_name = $request->input('area_name');
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-
         $current_factory_id = $this->getCurrentFactoryId(true);
 
         $child = 'naipinpeisongtongji';
@@ -172,21 +172,13 @@ class FactoryStatistics extends Controller
         //
         // 初始化参数
         //
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = getCurDateString();
-        $currentYear_str = $currentDate->format('Y-01-01');
+        $aryBaseData = $this->getBaseData($request);
 
-        if($start_date == null){
-            $start_date = $currentYear_str;
-        }
-        if($end_date == null){
-            $end_date = $currentDate_str;
-        }
-
-        $address = Address::where('level',1)
-            ->where('factory_id',$current_factory_id)
-            ->where('is_deleted',0)
-            ->get();
+        // 参数
+        $stationId = $aryBaseData['station_id'];
+        $area_name = $aryBaseData['area_name'];
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
 
         $product_info = Product::where('factory_id',$current_factory_id)
             ->where('is_deleted',0)
@@ -197,8 +189,8 @@ class FactoryStatistics extends Controller
             ->where('ds.factory_id', $current_factory_id);
 
         // 奶站名称筛选
-        if (!empty($station_name)) {
-            $queryBase->where('ds.name','LIKE','%'.$station_name.'%');
+        if (!empty($stationId)) {
+            $queryBase->where('ds.id', $stationId);
         }
         // 地区名称筛选
         if (!empty($area_name)) {
@@ -292,7 +284,7 @@ class FactoryStatistics extends Controller
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '奶品配送统计', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.tongjifenxi.naipinpeisongtongji', [
+        return view('gongchang.tongjifenxi.naipinpeisongtongji', array_merge($aryBaseData, [
             // 页面信息
             'pages'         => $pages,
             'child'         => $child,
@@ -301,13 +293,8 @@ class FactoryStatistics extends Controller
 
             // 数据
             'stations'      => $stations,
-            'start_date'    =>$start_date,
-            'end_date'      =>$end_date,
-            'station_name'  =>$station_name,
-            'area_name'     =>$area_name,
-            'address'       =>$address,
             'products'      =>$product_info,
-        ]);
+        ]));
     }
 
 
@@ -320,37 +307,34 @@ class FactoryStatistics extends Controller
         $current_page = 'kehuxingweitongji';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        $addr = Address::where('level',1)->get();
-        $current_factory_id = $this->getCurrentFactoryId(true);
-
-        $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
-        $date_start = $date_start->format('Y-m-d');
-        $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $date_end = $date_end->format('Y-m-d');
+        //
+        // 初始化参数
+        //
+        $aryBaseData = $this->getBaseData($request);
 
         // 参数
-        $station_name = $request->input('station_name');
-        $area_name = $request->input('area_name');
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
+        $stationId = $aryBaseData['station_id'];
+        $area_name = $aryBaseData['area_name'];
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
 
-        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)
-            ->where('name','LIKE','%'.$station_name.'%')
-            ->where('address','LIKE','%'.$area_name.'%')
-            ->get();
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
-        if($start_date == ''){
-            $start_date = $date_start;
+        $queryBase = DeliveryStation::where('factory_id',$current_factory_id);
+        if (!empty($stationId)) {
+            $queryBase->where('id', $stationId);
         }
-        if($end_date == ''){
-            $end_date = $date_end;
+        if (!empty($area_name)) {
+            $queryBase->where('address', $area_name);
         }
+
+        $filtered_stations = $queryBase->get();
 
         $stations = array(); //result station array
 
-        $user = Auth::guard('gongchang')->user();
-        $all_stations = DeliveryStation::where('factory_id', $user->factory_id)->where('is_deleted', 0)->get();
-
+        $all_stations = DeliveryStation::where('factory_id', $current_factory_id)
+            ->where('is_deleted', 0)
+            ->get();
 
         foreach($all_stations as $s) {
             $stations[$s->id]['province_name'] = $s->province_name;
@@ -619,18 +603,14 @@ class FactoryStatistics extends Controller
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户行为统计', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.tongjifenxi.kehuxingweitongji', [
+        return view('gongchang.tongjifenxi.kehuxingweitongji', array_merge($aryBaseData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'address'=>$addr,
+
             'stations'=>$result,
-            'station_name'=>$station_name,
-            'area_name'=>$area_name,
-            'start_date'=>$start_date,
-            'end_date'=>$end_date,
-        ]);
+        ]));
     }
 
     /* 奶厂 / 客户订单修改统计 */
@@ -639,33 +619,29 @@ class FactoryStatistics extends Controller
         $parent = 'tongjifenxi';
         $current_page = 'kehudingdanxiugui';
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
+
         $current_factory_id = $this->getCurrentFactoryId(true);
 
-        $addr = Address::where('level',1)->get();
-
-        $date_start = new DateTime('first day of this month',new DateTimeZone('Asia/Shanghai'));
-        $date_start = $date_start->format('Y-m-d');
-        $date_end = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $date_end = $date_end->format('Y-m-d');
+        //
+        // 初始化参数
+        //
+        $aryBaseData = $this->getBaseData($request);
 
         // 参数
-        $station_name = $request->input('station_name');
-        $area_name = $request->input('area_name');
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
+        $stationId = $aryBaseData['station_id'];
+        $area_name = $aryBaseData['area_name'];
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
 
-        $filtered_stations = DeliveryStation::where('factory_id',$current_factory_id)
-            ->where('name','LIKE','%'.$station_name.'%')
-            ->where('address','LIKE','%'.$area_name.'%')
-            ->get();
-
-        if($start_date == ''){
-            $start_date = $date_start;
+        $queryBase = DeliveryStation::where('factory_id',$current_factory_id);
+        if (!empty($stationId)) {
+            $queryBase->where('id', $stationId);
         }
-        if($end_date == ''){
-            $end_date = $date_end;
+        if (!empty($area_name)) {
+            $queryBase->where('address', $area_name);
         }
 
+        $filtered_stations = $queryBase->get();
 
         $res = DB::select(DB::raw(
             'select o.station_id as station_id, count(*) as count 
@@ -828,7 +804,7 @@ class FactoryStatistics extends Controller
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '客户订单修改统计', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.tongjifenxi.kehudingdanxiugui', [
+        return view('gongchang.tongjifenxi.kehudingdanxiugui', array_merge($aryBaseData, [
             // 菜单数据
             'pages'             => $pages,
             'child'             => $child,
@@ -837,12 +813,7 @@ class FactoryStatistics extends Controller
 
             // 数据
             'stations'          => $result,
-            'address'           => $addr,
-            'station_name'      => $station_name,
-            'area_name'         => $area_name,
-            'start_date'        => $start_date,
-            'end_date'          => $end_date,
-        ]);
+        ]));
     }
 
     /**
@@ -854,29 +825,21 @@ class FactoryStatistics extends Controller
         $child = 'dingdanshengyuliangtongji';
         $parent = 'tongjifenxi';
         $current_page = 'dingdanshengyuliangtongji';
-
-        $station_name = $request->input('station_name');
-        $area_name = $request->input('area_name');
-
-        //
-        // 初始化日期范围， 查询该日期以前的数据
-        //
-        $end_date = $request->input('end_date');
-
-        $current_factory_id = $this->getCurrentFactoryId(true);
-        $currentDate_str = getCurDateString();
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
-        if ($end_date == null){
-            $end_date = $currentDate_str;
-        }
+        //
+        // 初始化参数
+        //
+        $aryBaseData = $this->getBaseData($request);
+
+        // 参数
+        $stationId = $aryBaseData['station_id'];
+        $area_name = $aryBaseData['area_name'];
+        $end_date = $aryBaseData['end_date'];
+
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $count = 0;
-        // 获取地址
-        $address = Address::where('level',1)
-            ->where('factory_id',$current_factory_id)
-            ->where('is_deleted',0)
-            ->get();
 
         // 获取奶品
         $product_info = Product::where('factory_id',$current_factory_id)
@@ -893,9 +856,9 @@ class FactoryStatistics extends Controller
             ->where('ds.factory_id', $current_factory_id);
 
         // 奶站名称筛选
-        if (!empty($station_name)) {
-            $queryOrderProduct->where('ds.name','LIKE','%'.$station_name.'%');
-            $queryBase->where('ds.name','LIKE','%'.$station_name.'%');
+        if (!empty($stationId)) {
+            $queryOrderProduct->where('ds.id', $stationId);
+            $queryBase->where('ds.id', $stationId);
         }
         // 地区名称筛选
         if (!empty($area_name)) {
@@ -965,17 +928,22 @@ class FactoryStatistics extends Controller
             ->groupBy('station_id');
 
         foreach ($queryDeliveryPlan as $nStId=>$byStation){
+
             //
             // 根据月单、季单、半年单
             //
             $byType = $byStation->groupBy('order_type');
             foreach ($byType as $nTypeId=>$countPlans) {
+
                 //
                 // 获取每个奶品的数量
                 //
                 $countsByProduct = $countPlans->groupBy('product_id');
                 foreach ($countsByProduct as $nProductId=>$countsProduct) {
                     // 剩余数量
+                    if (empty($stations[$nStId][1][$nTypeId][$nProductId][0])) {
+                        $stations[$nStId][1][$nTypeId][$nProductId][0] = 0;
+                    }
                     $stations[$nStId][1][$nTypeId][$nProductId][1] = $stations[$nStId][1][$nTypeId][$nProductId][0] - $countsProduct->sum('dcount');
                 }
 
@@ -986,7 +954,7 @@ class FactoryStatistics extends Controller
             }
         }
 
-        return view('gongchang.tongjifenxi.dingdanshengyuliangtongji', [
+        return view('gongchang.tongjifenxi.dingdanshengyuliangtongji', array_merge($aryBaseData, [
             // 页面信息
             'pages'         => $pages,
             'child'         => $child,
@@ -996,11 +964,7 @@ class FactoryStatistics extends Controller
             // 数据
             'products'      =>$product_info,
             'stations'      => $stations,
-            'end_date'      =>$end_date,
-            'station_name'  =>$station_name,
-            'area_name'     =>$area_name,
-            'address'       =>$address,
-        ]);
+        ]));
     }
 
     /* 奶厂 / 订单类型统计 */
@@ -1008,30 +972,39 @@ class FactoryStatistics extends Controller
         $child = 'dingdanleixingtongji';
         $parent = 'tongjifenxi';
         $current_page = 'dingdanleixingtongji';
-        $station_name = $request->input('station_name');
-        $area_name = $request->input('area_name');
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-        $current_factory_id = Auth::guard('gongchang')->user()->factory_id;
-        $currentDate = new DateTime("now",new DateTimeZone('Asia/Shanghai'));
-        $currentDate_str = $currentDate->format('Y-m-d');
-        $startDate_str = $currentDate->format('Y-01-01');
-        if($start_date == null){
-            $start_date = $startDate_str;
-        }
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
-        if($end_date == null){
-            $end_date = $currentDate_str;
-        }
-        if($station_name == null)
-            $station_name = "";
+
+        //
+        // 初始化参数
+        //
+        $aryBaseData = $this->getBaseData($request);
+
+        // 参数
+        $stationId = $aryBaseData['station_id'];
+        $area_name = $aryBaseData['area_name'];
+        $start_date = $aryBaseData['start_date'];
+        $end_date = $aryBaseData['end_date'];
+
+        $current_factory_id = $this->getCurrentFactoryId(true);
 
         $count = 0;
-        $address = Address::where('level',1)->where('factory_id',$current_factory_id)->where('is_deleted',0)->get();
 
-        $stations = DeliveryStation::where('factory_id',$current_factory_id)->where('name','LIKE','%'.$station_name.'%')->where('address','LIKE',$area_name.'%')->where('is_deleted',0)->get();
+        $queryBase = DeliveryStation::where('factory_id',$current_factory_id)
+            ->where('is_deleted',0);
+
+        if (!empty($stationId)) {
+            $queryBase->where('id', $stationId);
+        }
+        if (!empty($area_name)) {
+            $queryBase->where('address','LIKE',$area_name.'%');
+        }
+        $stations = $queryBase->get();
+
         foreach ($stations as $st) {
-            $product_info = Product::where('factory_id', $current_factory_id)->where('is_deleted', 0)->get();
+            $product_info = Product::where('factory_id', $current_factory_id)
+                ->where('is_deleted', 0)
+                ->get();
+
             $st['yuedan_xin_total'] = 0;
             $st['jidan_xin_total'] = 0;
             $st['banniandan_xin_total'] = 0;
@@ -1114,19 +1087,15 @@ class FactoryStatistics extends Controller
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_FACTORY, '订单剩余量统计', SysLog::SYSLOG_OPERATION_VIEW);
 
-        return view('gongchang.tongjifenxi.dingdanleixingtongji', [
+        return view('gongchang.tongjifenxi.dingdanleixingtongji', array_merge($aryBaseData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
+
             'stations' => $stations,
-            'start_date' => $start_date,
-            'end_date'=>$end_date,
-            'station_name'=>$station_name,
-            'area_name'=>$area_name,
             'count'=> $count,
-            'address'=>$address,
-        ]);
+        ]));
     }
 
     /**
@@ -1141,6 +1110,7 @@ class FactoryStatistics extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         $current_factory_id = $this->getCurrentFactoryId(true);
+
         $queryBase = $this->getDeliverSummaryBase($request, $aryBaseData, $aryDate);
 
         //
@@ -1180,6 +1150,7 @@ class FactoryStatistics extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         $current_factory_id = $this->getCurrentFactoryId(true);
+
         $queryBase = $this->getDeliverSummaryBase($request, $aryBaseData, $aryDate);
 
         //
@@ -1218,8 +1189,13 @@ class FactoryStatistics extends Controller
         $milkmans = Milkman::with('station')
             ->whereHas('station', function($query) use ($current_factory_id, $aryBaseData) {
                 $query->where('factory_id', $current_factory_id);
-                $query->where('name', 'LIKE', '%' . $aryBaseData['station_name'] . '%');
-                $query->where('address', 'LIKE', '%' . $aryBaseData['area_name'] . '%');
+                if (!empty($aryBaseData['station_id'])) {
+                    $query->where('id', $aryBaseData['station_id']);
+                }
+                // 地区名称筛选
+                if (!empty($aryBaseData['area_name'])) {
+                    $query->where('address','LIKE', $aryBaseData['area_name'] . '%');
+                }
             })
             ->orderBy('station_id')
             ->get();
@@ -1256,11 +1232,11 @@ class FactoryStatistics extends Controller
             ->where('ds.factory_id', $current_factory_id);
 
         // 奶站名称筛选
-        if (!empty($aryBaseData['station_name'])) {
-            $queryBase->where('ds.name','LIKE','%' . $aryBaseData['station_name'] . '%');
+        if (!empty($aryBaseData['station_id'])) {
+            $queryBase->where('ds.id', $aryBaseData['station_id']);
         }
         // 地区名称筛选
-        if (!empty($area_name)) {
+        if (!empty($aryBaseData['area_name'])) {
             $queryBase->where('ds.address','LIKE', $aryBaseData['area_name'] . '%');
         }
 
@@ -1287,6 +1263,7 @@ class FactoryStatistics extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
 
         $current_factory_id = $this->getCurrentFactoryId(true);
+
         $queryBase = $this->getDeliverSummaryBase($request, $aryBaseData, $aryDate);
 
         //
@@ -1306,10 +1283,16 @@ class FactoryStatistics extends Controller
             }
         }
 
-        $stations = DeliveryStation::where('factory_id', $current_factory_id)
-            ->where('name','LIKE','%' . $aryBaseData['station_name'] . '%')
-            ->where('address','LIKE', $aryBaseData['area_name'] . '%')
-            ->get(['id', 'name']);
+        $queryBase = DeliveryStation::where('factory_id', $current_factory_id);
+
+        if ($aryBaseData['station_id']) {
+            $queryBase->where('id', $aryBaseData['station_id']);
+        }
+        if ($aryBaseData['area_name']) {
+            $queryBase->where('address','LIKE', $aryBaseData['area_name'] . '%');
+        }
+
+        $stations = $queryBase->get(['id', 'name']);
 
         return view('gongchang.tongjifenxi.stationdeliver', array_merge($aryBaseData, [
             'pages' => $pages,

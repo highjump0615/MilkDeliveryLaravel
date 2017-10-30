@@ -27,15 +27,21 @@ use Auth;
 
 class ProductCtrl extends Controller
 {
-
+    /**
+     * 打开商品管理页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show_product_list()
     {
-        $fuser = Auth::guard('gongchang')->user();
-        $factory_id = $fuser->factory_id;
+        $factory_id = $this->getCurrentFactoryId(true);
 
-        $categories = ProductCategory::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
+        $categories = ProductCategory::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->get();
 
-        $products = Product::where('is_deleted', 0)->where('factory_id', $factory_id)->get();
+        $products = Product::where('is_deleted', 0)
+            ->where('factory_id', $factory_id)
+            ->get();
 
         $child = 'shangpin';
         $parent = 'jichuxinxi';
@@ -442,6 +448,11 @@ class ProductCtrl extends Controller
         }
     }
 
+    /**
+     * 下架
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function disable_product(Request $request)
     {
         if ($request->ajax()) {
@@ -451,9 +462,9 @@ class ProductCtrl extends Controller
             $product = Product::find($product_id);
             if ($product) {
                 if ($action == 'disable') {
-                    $product->status = 0;
+                    $product->status = Product::PRODUCT_STATUS_INACTIVE;
                 } else {
-                    $product->status = 1;
+                    $product->status = Product::PRODUCT_STATUS_ACTIVE;
                 }
 
                 $product->save();
