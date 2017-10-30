@@ -72,8 +72,8 @@
                                         <td class="o_total">{{$orders[$i]->total_amount}}</td>
                                         <td class="o_ordered">{{$orders[$i]->ordered_at}}</td>
                                         <td class="o_paytype">{{$orders[$i]->payment_type_name}}</td>
-                                        <td class="o_property">{{$orders[$i]->order_property_name}}</td>
-                                        <td class="o_checker">{{$orders[$i]->order_checker_name}}</td>
+                                        <td class="o_property">{{$orders[$i]->getOrderPropertyName()}}</td>
+                                        <td class="o_checker">{{$orders[$i]->getCheckerName()}}</td>
                                         <td class="o_station">{{$orders[$i]->delivery_station_name}}</td>
                                         <td class="milkman">
                                             @if($orders[$i]->milkman)

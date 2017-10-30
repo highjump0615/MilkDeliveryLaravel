@@ -116,7 +116,7 @@
 
     <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
     <script src="<?=asset('weixin/js/freeorder_calendar.js')?>"></script>
-    <script src="<?=asset('weixin/js/pages/productinfo.js')?>"></script>
+    <script src="<?=asset('weixin/js/pages/productinfo.js?171028')?>"></script>
     <script src="<?=asset('weixin/js/pages/editproductinfo.js')?>"></script>
     <script src="<?=asset('weixin/js/pages/naipinxiugai.js')?>"></script>
 

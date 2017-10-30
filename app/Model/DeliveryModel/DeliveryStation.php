@@ -546,39 +546,6 @@ class DeliveryStation extends Model
         return $order_total - $received_total;
     }
 
-    //get money orders
-    public function getMoneyOrdersAttribute()
-    {
-        $orders = Order::where('delivery_station_id', $this->id)
-            ->where('ordered_at', '>=', $this->mDateStart)
-            ->where('ordered_at', '<=', $this->mDateEnd)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        return $orders;
-    }
-
-    public function getMoneyOrdersInput()
-    {
-        $orders = Order::where('station_id', $this->id)
-            ->where('ordered_at', '>=', $this->mDateStart)
-            ->where('ordered_at', '<=', $this->mDateEnd)
-            ->where('payment_type', PaymentType::PAYMENT_TYPE_MONEY_NORMAL)
-            ->where(function($query){
-                $query->where('status', '<>', Order::ORDER_NEW_WAITING_STATUS);
-                $query->where('status', '<>', Order::ORDER_NEW_NOT_PASSED_STATUS);
-                $query->where('status', '<>', Order::ORDER_CANCELLED_STATUS);
-            })
-            ->get();
-
-        return $orders;
-    }
-
     /**
      * 获取本期订单的总金额
      * @return mixed

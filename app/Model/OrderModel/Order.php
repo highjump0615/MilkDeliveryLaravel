@@ -61,8 +61,6 @@ class Order extends Model
     protected $appends = [
         'customer_name',
         'payment_type_name',
-        'order_property_name',
-        'order_checker_name',
         'station_name',
         'delivery_station_name',
         'milkman_name',
@@ -71,18 +69,10 @@ class Order extends Model
         'addresses',
         'milk_box_install_label',
         'province_id',
-        'city_id',
-        'city_name',
-        'district_id',
-        'district_name',
         'street_id',
         'xiaoqu_id',
         'all_order_types',
 //        'delivery_plans',
-        'grouped_delivery_plans',
-        'unfinished_delivery_plans',
-        'delivery_plans_sent_to_production_plan',
-        'waiting_passed_delivery_plans',
         'order_end_date',
         'status_name',
         'has_stopped',
@@ -95,7 +85,7 @@ class Order extends Model
     
     const ORDER_TRANS_CHECK_TRUE = 1;
     const ORDER_TRANS_CHECK_FALSE = 0;
-    
+
     const ORDER_NEW_WAITING_STATUS          = 1;    // 新订单待审核
     const ORDER_PASSED_STATUS               = 2;    // 未启奶
     const ORDER_ON_DELIVERY_STATUS          = 3;    // 在配送
@@ -134,9 +124,23 @@ class Order extends Model
         $this->mStrProvince = $aryAddr[0];
         $this->mStrCity = $aryAddr[1];
         $this->mStrDistrict = $aryAddr[2];
-        $this->mStrStreet = $aryAddr[3];
-        $this->mStrVillage = $aryAddr[4];
-        $this->mStrHouseNumber = $aryAddr[5];
+        $this->mStrStreet = null;
+        $this->mStrVillage = null;
+
+        // 是否没选好
+        if (strcmp($aryAddr[3], "其他")) {
+            $this->mStrStreet = $aryAddr[3];
+            $this->mStrVillage = $aryAddr[4];
+            $this->mStrHouseNumber = !empty($aryAddr[5]) ? $aryAddr[5] : "";
+        }
+        else {
+            // 编制其他地址
+            $nPreLen = 0;
+            for ($i = 0; $i < 4; $i++) {
+                $nPreLen += strlen($aryAddr[$i]) + 1;
+            }
+            $this->mStrHouseNumber = substr($this->address, $nPreLen - 1);
+        }
     }
 
     //
@@ -168,13 +172,7 @@ class Order extends Model
 
     public function getTotalCountAttribute()
     {
-        $total = 0;
-        $order_products  = $this->order_products;
-        foreach($order_products as $op)
-        {
-            $total+=$op->total_count;
-        }
-        return $total;
+        return getEmptyValue($this->order_products()->sum('total_count'));
     }
 
 
@@ -206,7 +204,7 @@ class Order extends Model
         $main_addr = "";
         $addr_list = explode(" ", $this->address);
 
-        for ($i = $level - 1; $i < Address::LEVEL_VILLAGE + 1; $i++) {
+        for ($i = $level - 1; $i < count($addr_list); $i++) {
             if ($i >= $level) {
                 $main_addr .= " ";
             }
@@ -239,21 +237,6 @@ class Order extends Model
         $remain = $this->total_amount - $dFinished;
 
         return $remain;
-    }
-
-    /**
-     * 重写获取status字段
-     * @return int
-     */
-    public function getStatusAttribute(){
-        $nStatus = $this->attributes['status'];
-
-        // 假装设置STOPPED状态
-        if ($this->isStopped()) {
-            $nStatus = Order::ORDER_STOPPED_STATUS;
-        }
-
-        return $nStatus;
     }
 
     public function setStatusAttribute($value){
@@ -324,6 +307,10 @@ class Order extends Model
         return $status_name;
     }
 
+    /**
+     * 订单配送结束日期
+     * @return string
+     */
     public function getOrderEndDateAttribute()
     {
         $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
@@ -368,38 +355,22 @@ class Order extends Model
         return Order::where('stop_at', '<=', getCurDateString())->where('restart_at', '>', getCurDateString());
     }
 
-    public function getDeliveryPlansSentToProductionPlanAttribute()
-    {
-        //delivery_plans_sent_to_production_plan
-        $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-                ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)->get();
-        return $dps;
-    }
-
-    public function getWaitingPassedDeliveryPlansAttribute()
+    public function getUnfinishedDeliveryPlanQuery()
     {
         $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->where(function($query){
-                $query->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED);
-                $query->orWhere('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING);
-            })->get();
+            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT]);
 
         return $dps;
     }
 
-    public function getUnfinishedDeliveryPlansAttribute()
-    {
-        $dps = MilkManDeliveryPlan::where('order_id', $this->id)
-            ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_WAITING, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
-            ->get();
-
-        return $dps;
-    }
-
-    public function getGroupedDeliveryPlansAttribute()
+    public function getGroupedDeliveryPlans()
     {
         //order_id, station_id
-        $dps = MilkManDeliveryPlan::where('order_id', $this->id)->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)->orderBy('deliver_at')->get();
+        $dps = MilkManDeliveryPlan::where('order_id', $this->id)
+            ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+            ->orderBy('deliver_at')
+            ->get();
+
         return $dps;
     }
 
@@ -417,7 +388,7 @@ class Order extends Model
             return 0;
     }
 
-    public function getCityIdAttribute()
+    public function getCityId()
     {
         $province_id = $this->province_id;
 
@@ -435,9 +406,9 @@ class Order extends Model
             return 0;
     }
 
-    public function getCityNameAttribute()
+    public function getCityName()
     {
-        $city_id =$this->city_id;
+        $city_id = $this->getCityId();
         $city = Address::find($city_id);
         if($city)
             return $city->name;
@@ -445,9 +416,9 @@ class Order extends Model
             return "";
     }
 
-    public function getDistrictIdAttribute()
+    public function getDistrictId()
     {
-        $city_id = $this->city_id;
+        $city_id = $this->getCityId();
 
         $sa = multiexplode(' ', $this->address);
         $district = $sa[2];
@@ -461,9 +432,9 @@ class Order extends Model
             return 0;
     }
 
-    public function getDistrictNameAttribute()
+    public function getDistrictName()
     {
-        $district_id =$this->district_id;
+        $district_id =$this->getDistrictId();
         $district = Address::find($district_id);
         if($district)
             return $district->name;
@@ -516,10 +487,10 @@ class Order extends Model
      */
     public function getCustomerNameAttribute()
     {
-        return $this->customer->name;
+        return $this->customer ? $this->customer->name : "";
     }
 
-    
+
     public function getPaymentTypeNameAttribute()
     {
         if($this->payment_type)
@@ -560,7 +531,7 @@ class Order extends Model
      * 获取订单性质名称
      * @return mixed
      */
-    public function getOrderPropertyNameAttribute()
+    public function getOrderPropertyName()
     {
         return $this->property->name;
     }
@@ -586,7 +557,7 @@ class Order extends Model
      * 获取征订员名称
      * @return string
      */
-    public function getOrderCheckerNameAttribute()
+    public function getCheckerName()
     {
         return $this->checker->name;
     }
@@ -602,7 +573,7 @@ class Order extends Model
                 return "";
         }
         else
-            return "";   
+            return "";
     }
 
     public function getStationNameAttribute()
@@ -671,64 +642,23 @@ class Order extends Model
 
     public function getAllOrderTypesAttribute()
     {
-        //return "季单*1 月单*1";
-        $order_products = $this->order_products;
+        $typeCounts = $this->order_products()
+            ->groupBy('order_type')
+            ->selectRaw('order_type, count(*) as count')
+            ->get();
 
         $ota= "";
-        $season_opc = $month_opc = $half_opc = 0;
 
-        if($order_products)
-        {
-            foreach($order_products as $op)
-            {
-                $ot = $op->order_type;
-
-                if($ot == OrderType::ORDER_TYPE_MONTH)
-                {
-                    $month_opc++;
-
-                } else if ($ot == OrderType::ORDER_TYPE_SEASON)
-                {
-                    $season_opc++;
-
-                } else {
-
-                    $half_opc++;
-                }
+        foreach ($typeCounts as $typeCount) {
+            if (!empty($ota)) {
+                $ota .= ", ";
             }
 
-            if($half_opc>0)
-            {
-                $ota = OrderType::ORDER_TYPE_HALF_YEAR_NAME."*".$half_opc;
-            }
-
-            if($season_opc>0)
-            {
-                if($ota)
-                {
-                    $ota .= ", ".OrderType::ORDER_TYPE_SEASON_NAME."*".$season_opc;
-                } else{
-                    $ota .= OrderType::ORDER_TYPE_SEASON_NAME."*".$season_opc;
-                }
-            }
-
-            if($month_opc>0)
-            {
-                if($ota)
-                {
-                    $ota .= ", ".OrderType::ORDER_TYPE_MONTH_NAME."*".$month_opc;
-                } else{
-                    $ota .= OrderType::ORDER_TYPE_MONTH_NAME."*".$month_opc;
-                }
-            }
-
-            return $ota;
-
-        } else
-        {
-            return "";
+            // 添加类型和数量
+            $ota .= $typeCount->order_type_name . "*" . $typeCount->count;
         }
 
+        return $ota;
     }
 
     /**

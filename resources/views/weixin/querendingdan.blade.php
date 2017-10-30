@@ -32,7 +32,7 @@
                 </div>
             @else
                 <div class="adrtop pa2t">
-                    <p style="color:red;"><i class="fa fa-warning"></i>请插入您的信息</p>
+                    <p style="color:red;"><i class="fa fa-warning"></i>请编辑您的地址信息</p>
                 </div>
             @endif
         </div>
@@ -244,7 +244,7 @@
                         }
 
                         $(order_bt).prop('disabled', false);
-                        window.location = SITE_URL + "weixin/zhifushibai";
+//                        window.location = SITE_URL + "weixin/zhifushibai";
                     } else {
 
                         if (data.message) {
@@ -276,9 +276,9 @@
             var group_id = $('#group_id').val();
 
             @if(isset($for))
-                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren&&for=xuedan';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&from=queren&for=xuedan';
             @else
-                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&&from=queren';
+                    window.location = SITE_URL + "weixin/bianjidingdan?wechat_opid=" + wechat_order_product_id + '&from=queren';
             @endif
         })
 

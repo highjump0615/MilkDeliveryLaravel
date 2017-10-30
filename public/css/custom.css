@@ -445,6 +445,9 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
 .wrapper > .wrapper-content {
     min-width: 1200px;
 }
+#page-wrapper {
+    min-width: 1200px;
+}
 
 /* 表格左对齐 */
 .align-left {
@@ -465,4 +468,12 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
     padding-top: 9px;
     padding-bottom: 9px;
     margin-bottom: 15px;
+}
+
+.m-hidden {
+    display: none !important;
+}
+
+.div-inline {
+    display: inline-block;
 }

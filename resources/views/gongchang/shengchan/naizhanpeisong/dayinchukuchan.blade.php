@@ -74,35 +74,69 @@
 							<table class="table table-bordered" id="table1">
 								<thead class="gray-bg">
 									<tr>
-										<th colspan="3">{{$station->name}}</th>
+										<th colspan="6"><h2><b>{{$factory_name}}</b></h2></th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr>
-										<td colspan="3">
-											<div class="col-md-4">
-												<label>发货日期：</label><label>{{$current_date}}</label>
-											</div>
-											<div class="col-md-4">
-												<label>发货人：</label>
+										<td colspan="6">
+												<label></label><label></label>
+												<label style="margin-left:308px"><h2>出库单</h2></label>
+												<label style="margin-left:120px">编号：</label><label>{{$bianhao}}</label>
+										</td>
+									</tr>
+									<tr >
+										<td colspan="2">
+												<label >奶站：{{$station->name}}</label>
+										</td>
+										<td >
+												<label >承运人：</label>
 												<input type="text" id="input_name" value="{{$sender_name}}" />
-											</div>
-											<div class="col-md-4">
-												<label>车牌号：</label>
-												<input type="text" id="input_carnum" value="{{$car_number}}" >
-											</div>
+										</td>
+										<td colspan="3">
+												<label>出库日期：{{$current_date}}</label>
+										</td>
+									</tr>
+									<tr style="position: relative;">
+										<td colspan="2">
+												<label>奶站电话：</label>
+												<input type="text" value="{{$station->phone}}" />
+												<!-- 奶站id -->
+											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
+										</td>	
+												
+										<td >
+												<label>电话：</label>
+												<input type="text" value="" />
 											<!-- 奶站id -->
 											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>
+										<td colspan="3">
+												<label>车辆牌号：</label>
+												<input type="text" id="input_carnum" value="{{$car_number}}" >
+											
+											<!-- 奶站id -->
+											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
+										</td>
+										
 									</tr>
 									<tr>
-										<td>货品</td>
-										<td colspan="2">发货数量</td>
+										<td style="width:150px">序号</td>
+										<td style="width:450px">产品名称</td>
+										<td style="width:350px">规格</td>
+										<td style="width:250px">单位</td>
+										<td  style="width:150px">发货数量</td>
+										<td  style="width:250px">备注</td>
 									</tr>
 									@foreach($station->station_plan as $sp)
+									
 									<tr>
+										<td>{{$sp->product_id}}</td>
 										<td>{{$sp->product_name}}</td>
-										<td colspan="2">{{$sp->actual_count}}</td>
+										<td></td>
+										<td>{{$sp->product_name=='450袋鲜'? '袋' : '瓶'}}</td>
+										<td >{{$sp->actual_count}}</td>
+										<td></td>
 									</tr>
 									@endforeach
 									<?php $i=0; ?>
@@ -116,7 +150,22 @@
 										<td class="boxcount" width="30%" contenteditable="true">{{$bt['count']}}</td>
 									</tr>
 									@endforeach
+									
 								</tbody>
+								<tr>
+										<td colspan="6">
+											
+												<label style="margin-top:20px">制单人：____________________</label>
+											
+												<label style="margin:0 130px"></label>
+											
+											
+												<label style="margin-top:20px">签收人: ____________________</label>
+											
+											<!-- 奶站id -->
+											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
+										</td>
+									</tr>
 							</table>
 						</div>
                     </div>
@@ -130,8 +179,7 @@
 @endsection
 
 @section('script')
-	<script src="<?=asset('js/plugins/added/switchery.js') ?>"></script>
-   
+
 	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js') ?>"></script>
 
 @endsection

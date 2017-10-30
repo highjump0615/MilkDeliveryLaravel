@@ -71,21 +71,21 @@
             @if (!$is_station)
             <div class="ibox-content col-md-12 operation">
                 <div class="col-md-2">
-                    <a id="add-odder" data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button">奶站现金订单收款</a>
+                    <a id="add-odder" data-toggle="modal" href="#insert_order" class="btn btn-sm btn-success" type="button">奶站现金订单收款</a>
                 </div>
                 &nbsp;
                 <div class="col-md-2">
                     <a href="{{URL::to('/gongchang/caiwu/taizhang/qitanaizhanzhuanzhang/')}}"
-                       class="btn btn-lg btn-success" type="button">其他奶站转账</a>
+                       class="btn btn-sm btn-success" type="button">其他奶站转账</a>
                 </div>
                 &nbsp;
                 <div class="col-md-2">
                     <a href="{{URL::to('/gongchang/caiwu/taizhang/naikakuanzhuanzhang')}}"
-                       class="btn btn-lg btn-success" type="button">奶卡款转账</a>
+                       class="btn btn-sm btn-success" type="button">奶卡款转账</a>
                 </div>
                 &nbsp;
                 <div class="col-md-2">
-                    <a id="add-self" data-toggle="modal" href="#insert_order" class="btn btn-lg btn-success" type="button">自营收款</a>
+                    <a id="add-self" data-toggle="modal" href="#insert_order" class="btn btn-sm btn-success" type="button">自营收款</a>
                 </div>
             </div>
             @endif
@@ -111,7 +111,7 @@
                             @if (isset($stations))
                                 @foreach($stations as $st)
                                     <option value="{{$st->id}}"
-                                            @if (!empty($station) && $station == $st->id) selected @endif>
+                                            @if ($station->id == $st->id) selected @endif>
                                         {{$st->name}}
                                     </option>
                                 @endforeach
@@ -130,133 +130,126 @@
             </div>
 
             <div class="col-md-12" id="station_list">
-                @if (isset($stations))
-                    @foreach($stations as $st)
-                        @if (!empty($station) && $station != $st->id)
-                            @continue
-                        @endif
-                        <div class="ibox-content station" data-sid="{{$st->id}}">
-                            <div class="station_head">
-                                <label class="station_name" style="font-size:20px;">{{$st->name}}</label>
-                                &emsp;
-                                <label class="station_balance">配送业务信用额度：{{$st->init_delivery_credit_amount}}</label>
-                                &emsp;
-                                <label class="station_balance">自营信用额度：{{$st->init_business_credit_amount}}</label>
+                <div class="ibox-content station" data-sid="{{$station->id}}">
+                    <div class="station_head">
+                        <label class="station_name" style="font-size:20px;">{{$station->name}}</label>
+                        &emsp;
+                        <label class="station_balance">配送业务信用额度：{{$station->init_delivery_credit_amount}}</label>
+                        &emsp;
+                        <label class="station_balance">自营信用额度：{{$station->init_business_credit_amount}}</label>
+                    </div>
+                    <div class="station_body">
+
+                        <div class="col-md-12">
+                            <div class="col-sm-2">
+                                <label class="text-left">本站现金订单应收余额</label>
                             </div>
-                            <div class="station_body">
-
-                                <div class="col-md-12">
-                                    <div class="col-sm-2">
-                                        <label class="text-left">本站现金订单应收余额</label>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input class="gray-bg text-center receivable_order_money" readonly
-                                               value="{{$st->receivable_order_money}}">
-                                    </div>
-                                    <div class="col-sm-2 text-right">
-                                        <label class="">信用余额</label>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input readonly class="gray-bg text-center delivery_credit_balance"
-                                               value="{{$st->init_delivery_credit_amount+$st->delivery_credit_balance}}"/>
-                                    </div>
-                                    <div class="col-sm-2 col-sm-offset-2">
-                                        @if ($is_station)
-                                            <a href="{{URL::to('/naizhan/caiwu/taizhang/benzhandingdan/')}}"
-                                               class="btn btn-success">查看订单金额统计</a>
-                                        @else
-                                            <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$st->id)}}"
-                                               class="btn btn-success">查看订单金额统计</a>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <div class="col-sm-2">
-                                        <label class="text-left">奶站账户期末余额</label>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input readonly class="gray-bg text-center credit_balance"
-                                               value="{{$st->calculation_balance}}"/>
-                                    </div>
-                                    <div class="col-sm-1 col-sm-offset-1">
-                                    </div>
-                                    <div class="col-sm-2">
-                                    </div>
-                                    <div class="col-sm-2 col-sm-offset-2">
-                                        @if ($is_station)
-                                            <a href="{{URL::to('/naizhan/caiwu/taizhang/zhanghuyue/')}}"
-                                               class="btn btn-success">查看详情</a>
-                                        @else
-                                            <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$st->id)}}"
-                                               class="btn btn-success">查看详情</a>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <div class="col-sm-2">
-                                        <label class="text-left">自营账户期末余额</label>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input readonly class="gray-bg text-center"
-                                               value="{{$st->business_credit_balance}}">
-                                    </div>
-                                    <div class="col-sm-2 text-right">
-                                        <label class="">信用余额</label>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <input readonly class="gray-bg text-center"
-                                               value="{{$st->business_credit_balance+$st->init_business_credit_amount}}"/>
-                                    </div>
-                                    <div class="col-sm-2 col-sm-offset-2">
-                                        @if ($is_station)
-                                            <a href="{{URL::to('/naizhan/caiwu/ziyingzhanghujiru/')}}"
-                                               class="btn btn-success">查看自营账户</a>
-                                        @else
-                                            <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$st->id)}}"
-                                               class="btn btn-success">查看自营账户</a>
-                                        @endif
-                                    </div>
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="gray-bg text-center receivable_order_money" readonly
+                                       value="{{$station->receivable_order_money}}">
                             </div>
-                            <div class="station_table">
-                                <table class="footable table table-bordered" data-page-size="10">
-                                    <thead>
-                                    <tr>
-                                        <th data-sort-ignore="true" colspan="2">期初余额</th>
-                                        <th data-sort-ignore="true" colspan="2">本期订单金额增加</th>
-                                        <th data-sort-ignore="true" colspan="2">本期完成订单余额（减项）</th>
-                                        <th data-sort-ignore="true" colspan="2">期末金额</th>
-                                    </tr>
-                                    <tr>
-                                        <th data-sort-ignore="true">订单剩余数量（瓶）</th>
-                                        <th data-sort-ignore="true">金额</th>
-                                        <th data-sort-ignore="true">订单数量（瓶）</th>
-                                        <th data-sort-ignore="true">金额</th>
-                                        <th data-sort-ignore="true">配送数量（瓶）</th>
-                                        <th data-sort-ignore="true">金额</th>
-                                        <th data-sort-ignore="true">订单剩余数量（瓶）</th>
-                                        <th data-sort-ignore="true">金额</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>{{$st->fin_before_count}}</td>
-                                        <td>{{$st->fin_before_cost}}</td>
-                                        <td>{{$st->fin_added_count}}</td>
-                                        <td>{{$st->fin_added_cost}}</td>
-                                        <td>{{$st->fin_done_count}}</td>
-                                        <td>{{$st->fin_done_cost}}</td>
-                                        <td>{{$st->fin_after_count}}</td>
-                                        <td>{{$st->fin_after_cost}}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            <div class="col-sm-2 text-right">
+                                <label class="">信用余额</label>
+                            </div>
+                            <div class="col-sm-2">
+                                <input readonly class="gray-bg text-center delivery_credit_balance"
+                                       value="{{$station->init_delivery_credit_amount+$station->delivery_credit_balance}}"/>
+                            </div>
+                            <div class="col-sm-2 col-sm-offset-2">
+                                @if ($is_station)
+                                    <a href="{{URL::to('/naizhan/caiwu/taizhang/benzhandingdan/')}}"
+                                       class="btn btn-sm btn-success">查看订单金额统计</a>
+                                @else
+                                    <a href="{{URL::to('/gongchang/caiwu/taizhang/naizhandingdanjinetongji/'.$station->id)}}"
+                                       class="btn btn-sm btn-success">查看订单金额统计</a>
+                                @endif
                             </div>
                         </div>
-                    @endforeach
-                @endif
+
+                        <div class="col-md-12">
+                            <div class="col-sm-2">
+                                <label class="text-left">奶站账户期末余额</label>
+                            </div>
+                            <div class="col-sm-2">
+                                <input readonly class="gray-bg text-center credit_balance"
+                                       value="{{$station->calculation_balance}}"/>
+                            </div>
+                            <div class="col-sm-1 col-sm-offset-1">
+                            </div>
+                            <div class="col-sm-2">
+                            </div>
+                            <div class="col-sm-2 col-sm-offset-2">
+                                @if ($is_station)
+                                    <a href="{{URL::to('/naizhan/caiwu/taizhang/zhanghuyue/')}}"
+                                       class="btn btn-success btn-sm">查看详情</a>
+                                @else
+                                    <a href="{{URL::to('/gongchang/caiwu/naizhanzhanghuyue/'.$station->id)}}"
+                                       class="btn btn-success btn-sm">查看详情</a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="col-sm-2">
+                                <label class="text-left">自营账户期末余额</label>
+                            </div>
+                            <div class="col-sm-2">
+                                <input readonly class="gray-bg text-center"
+                                       value="{{$station->business_credit_balance}}">
+                            </div>
+                            <div class="col-sm-2 text-right">
+                                <label class="">信用余额</label>
+                            </div>
+                            <div class="col-sm-2">
+                                <input readonly class="gray-bg text-center"
+                                       value="{{$station->business_credit_balance+$station->init_business_credit_amount}}"/>
+                            </div>
+                            <div class="col-sm-2 col-sm-offset-2">
+                                @if ($is_station)
+                                    <a href="{{URL::to('/naizhan/caiwu/ziyingzhanghujiru/')}}"
+                                       class="btn btn-success btn-sm">查看自营账户</a>
+                                @else
+                                    <a href="{{URL::to('/gongchang/caiwu/ziyingzhanghu/'.$station->id)}}"
+                                       class="btn btn-success btn-sm">查看自营账户</a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="station_table">
+                        <table class="footable table table-bordered" data-page-size="10">
+                            <thead>
+                            <tr>
+                                <th data-sort-ignore="true" colspan="2">期初余额</th>
+                                <th data-sort-ignore="true" colspan="2">本期订单金额增加</th>
+                                <th data-sort-ignore="true" colspan="2">本期完成订单余额（减项）</th>
+                                <th data-sort-ignore="true" colspan="2">期末金额</th>
+                            </tr>
+                            <tr>
+                                <th data-sort-ignore="true">订单剩余数量（瓶）</th>
+                                <th data-sort-ignore="true">金额</th>
+                                <th data-sort-ignore="true">订单数量（瓶）</th>
+                                <th data-sort-ignore="true">金额</th>
+                                <th data-sort-ignore="true">配送数量（瓶）</th>
+                                <th data-sort-ignore="true">金额</th>
+                                <th data-sort-ignore="true">订单剩余数量（瓶）</th>
+                                <th data-sort-ignore="true">金额</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{$station->fin_before_count}}</td>
+                                <td>{{$station->fin_before_cost}}</td>
+                                <td>{{$station->fin_added_count}}</td>
+                                <td>{{$station->fin_added_cost}}</td>
+                                <td>{{$station->fin_done_count}}</td>
+                                <td>{{$station->fin_done_cost}}</td>
+                                <td>{{$station->fin_after_count}}</td>
+                                <td>{{$station->fin_after_cost}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             <div id="insert_order" class="modal fade" aria-hidden="true">
                 <div class="modal-dialog">

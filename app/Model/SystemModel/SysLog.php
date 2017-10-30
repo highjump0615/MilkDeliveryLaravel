@@ -90,6 +90,9 @@ class SysLog extends Model
         else if ($this->operation == SysLog::SYSLOG_OPERATION_SUBMIT_PLAN) {
             $strRes = '提交计划';
         }
+        else if ($this->operation == SysLog::SYSLOG_OPERATION_PRODUCE_OK) {
+            $strRes = '生产确认';
+        }
 
         return $strRes;
     }

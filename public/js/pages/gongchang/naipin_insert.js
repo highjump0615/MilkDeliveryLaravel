@@ -209,7 +209,7 @@ function insert_product() {
     var price_template_count = $('#product_area_set_result .tab-content .tab-pane').size();
     if(price_template_count == 0)
     {
-        show_info_msg("请插入模板价格");
+        show_info_msg("请添加价格模板");
         return;
     }
 

@@ -81,17 +81,18 @@ class Factory extends Model
 
         return $result;
     }
-   
 
+    /**
+     * 获取正常奶站
+     * @return mixed
+     */
     public function getActiveStationsAttribute()
     {
-        $stations = DeliveryStation::where('factory_id', $this->id)->where('is_deleted', 0)->where('status', DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)->get();
-        return $stations;
-    }
+        $stations = $this->deliveryStations()
+            ->where('status', DeliveryStation::DELIVERY_STATION_STATUS_ACTIVE)
+            ->get();
 
-    public function deliveryTypes()
-    {
-        return $this->belongsToMany('App\Model\DeliveryModel\DeliveryType', 'mfdeliverytype', 'factory_id', 'delivery_type');
+        return $stations;
     }
 
     public function delivery_time()

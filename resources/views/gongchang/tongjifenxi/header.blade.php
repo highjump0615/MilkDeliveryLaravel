@@ -3,8 +3,18 @@
         <div class="feed-element">
             {{-- 奶站名称 --}}
             <div class="col-md-3">
-                <label>奶站名称:</label>
-                <input type="text" name="station_name" value="{{$station_name}}">
+                <label>奶站:</label>
+                &nbsp;
+                <select data-placeholder="" name="station" style="height: 30px; width: 200px;">
+                    <option value="0"></option>
+                    @foreach($station_names as $st)
+                        @if ($st->id == $station_id)
+                            <option selected value="{{$st->id}}">{{$st->name}}</option>
+                        @else
+                            <option value="{{$st->id}}">{{$st->name}}</option>
+                        @endif
+                    @endforeach
+                </select>
             </div>
 
             {{-- 区域 --}}

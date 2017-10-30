@@ -71,12 +71,12 @@ $(document).ready(function () {
     if (Array.prototype.forEach) {
         var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
         elems.forEach(function (html) {
-            var switchery = new Switchery(html);
+            var switchery = new Switchery(html, {size: 'small'});
         });
     } else {
         var elems = document.querySelectorAll('.js-switch');
         for (var i = 0; i < elems.length; i++) {
-            var switchery = new Switchery(elems[i]);
+            var switchery = new Switchery(elems[i], {size: 'small'});
         }
     }
 
@@ -118,12 +118,6 @@ $('#capture_camera').click(function () {
 });
 
 
-//Trigger the factory_order_type
-function trigger_factory_order_type_change() {
-
-    $('#product_table tbody tr.one_product select.factory_order_type').trigger('change');
-}
-
 //As the factory order type changes, we should get the product price again
 $('body').on('change', '#product_table tbody tr.one_product select.factory_order_type', function () {
 
@@ -137,7 +131,14 @@ $('body').on('change', '#product_table tbody tr.one_product select.factory_order
     calculate_current_product_value(tr, true);
     set_avg_count(tr);
 
+    gbProductChanged = true;
 });
+
+// 配送日期有变化
+$('body').on('change', '#product_table tbody tr.one_product .delivery_dates', function () {
+    gbProductChanged = true;
+});
+
 
 /**
  * 获取订单类型相应的数量
@@ -273,6 +274,8 @@ function add_product() {
     }
 
     add_new_product_line();
+
+    gbProductChanged = true;
 }
 
 //check whether the last one product line has empty value
@@ -339,6 +342,7 @@ $('body').on('change', '#product_table tbody tr.one_product input.one_product_to
     calculate_current_product_value(tr, false);
     set_avg_count(tr);
 
+    gbProductChanged = true;
 });
 
 //According to the delivery type, we should show  or hide the calendar or product_count_per_day
@@ -355,6 +359,8 @@ $('body').on('change', 'select.order_delivery_type', function () {
     $(calendar).html(dd);
 
     initBottleNumCalendar(tr);
+
+    gbProductChanged = true;
 });
 
 $('body').on('change', '#product_table tbody tr.one_product select.order_product_id', function () {
@@ -364,6 +370,8 @@ $('body').on('change', '#product_table tbody tr.one_product select.order_product
     // 重新计算价格和单数
     calculate_current_product_value(tr, true);
     set_avg_count(tr);
+
+    gbProductChanged = true;
 });
 
 // 按周送和随心送也需要每次数量
@@ -373,6 +381,8 @@ $('body').on('change', 'input.order_product_count_per', function () {
     if (pick) {
         $(pick).datepicker('setBottleNum', $(this).val());
     }
+
+    gbProductChanged = true;
 });
 
 // 订单起送日期为奶品的起送日期中最早的
@@ -389,6 +399,8 @@ $('body').on('change', '.single_date', function () {
     });
 
     $('#order_start_at').val(dateToString(dateMin));
+
+    gbProductChanged = true;
 });
 
 //Remove one product line
@@ -407,6 +419,8 @@ $(document).on('click', 'button.remove_one_product', function () {
     else {
         show_warning_msg('至少要有一种奶品');
     }
+
+    gbProductChanged = true;
 });
 
 function init_product_lines() {
@@ -461,7 +475,7 @@ function initStartDateCalendar() {
 
         // 修改要改成以保存的, 过了保存的时期，只能选择今天
         if ($(input).val().length > 0 && dateVal > dateStart) {
-            $(this).datepicker('setDate', dateVal);
+            // $(this).datepicker('setDate', dateVal);
             // $(this).datepicker('setStartDate', dateVal);
         }
         else {
@@ -476,6 +490,10 @@ function initStartDateCalendar() {
  * @returns {Date}
  */
 function getStartDate() {
+    if (gbXudan) {
+        return gDateEnd;
+    }
+
     var able_date = new Date(dateToday);
 
     // 只有新订单才考虑3天后的问题

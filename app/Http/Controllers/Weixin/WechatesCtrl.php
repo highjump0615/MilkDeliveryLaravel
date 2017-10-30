@@ -1,8 +1,11 @@
 <?php
 namespace App\Http\Controllers\Weixin;
 use App\Http\Controllers\Controller;
+use App\Model\FactoryModel\Factory;
 use App\Model\WechatModel\WechatUser;
 use App\Model\WechatModel\Wxmenu;
+use DateTime;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
  
@@ -16,7 +19,19 @@ class WechatesCtrl extends Controller
     private $factoryid = '';
 
     //初始化appId,appSecret,encodingAESKey
-    public function __construct($appId = '', $appSecret = '', $apptoken = '', $encodingAESKey = '', $factoryname = '', $factoryid = ''){
+    public function __construct(){
+    }
+
+    /**
+     * 填写参数
+     * @param string $appId
+     * @param string $appSecret
+     * @param string $encodingAESKey
+     * @param string $apptoken
+     * @param string $factoryname
+     * @param string $factoryid
+     */
+    private function fillParam($appId = '', $appSecret = '', $encodingAESKey = '', $apptoken = '', $factoryname = '', $factoryid = '') {
         $this->appId = $appId;
         $this->appSecret = $appSecret;
         $this->apptoken = $apptoken;
@@ -24,7 +39,41 @@ class WechatesCtrl extends Controller
         $this->factoryname = $factoryname;
         $this->factoryid = $factoryid;
     }
-	
+
+    /**
+     * 用参数初始化
+     * @param string $appId
+     * @param string $appSecret
+     * @param string $encodingAESKey
+     * @param string $apptoken
+     * @param string $factoryname
+     * @param string $factoryid
+     * @return WechatesCtrl
+     */
+    public static function withParam($appId = '', $appSecret = '', $encodingAESKey = '', $apptoken = '', $factoryname = '', $factoryid = '') {
+        $instance = new self();
+        $instance->fillParam($appId, $appSecret, $encodingAESKey, $apptoken, $factoryname, $factoryid);
+
+        return $instance;
+    }
+
+    /**
+     * 用奶厂对象初始化
+     * @param $factory
+     * @return WechatesCtrl
+     */
+    public static function withFactory($factory) {
+        $instance = new self();
+        $instance->fillParam($factory->app_id,
+            $factory->app_secret,
+            $factory->app_encoding_key,
+            $factory->app_token,
+            $factory->name,
+            $factory->id);
+
+        return $instance;
+    }
+
 	//认证token
     public function valid()
     {
@@ -105,7 +154,7 @@ class WechatesCtrl extends Controller
 
 	//微信用户添加(修改)数据库
 	private function WechatUsers($FromUserName, $eventKey) {
-		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
+		$accessToken = $this->accessToken();
 		$jsoninfo    = $this->getFanInfo($accessToken,$FromUserName);
 
 		$wxusers = WechatUser::where('openid', $jsoninfo['openid'])
@@ -150,19 +199,45 @@ class WechatesCtrl extends Controller
         $result = sprintf($textTpl, $object->FromUserName, $object->ToUserName, time(), $content);
         return $result;
     }
+
 	//获取accessToken
-	public function accessToken($appid,$appsecret)
+	public function accessToken()
 	{
-		$url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=$appid&secret=$appsecret";
-        $accessTokenJson = $this->sendGetRequest($url);
-        if($accessTokenJson == '') return '';
-        else{
-            $accessTokenArr = json_decode($accessTokenJson, true);
-            if(empty($accessTokenArr['errcode']) AND !empty($accessTokenArr['access_token'])){
-                return $accessTokenArr['access_token'];
-            }else return '';
+        $strAccessToken = "";
+	    $ft = Factory::find($this->factoryid);
+
+	    $dateCurrent = new DateTime("now");
+	    $dateExpire = new DateTime($ft->access_token_expire_at);
+
+	    // 从数据库获取
+	    if (!empty($ft->access_token) && ($dateExpire > $dateCurrent)) {
+            return $ft->access_token;
         }
+
+	    $client = new Client();
+
+		$url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="
+            . $this->appId . "&secret=" . $this->appSecret;
+
+        $accessTokenJson = $client->request('GET', $url)->getBody();
+
+        if (!empty($accessTokenJson)) {
+            $accessTokenArr = json_decode($accessTokenJson, true);
+            if (empty($accessTokenArr['errcode']) AND !empty($accessTokenArr['access_token'])){
+                $strAccessToken = $accessTokenArr['access_token'];
+
+                // 保存到数据库
+                $ft->access_token = $strAccessToken;
+                $dateCurrent->add(new \DateInterval("PT7200S"));
+                $ft->access_token_expire_at = $dateCurrent;
+
+                $ft->save();
+            }
+        }
+
+        return $strAccessToken;
 	}
+
 	//获取用户openid
 	public function codes($code){
 		$url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=".$this->appId."&secret=".$this->appSecret."&code=".$code."&grant_type=authorization_code";			
@@ -205,22 +280,9 @@ class WechatesCtrl extends Controller
 		$jsonmenu = '{
 		    "button":[
 		    {
-		        "name": "奶吧",
+		        "name": "鲜奶配送",
 		        "type": "view",
 		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/qianye&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-            },
-            {
-                "name":"经销商",
-                "sub_button":[{
-                    "name": "计划管理",
-                    "type": "view",
-                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-                },
-                {
-                    "name": "签收管理",
-                    "type": "view",
-                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/shangpinliebiao&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-                }]
             },
             {
                 "name":"获取红包",
@@ -229,10 +291,15 @@ class WechatesCtrl extends Controller
                     "type": "view",
                     "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/share&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
                 }]
+            },
+            {
+		        "name": "个人中心",
+		        "type": "view",
+		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/gerenzhongxin&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
             }]
 		 }';
 
-		$accessToken = $this->accessToken($this->appId,$this->appSecret); 
+		$accessToken = $this->accessToken();
 		$url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=".$accessToken;
 		$result = $this->sendGetRequest($url, $jsonmenu);
 		return $result;
