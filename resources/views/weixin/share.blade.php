@@ -79,7 +79,19 @@
         var strUrlDecoded = elem.value;
 
         wx.ready(function() {
+            // 发送给朋友
             wx.onMenuShareAppMessage({
+                title: '食尚新鲜',
+                desc: '圣牧低温牛奶',
+                link: strUrlDecoded,
+                imgUrl: '{{url("img/mark.png")}}',
+                success: function() {
+                },
+                cancel: function() {
+                }
+            });
+            // 朋友圈
+            wx.onMenuShareTimeline({
                 title: '食尚新鲜',
                 desc: '圣牧低温牛奶',
                 link: strUrlDecoded,
