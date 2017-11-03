@@ -2546,13 +2546,13 @@ class WeChatCtrl extends Controller
         $customer = Customer::where('phone', $phone)->first();
 
         if ($customer) {
-            $code = "11111";
+            $code = rand(10000,99999);
             $wxuser->phone_verify_code = $code;
             $wxuser->save();
 
             // 发送验证码
-//            $smsCtrl = new YimeiSmsCtrl();
-//            $smsCtrl->sendSMS($phone, $code);
+            $smsCtrl = new YimeiSmsCtrl();
+            $smsCtrl->sendSMS($phone, $code);
 
             return response()->json(['status' => 'success']);
         } else {
