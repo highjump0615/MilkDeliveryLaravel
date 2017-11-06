@@ -4,7 +4,10 @@
 @section('css')
 <style>
     .body {
-        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
     .title img {
         width: 40px;
@@ -18,16 +21,28 @@
         margin-left: 10px;
     }
     .content {
-        margin-top: 20px;
+        margin-top: 50px;
+        display: flex;
+        flex-direction: column;
+        font-size: 9pt;
+        font-weight: 200;
+    }
+    .content span {
+    }
+    .red-note {
+        color: red;
+        font-size: 12pt;
+        text-align: center;
+        margin-top: 10px;
+    }
+    .img-bonus {
+        width: 150px;
+        height: 77px;
+        align-self: flex-end;
     }
     .qrcode {
         width: 220px;
         height: 220px;
-    }
-    .qrcode {
-        margin-top: 30px;
-        margin-left: auto;
-        margin-right: auto;
     }
 </style>
 @endsection
@@ -38,14 +53,14 @@
     </div>
 
     <div class="body">
-        <div class="title">
-            <img src="{{$user->image_url}}">
-            <span><b>{{$user->name}}</b>推荐送奶平台</span>
-        </div>
 
-        <h4 class="content">
-            长按二维码关注公众号，红包满满。。。
-        </h4>
+        <div class="content">
+            <span>1、长按二维码关注公众号"食尚新鲜"，线上订奶即可成为会员</span>
+            <span>2、分享二维码到朋友圈，让好友也来分享来自基茵苏的新鲜牛奶</span>
+            <span>3、好友在线上订奶，分享朋友圈的你就可以收到超值红包</span>
+            <span class="red-note">把爱传下去快快行动起来哦~</span>
+        </div>
+        <img class="img-bonus" src="{{asset('/img/wechat/bonus.png')}}" />
 
         <div class="qrcode">
             <img src="{{$qrcode}}">
