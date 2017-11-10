@@ -447,6 +447,7 @@ input[type="number"].order_product_count_per, input[type="number"].one_product_t
 }
 #page-wrapper {
     min-width: 1200px;
+    background-color: white;
 }
 
 /* 表格左对齐 */

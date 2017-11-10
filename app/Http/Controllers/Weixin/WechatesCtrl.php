@@ -290,6 +290,11 @@ class WechatesCtrl extends Controller
                     "name": "分享",
                     "type": "view",
                     "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/share&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                },
+                {
+                    "name": "活动详情",
+                    "type": "view",
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/activity&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
                 }]
             },
             {

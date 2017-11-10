@@ -250,7 +250,9 @@
     <!--upload preview-->
     <script type="text/javascript" src="<?=asset('js/plugins/imgupload/jquery.uploadPreview.js')?>"></script>
 
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?170830')?>"></script>
+    <script type="text/javascript" defer src="<?=asset('js/pages/gongchang/ueditor_setting.js')?>"></script>
+
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?171110')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_show.js?170830')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?170930')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?171110')?>"></script>
 @endsection	
