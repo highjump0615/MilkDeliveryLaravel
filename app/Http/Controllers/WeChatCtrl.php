@@ -20,6 +20,7 @@ use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductCategory;
 use App\Model\ProductModel\ProductPrice;
 use App\Model\ReviewModel\Review;
+use App\Model\WechatModel\WechatActivity;
 use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
@@ -2747,6 +2748,23 @@ class WeChatCtrl extends Controller
         return view('weixin.share', [
             'user' => $wechat_user,
             'qrcode' => $strCodeUrl,
+        ]);
+    }
+
+    /**
+     * 打开活动详情
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showActivity(Request $request) {
+        // 初始化
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $activity = WechatActivity::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return view('weixin.activity', [
+            'content' => $content,
         ]);
     }
 }

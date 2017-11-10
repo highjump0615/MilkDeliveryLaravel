@@ -191,22 +191,9 @@ function delete_price_template(close_bt){
     init_price_template();
 }
 
-function ue_getContent() {
-    var arr = [];
-    arr.push(UE.getEditor('editor').getContent());
-    return (arr.join("\n"));
-}
-
 function ueditor_init() {
     //UE.getEditor('editor').setContent('');
     ue.setContent('');
-}
-
-
-function ue_getPlainTxt() {
-    var arr = [];
-    arr.push(UE.getEditor('editor').getPlainTxt());
-    console.log(arr.join('\n'))
 }
 
 function product_image_init() {
