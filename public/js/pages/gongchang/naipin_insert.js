@@ -3,8 +3,6 @@ var ue;//ueditor
 
 $(document).ready(function () {
     currentimgs = 0;
-
-    ue = UE.getEditor('editor');
 });
 
 /**

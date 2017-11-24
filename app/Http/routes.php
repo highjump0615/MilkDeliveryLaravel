@@ -138,6 +138,9 @@ Route::group(['middleware' => ['gongchang']], function () {
     //gongchang/Jichuxinxi/Shanpin/shanpinxiangqing
     Route::get('/gongchang/jichuxinxi/shangpin/shangpinxiangqing/{product_id}', array('as' => 'detail_product', 'uses' => 'ProductCtrl@show_detail_product'));
 
+    // 活动内容
+    Route::get('/gongchang/jichuxinxi/activity', 'FactoryCtrl@showActivity');
+    Route::post('/gongchang/jichuxinxi/activity', 'FactoryCtrl@saveActivity');
 
     //Gongchang/Jichuxinxi/naipinluru
     Route::get('/gongchang/jichuxinxi/shangpin/naipinluru', 'ProductCtrl@show_insert_product')->name('show_insert_product');
@@ -997,6 +1000,9 @@ Route::group(['prefix'=>'/weixin'], function(){
     // 分销
     Route::get('/share', 'WeChatCtrl@showShare');
     Route::get('/shareOther', 'WeChatCtrl@showShareOther');
+
+    // 活动详情
+    Route::get('/activity', 'WeChatCtrl@showActivity');
 
 });
 //

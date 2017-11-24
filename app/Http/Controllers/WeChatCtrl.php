@@ -20,6 +20,7 @@ use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductCategory;
 use App\Model\ProductModel\ProductPrice;
 use App\Model\ReviewModel\Review;
+use App\Model\WechatModel\WechatActivity;
 use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
@@ -2546,13 +2547,13 @@ class WeChatCtrl extends Controller
         $customer = Customer::where('phone', $phone)->first();
 
         if ($customer) {
-            $code = "11111";
+            $code = rand(10000,99999);
             $wxuser->phone_verify_code = $code;
             $wxuser->save();
 
             // 发送验证码
-//            $smsCtrl = new YimeiSmsCtrl();
-//            $smsCtrl->sendSMS($phone, $code);
+            $smsCtrl = new YimeiSmsCtrl();
+            $smsCtrl->sendSMS($phone, $code);
 
             return response()->json(['status' => 'success']);
         } else {
@@ -2747,6 +2748,23 @@ class WeChatCtrl extends Controller
         return view('weixin.share', [
             'user' => $wechat_user,
             'qrcode' => $strCodeUrl,
+        ]);
+    }
+
+    /**
+     * 打开活动详情
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showActivity(Request $request) {
+        // 初始化
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $activity = WechatActivity::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return view('weixin.activity', [
+            'content' => $content,
         ]);
     }
 }

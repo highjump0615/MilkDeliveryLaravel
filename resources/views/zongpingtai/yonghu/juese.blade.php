@@ -1,6 +1,5 @@
 @extends('zongpingtai.layout.master')
 @section('css')
-	<link href="<?=asset('css/plugins/iCheck/custom.css') ?>" rel="stylesheet">
 	<link href="<?=asset('css/plugins/added/build.css') ?>" rel="stylesheet">
 
 	<style>
