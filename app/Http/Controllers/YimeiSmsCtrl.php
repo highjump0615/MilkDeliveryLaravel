@@ -8,6 +8,8 @@ use App\Model\UserModel\Page;
 use DB;
 use App\Model\SystemModel\YimeiSms;
 
+require_once app_path() . "/Lib/ChuanglanSmsHelper/ChuanglanSmsApi.php";
+
 class YimeiSmsCtrl extends Controller
 {
     public function showYimei(Request $request){
@@ -67,29 +69,19 @@ class YimeiSmsCtrl extends Controller
         ]);
     }
 
+    /**
+     * 发送短信
+     * @param $phone
+     * @param $msg
+     */
     public function sendSMS($phone, $msg)
     {
-        $yimeiurl = YimeiSms::where('name', 'sms_yimei_url')->first();
         $yimeiurlserial = YimeiSms::where('name', 'sms_yimei_serial')->first();
         $yimeiurlpassword = YimeiSms::where('name', 'sms_yimei_password')->first();
 
-        $message = "您的验证码为:".$msg;
+        $message = "您的验证码是:".$msg;
 
-        $url = $yimeiurl->value."?cdkey=".$yimeiurlserial->value."&password=".$yimeiurlpassword->value."&phone=".$phone."&message=".$message;
-        $this->sendGetRequest($url);
-    }
-
-    // 发送get请求
-    private function sendGetRequest($url){
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,$url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);//不输出内容
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $result =  curl_exec($ch);
-        if (curl_errno($ch)) {return 'ERROR '.curl_error($ch);}
-        curl_close($ch);
-
-        return $result;
+        $clapi = new \ChuanglanSmsApi($yimeiurlserial->value, $yimeiurlpassword->value);
+        $clapi->sendSMS($phone, $message,'true');
     }
 }

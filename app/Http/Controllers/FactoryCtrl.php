@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Model\FactoryModel\Factory;
 use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
+use App\Model\WechatModel\WechatActivity;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
 use App\Model\WechatModel\Wxmenu;
@@ -267,6 +268,60 @@ class FactoryCtrl extends Controller
             'factory' => $factory,
             'factory_id' => $factory->id,
         ]);
+    }
+
+    /**
+     * 打开活动内容编辑页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showActivity(Request $request) {
+        $factory_id = $this->getCurrentFactoryId(true);
+        $activity = WechatActivity::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return $this->showActivityContent($content);
+    }
+
+    /**
+     * 打开活动页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    private function showActivityContent($content, $status = 0) {
+        $child = 'activity';
+        $parent = 'jichuxinxi';
+        $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
+
+        return view('gongchang.jichuxinxi.activity',[
+            'pages'=>$pages,
+            'child'=>$child,
+            'parent'=>$parent,
+
+            'content' => $content,
+            'status' => $status,
+        ]);
+    }
+
+    /**
+     * 保存活动内容
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function saveActivity(Request $request) {
+
+        $factory_id = $this->getCurrentFactoryId(true);
+        $content = $request->input('content');
+
+        $activity = WechatActivity::where('factory_id', $factory_id)->first();
+        if (empty($activity)) {
+            $activity = new WechatActivity;
+            $activity->factory_id = $factory_id;
+        }
+        $activity->content = $content;
+        $activity->save();
+
+        return $this->showActivityContent($content, 1);
     }
 
     /**

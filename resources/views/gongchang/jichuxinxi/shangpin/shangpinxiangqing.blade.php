@@ -327,8 +327,8 @@
                                         <label class="col-md-2 control-label">产品详情 : </label>
                                     </div>
                                     <div class="col-md-10" style="margin:0 auto; float: none;" id="ueditor_div">
-                                        <script id="editor" type="text/plain"
-                                                style="width: 100%;height:500px;"></script>
+                                        <div id="editor" type="text/plain"
+                                             style="width: 100%;height:500px;"></div>
                                     </div>
                                 </div>
                             </form>
@@ -362,27 +362,18 @@
 
     <!-- UE Editor -->
     <script type="text/javascript" charset="utf-8" src="<?=asset('ueditor/ueditor.config.js')?>"></script>
-    <script type="text/javascript" charset="utf-8" src="<?=asset('ueditor/ueditor.all.js')?>"></script>
+    <script type="text/javascript" charset="utf-8" src="<?=asset('ueditor/ueditor.all.min.js')?>"></script>
     <script type="text/javascript" charset="utf-8" src="<?=asset('ueditor/lang/zh-cn/zh-cn.js')?>"></script>
 
     <!--upload preview-->
     <script type="text/javascript" src="<?=asset('js/plugins/imgupload/jquery.uploadPreview.js')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?170830')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_common.js?171110')?>"></script>
+
+    <script type="text/javascript" defer src="<?=asset('js/pages/gongchang/ueditor_setting.js')?>"></script>
 
     <script defer>
 
         var names = [];
-        var ue;
-        ue = UE.getEditor('editor');
-
-        function show_ue_content(ue_data, ue) {
-            if (ue_data == "")
-                return;
-            var data1 = ue_data[0].data.toString();
-            ue.ready(function () {
-                ue.setContent(data1, false);
-            });
-        }
 
         function show_product_images(pid) {
             if (!pid)
@@ -460,12 +451,10 @@
             show_product_images(current_product_id);
 
             var ue_data = $.parseHTML("{{$product->uecontent}}");
-            var ue = UE.getEditor('editor');
-
-            show_ue_content(ue_data, ue);
+            show_ue_content(ue_data);
         });
 
     </script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_show.js?170830')?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?170930')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/naipin_insert.js?171110')?>"></script>
 @endsection
