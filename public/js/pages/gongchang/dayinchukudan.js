@@ -62,6 +62,8 @@ $('button[data-action = "print"]').click(function () {
         station_id: parseInt($('#input_stationid').val()),
         sender_name: $('#input_name').val(),
         car_num: $('#input_carnum').val(),
+        naizhantel: $('#input_naizhantel').val(),
+        tel: $('#input_tel').val(),
         box_data: aryBoxData
     };
 

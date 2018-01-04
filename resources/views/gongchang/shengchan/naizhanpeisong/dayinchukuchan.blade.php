@@ -100,14 +100,14 @@
 									<tr style="position: relative;">
 										<td colspan="2">
 												<label>奶站电话：</label>
-												<input type="text" value="{{$station->phone}}" />
+												<input type="text" id="input_naizhantel" value="{{$station->phone}}" />
 												<!-- 奶站id -->
 											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>	
 												
 										<td >
 												<label>电话：</label>
-												<input type="text" value="" />
+												<input type="text" id="input_tel" value="" />
 											<!-- 奶站id -->
 											<input type="hidden" id="input_stationid" value="{{$station->id}}" />
 										</td>

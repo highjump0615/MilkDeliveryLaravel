@@ -94,3 +94,7 @@ $(document).on('click','#search',function () {
 $('button[data-action = "print"]').click(function () {
     printContent('statistics_by_milkman', gnUserTypeStation, '配送员业务统计');
 });
+$('button[data-action = "export_csv"]').click(function () {
+    data_export('statistics_by_milkman', gnUserTypeStation, '配送员业务统计', 0, 1);
+});
+

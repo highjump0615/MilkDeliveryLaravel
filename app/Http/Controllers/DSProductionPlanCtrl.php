@@ -554,6 +554,8 @@ sum(group_sale * settle_product_price) as group_amount,sum(channel_sale * settle
                 foreach ($planInfoProduct[$p->id] as $pi) {
                     $plan_ordered_count += $pi->order_count;
                 }
+            }else{
+                    $plan_ordered_count = $total_ordered_count;
             }
 
             $p["change_order_amount"] = $total_ordered_count-$plan_ordered_count;

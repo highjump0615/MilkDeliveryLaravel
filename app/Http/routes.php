@@ -142,6 +142,10 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/jichuxinxi/activity', 'FactoryCtrl@showActivity');
     Route::post('/gongchang/jichuxinxi/activity', 'FactoryCtrl@saveActivity');
 
+    //帮助
+    Route::get('/gongchang/jichuxinxi/bangzhu', 'FactoryCtrl@showbangzhu');
+    Route::post('/gongchang/jichuxinxi/bangzhu', 'FactoryCtrl@savebangzhu');
+
     //Gongchang/Jichuxinxi/naipinluru
     Route::get('/gongchang/jichuxinxi/shangpin/naipinluru', 'ProductCtrl@show_insert_product')->name('show_insert_product');
     Route::post('api/gongchang/naipinluru/insert_product', 'ProductCtrl@insert_product');
@@ -1003,6 +1007,8 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     // 活动详情
     Route::get('/activity', 'WeChatCtrl@showActivity');
+    // 帮助
+    Route::get('/bangzhu', 'WeChatCtrl@showBangzhu');
 
 });
 //

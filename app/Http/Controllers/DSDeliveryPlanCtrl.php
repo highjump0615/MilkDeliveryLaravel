@@ -859,7 +859,7 @@ class DSDeliveryPlanCtrl extends Controller
         $milkman_info = array();
 
         $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
-
+       
         // 只有生成了配送列表之后才显示今日配送单
         if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true)) {
             $strAlertMsg = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
@@ -918,6 +918,8 @@ class DSDeliveryPlanCtrl extends Controller
             $changestatus['new_order_amount'] = 0;
             $changestatus['new_changed_order_amount'] = 0;
             $changestatus['milkbox_amount'] = 0;
+            $changestatus['jijiangdaoqi'] = 0;
+            $changestatus['jiridaoqi'] = 0;
 
             $milkman = null;
 
@@ -994,6 +996,27 @@ class DSDeliveryPlanCtrl extends Controller
                 $this->addToDeliveryInfoWithSort($delivery_info, $orderData);
             }
 
+            //查询配送计划
+            for ($dd=0; $dd <count($delivery_info) ; $dd++) { 
+                $order_id = $delivery_info[$dd]['id'];
+                $totle_send_time= DB::table('milkmandeliveryplan')
+                     ->select('deliver_at')
+                     ->where('order_id',$order_id)
+                     ->get();
+                $time = date('Y-m-d',time());
+                $jijiangdaoqi_time= array_slice($totle_send_time,-3,1);
+                $jinridaoqi_time= array_slice($totle_send_time,-1,1);
+                $delivery_info[$dd]['jijiangdaoqi'] = '0';
+                $delivery_info[$dd]['jinridaoqi'] = '0';
+                if($time == $jijiangdaoqi_time['0']->deliver_at){
+                    $delivery_info[$dd]['jijiangdaoqi'] = '1';
+                }
+                if($time == $jinridaoqi_time['0']->deliver_at){
+                    $delivery_info[$dd]['jinridaoqi'] = '1';
+                }
+                
+            }
+
             $milkman_info[$m]['delivery_info'] = $delivery_info;
 
             $milkman = null;
@@ -1018,7 +1041,6 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 在session保存数据
         $request->session()->put('deliver_list', $milkman_info);
-
         return view('naizhan.shengchan.jinripeisongdan',[
             'pages'         =>$pages,
             'child'         =>$child,
