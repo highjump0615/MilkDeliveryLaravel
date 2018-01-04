@@ -23,23 +23,23 @@
             <div class="wrapper-content">
                 <div class="ibox-content" style="border:none;">
                     <div class="feed-element" style="border-bottom: 1px #e7eaec solid ; padding-bottom: 5px;">
-                        <div class="col-md-3">
+                        <div class="col-md-3" style="margin-left:-4%">
                             <label class="col-md-6 text-right" style="padding-top: 5px;">配送员名称:</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" id="filter_milkman" style="width:100%;">
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="col-md-6 text-right" style="padding-top: 5px;">身份证号:</label>
-                            <div class="col-md-6">
+                        <div class="col-md-3" style="margin-left: -1%;width: 44%;">
+                            <label class="col-md-6 text-right" style="padding-top: 5px;width:20%">身份证号:</label>
+                            <div class="col-md-6" style="width:50%">
                                 <input type="text" class="form-control" id="filter_number" style="width:100%;">
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" style="margin-left:-14%">
                             <label class="col-md-4 text-right" style="padding-top: 5px;">区域:</label>
                             <div class="col-md-8">
                                 <div class="input-group">
-                                    <select id="filter_area" data-placeholder="" class="form-control"
+                                    <select style="width:130%" id="filter_area" data-placeholder="" class="form-control"
                                             class="chosen-select" tabindex="2" style="width:100%;">
                                         <option value="">全部</option>
                                         @foreach($streets as $s)
@@ -49,8 +49,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-success btn-m-d" data-action="show_selected">筛选</button>
+                        <div class="col-md-3" style="text-align:center;margin-left:-2%">
+                            <button type="button" class="btn btn-success btn-m-d" id="shaixuan" data-action="show_selected">筛选</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="print">打印</button>
                             <button class="btn btn-success btn-m-d btn-outline" data-action="export_csv">导出</button>
                         </div>
@@ -61,7 +61,8 @@
                     <div class="ibox">
                         <div class="feed-element">
                             <div class="col-md-5">
-                                <label class="col-md-3" style="padding-top: 5px;">姓名:</label>
+                                <label class="col-md-3" style="padding-top: 5px;width: 20%;
+    margin-left: 5%;">姓名:</label>
                                 <div class="col-md-9">
                                     <input type="text" class="form-control" id="milkman" style="width:100%;">
                                 </div>
@@ -70,7 +71,8 @@
                         </div>
                         <div class="feed-element">
                             <div class="col-md-5">
-                                <label class="col-md-3" style="padding-top: 5px;">电话:</label>
+                                <label class="col-md-3" style="padding-top: 5px;width: 20%;
+    margin-left: 5%;">电话:</label>
                                 <div class="col-md-9">
                                     <input type="text" id="phone" name="phone" class="form-control" style="width:100%;">
                                 </div>
@@ -105,7 +107,7 @@
 
                             <div class="col-md-12 wrapper-content">
                                 <div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-2" style="margin-left:0.31%">
                                         <label class="control-label">小区添加</label>
                                     </div>
                                     <div class="col-md-10">
@@ -253,5 +255,13 @@
 
     <script src="<?=asset('js/plugins/chosen/chosen.jquery.js') ?>"></script>
     <script src="<?=asset('js/pages/naizhan/peisongyuan_register.js')?>"></script>
+    <script>
+    document.onkeydown=function(event){
+        e = event ? event : (window.event ? window.event : null);
+           if (e.keyCode == 13){
+              document.getElementById("shaixuan").click();
+           }
+          }
+</script>
 
 @endsection

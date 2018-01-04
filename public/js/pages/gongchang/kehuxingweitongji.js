@@ -14,3 +14,7 @@ $('#data_range_select .input-daterange').datepicker({
 $('button[data-action = "print"]').click(function () {
     printContent('table1', gnUserTypeFactory, '客户行为统计');
 });
+
+$('button[data-action = "export_csv"]').click(function () {
+    data_export('table1', gnUserTypeStation, '客户行为统计', 0, 1);
+});

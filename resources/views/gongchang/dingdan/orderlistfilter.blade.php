@@ -235,6 +235,7 @@
             <input type="text"
                    class="form-control"
                    name="end_date"
+                   disabled
                    @if (!empty($endDate)) value="{{$endDate}}" @endif/>
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
         </div>

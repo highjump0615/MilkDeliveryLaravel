@@ -1,2 +1,3 @@
 *.css linguist-vendored
 *.less linguist-vendored
+* text=auto

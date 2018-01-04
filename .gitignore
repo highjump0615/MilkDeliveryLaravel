@@ -4,6 +4,7 @@ Homestead.json
 .env
 /.idea
 /.svn
+/public/img/ads/
 /public/img/order/
 /public/img/product/
 /public/img/station/

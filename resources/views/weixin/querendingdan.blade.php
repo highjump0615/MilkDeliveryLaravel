@@ -139,7 +139,7 @@
         var today = "{{getCurDateString()}}";
         var order_id;
 
-        //调用微信JS api 支付
+        // 调用微信JS api 支付
         function jsApiCall() {
             WeixinJSBridge.invoke(
                     'getBrandWCPayRequest',
@@ -155,7 +155,7 @@
                             window.location = SITE_URL + "weixin/zhifuchenggong?order=" + order_id;
                         }
                         else {
-                            //                            alert('支付失败了');
+                                                       // alert(res.err_msg);
                             window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
                         }
                     }

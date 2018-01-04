@@ -18,3 +18,7 @@ $(document).on('click','#search',function () {
 $('button[data-action = "print"]').click(function () {
     printContent('table1', gnUserTypeStation, '订单剩余量统计');
 });
+
+$('button[data-action = "export_csv"]').click(function () {
+    data_export('table1', gnUserTypeStation, '订单剩余量统计', 0, 1);
+});

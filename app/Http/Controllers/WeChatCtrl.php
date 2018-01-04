@@ -21,6 +21,7 @@ use App\Model\ProductModel\ProductCategory;
 use App\Model\ProductModel\ProductPrice;
 use App\Model\ReviewModel\Review;
 use App\Model\WechatModel\WechatActivity;
+use App\Model\WechatModel\WechatBangzhu;
 use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
@@ -86,7 +87,7 @@ class WeChatCtrl extends Controller
             ->where('status', Product::PRODUCT_STATUS_ACTIVE)
             ->orderBy('id', 'desc')
             ->orderBy('updated_at', 'desc')
-            ->take(4)
+            // ->take(4)
             ->get();
 
         $product_list = [];
@@ -2767,4 +2768,16 @@ class WeChatCtrl extends Controller
             'content' => $content,
         ]);
     }
+
+    public function showBangzhu(Request $request) {
+        // 初始化
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $activity = WechatBangzhu::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return view('weixin.bangzhu', [
+            'content' => $content,
+        ]);
+    }    
 }

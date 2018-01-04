@@ -95,8 +95,11 @@
 									<td></td>
 									@if($i==1)
 									<td rowspan="{{count($mi['milkman_products'])}}">
+										还有三次到期心型符号标记<br>
+										今日到期X型符号标记<br>
+										新增订单星型符号标记<br>
 										新增数量：{{$mi['milkman_changestatus']['new_order_amount']}}瓶<br>
-										配送规则修改：{{$mi['milkman_changestatus']['new_changed_order_amount']}}瓶<br>
+								   		配送规则修改：{{$mi['milkman_changestatus']['new_changed_order_amount']}}瓶<br>
 										奶箱安装数量：{{$mi['milkman_changestatus']['milkbox_amount']}}
 									</td>
 									@endif
@@ -129,8 +132,16 @@
 									<tr>
 									<td>
 										<!-- 如果是订单第一次配送，加星号标出来 -->
+										<!-- 如果是订单还有三天到期，加时间符号标出来 -->
+										<!-- 如果是订单第一次配送，加X号标出来 -->
 										@if($oi->flag == 1)
 											<i class="fa fa-star"></i>
+										@endif
+										@if($oi->jijiangdaoqi == 1)
+											<i class="fa fa-heart"></i>
+										@endif
+										@if($oi->jinridaoqi== 1)
+											<i class="fa fa-remove"></i>
 										@endif
 										{{$i}}
 									</td>
