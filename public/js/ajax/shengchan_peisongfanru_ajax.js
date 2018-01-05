@@ -144,20 +144,9 @@ $('#date_select .input-group.date').datepicker({
 });
 
 $('button[data-action = "print"]').click(function () {
-
-    var sendData = [];
-
-    var printContents;
-
-    printContents = document.getElementById("delivered_info").outerHTML;
-    var originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-
-    window.print();
-    document.body.innerHTML = originalContents;
-    location.reload();
+    printContent('delivered_info', 0, '');
 });
 
 $('#return').click(function () {
     window.location = SITE_URL + "naizhan/shengchan/peisongliebiao";
-})
+});
