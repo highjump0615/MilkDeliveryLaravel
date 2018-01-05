@@ -183,5 +183,5 @@
 @endsection
 @section('script')
 	<!--Save & Cancel Information-->
-	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js') ?>"></script>
+	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180105') ?>"></script>
 @endsection
