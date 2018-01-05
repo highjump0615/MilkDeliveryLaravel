@@ -101,6 +101,9 @@
 						<tbody>
 						<?php $i=0; ?>
 						@foreach($DeliveryStations_info as $di)
+							@if (count($di->station_plan) <= 0)
+								@continue;
+							@endif
 							<?php $i++; $j=0; ?>
 							@foreach($di->station_plan as $ds)
 								<?php $j++; ?>
