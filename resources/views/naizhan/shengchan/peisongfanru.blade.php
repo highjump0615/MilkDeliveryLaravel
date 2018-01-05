@@ -91,12 +91,10 @@
 								<tr class="order_info" id="{{$di->id}}" ordertype="{{$di->delivery_type}}">
 									@if($j == 1)
 									<td rowspan="{{count($di->product)}}" class="by_order" value="{{$di->id}}">{{$i}}</td>
-									<td  rowspan="{{count($di->product)}}">
-										{{$di->address}}
-									</td>
+									<td rowspan="{{count($di->product)}}" class="text-left">{{$di->address}}</td>
 									@if($di->delivery_type==1)
-										<td rowspan="{{count($di->product)}}">
-											{{$di->customer->name}}
+										<td rowspan="{{count($di->product)}}"
+											>{{$di->customer->name}}
 										</td>
 									@else
 										<td rowspan="{{count($di->product)}}">
