@@ -855,9 +855,13 @@ class DeliveryStation extends Model
         // 正常是返回当天
         $dateStart = getCurDateString();
 
-        // 已生成配送列表，返回第二天
-        if (DSDeliveryPlan::getDeliveryPlanGenerated($this->id)) {
-            $dateStart = getNextDateString();
+        // 获取生成配送单的最后日期
+        $dateGenerated = DSDeliveryPlan::where('station_id', $this->id)
+            ->where('generated', '>', 0)
+            ->max('deliver_at');
+
+        if ($dateGenerated) {
+            $dateStart = max($dateStart, getNextDateString($dateGenerated));
         }
 
         return $dateStart;

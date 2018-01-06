@@ -269,7 +269,7 @@ class OrderCtrl extends Controller
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->first();
+            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get();
 
             foreach ($plans as $plan) {
                 // 已生成配送列表
