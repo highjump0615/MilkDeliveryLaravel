@@ -851,6 +851,10 @@ class DeliveryStation extends Model
         $this->save();
     }
 
+    /**
+     * 获取可更改日期
+     * @return mixed|string
+     */
     public function getChangeStartDate() {
         // 正常是返回当天
         $dateStart = getCurDateString();

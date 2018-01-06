@@ -375,8 +375,7 @@
         var today = new Date();
         var gap_day = parseInt("{{$gap_day}}");
         var status = $('#order_status').val();
-        var order_start_at = "{{$order->start_at}}";
-        var order_start_date = new Date(order_start_at);
+        var order_start_date = new Date("{{$order->deliveryStation->getChangeStartDate()}}");
         var order_end_date = new Date("{{$order->order_end_date}}");
 
         var stop_from = new Date("{{$order->stop_at}}");
@@ -394,7 +393,7 @@
     <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
-    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js') ?>"></script>
+    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js?180106') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
 
 
