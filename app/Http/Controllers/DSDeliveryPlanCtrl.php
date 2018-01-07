@@ -849,7 +849,16 @@ class DSDeliveryPlanCtrl extends Controller
     public function showJinripeisongdan(Request $request){
 
         $current_station_id = $this->getCurrentStationId();
-        $deliver_date_str = getCurDateString();
+
+        // 配送日期，默认是今日
+        $deliver_date_str = $request->input('current_date');
+        if (empty($deliver_date_str)){
+            // 从session获取日期
+            $deliver_date_str = $request->session()->get($this->kDateDeliverManage);
+            if (empty($deliver_date_str)) {
+                $deliver_date_str = getCurDateString();
+            }
+        }
 
         $child = 'jinripeisongdan';
         $parent = 'shengchan';
@@ -861,7 +870,7 @@ class DSDeliveryPlanCtrl extends Controller
         $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
        
         // 只有生成了配送列表之后才显示今日配送单
-        if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true)) {
+        if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true, $deliver_date_str)) {
             $strAlertMsg = '您还没有生成今日配送单，请进入配送管理页面，去生成配送列表。';
 
             return view('naizhan.shengchan.jinripeisongdan',[
@@ -872,6 +881,7 @@ class DSDeliveryPlanCtrl extends Controller
 
                 'milkman_info'  =>$milkman_info,
                 'alert_msg'     =>$strAlertMsg,
+                'date'          =>$deliver_date_str,
             ]);
         }
 
@@ -1048,6 +1058,7 @@ class DSDeliveryPlanCtrl extends Controller
             'current_page'  =>$current_page,
 
             'milkman_info'  =>$milkman_info,
+            'date'          =>$deliver_date_str,
         ]);
     }
 
