@@ -326,6 +326,7 @@ function save_distribute(button) {
                 $('.alert-danger').removeClass('hidden');
 
                 // 恢复按钮
+                $(button).html('生成今日配送单');
                 $(button).removeAttr('disabled');
             }
         },
@@ -390,6 +391,7 @@ function saveChangedDistribution() {
 $(document).on('click','.shengchan-peisong',function(e){
 
     // 防止二次点击，把按钮禁止
+    $(this).html('正在生成...');
     $(this).attr('disabled', 'disabled');
 
     save_distribute(this);

@@ -21,14 +21,10 @@
 
 		<div class="row wrapper">
 			<div class="wrapper-content">
-
-				@if(isset($alert_msg) != 0)
-					<label class="redalert">{{$alert_msg}}</label>
-				@endif
 			
 				<div class="ibox-content">
 					<div class="feed-element">
-						<div class="col-md-3 col-md-offset-3">
+						<div class="col-md-3">
 							<label class="col-lg-4" style="padding-top: 5px;">配送员:</label>
 							<div class="col-lg-8">
 								<select data-placeholder="" id="milkman_name" class="form-control chosen-select" style="width:100%;" tabindex="2">
@@ -38,15 +34,25 @@
 								</select>
 							</div>	
 						</div>
-						<div class="col-md-4 col-md-offset-2">
+						<div class="form-group col-md-5" id="date_select">
+							<label class="col-sm-2 control-label" style="padding-top:5px;">日期:</label>
+							<div class="input-group date col-lg-8">
+								<input type="text" class="form-control" value="{{$date}}" id="search_date"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							</div>
+						</div>
+						<div class="col-md-offset-1 col-md-3"  style="padding-top:5px;">
 							{{--<button type="button" class="btn btn-success btn-m-d">筛选</button>--}}
 							{{--&nbsp;--}}
-							<a href="{{url('/naizhan/shengchan/jinripeisongdan/export')}}" class="btn btn-success btn-m-d">导出</a>
+							<a href="{{url('/naizhan/shengchan/jinripeisongdan/export')}}" class="btn btn-success btn-sm">导出</a>
 							&nbsp;
-							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
+							<button class="btn btn-success btn-outline btn-sm" data-action="print">打印</button>
 						</div>
 					</div>
 				</div>
+
+				@if(isset($alert_msg) != 0)
+					<label class="redalert">{{$alert_msg}}</label>
+				@endif
 
 				<div><hr></div>
 
@@ -179,5 +185,23 @@
 @endsection
 
 @section('script')
+	<script type="text/javascript">
+        $(document).ready(function() {
+            $('#date_select .input-group.date').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: false,
+                autoclose: true
+            });
+		});
+
+        $(document).on('change','#date_select',function(){
+            var current_date = $('#search_date').val();
+            // 日期筛选
+            var strUrl = SITE_URL+"naizhan/shengchan/jinripeisongdan?current_date="+current_date + "";
+            window.location.href = strUrl;
+        });
+	</script>
 	<script src="<?=asset('js/pages/naizhan/jinripeisongdan.js') ?>"></script>
 @endsection

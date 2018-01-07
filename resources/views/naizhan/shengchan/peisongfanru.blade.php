@@ -47,7 +47,7 @@
 							{{--&nbsp;--}}
 							{{--<a href="">导出</a>--}}
 							&nbsp;
-							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
+							<button class="btn btn-success btn-outline btn-sm" data-action="print">打印</button>
 						</div>
 					</div>
 				</div>
