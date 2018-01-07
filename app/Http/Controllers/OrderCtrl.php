@@ -2838,6 +2838,7 @@ class OrderCtrl extends Controller
             ->forceDelete();
 
         MilkManDeliveryPlan::where('order_id', $order->id)
+            ->whereNull('milkman_id')
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
             ->update([
                 'changed_plan_count' => 0,
