@@ -85,10 +85,17 @@ function confirmdelivery() {
     });
 
     var table_info = [];
-    var i = 0;
+
     $('#delivery_table tr.order_info').each(function () {
         var order_id = $(this).attr('id');
         var oder_product_id = $(this).find('.delivered_count').attr('id');
+
+        // 只添加输入框的内容
+        var isEditted = $(this).find('.delivered_count').attr('contenteditable');
+        if (!isEditted) {
+            return;
+        }
+
         var delivered_product_count = $(this).find('.delivered_count').text();
         var delivery_type = $(this).attr('ordertype');
         var report = $(this).find('.report').text();
@@ -103,8 +110,8 @@ function confirmdelivery() {
             report: report,
             order_id:order_id,
         };
-        table_info[i] = formData;
-        i++;
+
+        table_info.push(formData);
     });
     var send_type = "POST";
 

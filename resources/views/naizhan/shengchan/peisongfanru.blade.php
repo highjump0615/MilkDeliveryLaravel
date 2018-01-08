@@ -163,7 +163,7 @@
 								</div>
 							</div>
 							</div>
-							@if (!$is_todayrefund)
+							@if ($saveAvailable)
 							<div style="text-align: center;">
 								<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
 							</div>
@@ -183,5 +183,5 @@
 @endsection
 @section('script')
 	<!--Save & Cancel Information-->
-	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180105') ?>"></script>
+	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180108') ?>"></script>
 @endsection
