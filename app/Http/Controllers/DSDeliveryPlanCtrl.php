@@ -1320,6 +1320,8 @@ class DSDeliveryPlanCtrl extends Controller
                 return $sort->order_id;
             });
 
+        $nNotReportCount = 0;
+
         foreach ($mdp_by_order as $r=>$by_order_id){
             // 获取订单信息
             $orderData = Order::find($r);
@@ -1339,6 +1341,10 @@ class DSDeliveryPlanCtrl extends Controller
                 $products[$pro]['report'] = $dp->report;
                 $products[$pro]['comment'] = $dp->comment;
                 $products[$pro]['status'] = $dp->status;
+
+                if ($dp->status != MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {
+                    $nNotReportCount++;
+                }
 
                 if($dp->plan_count != $dp->changed_plan_count)
                     $is_changed = 1;
@@ -1374,7 +1380,8 @@ class DSDeliveryPlanCtrl extends Controller
             'current_milkman'           =>$current_milkman,
             'bottle_types'              =>$bottle_types,
             'milkman_bottle_refunds'    =>$milkman_bottle_refunds,
-            'is_todayrefund'            =>$this->isDidReport($current_milkman, $deliver_date_str)
+            'is_todayrefund'            =>$this->isDidReport($current_milkman, $deliver_date_str),
+            'saveAvailable'             => ($nNotReportCount > 0),
         ]);
     }
 
