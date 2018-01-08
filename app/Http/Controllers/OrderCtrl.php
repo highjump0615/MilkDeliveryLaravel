@@ -963,10 +963,14 @@ class OrderCtrl extends Controller
         }
 
         // save customer
-        if (!empty($customer_id) && !empty($delivery_station_id) && empty($nMilkmanId)) {
+        if (!empty($customer_id)) {
             $customer = Customer::find($customer_id);
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $nMilkmanId;
+            if (!empty($delivery_station_id)) {
+                $customer->station_id = $delivery_station_id;
+            }
+            if (!empty($nMilkmanId)) {
+                $customer->milkman_id = $nMilkmanId;
+            }
             $customer->save();
         }
 
