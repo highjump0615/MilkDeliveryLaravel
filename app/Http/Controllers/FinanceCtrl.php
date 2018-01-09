@@ -1842,37 +1842,63 @@ class FinanceCtrl extends Controller
 
     /*ZONGPINGTAI FINANCE*/
     //Z1: ZONPINGTAI CAIWU First PAGE
-    public function show_wechat_orders()
+    public function show_wechat_orders(Request $request)
     {
-        $zuser = Auth::guard('zongpingtai')->user();
+        $retData = array();
 
-//        $first_m = date('Y-m-01');
-//        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $factories = Factory::where('status', Factory::FACTORY_STATUS_ACTIVE)->where('is_deleted', 0)->get();
-
-        $orders = Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+        $queryOrder = Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query) {
                 $query->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', '!=', Order::ORDER_WAITING_STATUS);
             })
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
-            ->orderBy('created_at')
-            ->get();
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS);
+
+        // 奶厂
+        $factory = $request->input('factory');
+        if (!empty($factory)) {
+            // 筛选
+            $queryOrder->where('factory_id', $factory);
+
+            // 添加筛选参数
+            $retData['factory'] = $factory;
+        }
+
+        // 下单日期
+        $start = $request->input('start');
+        if (!empty($start)) {
+            // 筛选
+            $queryOrder->whereDate('created_at', '>=', $start);
+
+            // 添加筛选参数
+            $retData['start'] = $start;
+        }
+        $end = $request->input('end');
+        if (!empty($end)) {
+            // 筛选
+            $queryOrder->whereDate('created_at', '<=', $end);
+
+            // 添加筛选参数
+            $retData['end'] = $end;
+        }
+
+        $factories = Factory::where('status', Factory::FACTORY_STATUS_ACTIVE)->where('is_deleted', 0)->get();
+
+        $orders = $queryOrder->orderBy('created_at')->paginate();
 
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';
         $current_page = 'zhangwu';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.caiwu.zhangwujiesuan', [
+
+        return view('zongpingtai.caiwu.zhangwujiesuan', array_merge($retData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
             'factories' => $factories,
             'wechat_orders' => $orders,
-        ]);
+        ]));
     }
 
     //Z1-1: Create Wechat Transaction
@@ -2134,6 +2160,7 @@ class FinanceCtrl extends Controller
     /**
      * 打开生成账单页面
      * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show_transaction_creation_page_for_wechat(Request $request) {
 
