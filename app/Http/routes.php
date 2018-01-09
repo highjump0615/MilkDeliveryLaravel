@@ -363,23 +363,25 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('api/gongchang/pingjia/pingjialiebiao/current_info/{review_id}','ReviewCtrl@getCurrentInfo');
     /*show Pingjialiebiao Page*/
     Route::get('/gongchang/pingjia/pingjiaxiangqing/{review_id}','ReviewCtrl@showPingjialiebiaoPage');
+
+    Route::get('/gongchang/shouye', function (Request $request) {
+        $child = '';
+        $parent = 'shouye';
+        $current_page = 'shouye';
+        $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
+        return view('gongchang.shouye', [
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page
+
+        ]);
+    });
 });
 
 Route::post('/gongchang/login', 'GongchangAuth\AuthController@login');
 Route::get('/gongchang/logout', 'GongchangAuth\AuthController@logout');
-Route::get('/gongchang/shouye', function (Request $request) {
-    $child = '';
-    $parent = 'shouye';
-    $current_page = 'shouye';
-    $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
-    return view('gongchang.shouye', [
-        'pages' => $pages,
-        'child' => $child,
-        'parent' => $parent,
-        'current_page' => $current_page
 
-    ]);
-});
 
 /*N-A-I-Z-H-A-N*/
 Route::get('/naizhan', function () {
