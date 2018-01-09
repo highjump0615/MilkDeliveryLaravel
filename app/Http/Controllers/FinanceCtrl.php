@@ -1901,159 +1901,6 @@ class FinanceCtrl extends Controller
         ]));
     }
 
-    //Z1-1: Create Wechat Transaction
-    public function create_transaction_for_wechat_deprecated(Request $request)
-    {
-        $start = $request->input('start');
-        $end = $request->input('end');
-        
-        if(!$start)
-            $start= date('Y-m-01');
-        if(!$end)
-            $end= (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $start_date = $start ? date('Y-m-d', strtotime($start)) : date('Y-m-01');
-        $end_date = $end ? date('Y-m-d', strtotime($end)) : (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $factory_id = $request->input('factory_id');
-        $station_id = $request->input('station_id');
-
-        if ( $factory_id && ($station_id == "none"))
-        {
-            if(!$start && !$end)
-            {
-                $orders = Order::where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if(!$start && $end)
-            {
-                $orders = Order::where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if($start && !$end){
-
-                $orders = Order::where('ordered_at', '>=', $start_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-            else {
-                $orders = Order::where('ordered_at', '>=', $start_date)->where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-        }
-        elseif ($factory_id && ($station_id != "none"))
-        {
-            if(!start && !$end)
-            {
-                $orders = Order::where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if(!$start && $end)
-            {
-                $orders = Order::where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            }
-            else if($start && !$end){
-                $orders = Order::where('ordered_at', '>=', $start_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-            else {
-                $orders = Order::where('ordered_at', '>=', $start_date)->where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            }
-        }
-        else {
-            return redirect()->route('show_wechat_orders');
-        }
-
-        if (count($orders) == 0) {
-            return redirect()->route('show_wechat_orders');
-        }
-
-        $res = array();
-
-        foreach ($orders as $order) {
-            $res[$order->delivery_station_id][] = $order;
-        }
-
-        foreach ($res as $station_to => $orders1) {
-
-            $total_amount = 0;
-            $order_from = "";
-            $order_to = "";
-
-            $order_count = count($orders1);
-
-            foreach ($orders1 as $o) {
-                if (!$order_from)
-                    $order_from = $o->start_at;
-                else {
-                    $of_date = date($order_from);
-                    $ff_date = date($o->start_at);
-                    if ($of_date > $ff_date)
-                        $order_from = $o->start_at;
-                }
-
-                if (!$order_to)
-                    $order_to = $o->order_end_date;
-                else {
-                    $of_date = date($order_to);
-                    $ff_date = date($o->order_end_date);
-                    if ($of_date < $ff_date)
-                        $order_to = $o->order_end_date;
-                }
-                $total_amount += $o->total_amount;
-            }
-
-            $t = new DSTransaction;
-            $t->station_id = $station_to;
-            $t->delivery_station_id = $station_to;
-
-            $t->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-            $t->total_amount = $total_amount;
-            $t->order_from = date('Y-m-d', strtotime($order_from));
-            $t->order_to = date('Y-m-d', strtotime($order_to));
-            $t->order_count = $order_count;
-            $t->status = DSTransaction::DSTRANSACTION_CREATED;
-
-            $t->save();
-
-            foreach ($orders1 as $o) {
-                $o->transaction_id = $t->id;
-                $o->save();
-            }
-        }
-
-        return response()->json(['status'=>'success', 'factory_id'=>$factory_id]);
-    }
-
     /**
      * 生成账单
      * @param $orders
@@ -2067,6 +1914,10 @@ class FinanceCtrl extends Controller
         $res = array();
 
         foreach ($orders as $order) {
+            if (empty($order->delivery_station_id)) {
+                continue;
+            }
+
             $res[$order->delivery_station_id][] = $order;
         }
 
