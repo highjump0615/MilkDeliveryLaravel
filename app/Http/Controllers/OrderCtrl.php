@@ -778,6 +778,9 @@ class OrderCtrl extends Controller
 
             $order->order_by_milk_card = $order_by_milk_card;
 
+            // 支付方式
+            $order->payment_type = $payment_type;
+
             $order->comment = $comment;
             $order->total_amount = $total_amount;
             $order->trans_check = $trans_check;
@@ -805,9 +808,6 @@ class OrderCtrl extends Controller
          * when the order was inserted in naizhan or factory, they can get the amount of money : total_order_amount-customer's remaining_amount
          */
         $order->remaining_amount = $total_amount;
-
-        // 支付方式
-        $order->payment_type = $payment_type;
 
         // 客户id
         if (!empty($customer_id)) {
