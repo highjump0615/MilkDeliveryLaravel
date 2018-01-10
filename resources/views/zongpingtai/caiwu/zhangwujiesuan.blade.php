@@ -102,8 +102,7 @@
                                 <span class="input-group-addon">至</span>
                                 <input type="text"
                                        class="input-md form-control"
-                                       name="end"
-                                       @if (!empty($end)) value="{{$end}}" @endif />
+                                       name="end" />
                             </div>
                         </div>
                         <div class="col-md-4">

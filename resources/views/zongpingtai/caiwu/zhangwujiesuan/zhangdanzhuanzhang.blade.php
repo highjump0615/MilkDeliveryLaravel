@@ -63,17 +63,19 @@
                             @endif
                         </select>
                     </div>
-                    <div class="col-md-2 col-md-offset-7" style="padding-top:5px;">
-                        <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
+                    <div class="col-md-2 pull-right">
+                        <div class="text-right">
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="show_selected">筛选</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="export_csv">导出</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="print">打印</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table id="order_table" class="table footable table-bordered">
+                        <table id="order_table" class="table table-bordered">
                             <thead style="background-color:#00cc55;">
                             <tr>
                                 <th data-sort-ignore="true">选择</th>
@@ -126,16 +128,9 @@
                                 @endforeach
                             @endif
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
 
-                        <table id="filter_table" class="table footable table-bordered">
+                        <table id="filter_table" class="table table-bordered">
                             <thead style="background-color:#00cc55;">
                             <tr>
                                 <th data-sort-ignore="true">选择</th>
@@ -153,13 +148,6 @@
                             </thead>
                             <tbody>
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
 
                         <div class="col-md-12">
