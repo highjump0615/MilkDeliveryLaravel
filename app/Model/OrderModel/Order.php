@@ -789,4 +789,28 @@ class Order extends Model
 
         return '下午';
     }
+
+    /**
+     * 获取暂停订单范围起始日期
+     * @return mixed|string
+     */
+    public function getPauseStartAvailableDate() {
+        $strDate = getCurDateString();
+
+        if (!empty($this->deliveryStation)) {
+            $strDate = max($strDate, $this->deliveryStation->getChangeStartDate());
+        }
+
+        $strDate = max($strDate, $this->getStartAtDate());
+
+        return $strDate;
+    }
+
+    /**
+     * 获取订单起送日期
+     * @return mixed
+     */
+    public function getStartAtDate() {
+        return $this->order_products->min('start_at');
+    }
 }
