@@ -839,8 +839,11 @@ class OrderCtrl extends Controller
             $order->deliveryarea_id = $deliveryarea_id;
         }
 
-        $order->receipt_number = $receipt_number;
-        $order->receipt_path = $receipt_path;
+        // 票据号
+        if (!empty($receipt_number)) {
+            $order->receipt_number = $receipt_number;
+            $order->receipt_path = $receipt_path;
+        }
 
         // 征订员
         if (!empty($order_checker_id)) {
