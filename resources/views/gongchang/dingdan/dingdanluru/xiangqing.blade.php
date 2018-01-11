@@ -375,7 +375,8 @@
         var today = new Date();
         var gap_day = parseInt("{{$gap_day}}");
         var status = $('#order_status').val();
-        var order_start_date = new Date("{{$order->deliveryStation->getChangeStartDate()}}");
+
+        var order_start_date = new Date("{{$order->getPauseStartAvailableDate()}}");
         var order_end_date = new Date("{{$order->order_end_date}}");
 
         var stop_from = new Date("{{$order->stop_at}}");
