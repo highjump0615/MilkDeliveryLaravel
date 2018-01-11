@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="ibox float-e-margins">
+            <div class="ibox">
                 <div class="ibox-content">
 
                     <table class="table table-bordered" id="address_tb">
@@ -295,6 +295,6 @@
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
     <script type="text/javascript" src="<?=asset('js/plugins/tagsinput/bootstrap-tagsinput.js') ?>"></script>
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/address_manage.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/address_manage.js?180111')?>"></script>
 
 @endsection

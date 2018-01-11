@@ -17,11 +17,6 @@ $(document).ready(function () {
     });
 });
 
-//Export
-$('button[data-action = "export_csv"]').click(function () {
-    data_export('order_table', 0, '', 0, 0);
-});
-
 //Pring
 $('button[data-action = "print"]').click(function () {
     printContent('order_table', 0, '');

@@ -339,23 +339,7 @@ $(document).ready(function () {
     });
 
     $('button[data-action = "export_csv"]').click(function () {
-
-        $.ajax({
-            type: 'GET',
-            url: API_URL + "gongchang/jichuxinxi/dizhiku/export",
-            success: function (data) {
-
-                console.log(data);
-
-                if (data.status == 'success') {
-                    var path = data.path;
-                    location.href = path;
-                }
-            },
-            error: function (data) {
-                //console.log(data);
-            }
-        })
+        data_export('address_tb', 0, '', 0, 0);
     });
 
 
