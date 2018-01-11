@@ -2983,6 +2983,7 @@ class OrderCtrl extends Controller
         $query .= " group by o.id 
             order by time desc
             into outfile '" . $filepath . "'
+            character set gbk 
             fields terminated by ','
             escaped by '\"'
             enclosed by '\"'
