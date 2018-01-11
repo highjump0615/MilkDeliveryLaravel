@@ -1105,7 +1105,7 @@ class OrderCtrl extends Controller
             $payment_type,
             $order_by_milk_card,
             $request->input('card_id'),
-            null,   // 备注
+            $request->input('comment'),   // 备注
             $request->input('order_product_id'),
             $request->input('factory_order_type'),
             $request->input('one_product_total_count'),
