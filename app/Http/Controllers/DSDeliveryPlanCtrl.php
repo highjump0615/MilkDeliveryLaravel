@@ -1124,7 +1124,18 @@ class DSDeliveryPlanCtrl extends Controller
 
                         // 序号
                         $i++;
-                        $rowData[] = $i;
+                        if ($oi->flag == 1) {
+                            $rowData[] = $i . ' 第一次配送';
+                        }
+                        else if ($oi->jijiangdaoqi == 1) {
+                            $rowData[] = $i . ' 即将到期';
+                        }
+                        else if ($oi->jinridaoqi == 1) {
+                            $rowData[] = $i . ' 今日到期';
+                        }
+                        else {
+                            $rowData[] = $i;
+                        }
 
                         // 地址
                         $rowData[] = $oi->getAddressSmall(Address::LEVEL_VILLAGE);
