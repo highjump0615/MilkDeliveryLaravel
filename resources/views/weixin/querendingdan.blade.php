@@ -137,7 +137,6 @@
     <script type="text/javascript">
 
         var today = "{{getCurDateString()}}";
-        var order_id;
 
         // 调用微信JS api 支付
         function jsApiCall() {
@@ -152,11 +151,11 @@
                         WeixinJSBridge.log(res.err_msg);
                         if (res.err_msg == 'get_brand_wcpay_request:ok') {
                             //                            alert('支付成功了');
-                            window.location = SITE_URL + "weixin/zhifuchenggong?order=" + order_id;
+                            makeOrder();
                         }
                         else {
                                                        // alert(res.err_msg);
-                            window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
+                            window.location = SITE_URL + "weixin/zhifushibai";
                         }
                     }
             );
@@ -172,7 +171,7 @@
 //                }
 
                 // 支付模块不存在, 当支付失败
-                window.location = SITE_URL + "weixin/zhifushibai?order=" + order_id;
+                window.location = SITE_URL + "weixin/zhifushibai";
             }
             else {
                 jsApiCall();
@@ -209,8 +208,10 @@
 
         });
 
-        //make order based on cart
-        $('#make_order').click(function () {
+        /**
+         * 下单
+         */
+        function makeOrder() {
             var comment = $('#comment').val();
             var group_id = $('#group_id').val();
 
@@ -236,15 +237,15 @@
                 success: function (data) {
                     console.log(data);
                     if (data.status == 'success') {
-                        order_id = data.order_id;
-                        callpay();
-                    } else if(data.status == "fail") {
+                        // 跳转到成功页面
+                        window.location = SITE_URL + "weixin/zhifuchenggong?order=" + data.order_id;
+                    }
+                    else if(data.status == "fail") {
                         if (data.message) {
                             show_err_msg(data.message);
                         }
 
                         $(order_bt).prop('disabled', false);
-//                        window.location = SITE_URL + "weixin/zhifushibai";
                     } else {
 
                         if (data.message) {
@@ -258,7 +259,13 @@
                     $(order_bt).prop('disabled', false);
                     show_warning_msg("操作失败");
                 }
-            })
+            });
+        }
+
+        //make order based on cart
+        $('#make_order').click(function () {
+            // 调用支付
+            callpay();
         });
 
         function go_page_address_list() {
