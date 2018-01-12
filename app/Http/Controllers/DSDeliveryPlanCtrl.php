@@ -871,7 +871,7 @@ class DSDeliveryPlanCtrl extends Controller
 
         $milkman_info = array();
 
-        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str)->first();
+        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str, false)->first();
        
         // 只有生成了配送列表之后才显示今日配送单
         if ($deliveryPlan && !DSDeliveryPlan::getDeliveryPlanGenerated($current_station_id, $deliveryPlan->order_product->product_id, true, $deliver_date_str)) {
@@ -1209,14 +1209,20 @@ class DSDeliveryPlanCtrl extends Controller
      * 获取查询当日配送明细的条件
      * @param $stationId
      * @param $deliverAt
+     * @param bool $generated
      * @return mixed
      */
-    private function getMilkmanDeliveryQuery($stationId, $deliverAt) {
-        return MilkManDeliveryPlan::where('station_id', $stationId)
+    private function getMilkmanDeliveryQuery($stationId, $deliverAt, $generated = true) {
+        $queryDeliveryPlan = MilkManDeliveryPlan::where('station_id', $stationId)
             ->where('deliver_at', $deliverAt)
-            ->whereNotNull('milkman_id')
             ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
             ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED]);
+
+        if ($generated) {
+            $queryDeliveryPlan->whereNotNull('milkman_id');
+        }
+
+        return $queryDeliveryPlan;
     }
 
     /**
