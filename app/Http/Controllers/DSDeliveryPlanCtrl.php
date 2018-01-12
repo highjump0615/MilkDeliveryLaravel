@@ -44,6 +44,7 @@ class DSDeliveryPlanCtrl extends Controller
 {
     private $kDateReport = "report_date";
     private $kDateDeliverManage = "dm_date";
+    private $kDateDeliverList = "dl_date";
 
     /**
      * 获取配送计划数据
@@ -860,6 +861,9 @@ class DSDeliveryPlanCtrl extends Controller
             }
         }
 
+        // 在session保存日期
+        $request->session()->put($this->kDateDeliverList, $deliver_date_str);
+
         $child = 'jinripeisongdan';
         $parent = 'shengchan';
         $current_page = 'jinripeisongdan';
@@ -1074,10 +1078,10 @@ class DSDeliveryPlanCtrl extends Controller
 
         // 从session获取数据
         $milkmanInfo = $request->session()->get('deliver_list');
+        $deliver_date_str = $request->session()->get($this->kDateDeliverList);
 
-        Excel::create('deliverList', function ($excel) use ($strFactory, $milkmanInfo) {
-            $strDate = getCurDateString();
-            $excel->sheet('今日配送单' . $strDate, function ($sheet) use ($strFactory, $milkmanInfo) {
+        Excel::create('deliverList', function ($excel) use ($strFactory, $milkmanInfo, $deliver_date_str) {
+            $excel->sheet('今日配送单' . $deliver_date_str, function ($sheet) use ($strFactory, $milkmanInfo, $deliver_date_str) {
                 $nRow = 1;
 
                 // 添加奶厂名称
@@ -1157,7 +1161,7 @@ class DSDeliveryPlanCtrl extends Controller
                         $rowData[] = $strCustomer;
 
                         // 配送时间
-                        $rowData[] = $oi->getDeliveryTimeDesc();
+                        $rowData[] = $deliver_date_str . " " . $oi->getDeliveryTimeDesc();
 
                         // 电话
                         $rowData[] = $oi->phone;
