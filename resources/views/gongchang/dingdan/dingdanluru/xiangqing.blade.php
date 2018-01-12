@@ -210,7 +210,7 @@
                                     <td>{{$order_products[$i]->product->simple_name}}</td>
                                     <td>{{$order_products[$i]->order_type_name}}</td>
                                     <td>{{$order_products[$i]->total_count}}</td>
-                                    <td>{{$order_products[$i]->remain_count}}</td>
+                                    <td>{{$order_products[$i]->getRemainCount()}}</td>
                                     <td>{{$order_products[$i]->start_at}}</td>
                                     <td>{{$order_products[$i]->avg}}</td>
                                     <td class="order_product_count_per">{{$order_products[$i]->count_per_day}}</td>

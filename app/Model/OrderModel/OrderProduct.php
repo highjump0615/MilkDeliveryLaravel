@@ -117,23 +117,36 @@ class OrderProduct extends Model
             return "";
     }
 
-    public function getRemainCountAttribute()
+    /**
+     * 获取到此日期的剩余数量
+     * @param null $date
+     * @return mixed
+     */
+    public function getRemainCount($date = null)
     {
         $total_count = $this->total_count;
 
         // 获取已配送的数量
-        $nDeliveredCount = MilkManDeliveryPlan::where('order_product_id', $this->id)
-            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->sum('delivered_count');
+        $queryDeliveryPlan = MilkManDeliveryPlan::where('order_product_id', $this->id)
+            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED);
+        if (!empty($date)) {
+            $queryDeliveryPlan->where('deliver_at', '<', $date);
+        }
+
+        $nDeliveredCount = $queryDeliveryPlan->sum('delivered_count');
         if (empty($nDeliveredCount)) {
             $nDeliveredCount = 0;
         }
 
         // 获取已生成配送单的数量
-        $nDeliveryCount = MilkManDeliveryPlan::where('order_product_id', $this->id)
+        $queryDeliveryPlan = MilkManDeliveryPlan::where('order_product_id', $this->id)
             ->where('status', '<', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->whereNotNull('milkman_id')
-            ->sum('delivery_count');
+            ->whereNotNull('milkman_id');
+        if (!empty($date)) {
+            $queryDeliveryPlan->where('deliver_at', '<', $date);
+        }
+
+        $nDeliveryCount = $queryDeliveryPlan->sum('delivery_count');
         if (empty($nDeliveryCount)) {
             $nDeliveryCount = 0;
         }
@@ -144,7 +157,7 @@ class OrderProduct extends Model
 
     public function getRemainAmountAttribute()
     {
-        return $this->remain_count * $this->product_price;
+        return $this->getRemainCount() * $this->product_price;
     }
 
     /**

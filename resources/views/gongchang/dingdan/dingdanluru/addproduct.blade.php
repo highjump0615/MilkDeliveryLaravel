@@ -53,7 +53,7 @@
                         $nCount = $order_product->total_count;
                     }
                     else {
-                        $nCount = $order_product->remain_count;
+                        $nCount = $order_product->getRemainCount();
                     }
                 }
             ?>
