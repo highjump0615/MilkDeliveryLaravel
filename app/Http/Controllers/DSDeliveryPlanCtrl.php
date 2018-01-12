@@ -966,7 +966,7 @@ class DSDeliveryPlanCtrl extends Controller
 
                     $name = $dp->order_product->product->simple_name;
                     $count = $dp->delivery_count;
-                    $nRemain = $dp->order_product->remain_count - $count;
+                    $nRemain = $dp->order_product->getRemainCount($deliver_date_str) - $count;
                     $products[] = $name . '*' . $count . '（剩' . $nRemain . '）';
 
                     if ($dp->plan_count != $dp->changed_plan_count)
@@ -1017,15 +1017,15 @@ class DSDeliveryPlanCtrl extends Controller
                      ->select('deliver_at')
                      ->where('order_id',$order_id)
                      ->get();
-                $time = date('Y-m-d',time());
+
                 $jijiangdaoqi_time= array_slice($totle_send_time,-3,1);
                 $jinridaoqi_time= array_slice($totle_send_time,-1,1);
                 $delivery_info[$dd]['jijiangdaoqi'] = '0';
                 $delivery_info[$dd]['jinridaoqi'] = '0';
-                if($time == $jijiangdaoqi_time['0']->deliver_at){
+                if($deliver_date_str == $jijiangdaoqi_time['0']->deliver_at){
                     $delivery_info[$dd]['jijiangdaoqi'] = '1';
                 }
-                if($time == $jinridaoqi_time['0']->deliver_at){
+                if($deliver_date_str == $jinridaoqi_time['0']->deliver_at){
                     $delivery_info[$dd]['jinridaoqi'] = '1';
                 }
                 

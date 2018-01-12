@@ -342,7 +342,7 @@ class WeChatCtrl extends Controller
                 $product_id = $product->id;
                 $photo_url = $product->photo_url1;
                 $product_name = $product->name;
-                $product_count = $op->remain_count;
+                $product_count = $op->getRemainCount();
                 $product_price = round($op->product_price, 3);
                 $product_amount = round($op->remain_amount, 3);
                 $delivery_type = $op->delivery_type;
@@ -377,7 +377,7 @@ class WeChatCtrl extends Controller
                     $product_id = $product->id;
                     $photo_url = $product->photo_url1;
                     $product_name = $product->name;
-                    $product_count = $op->remain_count;
+                    $product_count = $op->getRemainCount();
                     $product_price = round($op->product_price, 3);
                     $product_amount = round($op->remain_amount, 3);
                     $delivery_type = $op->delivery_type;
@@ -414,7 +414,7 @@ class WeChatCtrl extends Controller
                         $product_id = $product->id;
                         $photo_url = $product->photo_url1;
                         $product_name = $product->name;
-                        $product_count = $op->remain_count;
+                        $product_count = $op->getRemainCount();
                         $product_price = round($op->product_price, 3);
                         $product_amount = round($op->remain_amount, 3);
                         $delivery_type = $op->delivery_type;
