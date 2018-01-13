@@ -846,6 +846,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
     //Show wechat transactions not checked
     Route::get('/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/{factory_id}', 'FinanceCtrl@show_wechat_transaction_list_not_checked_in_zongpingtai');
+    Route::get('/zongpingtai/caiwu/transactions/wechat', 'FinanceCtrl@showWechatTransactions');
     Route::post('api/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/get_trans_data', 'FinanceCtrl@get_trans_data_for_wechat');
     Route::post('api/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/complete_trans', 'FinanceCtrl@complete_trans_for_wechat');
     //Show transaction record completed
