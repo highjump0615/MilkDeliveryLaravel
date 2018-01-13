@@ -761,9 +761,6 @@ class OrderCtrl extends Controller
             $status = Order::ORDER_WAITING_STATUS;
         }
 
-        // 该订单是否生成了账单
-        $trans_check = 0;
-
         //flatenter mode: default 2 -> call
         $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
 
@@ -783,7 +780,6 @@ class OrderCtrl extends Controller
 
             $order->comment = $comment;
             $order->total_amount = $total_amount;
-            $order->trans_check = $trans_check;
         }
         else if (!$order->isNewPassed() && $order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             //

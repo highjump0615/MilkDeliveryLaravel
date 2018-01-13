@@ -663,7 +663,7 @@ class Order extends Model
 
     /**
      * 获取录入奶站
-     * @return DeliveryStation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function station(){
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
@@ -671,7 +671,7 @@ class Order extends Model
 
     /**
      * 获取配送奶站
-     * @return DeliveryStation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function deliveryStation(){
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation', 'delivery_station_id', 'id');
