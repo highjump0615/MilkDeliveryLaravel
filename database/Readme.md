@@ -425,7 +425,7 @@ trans_check | tinyint | 1 | YES | 是否生成账单 | 1: 是<br>0: 否 | 0 |
 [transaction_id](#trans) | int | 11 | YES | 账单id | | |
 number | varchar | 45 | YES | 编号 | | 0 | F1S5C189O325
 [factory_id](#factory) | int | 11 | YES | 奶厂id | | |
-is_deleted | tinyint | 1 | YES | 是否已删除 | 0: 未删除<br>1: 已删除 | 0 |
+~~is_deleted~~ | tinyint | 1 | YES | 是否已删除 | 0: 未删除<br>1: 已删除 | 0 |
 created_at | datetime | | YES | 创建时间 | | | 2017-03-28 05:17:48
 updated_at | datetime | | YES | 更新时间 | | | 2017-03-28 05:17:48
 

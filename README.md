@@ -49,16 +49,24 @@ public/js/plugins/imgupload
 - [Laravel Excel插件](https://github.com/Maatwebsite/Laravel-Excel)
 - 微信支付PHP插件
 - 通过[亿美软通](http://www.emay.cn/)短信服务实现短信验证
+- 大规模数据的csv导入（订单列表）  
+```
+select * from TABLE  
+into outfile FILE
+character set gbk 
+fields terminated by ','
+escaped by '\"'
+enclosed by '\"'
+lines terminated by '\n';
+```
   
 ## Need to Improve  
 - 提高加载地区列表速度
 - 微信公众号、支付采用Laravel插件  
 - model里删除多余的appends属性, 换成get函数，提高性能
-- 屏幕小界面布局很难看
+- ~~屏幕小界面布局很难看~~
 - 微信端界面  
-- 数据显示需要分页查询  
+- ~~数据显示需要分页查询~~  
 - ~~整理所有垃圾代码~~ ```->get()->first()```, ```->get()->count()```  
 ... ...
 
-------
-Testing is in progress...
