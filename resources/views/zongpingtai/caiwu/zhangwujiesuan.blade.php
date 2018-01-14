@@ -41,13 +41,16 @@
         <div class="row wrapper">
             <div class="wrapper-content">
 
+                <form method="get" class="no-padding">
                 <div class="ibox-content">
                     <label class="col-md-1 text-right">公司</label>
                     <div class="col-md-2">
-                        <select id="filter_factory" class="chosen-select form-control">
+                        <select id="filter_factory" name="factory" class="chosen-select form-control">
                             @if(isset($factories))
-                                @foreach($factories as $factory)
-                                    <option value="{{$factory->id}}">{{$factory->name}}</option>
+                                @foreach($factories as $f)
+                                    <option value="{{$f->id}}"
+                                            @if (!empty($factory) && $factory == $f->id) selected @endif
+                                    >{{$f->name}}</option>
                                 @endforeach
                             @endif
                         </select>
@@ -62,29 +65,44 @@
                     <label class="col-md-offset-3 col-md-1 control-label text-right" style="padding-top:5px;">日期:</label>
                     <div class="col-md-3 data_range_select">
                         <div class="input-daterange input-group">
-                            <input id="filter_start_date" type="text" class="input-md form-control" name="start"/>
+                            <input id="filter_start_date"
+                                   type="text"
+                                   class="input-md form-control"
+                                   name="start"
+                                   @if (!empty($start)) value="{{$start}}" @endif />
                             <span class="input-group-addon">至</span>
-                            <input id="filter_end_date" type="text" class="input-md form-control" name="end"/>
+                            <input id="filter_end_date"
+                                   type="text"
+                                   class="input-md form-control"
+                                   name="end"
+                                   @if (!empty($end)) value="{{$end}}" @endif/>
                         </div>
                     </div>
 
-                    <div class="col-md-2" style="padding-top:5px;">
-                        <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
+                    <div class="col-md-2">
+                        <div class="text-right">
+                            <button class="btn btn-success btn-outline btn-sm" type="submit">筛选</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="export_csv">导出</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="print">打印</button>
+                        </div>
                     </div>
                 </div>
+                </form>
 
                 <div class="ibox-content">
                     <form class="col-md-7" method="post" id="create_transaction_form" action="create_transaction">
                         <input type="hidden" id="factory_id" name="factory_id" value="none">
                         <input type="hidden" id="station_id" name="station_id" value="none">
-                        <div class="col-md-8 form-group data_range_select">
+                        <div class="col-md-8 data_range_select">
                             <label class="col-md-4 control-label" style="padding-top:5px;">账单日期:</label>
                             <div class="input-daterange input-group col-md-8">
-                                <input type="text" class="input-md form-control" name="start"/>
+                                <input type="text"
+                                       class="input-md form-control"
+                                       name="start" />
                                 <span class="input-group-addon">至</span>
-                                <input type="text" class="input-md form-control" name="end"/>
+                                <input type="text"
+                                       class="input-md form-control"
+                                       name="end" />
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -104,7 +122,7 @@
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table id="order_table" class="footable table table-bordered" data-page-size="10">
+                        <table id="order_table" class="table table-bordered">
                             <thead>
                             <tr>
                                 <th data-sort-ignore="true">序号</th>
@@ -117,55 +135,28 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @if(isset($wechat_orders))
-                                @for($i= 0; $i< count($wechat_orders); $i++)
-                                    <tr>
-                                        <td>{{$i+1}}</td>
-                                        <td class="o_date">{{$wechat_orders[$i]->created_at}}</td>
-                                        <td>{{$wechat_orders[$i]->customer_name}}</td>
-                                        <td>{{$wechat_orders[$i]->total_amount}}</td>
-                                        <td>{{$wechat_orders[$i]->number}}</td>
-                                        <td class="o_factory_station" data-fid="{{$wechat_orders[$i]->factory_id}}"
-                                            data-sid="{{$wechat_orders[$i]->delivery_station_id}}">{{$wechat_orders[$i]->delivery_station_name}}</td>
-                                        @if($wechat_orders[$i]->transaction_id)
-                                            <td>已生成</td>
-                                        @else
-                                            <td>未生成</td>
-                                        @endif
-                                    </tr>
-                                @endfor
-                            @endif
+
+                            @for($i= 0; $i< count($wechat_orders); $i++)
+                                <tr>
+                                    <td>{{$i + $wechat_orders->firstItem()}}</td>
+                                    <td class="o_date">{{$wechat_orders[$i]->created_at}}</td>
+                                    <td>{{$wechat_orders[$i]->customer_name}}</td>
+                                    <td>{{$wechat_orders[$i]->total_amount}}</td>
+                                    <td>{{$wechat_orders[$i]->number}}</td>
+                                    <td class="o_factory_station" data-fid="{{$wechat_orders[$i]->factory_id}}"
+                                        data-sid="{{$wechat_orders[$i]->delivery_station_id}}">{{$wechat_orders[$i]->delivery_station_name}}</td>
+                                    @if($wechat_orders[$i]->transaction_id)
+                                        <td>已生成</td>
+                                    @else
+                                        <td>未生成</td>
+                                    @endif
+                                </tr>
+                            @endfor
+
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
 
-                        <table id="filter_table" class="footable table table-bordered" data-page-size="10">
-                            <thead>
-                            <tr>
-                                <th data-sort-ignore="true">序号</th>
-                                <th data-sort-ignore="true">时间</th>
-                                <th data-sort-ignore="true">客户名</th>
-                                <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">订单号</th>
-                                <th data-sort-ignore="true">收款方</th>
-                                <th data-sort-ignore="true">状态</th>
-                            </tr>
-                            </thead>
-                            <tbody></tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
-                        </table>
+                        <ul id="pagination_data" class="pagination-sm pull-right"></ul>
 
                     </div>
                 </div>
@@ -178,6 +169,18 @@
 
 @section('script')
 
-    <script type="text/javascript" src="<?=asset('js/pages/zongpingtai/zhangwujiesuan.js') ?>"></script>
+    <script type="text/javascript">
+        // 全局变量
+        var gnTotalPage = '{{$wechat_orders->lastPage()}}';
+        var gnCurrentPage = '{{$wechat_orders->currentPage()}}';
+
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
+    </script>
+
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
+
+    <script type="text/javascript" src="<?=asset('js/pages/zongpingtai/zhangwujiesuan.js?180109') ?>"></script>
 
 @endsection

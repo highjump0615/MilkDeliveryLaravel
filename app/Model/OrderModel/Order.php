@@ -663,7 +663,7 @@ class Order extends Model
 
     /**
      * 获取录入奶站
-     * @return DeliveryStation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function station(){
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation');
@@ -671,7 +671,7 @@ class Order extends Model
 
     /**
      * 获取配送奶站
-     * @return DeliveryStation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function deliveryStation(){
         return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation', 'delivery_station_id', 'id');
@@ -788,5 +788,29 @@ class Order extends Model
         }
 
         return '下午';
+    }
+
+    /**
+     * 获取暂停订单范围起始日期
+     * @return mixed|string
+     */
+    public function getPauseStartAvailableDate() {
+        $strDate = getCurDateString();
+
+        if (!empty($this->deliveryStation)) {
+            $strDate = max($strDate, $this->deliveryStation->getChangeStartDate());
+        }
+
+        $strDate = max($strDate, $this->getStartAtDate());
+
+        return $strDate;
+    }
+
+    /**
+     * 获取订单起送日期
+     * @return mixed
+     */
+    public function getStartAtDate() {
+        return $this->order_products->min('start_at');
     }
 }

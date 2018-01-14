@@ -981,7 +981,5 @@ class ImportCtrl extends Controller
 
             echo "<br />";
         }
-
-        return "Done!";
     }
 }

@@ -299,9 +299,18 @@ class WechatesCtrl extends Controller
             },
             {
 		        "name": "个人中心",
-		        "type": "view",
-		        "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/gerenzhongxin&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
-            }]
+                "sub_button":[{
+                    "name": "个人中心",
+                    "type": "view",
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/gerenzhongxin&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                },
+                {
+                "name": "帮助",
+                "type": "view",
+                "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=' . $this->appId . '&redirect_uri=' . $strUrl . '/bangzhu&response_type=code&scope=snsapi_userinfo&state='.$this->factoryid.'#wechat_redirect"
+                }]
+            }
+            ]
 		 }';
 
 		$accessToken = $this->accessToken();

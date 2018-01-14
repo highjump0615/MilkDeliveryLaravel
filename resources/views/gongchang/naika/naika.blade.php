@@ -172,10 +172,10 @@
                         </form>
                     </div>
 
-                    <table id="cardTable" class="footable table table-bordered" data-page-size="15">
+                    <table id="cardTable" class="footable table table-bordered" data-page-size="10">
                         <thead>
                         <tr>
-                            {{--<th data-sort-ignore="true">批次</th>--}}
+                            <!-- {{--<th data-sort-ignore="true">批次</th>--}} -->
                             <th data-sort-ignore="true">序号</th>
                             <th data-sort-ignore="true">卡号</th>
                             <th data-sort-ignore="true">面值</th>
@@ -190,15 +190,11 @@
                         </thead>
                         <tbody>
                         <?php $i = 0; $k = 0; ?>
-                        @foreach($milkcards as $mc)
-                            <?php $i++; $j = 0;?>
-                            @foreach($mc as $m)
-                                <?php $j++; $k++; ?>
+                        @foreach($milkcards as $m)
+        
                                 <tr id="{{$m->batch_number}}">
-                                    @if($j == 1)
-                                        {{--<td rowspan="{{count($mc)}}">{{$m->batch_number}}</td>--}}
-                                    @endif
-                                    <td>{{$k}}</td>
+                                   
+                                    <td>{{$m->id}}</td>
                                     <td class="number">{{$m->number}}</td>
                                     <td class="balance">{{$m->balance}}</td>
                                     <td class="balance">{{$m->product}}</td>
@@ -225,18 +221,12 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @endforeach
+                             <?php $i++; ?>
                         @endforeach
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="10">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
                     </table>
-
+                    <ul id="pagination_data" class="pagination-sm pull-right"></ul>    
+                        
                     <table id="filteredTable" class="footable table table-bordered" data-page-size="15"
                            style="display: none">
                         <thead>
@@ -256,14 +246,8 @@
                         </thead>
                         <tbody>
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="10">
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
                     </table>
+                    <ul id="pagination_data" class="pagination-sm pull-right"></ul>
                 </div>
             </div>
         </div>
@@ -272,4 +256,18 @@
 
 @section('script')
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/naika_admin.js')?>"></script>
+
+        <script type="text/javascript">
+                
+        var at_page = 'naika';
+
+        // 全局变量
+        var gnTotalPage = '{{$milkcards->lastPage()}}';
+        var gnCurrentPage = '{{$milkcards->currentPage()}}';
+        gnTotalPage = parseInt(gnTotalPage);
+        gnCurrentPage = parseInt(gnCurrentPage);
+    </script>
+    <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
+
 @endsection

@@ -47,6 +47,8 @@ class FinanceCtrl extends Controller
     private $mDateStart;
     private $mDateEnd;
 
+    private $kWechatTransactionsFactory = "wechat_transactions_factory";
+
     //Feature
     public function getSumOfOrders($orders)
     {
@@ -1842,190 +1844,63 @@ class FinanceCtrl extends Controller
 
     /*ZONGPINGTAI FINANCE*/
     //Z1: ZONPINGTAI CAIWU First PAGE
-    public function show_wechat_orders()
+    public function show_wechat_orders(Request $request)
     {
-        $zuser = Auth::guard('zongpingtai')->user();
+        $retData = array();
 
-//        $first_m = date('Y-m-01');
-//        $last_m = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $factories = Factory::where('status', Factory::FACTORY_STATUS_ACTIVE)->where('is_deleted', 0)->get();
-
-        $orders = Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+        $queryOrder = Order::where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where(function($query) {
                 $query->where('status', '!=', Order::ORDER_NEW_WAITING_STATUS);
                 $query->orWhere('status', '!=', Order::ORDER_WAITING_STATUS);
             })
-            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS)
-            ->orderBy('created_at')
-            ->get();
+            ->where('status', '!=', Order::ORDER_CANCELLED_STATUS);
+
+        // 奶厂
+        $factory = $request->input('factory');
+        if (!empty($factory)) {
+            // 筛选
+            $queryOrder->where('factory_id', $factory);
+
+            // 添加筛选参数
+            $retData['factory'] = $factory;
+        }
+
+        // 下单日期
+        $start = $request->input('start');
+        if (!empty($start)) {
+            // 筛选
+            $queryOrder->whereDate('created_at', '>=', $start);
+
+            // 添加筛选参数
+            $retData['start'] = $start;
+        }
+        $end = $request->input('end');
+        if (!empty($end)) {
+            // 筛选
+            $queryOrder->whereDate('created_at', '<=', $end);
+
+            // 添加筛选参数
+            $retData['end'] = $end;
+        }
+
+        $factories = Factory::where('status', Factory::FACTORY_STATUS_ACTIVE)->where('is_deleted', 0)->get();
+
+        $orders = $queryOrder->orderBy('created_at')->paginate();
 
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';
         $current_page = 'zhangwu';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
-        return view('zongpingtai.caiwu.zhangwujiesuan', [
+
+        return view('zongpingtai.caiwu.zhangwujiesuan', array_merge($retData, [
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
             'factories' => $factories,
             'wechat_orders' => $orders,
-        ]);
-    }
-
-    //Z1-1: Create Wechat Transaction
-    public function create_transaction_for_wechat_deprecated(Request $request)
-    {
-        $start = $request->input('start');
-        $end = $request->input('end');
-        
-        if(!$start)
-            $start= date('Y-m-01');
-        if(!$end)
-            $end= (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $start_date = $start ? date('Y-m-d', strtotime($start)) : date('Y-m-01');
-        $end_date = $end ? date('Y-m-d', strtotime($end)) : (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
-
-        $factory_id = $request->input('factory_id');
-        $station_id = $request->input('station_id');
-
-        if ( $factory_id && ($station_id == "none"))
-        {
-            if(!$start && !$end)
-            {
-                $orders = Order::where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if(!$start && $end)
-            {
-                $orders = Order::where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if($start && !$end){
-
-                $orders = Order::where('ordered_at', '>=', $start_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-            else {
-                $orders = Order::where('ordered_at', '>=', $start_date)->where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-        }
-        elseif ($factory_id && ($station_id != "none"))
-        {
-            if(!start && !$end)
-            {
-                $orders = Order::where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            } else if(!$start && $end)
-            {
-                $orders = Order::where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            }
-            else if($start && !$end){
-                $orders = Order::where('ordered_at', '>=', $start_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-            }
-            else {
-                $orders = Order::where('ordered_at', '>=', $start_date)->where('ordered_at', '<=', $end_date)
-                    ->where('factory_id', $factory_id)
-                    ->where('station_id', $station_id)
-                    ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                    ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
-                    ->where('transaction_id', null)->get();
-
-            }
-        }
-        else {
-            return redirect()->route('show_wechat_orders');
-        }
-
-        if (count($orders) == 0) {
-            return redirect()->route('show_wechat_orders');
-        }
-
-        $res = array();
-
-        foreach ($orders as $order) {
-            $res[$order->delivery_station_id][] = $order;
-        }
-
-        foreach ($res as $station_to => $orders1) {
-
-            $total_amount = 0;
-            $order_from = "";
-            $order_to = "";
-
-            $order_count = count($orders1);
-
-            foreach ($orders1 as $o) {
-                if (!$order_from)
-                    $order_from = $o->start_at;
-                else {
-                    $of_date = date($order_from);
-                    $ff_date = date($o->start_at);
-                    if ($of_date > $ff_date)
-                        $order_from = $o->start_at;
-                }
-
-                if (!$order_to)
-                    $order_to = $o->order_end_date;
-                else {
-                    $of_date = date($order_to);
-                    $ff_date = date($o->order_end_date);
-                    if ($of_date < $ff_date)
-                        $order_to = $o->order_end_date;
-                }
-                $total_amount += $o->total_amount;
-            }
-
-            $t = new DSTransaction;
-            $t->station_id = $station_to;
-            $t->delivery_station_id = $station_to;
-
-            $t->payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-            $t->total_amount = $total_amount;
-            $t->order_from = date('Y-m-d', strtotime($order_from));
-            $t->order_to = date('Y-m-d', strtotime($order_to));
-            $t->order_count = $order_count;
-            $t->status = DSTransaction::DSTRANSACTION_CREATED;
-
-            $t->save();
-
-            foreach ($orders1 as $o) {
-                $o->transaction_id = $t->id;
-                $o->save();
-            }
-        }
-
-        return response()->json(['status'=>'success', 'factory_id'=>$factory_id]);
+        ]));
     }
 
     /**
@@ -2034,13 +1909,13 @@ class FinanceCtrl extends Controller
      * @param $type
      */
     private function makeTransaction($orders, $type) {
-        if (count($orders) == 0) {
-            return;
-        }
-
         $res = array();
 
         foreach ($orders as $order) {
+            if (empty($order->delivery_station_id)) {
+                continue;
+            }
+
             $res[$order->delivery_station_id][] = $order;
         }
 
@@ -2056,21 +1931,19 @@ class FinanceCtrl extends Controller
 
             foreach ($orders1 as $o) {
                 if (!$order_from) {
-                    $order_from = $o->ordered_at;
-                    $order_to = $o->ordered_at;
+                    $order_from = $o->created_at->toDateString();
+                    $order_to = $o->created_at->toDateString();
                 }
                 else {
-                    $of_date = date($order_from);
-                    $ot_date = date($order_to);
-                    $ff_date = date($o->ordered_at);
+                    $strDate = $o->created_at->toDateString();
 
                     // 决定最小值
-                    if ($of_date > $ff_date) {
-                        $order_from = $o->ordered_at;
+                    if ($order_from > $strDate) {
+                        $order_from = $strDate;
                     }
                     // 决定最大值
-                    else if ($ot_date < $ff_date) {
-                        $order_to = $o->ordered_at;
+                    else if ($order_to < $strDate) {
+                        $order_to = $strDate;
                     }
                 }
 
@@ -2083,8 +1956,8 @@ class FinanceCtrl extends Controller
 
             $t->payment_type = $type;
             $t->total_amount = $total_amount;
-            $t->order_from = date('Y-m-d', strtotime($order_from));
-            $t->order_to = date('Y-m-d', strtotime($order_to));
+            $t->order_from = $order_from;
+            $t->order_to = $order_to;
             $t->order_count = $order_count;
             $t->status = DSTransaction::DSTRANSACTION_CREATED;
 
@@ -2102,7 +1975,7 @@ class FinanceCtrl extends Controller
      * @param $start_date
      * @param $end_date
      * @param $factory_id
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @return void
      */
     public function create_transaction_for_wechat($start_date, $end_date, $factory_id)
     {
@@ -2116,24 +1989,20 @@ class FinanceCtrl extends Controller
             ->where('trans_check', Order::ORDER_TRANS_CHECK_FALSE)
             ->where('transaction_id', null);
 
-        if(!$start_date && $end_date) {
-            $queryOrder->where('ordered_at', '<=', $end_date);
+        if (!empty($start_date)) {
+            $queryOrder->whereDate('created_at', '>=', $start_date);
         }
-        else if(!$start_date && $end_date) {
-            $queryOrder->where('ordered_at', '>=', $start_date);
-        }
-        else if($start_date && $end_date) {
-            $queryOrder->where('ordered_at', '>=', $start_date)->where('ordered_at', '<=', $end_date);
+        if (!empty($end_date)) {
+            $queryOrder->whereDate('created_at', '<=', $end_date);
         }
 
         $this->makeTransaction($queryOrder->get(), PaymentType::PAYMENT_TYPE_WECHAT);
-
-        return;
     }
 
     /**
      * 打开生成账单页面
      * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show_transaction_creation_page_for_wechat(Request $request) {
 
@@ -2151,93 +2020,91 @@ class FinanceCtrl extends Controller
 
         $factory_id = $request->input('factory_id');
 
+        // 在session保存奶厂id
+        $request->session()->put($this->kWechatTransactionsFactory, $factory_id);
+
         $this->create_transaction_for_wechat($start_date, $end_date, $factory_id);
 
         // 添加系统日志
         $this->addSystemLog(User::USER_BACKEND_ADMIN, '财务管理', SysLog::SYSLOG_OPERATION_FINANCE);
 
-        return $this->show_wechat_transaction_list_not_checked_in_zongpingtai($factory_id);
+        return $this->getWechatTransactions($factory_id, null);
     }
 
     //Z2: Show transaction list not checked
     public function show_wechat_transaction_list_not_checked_in_zongpingtai($factory_id)
     {
-        if($factory_id == "null")
+        if (empty($factory_id))
             return redirect()->route('show_wechat_orders');
 
         //shwo transactions according to delivery_station_id
 //        $start_date = date('Y-m-01');
 //        $end_date = (new DateTime("now", new DateTimeZone('Asia/Shanghai')))->format('Y-m-d');
 
-        $factory = Factory::find($factory_id);
+        return $this->getWechatTransactions($factory_id, null);
+    }
 
-        $stations = $factory->deliveryStations;
+    /**
+     * 打开微信账单页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showWechatTransactions(Request $request) {
+        // 从session获取奶厂id
+        $factoryId = $request->session()->get($this->kWechatTransactionsFactory);
+        $stationId = $request->input('station');
 
-        if(!$stations || count($stations) == 0)
-        {
-            $today = getCurDateString();
+        return $this->getWechatTransactions($factoryId, $stationId);
+    }
 
-            $child = 'zhangwujiesuan';
-            $parent = 'caiwu';
-            $current_page = 'zhangdanzhuanzhang';
-            $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
+    /**
+     * 获取微信账单
+     * @param $factoryId
+     * @param $stationId
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function getWechatTransactions($factoryId, $stationId) {
+        $queryTransactions = DSTransaction::where('status', DSTransaction::DSTRANSACTION_CREATED)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT);
 
-            return view('zongpingtai.caiwu.zhangwujiesuan.zhangdanzhuanzhang', [
-                'pages' => $pages,
-                'child' => $child,
-                'parent' => $parent,
-                'current_page' => $current_page,
-                'today'=>$today,
-            ]);
+        if (!empty($stationId)) {
+            $queryTransactions->where('delivery_station_id', $stationId);
+        }
+        else {
+            $queryTransactions->whereHas('deliveryStation', function($query) use ($factoryId) {
+                $query->where('factory_id', $factoryId);
+            });
         }
 
-        $not_checked_transactions = [];
+        $not_checked_transactions = $queryTransactions->get()->groupBy('delivery_station_id');
 
-        foreach($stations as $station)
-        {
-            $station_id = $station->id;
-            $transactions = DSTransaction::where('status', DSTransaction::DSTRANSACTION_CREATED)
-                ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-                ->where('delivery_station_id', $station_id)
-                ->get();
-
-            foreach($transactions as $transaction)
-            {
-                if($transaction)
-                    $not_checked_transactions[] =$transaction;
-            }
-        }
-
-        $ncts= [];
-        $station_name_list = [];
-        foreach($not_checked_transactions as $nct) {
-
-            $ncts[$nct->delivery_station_id][]=$nct;
-
-            $delivery_station_id = $nct->delivery_station_id;
-            $station_name = DeliveryStation::find($delivery_station_id)->name;
-            if (!array_key_exists($delivery_station_id, $station_name_list))
-            {
-                $station_name_list[$delivery_station_id] = $station_name;
-            }
-        }
+        $station_name_list = DSTransaction::with('deliveryStation')
+            ->where('status', DSTransaction::DSTRANSACTION_CREATED)
+            ->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
+            ->whereHas('deliveryStation', function($query) use ($factoryId) {
+                $query->where('factory_id', $factoryId);
+            })
+            ->groupBy('delivery_station_id')
+            ->get();
 
         $child = 'zhangwujiesuan';
         $parent = 'caiwu';
         $current_page = 'zhangdanzhuanzhang';
         $pages = Page::where('backend_type', '1')->where('parent_page', '0')->get();
-
+        
         return view('zongpingtai.caiwu.zhangwujiesuan.zhangdanzhuanzhang', [
             'pages'             => $pages,
             'child'             => $child,
             'parent'            => $parent,
             'current_page'      => $current_page,
-            'ncts'              =>$ncts,
-            'station_name_list' =>$station_name_list,
-            'today'             =>getCurDateString(),
-        ]);
 
+            'ncts'              => $not_checked_transactions,
+            'station_name_list' => $station_name_list,
+            'today'             => getCurDateString(),
+            'station'           => $stationId,
+        ]);
     }
+
     //Z2-1: Get Transaction data to show on Insert Modal
     public function get_trans_data_for_wechat(Request $request)
     {
@@ -2352,20 +2219,16 @@ class FinanceCtrl extends Controller
                 $nFactoryId = $station2->factory_id;
 
                 //Transaction Status Change
-                foreach ($trsids as $trsid) {
-                    $transaction = DSTransaction::find($trsid);
-                    $transaction->transaction_pay_id = $transaction_pay_id;
-                    $transaction->status = DSTransaction::DSTRANSACTION_COMPLETED;
-                    $transaction->save();
+                DSTransaction::whereIn('id', $trsids)
+                    ->update([
+                        'transaction_pay_id' => $transaction_pay_id,
+                        'status' => DSTransaction::DSTRANSACTION_COMPLETED,
+                    ]);
 
-                    $orders = Order::where('transaction_id', $trsid)->get();
-                    foreach ($orders as $order) {
-                        if ($order) {
-                            $order->trans_check = Order::ORDER_TRANS_CHECK_TRUE;
-                            $order->save();
-                        }
-                    }
-                }
+                Order::whereIn('transaction_id', $trsids)
+                    ->update([
+                        'trans_check' => Order::ORDER_TRANS_CHECK_TRUE,
+                    ]);
             }
 
             return response()->json([

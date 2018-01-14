@@ -58,6 +58,7 @@
                 {{--&nbsp;--}}
                 <button type="button" class="btn btn-outline btn-sm btn-success" data-action="print">打印</button>
                 &nbsp;
+                <button class="btn btn-success btn-outline btn-m-d" data-action="export_csv">导出</button>
             </div>
         </div>
     </div>

@@ -31,10 +31,10 @@ class WxPayConfig
 	const APPSECRET = '01c6d59a3f9024db6336662ac95c8e74';
 	*/
 
-	public static $APPID = 'wx03ec7c55e818f174';
-	public static $MCHID = '1385249202';
-	public static $KEY = 'o3vvYsTarwCeZ98mh8xDuB4P9BBHiQCu';
-	public static $APPSECRET = '51048b88541aa3f25b3f42cf09c5d1cc';
+        public static $APPID = ' wx33e99db34120f8ec';
+	public static $MCHID = '1494584632';
+	public static $KEY = 'qqqqqqqqqqqqqqqqQQQQQQQQQQQQQQQQ';
+	public static $APPSECRET = '62f18b9f6d68ec9ed8421218a5de82eb'; 
 	
 	//=======【证书路径设置】=====================================
 	/**

@@ -100,7 +100,7 @@
 				</form>
 			</div>
 
-			<div class="ibox float-e-margins">
+			<div class="ibox">
 				<div class="ibox-content">
 
 					<table id="origin_table" class="footable table table-bordered" data-page-size="10">

@@ -532,7 +532,11 @@
         // 续单
         @if (isset($order) && !$is_edit)
             gbXudan = true;
-            var gDateEnd = new Date("{{getNextDateString($order->order_end_date)}}");
+        <?php
+            $strDateEnd = getNextDateString($order->order_end_date);
+            $strDateEnd = max($strDateEnd, $order->deliveryStation->getChangeStartDate());
+        ?>
+            var gDateEnd = new Date("{{$strDateEnd}}");
         @endif
 
         // 上传图片操作

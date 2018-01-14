@@ -47,7 +47,7 @@
 							{{--&nbsp;--}}
 							{{--<a href="">导出</a>--}}
 							&nbsp;
-							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
+							<button class="btn btn-success btn-outline btn-sm" data-action="print">打印</button>
 						</div>
 					</div>
 				</div>
@@ -91,12 +91,10 @@
 								<tr class="order_info" id="{{$di->id}}" ordertype="{{$di->delivery_type}}">
 									@if($j == 1)
 									<td rowspan="{{count($di->product)}}" class="by_order" value="{{$di->id}}">{{$i}}</td>
-									<td  rowspan="{{count($di->product)}}">
-										{{$di->address}}
-									</td>
+									<td rowspan="{{count($di->product)}}" class="text-left">{{$di->address}}</td>
 									@if($di->delivery_type==1)
-										<td rowspan="{{count($di->product)}}">
-											{{$di->customer->name}}
+										<td rowspan="{{count($di->product)}}"
+											>{{$di->customer->name}}
 										</td>
 									@else
 										<td rowspan="{{count($di->product)}}">
@@ -165,7 +163,7 @@
 								</div>
 							</div>
 							</div>
-							@if (!$is_todayrefund)
+							@if ($saveAvailable)
 							<div style="text-align: center;">
 								<button id="save" class="btn btn-success btn-m-d" style="width: 200px;">保存</button>
 							</div>
@@ -185,5 +183,5 @@
 @endsection
 @section('script')
 	<!--Save & Cancel Information-->
-	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js') ?>"></script>
+	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180108') ?>"></script>
 @endsection

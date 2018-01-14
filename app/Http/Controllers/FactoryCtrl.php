@@ -6,6 +6,7 @@ use App\Model\FactoryModel\Factory;
 use App\Model\UserModel\User;
 use App\Model\UserModel\UserRole;
 use App\Model\WechatModel\WechatActivity;
+use App\Model\WechatModel\wxbangzhu;
 use Illuminate\Http\Request;
 use App\Model\UserModel\Page;
 use App\Model\WechatModel\Wxmenu;
@@ -323,6 +324,61 @@ class FactoryCtrl extends Controller
 
         return $this->showActivityContent($content, 1);
     }
+
+
+    /**
+     * 打开帮助内容编辑页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showbangzhu(Request $request) {
+        $factory_id = $this->getCurrentFactoryId(true);
+        $activity = wxbangzhu::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return $this->showbangzhuContent($content);
+    }
+
+    /**
+     * 打开帮助页面
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    private function showbangzhuContent($content, $status = 0) {
+        $child = 'bangzhu';
+        $parent = 'jichuxinxi';
+        $pages = Page::where('backend_type','2')->where('parent_page', '0')->get();
+
+        return view('gongchang.jichuxinxi.bangzhu',[
+            'pages'=>$pages,
+            'child'=>$child,
+            'parent'=>$parent,
+
+            'content' => $content,
+            'status' => $status,
+        ]);
+    }
+
+    /**
+     * 保存帮助内容
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function savebangzhu(Request $request) {
+
+        $factory_id = $this->getCurrentFactoryId(true);
+        $content = $request->input('content');
+
+        $activity = wxbangzhu::where('factory_id', $factory_id)->first();
+        if (empty($activity)) {
+            $activity = new wxbangzhu;
+            $activity->factory_id = $factory_id;
+        }
+        $activity->content = $content;
+        $activity->save();
+
+        return $this->showbangzhuContent($content, 1);
+    }   
 
     /**
      * 更新微信公众号首页图片

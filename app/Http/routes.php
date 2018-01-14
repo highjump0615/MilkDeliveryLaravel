@@ -142,6 +142,10 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('/gongchang/jichuxinxi/activity', 'FactoryCtrl@showActivity');
     Route::post('/gongchang/jichuxinxi/activity', 'FactoryCtrl@saveActivity');
 
+    //帮助
+    Route::get('/gongchang/jichuxinxi/bangzhu', 'FactoryCtrl@showbangzhu');
+    Route::post('/gongchang/jichuxinxi/bangzhu', 'FactoryCtrl@savebangzhu');
+
     //Gongchang/Jichuxinxi/naipinluru
     Route::get('/gongchang/jichuxinxi/shangpin/naipinluru', 'ProductCtrl@show_insert_product')->name('show_insert_product');
     Route::post('api/gongchang/naipinluru/insert_product', 'ProductCtrl@insert_product');
@@ -359,23 +363,25 @@ Route::group(['middleware' => ['gongchang']], function () {
     Route::get('api/gongchang/pingjia/pingjialiebiao/current_info/{review_id}','ReviewCtrl@getCurrentInfo');
     /*show Pingjialiebiao Page*/
     Route::get('/gongchang/pingjia/pingjiaxiangqing/{review_id}','ReviewCtrl@showPingjialiebiaoPage');
+
+    Route::get('/gongchang/shouye', function (Request $request) {
+        $child = '';
+        $parent = 'shouye';
+        $current_page = 'shouye';
+        $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
+        return view('gongchang.shouye', [
+            'pages' => $pages,
+            'child' => $child,
+            'parent' => $parent,
+            'current_page' => $current_page
+
+        ]);
+    });
 });
 
 Route::post('/gongchang/login', 'GongchangAuth\AuthController@login');
 Route::get('/gongchang/logout', 'GongchangAuth\AuthController@logout');
-Route::get('/gongchang/shouye', function (Request $request) {
-    $child = '';
-    $parent = 'shouye';
-    $current_page = 'shouye';
-    $pages = App\Model\UserModel\Page::where('backend_type', '2')->where('parent_page', '0')->get();
-    return view('gongchang.shouye', [
-        'pages' => $pages,
-        'child' => $child,
-        'parent' => $parent,
-        'current_page' => $current_page
 
-    ]);
-});
 
 /*N-A-I-Z-H-A-N*/
 Route::get('/naizhan', function () {
@@ -840,6 +846,7 @@ Route::group(['middleware' => ['zongpingtai']], function () {
 
     //Show wechat transactions not checked
     Route::get('/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/{factory_id}', 'FinanceCtrl@show_wechat_transaction_list_not_checked_in_zongpingtai');
+    Route::get('/zongpingtai/caiwu/transactions/wechat', 'FinanceCtrl@showWechatTransactions');
     Route::post('api/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/get_trans_data', 'FinanceCtrl@get_trans_data_for_wechat');
     Route::post('api/zongpingtai/caiwu/zhangwujiesuan/zhangdanzhuanzhang/complete_trans', 'FinanceCtrl@complete_trans_for_wechat');
     //Show transaction record completed
@@ -1003,6 +1010,8 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     // 活动详情
     Route::get('/activity', 'WeChatCtrl@showActivity');
+    // 帮助
+    Route::get('/bangzhu', 'WeChatCtrl@showBangzhu');
 
 });
 //
