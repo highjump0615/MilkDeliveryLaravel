@@ -92,3 +92,8 @@ $(document).on('click','#search',function () {
 $('button[data-action = "print"]').click(function () {
     printContent('statistics_by_day', gnUserTypeStation, '奶品配送日统计');
 });
+
+$('button[data-action = "export_csv"]').click(function () {
+    data_export('statistics_by_day', gnUserTypeStation, '奶品配送日统计', 0, 1);
+});
+

@@ -55,3 +55,7 @@ $('#data_range_select .input-daterange').datepicker({
 $('button[data-action = "print"]').click(function () {
     printContent('order_type_table', gnUserTypeStation, '订单剩余量统计');
 });
+
+$('button[data-action = "export_csv"]').click(function () {
+    data_export('order_type_table', gnUserTypeStation, '订单剩余量统计', 0, 1);
+});

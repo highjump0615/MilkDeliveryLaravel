@@ -27,23 +27,23 @@ class MilkCardCtrl extends Controller
         $pages = Page::where('backend_type', '2')->where('parent_page', '0')->get();
         $milkcard_count = count(MilkCard::where('factory_id',$current_factory_id)->get());
         $milkcard_used = count(MilkCard::where('factory_id',$current_factory_id)->where('sale_status',1)->get());
-        $milkcards = MilkCard::where('factory_id',$current_factory_id)->get()->groupBy(function ($sort){return $sort->batch_number;});
+        $milkcards['milkcards'] = MilkCard::where('factory_id',$current_factory_id)->paginate(10);
         $milkcard_balance = MilkCard::where('factory_id',$current_factory_id)->get()->groupBy(function ($balance_sort){return $balance_sort->balance;});
         $balance = array();
         foreach ($milkcard_balance as $k=>$mb){
             $balance[$k]['balance'] = $k;
         }
-
-        return view('gongchang.naika.naika', [
+        // dd($milkcards['milkcards']);
+        return view('gongchang.naika.naika', array_merge($milkcards, [
+            // 页面信息
             'pages' => $pages,
             'child' => $child,
             'parent' => $parent,
             'current_page' => $current_page,
-            'milkcards'=>$milkcards,
             'milkcard_count'=>$milkcard_count,
             'milkcard_used'=>$milkcard_used,
             'balance'=>$balance,
-        ]);
+        ]));
     }
 
     public function getNaikaInfo(Request $request){

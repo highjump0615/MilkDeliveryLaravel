@@ -37,14 +37,6 @@ if (!empty($wop)) {
             <td>月单</td>
             <td class="dzmon">￥{{$month_price}}</td>
         </tr>
-        <tr>
-            <td>季单</td>
-            <td class="dzmon">￥{{$season_price}}</td>
-        </tr>
-        <tr>
-            <td>半年单</td>
-            <td class="dzmon">￥{{$half_year_price}}</td>
-        </tr>
     </table>
 </div>
 
@@ -65,7 +57,8 @@ if (!empty($wop)) {
     <div class="dnsli clearfix">
         <div class="dnsti">订单类型：</div>
         <select class="dnsel" id="order_type">
-            @if (isset($factory_order_types))
+        <option value="1" data-content="30" selected>月单</option>
+           <!--  @if (isset($factory_order_types))
                 @foreach ($factory_order_types as $fot)
                     @if (!empty($wop) && $fot->order_type == $wop->order_type)
                         <option value="{{$fot->order_type}}" data-content="{{$fot->order_count}}" selected>{{$fot->order_type_name}}</option>
@@ -73,7 +66,7 @@ if (!empty($wop)) {
                         <option value="{{$fot->order_type}}" data-content="{{$fot->order_count}}">{{$fot->order_type_name}}</option>
                     @endif
                 @endforeach
-            @endif
+            @endif -->
         </select>
         <div class="clear"></div>
     </div>

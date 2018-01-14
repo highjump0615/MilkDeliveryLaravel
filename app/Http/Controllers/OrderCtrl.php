@@ -269,7 +269,7 @@ class OrderCtrl extends Controller
             $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
             $today = $today_date->format('Y-m-d');
 
-            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->first();
+            $plans = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $today)->get();
 
             foreach ($plans as $plan) {
                 // 已生成配送列表
@@ -761,9 +761,6 @@ class OrderCtrl extends Controller
             $status = Order::ORDER_WAITING_STATUS;
         }
 
-        // 该订单是否生成了账单
-        $trans_check = 0;
-
         //flatenter mode: default 2 -> call
         $flat_enter_mode_id = Order::ORDER_FLAT_ENTER_MODE_CALL_DEFAULT;//by call
 
@@ -777,11 +774,12 @@ class OrderCtrl extends Controller
             $order->ordered_at = $ordered_at;
 
             $order->order_by_milk_card = $order_by_milk_card;
+
+            // 支付方式
             $order->payment_type = $payment_type;
 
             $order->comment = $comment;
             $order->total_amount = $total_amount;
-            $order->trans_check = $trans_check;
         }
         else if (!$order->isNewPassed() && $order->payment_type == PaymentType::PAYMENT_TYPE_MONEY_NORMAL) {
             //
@@ -837,8 +835,11 @@ class OrderCtrl extends Controller
             $order->deliveryarea_id = $deliveryarea_id;
         }
 
-        $order->receipt_number = $receipt_number;
-        $order->receipt_path = $receipt_path;
+        // 票据号
+        if (!empty($receipt_number)) {
+            $order->receipt_number = $receipt_number;
+            $order->receipt_path = $receipt_path;
+        }
 
         // 征订员
         if (!empty($order_checker_id)) {
@@ -963,10 +964,14 @@ class OrderCtrl extends Controller
         }
 
         // save customer
-        if (!empty($customer_id) && !empty($delivery_station_id) && empty($nMilkmanId)) {
+        if (!empty($customer_id)) {
             $customer = Customer::find($customer_id);
-            $customer->station_id = $delivery_station_id;
-            $customer->milkman_id = $nMilkmanId;
+            if (!empty($delivery_station_id)) {
+                $customer->station_id = $delivery_station_id;
+            }
+            if (!empty($nMilkmanId)) {
+                $customer->milkman_id = $nMilkmanId;
+            }
             $customer->save();
         }
 
@@ -1073,11 +1078,6 @@ class OrderCtrl extends Controller
             $payment_type = PaymentType::PAYMENT_TYPE_CARD;
         }
 
-        // 查看票据号，判断是否微信订单
-        if (empty($receipt_number)) {
-            $payment_type = PaymentType::PAYMENT_TYPE_WECHAT;
-        }
-
         $order = null;
         $nResult = $this->insert_order_core(
             $factory_id,
@@ -1101,7 +1101,7 @@ class OrderCtrl extends Controller
             $payment_type,
             $order_by_milk_card,
             $request->input('card_id'),
-            null,   // 备注
+            $request->input('comment'),   // 备注
             $request->input('order_product_id'),
             $request->input('factory_order_type'),
             $request->input('one_product_total_count'),
@@ -2838,6 +2838,7 @@ class OrderCtrl extends Controller
             ->forceDelete();
 
         MilkManDeliveryPlan::where('order_id', $order->id)
+            ->whereNull('milkman_id')
             ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT)
             ->update([
                 'changed_plan_count' => 0,
@@ -2978,6 +2979,7 @@ class OrderCtrl extends Controller
         $query .= " group by o.id 
             order by time desc
             into outfile '" . $filepath . "'
+            character set gbk 
             fields terminated by ','
             escaped by '\"'
             enclosed by '\"'

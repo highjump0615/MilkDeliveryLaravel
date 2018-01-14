@@ -303,6 +303,6 @@
 	</script>
 
 	<!--Save & Update User Information-->
-	<script src="<?=asset('js/ajax/naizhan_peisongguanli_ajax.js') ?>"></script>
+	<script src="<?=asset('js/ajax/naizhan_peisongguanli_ajax.js?180107') ?>"></script>
 
 @endsection

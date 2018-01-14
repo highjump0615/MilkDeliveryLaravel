@@ -21,6 +21,7 @@ use App\Model\ProductModel\ProductCategory;
 use App\Model\ProductModel\ProductPrice;
 use App\Model\ReviewModel\Review;
 use App\Model\WechatModel\WechatActivity;
+use App\Model\WechatModel\WechatBangzhu;
 use App\Model\WechatModel\WechatAd;
 use App\Model\WechatModel\WechatAddress;
 use App\Model\WechatModel\WechatCart;
@@ -86,7 +87,7 @@ class WeChatCtrl extends Controller
             ->where('status', Product::PRODUCT_STATUS_ACTIVE)
             ->orderBy('id', 'desc')
             ->orderBy('updated_at', 'desc')
-            ->take(4)
+            // ->take(4)
             ->get();
 
         $product_list = [];
@@ -341,7 +342,7 @@ class WeChatCtrl extends Controller
                 $product_id = $product->id;
                 $photo_url = $product->photo_url1;
                 $product_name = $product->name;
-                $product_count = $op->remain_count;
+                $product_count = $op->getRemainCount();
                 $product_price = round($op->product_price, 3);
                 $product_amount = round($op->remain_amount, 3);
                 $delivery_type = $op->delivery_type;
@@ -376,7 +377,7 @@ class WeChatCtrl extends Controller
                     $product_id = $product->id;
                     $photo_url = $product->photo_url1;
                     $product_name = $product->name;
-                    $product_count = $op->remain_count;
+                    $product_count = $op->getRemainCount();
                     $product_price = round($op->product_price, 3);
                     $product_amount = round($op->remain_amount, 3);
                     $delivery_type = $op->delivery_type;
@@ -413,7 +414,7 @@ class WeChatCtrl extends Controller
                         $product_id = $product->id;
                         $photo_url = $product->photo_url1;
                         $product_name = $product->name;
-                        $product_count = $op->remain_count;
+                        $product_count = $op->getRemainCount();
                         $product_price = round($op->product_price, 3);
                         $product_amount = round($op->remain_amount, 3);
                         $delivery_type = $op->delivery_type;
@@ -1276,20 +1277,6 @@ class WeChatCtrl extends Controller
      */
     public function zhifushibai(Request $request)
     {
-        if ($request->has('order')) {
-
-            $order_id = $request->input('order');
-            $order = Order::find($order_id);
-
-            if (!empty($order)) {
-                $notification = new NotificationsAdmin;
-                $notification->sendToWechatNotification($order->customer_id, '抱歉，您的订单未及时付款，订单已经取消');
-
-                $orderctrl = new OrderCtrl();
-                $orderctrl->delete_order($order_id);
-            }
-        }
-
         return view('weixin.zhifushibai', [
         ]);
     }
@@ -2767,4 +2754,16 @@ class WeChatCtrl extends Controller
             'content' => $content,
         ]);
     }
+
+    public function showBangzhu(Request $request) {
+        // 初始化
+        $factory_id = $this->getCurrentFactoryIdW($request);
+        $activity = WechatBangzhu::where('factory_id', $factory_id)->first();
+
+        $content = !empty($activity) ? $activity->content : "";
+
+        return view('weixin.bangzhu', [
+            'content' => $content,
+        ]);
+    }    
 }

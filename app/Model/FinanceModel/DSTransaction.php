@@ -40,6 +40,14 @@ class DSTransaction extends Model
         return $this->belongsTo('App\Model\FinanceModel\DSTransactionPay', 'transaction_pay_id', 'id');
     }
 
+    /**
+     * 获取配送奶站
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryStation(){
+        return $this->belongsTo('App\Model\DeliveryModel\DeliveryStation', 'delivery_station_id', 'id');
+    }
+
     public function getCheckedTimeAttribute()
     {
         if($this->status == $this::DSTRANSACTION_COMPLETED && $this->transaction_pay_id != null)

@@ -74,5 +74,9 @@
     $('button[data-action = "print"]').click(function () {
         printContent('table1', gnUserTypeFactory, '配送员配送统计');
     });
+
+    $('button[data-action = "export_csv"]').click(function () {
+    data_export('table1', gnUserTypeStation, '配送员配送统计', 0, 1);
+	});
 </script>
 @endsection

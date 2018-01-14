@@ -63,5 +63,9 @@
     $('button[data-action = "print"]').click(function () {
         printContent('table1', gnUserTypeFactory, '奶站配送统计');
     });
+
+    $('button[data-action = "export_csv"]').click(function () {
+    data_export('table1', gnUserTypeStation, '奶站配送统计', 0, 1);
+	});
 </script>
 @endsection

@@ -51,6 +51,8 @@
 							<button type="button" id="search" class="btn btn-success btn-m-d">筛选</button>
 							&nbsp;
 							<button class="btn btn-success btn-outline btn-m-d" data-action="print">打印</button>
+							&nbsp;
+							<button class="btn btn-success btn-outline btn-m-d" data-action="export_csv">导出</button>
 						</div>
 					</div>
 				</div>

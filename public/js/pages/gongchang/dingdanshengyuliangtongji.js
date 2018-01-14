@@ -28,14 +28,6 @@ $(document).ready(function() {
     $('.footable').footable();
 });
 
-$('#date_1 .input-group.date').datepicker({
-    todayBtn: "linked",
-    keyboardNavigation: false,
-    forceParse: false,
-    calendarWeeks: false,
-    autoclose: true
-});
-
 $('#data_range_select .input-daterange').datepicker({
     keyboardNavigation: false,
     forceParse: false,

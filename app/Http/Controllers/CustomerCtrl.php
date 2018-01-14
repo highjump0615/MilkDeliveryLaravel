@@ -182,7 +182,7 @@ class CustomerCtrl extends Controller
             $addr = explode(" ",$cu->address);
             $cu['area_addr'] = $addr[0].$addr[1];
             $cu['sector_addr'] = $addr[2].$addr[3];
-            $cu['detail_addr'] = $addr[4].$addr[5];
+            $cu['detail_addr'] = $addr[4]. ((count($addr) > 5) ? $addr[5] : "");
             $cu['station_name'] = $cu->station->name;
             $cu['milkman_name'] = $cu->milkman->name;
             $cu['order_count'] = $queryOrder->count();

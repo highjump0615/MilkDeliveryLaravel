@@ -50,30 +50,34 @@
         <div class="row wrapper">
             <div class="wrapper-content">
 
+                <form method="get" action="{{url('/zongpingtai/caiwu/transactions/wechat')}}">
                 <div class="ibox-content">
                     <label class="col-md-1" style="padding-top: 5px;">奶站:</label>
                     <div class=" col-md-2">
                         <select id="filter_station" class="chosen-select form-control"
+                                name="station"
                                 style="width:100%; height: 35px;">
-                            <option value="none">全部</option>
-                            @if(isset($station_name_list))
-                                @foreach($station_name_list as $sid=>$sname)
-                                    <option value="{{$sid}}">{{$sname}}</option>
-                                @endforeach
-                            @endif
+                            <option value="">全部</option>
+                            @foreach ($station_name_list as $st)
+                                <option value="{{$st->deliveryStation->id}}"
+                                        @if (!empty($station) && $station == $st->deliveryStation->id) selected @endif
+                                >{{$st->deliveryStation->name}}</option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 col-md-offset-7" style="padding-top:5px;">
-                        <button class="btn btn-success btn-outline" type="button" data-action="show_selected">筛选</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="export_csv">导出</button>
-                        <button class="btn btn-success btn-outline" type="button" data-action="print">打印</button>
+                    <div class="col-md-2 pull-right">
+                        <div class="text-right">
+                            <button class="btn btn-success btn-outline btn-sm" type="submit" data-action="show_selected">筛选</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="export_csv">导出</button>
+                            <button class="btn btn-success btn-outline btn-sm" type="button" data-action="print">打印</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="ibox float-e-margins">
                     <div class="ibox-content">
 
-                        <table id="order_table" class="table footable table-bordered">
+                        <table id="order_table" class="table table-bordered">
                             <thead style="background-color:#00cc55;">
                             <tr>
                                 <th data-sort-ignore="true">选择</th>
@@ -91,75 +95,40 @@
                             </thead>
                             <tbody>
 
-                            @if (isset($ncts))
-                                @foreach($ncts as $nct)
-                                    <?php
-                                    $j = 0;
-                                    $first_row_span = count($nct);
-                                    ?>
-                                    @foreach($nct as $nc)
-                                        <tr>
-                                            @if($j == 0)
-                                                <td rowspan="{{$first_row_span}}">
-                                                    <input type="checkbox" checked class="i-checks"
-                                                           data-tid="{{$nc->id}}"
-                                                           data-station-id="{{$nc->delivery_station_id}}"/>
-                                                </td>
-                                                <td rowspan="{{$first_row_span}}">{{$nc->delivery_station_name}}</td>
-                                                <td rowspan="{{$first_row_span}}">{{$nc->pre_remain_wechat}}</td>
-                                            @endif
-
-                                            <td>{{$nc->created_at}}</td>
-                                            <td class="o_station" data-trsid="{{$nc->id}}"
-                                                data-sid="{{$nc->delivery_station_id}}">{{$nc->id}}</td>
-                                            <td>{{$nc->order_from}} ~ {{$nc->order_to}}</td>
-                                            <td>{{$nc->total_amount}}</td>
-                                            <td>{{$nc->order_count}}</td>
-                                            <td>未转</td>
-                                            <td>
-                                                <a href="{{URL::to('/zongpingtai/caiwu/zhangwujiesuan/zhangdanmingxi/'.$nc->id)}}">查看明细</a>
+                            @foreach($ncts as $nct)
+                                <?php
+                                $j = 0;
+                                $first_row_span = count($nct);
+                                ?>
+                                @foreach($nct as $nc)
+                                    <tr>
+                                        @if($j == 0)
+                                            <td rowspan="{{$first_row_span}}">
+                                                <input type="checkbox" checked class="i-checks"
+                                                       data-tid="{{$nc->id}}"
+                                                       data-station-id="{{$nc->delivery_station_id}}"/>
                                             </td>
-                                            <td></td>
-                                        </tr>
-                                        <?php $j++?>
-                                    @endforeach
-                                @endforeach
-                            @endif
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
-                        </table>
+                                            <td rowspan="{{$first_row_span}}">{{$nc->delivery_station_name}}</td>
+                                            <td rowspan="{{$first_row_span}}">{{$nc->pre_remain_wechat}}</td>
+                                        @endif
 
-                        <table id="filter_table" class="table footable table-bordered">
-                            <thead style="background-color:#00cc55;">
-                            <tr>
-                                <th data-sort-ignore="true">选择</th>
-                                <th data-sort-ignore="true">奶站名称</th>
-                                <th data-sort-ignore="true">上期余额</th>
-                                <th data-sort-ignore="true">生成时间</th>
-                                <th data-sort-ignore="true">账单号</th>
-                                <th data-sort-ignore="true">账单日期</th>
-                                <th data-sort-ignore="true">金额</th>
-                                <th data-sort-ignore="true">订单数量</th>
-                                <th data-sort-ignore="true">状态</th>
-                                <th data-sort-ignore="true">操作</th>
-                                <th data-sort-ignore="true">备注</th>
-                            </tr>
-                            </thead>
-                            <tbody>
+                                        <td>{{$nc->created_at}}</td>
+                                        <td class="o_station" data-trsid="{{$nc->id}}"
+                                            data-sid="{{$nc->delivery_station_id}}">{{$nc->id}}</td>
+                                        <td>{{$nc->order_from}} ~ {{$nc->order_to}}</td>
+                                        <td>{{$nc->total_amount}}</td>
+                                        <td>{{$nc->order_count}}</td>
+                                        <td>未转</td>
+                                        <td>
+                                            <a href="{{URL::to('/zongpingtai/caiwu/zhangwujiesuan/zhangdanmingxi/'.$nc->id)}}">查看明细</a>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <?php $j++?>
+                                @endforeach
+                            @endforeach
+
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <ul class="pagination pull-right"></ul>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
 
                         <div class="col-md-12">
@@ -188,8 +157,7 @@
                                         </div>
                                         <div class="modal-body">
                                             <div class="row">
-                                                <table class="footable table table-bordered" id="insert_modal_table"
-                                                       data-page-size="5">
+                                                <table class="table table-bordered" id="insert_modal_table">
                                                     <thead>
                                                     <tr>
                                                         <th data-sort-ignore="true">序号</th>
@@ -204,13 +172,6 @@
                                                     </thead>
                                                     <tbody>
                                                     </tbody>
-                                                    <tfoot>
-                                                    <tr>
-                                                        <td colspan="100%">
-                                                            <ul class="pagination pull-right"></ul>
-                                                        </td>
-                                                    </tr>
-                                                    </tfoot>
                                                 </table>
                                             </div>
                                         </div>
@@ -232,8 +193,7 @@
                                     </div>
                                     <div class="modal-body">
                                         <div class="row">
-                                            <table id="print_modal_table" class="footable table table-bordered"
-                                                   data-page-size="5">
+                                            <table id="print_modal_table" class="table table-bordered">
                                                 <thead>
                                                 <tr>
                                                     <th data-sort-ignore="true">序号</th>
@@ -248,13 +208,6 @@
                                                 </thead>
                                                 <tbody>
                                                 </tbody>
-                                                <tfoot>
-                                                <tr>
-                                                    <td colspan="100%">
-                                                        <ul class="pagination pull-right"></ul>
-                                                    </td>
-                                                </tr>
-                                                </tfoot>
                                             </table>
                                         </div>
                                     </div>
@@ -275,5 +228,5 @@
 @endsection
 
 @section('script')
-    <script src="<?=asset('js/pages/zongpingtai/finance_transfer.js') ?>"></script>
+    <script src="<?=asset('js/pages/zongpingtai/finance_transfer.js?180113') ?>"></script>
 @endsection

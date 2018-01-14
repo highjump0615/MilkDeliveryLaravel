@@ -84,5 +84,9 @@
     $('button[data-action = "print"]').click(function () {
         printContent('table1', gnUserTypeFactory, '配送汇总表');
     });
+
+    $('button[data-action = "export_csv"]').click(function () {
+    data_export('table1', gnUserTypeStation, '配送汇总表', 0, 1);
+});
 </script>
 @endsection
