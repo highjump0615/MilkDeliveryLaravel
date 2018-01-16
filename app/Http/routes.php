@@ -539,16 +539,6 @@ Route::group(['middleware' => ['naizhan']], function () {
     Route::get('/naizhan/dingdan/xiangqing/{order_id}', 'OrderCtrl@show_detail_order_in_naizhan');
 
 
-    //Restart Stopped Dingdan
-    Route::post('api/naizhan/dingdan/restart_order', 'OrderCtrl@restart_dingdan');
-    //Cancel Order
-    Route::post('api/naizhan/dingdan/cancel_order', 'OrderCtrl@cancel_order');
-    //Stop Order
-    Route::post('api/naizhan/dingdan/stop_order', 'OrderCtrl@stop_order_for_some_period');
-
-    //postpone order
-    Route::post('api/naizhan/dingdan/postpone_order', 'OrderCtrl@postpone_order');
-
     //Show Xiugai Page
     Route::get('naizhan/dingdan/xiugai/{order_id}', 'OrderCtrl@show_order_revise_in_naizhan');
     Route::post('api/naizhan/dingdan/dingdanxiugai/change_order_info', 'OrderCtrl@change_order_info');

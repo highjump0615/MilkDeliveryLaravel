@@ -100,16 +100,19 @@ $('#stop_order_modal_form').submit(function (e) {
 
             } else {
                 if (data.message)
-                    show_warning_msg("停止订单失败: " + data.message);
+                    show_err_msg("停止订单失败: " + data.message);
                 else
-                    show_warning_msg("停止订单失败.");
+                    show_err_msg("停止订单失败.");
             }
 
             $('#stop_order_modal').modal('hide');
-            $(submit).prop('disabled', false);
         },
         error: function (data) {
             console.log(data);
+            show_err_msg("停止订单失败. Error: " + data.status);
+        },
+        complete: function () {
+            $(submit).prop('disabled', false);
         }
     });
 });
