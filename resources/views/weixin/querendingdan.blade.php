@@ -215,25 +215,17 @@
             var comment = $('#comment').val();
             var group_id = $('#group_id').val();
 
-            var order_bt = $(this);
+            var order_bt = '#make_order';
             $(order_bt).prop('disabled', true);
 
             var total_amount = $('#total_amount').val();
 
             var addr_obj_id = $('#addr_obj_id').val();
 
-            @if(isset($order))
-                var origin_order_id = "{{$order}}";
-            @endif
-
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/make_order_by_group",
-                @if(isset($order))
-                    data: {'comment': comment, 'group_id': group_id, 'order_id': origin_order_id, 'addr_obj_id':addr_obj_id},
-                @else
-                    data: {'comment': comment, 'group_id': group_id, 'addr_obj_id':addr_obj_id},
-                @endif
+                data: {'comment': comment, 'group_id': group_id, 'addr_obj_id':addr_obj_id},
                 success: function (data) {
                     console.log(data);
                     if (data.status == 'success') {
