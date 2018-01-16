@@ -394,7 +394,7 @@
     <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
-    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js?180106') ?>"></script>
+    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js?180116') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
 
 
