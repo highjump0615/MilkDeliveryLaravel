@@ -188,10 +188,6 @@
                             @if (!empty($status) && $status == \App\Model\OrderModel\Order::ORDER_ON_DELIVERY_STATUS) selected @endif>
                         在配送
                     </option>
-                    <option value="{{\App\Model\OrderModel\Order::ORDER_STOPPED_STATUS}}"
-                            @if (!empty($status) && $status == \App\Model\OrderModel\Order::ORDER_STOPPED_STATUS) selected @endif>
-                        暂停
-                    </option>
                     <option value="{{\App\Model\OrderModel\Order::ORDER_FINISHED_STATUS}}"
                             @if (!empty($status) && $status == \App\Model\OrderModel\Order::ORDER_FINISHED_STATUS) selected @endif>
                         已完成
