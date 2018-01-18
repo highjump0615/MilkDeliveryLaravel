@@ -358,7 +358,7 @@ class OrderCtrl extends Controller
      * 暂停订单
      * @param $start_date
      * @param $end_date
-     * @param $order_id
+     * @param $order
      * @param $forRestart bool 是否包括结束那天
      * @return \Illuminate\Http\JsonResponse
      */

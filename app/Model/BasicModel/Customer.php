@@ -40,21 +40,14 @@ class Customer extends Model
 
     public function getRemainOrderAmountAttribute()
     {
-        $total_remain_order_amount= 0;
-
-        $orders = Order::where('customer_id', $this->id)
+        $total_remain_order_amount = $this->Order()
             ->where(function ($query) {
                 $query->where('status', Order::ORDER_PASSED_STATUS);
                 $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
-            })->get()->all();
+            })
+            ->sum('remaining_amount');
 
-        foreach($orders as $order)
-        {
-            $total_remain_order_amount+= $order->remaining_amount;
-        }
-
-        return $total_remain_order_amount;
+        return getEmptyValue($total_remain_order_amount);
     }
 
     public function getRemainingBottleCountAttribute()
@@ -65,7 +58,6 @@ class Customer extends Model
                 $queryOrder->where(function ($query) {
                     $query->where('status', Order::ORDER_PASSED_STATUS);
                     $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                    $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
                 });
             })
             ->sum('delivery_count');
@@ -75,15 +67,18 @@ class Customer extends Model
 
     public function getHasMilkboxAttribute()
     {
-        $orders = $this->Order();
-        if(count($orders) > 0)
+        if ($this->Order()->count() > 0)
         {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
+    /**
+     * 获取此客户的所有订单
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function Order()
     {
         return $this->hasMany('App\Model\OrderModel\Order');
@@ -211,41 +206,19 @@ class Customer extends Model
 
     public function get_plans_for_date($date)
     {
-        $customer_id = $this->id;
-        /*
-         * //show all delivery plan including admin
-        $orders = Order::where('customer_id', $customer_id)->where('payment_type', PaymentType::PAYMENT_TYPE_WECHAT)
-            ->where(function ($query) {
-                $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
-                $query->orwhere('status', Order::ORDER_PASSED_STATUS);
+        $plans = MilkManDeliveryPlan::where('deliver_at', $date)
+            ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+            ->whereHas('orderDelivery', function($queryOrder) {
+                $queryOrder->where('customer_id', $this->id);
+                $queryOrder->where(function ($query) {
+                    $query->where('status', Order::ORDER_PASSED_STATUS);
+                    $query->orWhere('status', Order::ORDER_ON_DELIVERY_STATUS);
+                });
+                $queryOrder->orderBy('id', 'desc');
             })
-            ->orderBy('id', 'desc')
-            ->get()->all();*/
+            ->get();
 
-        $orders = Order::where('customer_id', $customer_id)
-            ->where(function ($query) {
-                $query->where('status', Order::ORDER_ON_DELIVERY_STATUS);
-                $query->orwhere('status', Order::ORDER_PASSED_STATUS);
-                $query->orWhere('status', Order::ORDER_STOPPED_STATUS);
-            })
-            ->orderBy('id', 'desc')
-            ->get()->all();
-
-        $plans = array();
-        foreach($orders as $order)
-        {
-            $order_id = $order->id;
-            $plans_o = MilkManDeliveryPlan::where('order_id', $order_id)->where('deliver_at', $date)->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)->get()->all();
-            if($plans_o)
-            {
-                foreach($plans_o as $plan)
-                {
-                    array_push($plans, $plan);
-                }
-            }
-        }
-
-        return $plans;
+        return empty($plans) ? array() : $plans;
     }
 
 }

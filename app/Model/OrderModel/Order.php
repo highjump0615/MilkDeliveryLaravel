@@ -276,32 +276,36 @@ class Order extends Model
             case $this::ORDER_WAITING_STATUS:
                 $status_name="待审核";
                 break;
+
             case $this::ORDER_ON_DELIVERY_STATUS:
                 $status_name="在配送";
+
+                // 暂停，这不是根据状态字段判断出来的
+                if ($this->isStopped()) {
+                    $status_name="暂停";
+                }
+
                 break;
+
             case $this::ORDER_PASSED_STATUS:
                 $status_name="未起奶";
                 break;
-            case $this::ORDER_STOPPED_STATUS:
-                $status_name="暂停";
-                break;
+
             case $this::ORDER_FINISHED_STATUS:
                 $status_name="已完成";
                 break;
+
             case $this::ORDER_NEW_NOT_PASSED_STATUS:
             case $this::ORDER_NOT_PASSED_STATUS:
                 $status_name="未通过";
                 break;
+
             case $this::ORDER_CANCELLED_STATUS:
                 $status_name="退订";
                 break;
+
             default:
                 break;
-        }
-
-        // 暂停，这不是根据状态字段判断出来的
-        if ($this->isStopped()) {
-            $status_name="暂停";
         }
 
         return $status_name;
@@ -725,8 +729,7 @@ class Order extends Model
         $result = false;
 
         if ($this->status == Order::ORDER_ON_DELIVERY_STATUS ||
-            $this->status == Order::ORDER_PASSED_STATUS ||
-            $this->status == Order::ORDER_STOPPED_STATUS) {
+            $this->status == Order::ORDER_PASSED_STATUS) {
 
             $result = true;
         }
