@@ -72,36 +72,20 @@ class CustomerCtrl extends Controller
     }
 
     public function getOrderStatus($customer_id){
-        $customer_orders = Order::where('customer_id',$customer_id)->get();
+        $customer_orders = Order::where('customer_id',$customer_id);
         $state = '';
-        if(count($customer_orders)>1){
+
+        if ($customer_orders->count() > 1){
             $state = "多态";
         }
-        elseif (count($customer_orders)==1){
-            if ($customer_orders->first()->status == Order::ORDER_WAITING_STATUS ||
-                $customer_orders->first()->status == Order::ORDER_NEW_WAITING_STATUS) {
-                $state = "待审核";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_PASSED_STATUS){
-                $state = "未起奶";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_ON_DELIVERY_STATUS){
-                $state = "在配送";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_STOPPED_STATUS){
-                $state = "暂停";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_NOT_PASSED_STATUS ||
-                    $customer_orders->first()->status == Order::ORDER_NEW_NOT_PASSED_STATUS) {
-                $state = "未通过";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_CANCELLED_STATUS){
-                $state = "退订";
-            }
-            elseif ($customer_orders->first()->status == Order::ORDER_FINISHED_STATUS){
-                $state = "已完成";
+        else {
+            $order = $customer_orders->first();
+
+            if (!empty($order)) {
+                $state = $order->status_name;
             }
         }
+
         return $state;
     }
 
