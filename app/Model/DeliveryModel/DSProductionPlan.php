@@ -42,8 +42,6 @@ class DSProductionPlan extends Model
 
     protected $table = 'dsproductionplan';
 
-    public $timestamps = false;
-
     protected $fillable = [
         'station_id',
         'product_id',
