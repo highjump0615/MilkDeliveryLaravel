@@ -237,7 +237,7 @@ class FactoryStatistics extends Controller
 
                 $byType = $countsProduct->groupBy('payment_type');
                 foreach ($byType as $nTypeId=>$countPlans) {
-                    $aryCountByType[$nTypeId] = $countsProduct->sum('count');
+                    $aryCountByType[$nTypeId] = $countPlans->sum('count');
                 }
 
                 $aryCountByProduct[$nProductId] = $aryCountByType;
