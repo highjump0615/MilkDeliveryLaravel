@@ -932,10 +932,6 @@ class DSDeliveryPlanCtrl extends Controller
             $changestatus['new_order_amount'] = 0;
             $changestatus['new_changed_order_amount'] = 0;
             $changestatus['milkbox_amount'] = 0;
-            $changestatus['jijiangdaoqi'] = 0;
-            $changestatus['jiridaoqi'] = 0;
-
-            $milkman = null;
 
             $delivery_info = array();
             $comment = '';
@@ -962,6 +958,17 @@ class DSDeliveryPlanCtrl extends Controller
                 foreach ($byAddress as $dp) {
                     if (empty($orderData)) {
                         $orderData = $dp->orderDelivery;
+
+                        $orderData['notice'] = MilkManDeliveryPlan::NOTICE_NONE;
+                        if ($dp->deliver_at == $orderData->getDeliveryStartDate()) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER;
+                        }
+                        else if ($dp->deliver_at == $orderData->getDeliveryAlmostEndDate()) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_ALMOST_END;
+                        }
+                        else if ($dp->deliver_at == $orderData->order_end_date) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_END_TODAY;
+                        }
                     }
 
                     $name = $dp->order_product->product->simple_name;
@@ -982,7 +989,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $comment = $dp->comment;
 
                     // 计算变化量统计数据
-                    if($dp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER) {
+                    if ($orderData['notice'] == MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER) {
                         // 第一次配送的数量合计
                         $changestatus['new_order_amount'] += $dp->delivery_count;
                     }
@@ -1008,27 +1015,6 @@ class DSDeliveryPlanCtrl extends Controller
                 // 添加到主数组
                 //
                 $this->addToDeliveryInfoWithSort($delivery_info, $orderData);
-            }
-
-            //查询配送计划
-            for ($dd=0; $dd <count($delivery_info) ; $dd++) { 
-                $order_id = $delivery_info[$dd]['id'];
-                $totle_send_time= DB::table('milkmandeliveryplan')
-                     ->select('deliver_at')
-                     ->where('order_id',$order_id)
-                     ->get();
-
-                $jijiangdaoqi_time= array_slice($totle_send_time,-3,1);
-                $jinridaoqi_time= array_slice($totle_send_time,-1,1);
-                $delivery_info[$dd]['jijiangdaoqi'] = '0';
-                $delivery_info[$dd]['jinridaoqi'] = '0';
-                if($deliver_date_str == $jijiangdaoqi_time['0']->deliver_at){
-                    $delivery_info[$dd]['jijiangdaoqi'] = '1';
-                }
-                if($deliver_date_str == $jinridaoqi_time['0']->deliver_at){
-                    $delivery_info[$dd]['jinridaoqi'] = '1';
-                }
-                
             }
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
@@ -1128,13 +1114,14 @@ class DSDeliveryPlanCtrl extends Controller
 
                         // 序号
                         $i++;
-                        if ($oi->flag == 1) {
+
+                        if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER) {
                             $rowData[] = $i . ' 第一次配送';
                         }
-                        else if ($oi->jijiangdaoqi == 1) {
+                        else if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_ALMOST_END) {
                             $rowData[] = $i . ' 即将到期';
                         }
-                        else if ($oi->jinridaoqi == 1) {
+                        else if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_END_TODAY) {
                             $rowData[] = $i . ' 今日到期';
                         }
                         else {

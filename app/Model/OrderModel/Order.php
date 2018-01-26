@@ -317,8 +317,39 @@ class Order extends Model
      */
     public function getOrderEndDateAttribute()
     {
-        $dp = $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
-        return ($dp) ? $dp->deliver_at : "";
+        $dp = $this->milkmanDeliveryPlan()
+            ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+            ->orderBy('deliver_at', 'desc')
+            ->first();
+
+        return !empty($dp) ? $dp->deliver_at : "";
+    }
+
+    /**
+     * 获取配送开始的日期
+     * @return string
+     */
+    public function getDeliveryStartDate() {
+        $dp = $this->milkmanDeliveryPlan()
+            ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+            ->orderBy('deliver_at')
+            ->first();
+
+        return !empty($dp) ? $dp->deliver_at : "";
+    }
+
+    /**
+     * 获取配送即将到期的日期
+     * @return string
+     */
+    public function getDeliveryAlmostEndDate() {
+        $dp = $this->milkmanDeliveryPlan()
+            ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+            ->orderBy('deliver_at', 'desc')
+            ->offset(2)
+            ->first();
+
+        return !empty($dp) ? $dp->deliver_at : "";
     }
 
     public function getOrderStopEndDateAttribute()
