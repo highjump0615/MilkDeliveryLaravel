@@ -268,6 +268,7 @@ class OrderProduct extends Model
      * @return mixed
      */
     public function getClosestDeliverDate($date) {
+        // 默认返回当天
         $dateDeliverNew = $date;
 
         if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY ||
@@ -315,11 +316,6 @@ class OrderProduct extends Model
                     $dateDeliverNew = getStringFromDate($dtIndex);
                     break;
                 }
-            }
-
-            // 规则里找不着，默认是最后的第二天
-            if ($i >= count($aryDate)) {
-                $dateDeliverNew = getNextDateString($aryDate[count($aryDate)-1]);
             }
         }
 
