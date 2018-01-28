@@ -217,14 +217,11 @@ class OrderProduct extends Model
      * @return int|mixed
      */
     public function getDeliveryTypeCount($dateDeliver) {
-        $nTypeCount = 0;
+        // 默认是每次数量
+        $nTypeCount = $this->count_per_day;
 
-        // 天天送、隔日送直接返回每次数量
-        if ($this->isDayCountAvailable()) {
-            $nTypeCount = $this->count_per_day;
-        }
         // 按周送、随心送需要查询具体规则内容
-        else {
+        if (!$this->isDayCountAvailable()) {
             $strCustom = rtrim($this->custom_order_dates, ',');
             $aryStrCustom = explode(',', $strCustom);
 
@@ -249,11 +246,6 @@ class OrderProduct extends Model
                         $nTypeCount = $this->getCustomDateCount($strCustom);
                         break;
                     }
-                }
-
-                // 配送规则里找不着，返回剩余数量
-                if ($i >= count($aryStrCustom)) {
-                    $nTypeCount = $this->total_count;
                 }
             }
         }
