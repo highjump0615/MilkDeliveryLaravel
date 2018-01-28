@@ -41,7 +41,7 @@ $(document).on('click','#search',function () {
     var factory_name = $('#factory_name').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/zongpingtai/tongji/dingdanleixing/?factory_name="+factory_name+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"zongpingtai/tongji/dingdanleixing/?factory_name="+factory_name+"&start_date="+start_date+"&end_date="+end_date+"";
 })
 
 $('.footable').footable();

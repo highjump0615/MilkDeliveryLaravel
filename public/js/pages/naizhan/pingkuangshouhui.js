@@ -107,7 +107,7 @@ $(document).on('click','#save',function () {
 
     });
 
-    window.location.href = SITE_URL+"milk/public/naizhan/pingkuang/pingkuangshouhui/?start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"naizhan/pingkuang/pingkuangshouhui/?start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('#data_range_select .input-daterange').datepicker({
@@ -118,7 +118,7 @@ $('#data_range_select .input-daterange').datepicker({
 $(document).on('click','#find',function () {
     var start_date = $('#start').val();
     var end_date = $('#end').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/pingkuang/pingkuangshouhui/?start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"naizhan/pingkuang/pingkuangshouhui/?start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

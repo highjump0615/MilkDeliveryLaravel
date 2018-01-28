@@ -86,7 +86,7 @@ $(document).ready(function () {
 
 $(document).on('click','#search',function () {
     var start_date = $('#start_date').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/tongji/naipinpeisongri/?start_date="+start_date+"";
+    window.location.href = SITE_URL+"naizhan/tongji/naipinpeisongri/?start_date="+start_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

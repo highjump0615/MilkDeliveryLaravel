@@ -23,7 +23,10 @@
 <script src="<?=asset('weixin/js/jquery-1.10.1.min.js')?>"></script>
 <script src="<?=asset('weixin/js/jquery-ui.js')?>"></script>
 <script src="<?=asset('js/bootstrap.min.js')?>"></script>
-<script src="<?=asset('js/global.js')?>"></script>
+<script src="<?=asset('js/global.js?180128')?>"></script>
+
+@include('commonjs')
+
 <script src="<?=asset('js/plugins/notify/notify.min.js') ?>"></script>
 <script src="<?=asset('weixin/js/moment.min.js')?>"></script>
 <script src="<?=asset('weixin/js/swiper.min.js')?>"></script>

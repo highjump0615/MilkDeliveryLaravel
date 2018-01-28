@@ -7,7 +7,7 @@ $(document).on('click','#search',function () {
     var factory_number = $('#factory_number').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/zongpingtai/tongji/naipinpeisong/?factory_name="+factory_name+"&factory_number="+factory_number+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"zongpingtai/tongji/naipinpeisong/?factory_name="+factory_name+"&factory_number="+factory_number+"&start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $(document).ready(function () {

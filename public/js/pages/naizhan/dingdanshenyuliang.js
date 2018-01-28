@@ -36,8 +36,8 @@ $(document).on('click','#search',function () {
 //			var area_name = $('#area_name option:selected').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/tongji/dingdanshenyuliang/?start_date="+start_date+"&end_date="+end_date+"";
-})
+    window.location.href = SITE_URL+"naizhan/tongji/dingdanshenyuliang/?start_date="+start_date+"&end_date="+end_date+"";
+});
 
 //		$('#date_1 .input-group.date').datepicker({
 //			todayBtn: "linked",

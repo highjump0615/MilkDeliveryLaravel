@@ -195,5 +195,5 @@ $(document).on('click','#search',function () {
     var status = $('#status option:selected').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/gongchang/pingjia/pingjialiebiao/?status="+status+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"gongchang/pingjia/pingjialiebiao/?status="+status+"&start_date="+start_date+"&end_date="+end_date+"";
 })

@@ -88,7 +88,7 @@ $(document).on('click','#search',function () {
     var milkman_number = $('#milkman_number').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/tongji/peisongyuanwei/?milkman_name="+milkman_name+"&milkman_number="+milkman_number+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"naizhan/tongji/peisongyuanwei/?milkman_name="+milkman_name+"&milkman_number="+milkman_number+"&start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

@@ -193,7 +193,10 @@ class FactoryCtrl extends Controller
 
         if(!empty($app_id) && !empty($app_secret) && !empty($app_encoding_key)  && !empty($app_token) && !empty($name)){
             $wechatObj = WechatesCtrl::withParam($app_id, $app_secret, $app_encoding_key, $app_token, $name, $factory->id);
-            $wechatObj->createMenu();
+
+            $strUrl = 'http://' . $request->server('HTTP_HOST') . '/' . env("SITE_PATH");
+
+            $wechatObj->createMenu($strUrl);
         }
 
         $current_factory_id = $factory->id;
