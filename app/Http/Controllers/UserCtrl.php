@@ -10,11 +10,17 @@ use App\Model\UserModel\UserRole;
 use App\Http\Requests;
 use App\Model\UserModel\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Controller;
 
 class UserCtrl extends Controller
 {
+    /**
+     * 打开奶厂用户管理页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function viewPage(Request $request)
     {
         $current_factory_id = Auth::guard('gongchang')->User()->factory_id;

@@ -916,6 +916,9 @@ Route::group(['prefix'=>'/weixin'], function(){
     //add product to order for xiugai
     Route::post('api/add_product_to_order_for_xiugai', 'WeChatCtrl@add_product_to_order_for_xiugai');
 
+    // 预支付
+    Route::post('api/prepareMakeOrder', 'WeChatCtrl@prepareOrderApi');
+
     /* shopping cart */
     Route::get('/gouwuche', 'WeChatCtrl@gouwuche')->name('gouwuche');
     Route::post('/gouwuche/delete_cart', 'WeChatCtrl@delete_cart');
