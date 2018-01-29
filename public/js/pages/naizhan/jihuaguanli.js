@@ -25,7 +25,7 @@ $(document).ready(function(){
 
 $('#search').click(function () {
     var current_date = $('#search_date').val();
-    window.location.href = SITE_URL+"naizhan/shengchan/jihuaguanli/?current_date="+current_date+"";
+    window.location.href = SITE_URL+"naizhan/shengchan/jihuaguanli?current_date="+current_date+"";
 
 });
 

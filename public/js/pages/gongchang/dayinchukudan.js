@@ -23,7 +23,7 @@ $('#search').click(function () {
     var station_number = $('#station_number').val();
     var address = $('#address').val();
     var date = $('#date').val();
-    window.location.href = SITE_URL+"gongchang/shengchan/naizhanpeisong/dayinchukuchan/?station_name="+station_name+"&date="+date+"&station_number="+station_number+"&address="+address+"";
+    window.location.href = SITE_URL+"gongchang/shengchan/naizhanpeisong/dayinchukuchan?station_name="+station_name+"&date="+date+"&station_number="+station_number+"&address="+address+"";
 });
 
 /**
