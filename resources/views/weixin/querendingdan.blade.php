@@ -98,12 +98,15 @@
                 objParam,
                 function (res) {
                     WeixinJSBridge.log(res.err_msg);
+                    // 支付成功
                     if (res.err_msg == 'get_brand_wcpay_request:ok') {
-                        //                            alert('支付成功了');
                         makeOrder();
                     }
+                    // 用户取消
+                    else if (res.err_msg == 'get_brand_wcpay_request:cancel') {
+                    }
+                    // 支付失败
                     else {
-                                                   // alert(res.err_msg);
                         window.location = SITE_URL + "weixin/zhifushibai";
                     }
                 }
@@ -112,12 +115,12 @@
 
         function callpay(param) {
             if (typeof WeixinJSBridge == "undefined") {
-//                if (document.addEventListener) {
-//                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-//                } else if (document.attachEvent) {
-//                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-//                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-//                }
+                if (document.addEventListener) {
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                } else if (document.attachEvent) {
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
 
                 // 支付模块不存在, 当支付失败
                 window.location = SITE_URL + "weixin/zhifushibai";
