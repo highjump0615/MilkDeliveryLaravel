@@ -44,6 +44,7 @@ class WeChatCtrl extends Controller
 {
     private $kWxOrderProducts = "wx_order_products";
     private $kWxOrderAmount = "wx_order_amount";
+    private $kWxOrderTradeNo = "wx_order_tradeno";
 
     /**
      * 获取地址
@@ -2174,6 +2175,11 @@ class WeChatCtrl extends Controller
             $aryCountPerDay,
             $order);
 
+        // 添加商户订单号
+        $orderTradeNo = $request->session()->get($this->kWxOrderTradeNo);
+        $order->wx_trade_no = $orderTradeNo;
+        $order->save();
+
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
@@ -2817,8 +2823,11 @@ class WeChatCtrl extends Controller
 
         $payOrder = \WxPayApi::unifiedOrder($worder);
 
+        // 在session保存商户订单号
+        $request->session()->put($this->kWxOrderTradeNo, $strTradeNo);
+
         // 写日志
-        Log::info("生成统一订单");
+        Log::info("生成统一订单: " . $strTradeNo);
         Log::info($payOrder);
 
         $tools = new \JsApiPay();
@@ -2827,6 +2836,7 @@ class WeChatCtrl extends Controller
             'status'    => $payOrder['return_code'],
             'message'   => $payOrder['return_msg'],
             'param'     => $tools->GetJsApiParameters($payOrder),
+            'trade_no'  => $strTradeNo,
         ]);
     }
 }
