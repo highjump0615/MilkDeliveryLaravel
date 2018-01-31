@@ -52,17 +52,11 @@ class SysManagerCtrl extends Controller
         // 获取参数
         $username = $request->input('username');
         $date = $request->input('date');
-        $page = $request->input('page');
 
-        // 默认是页面1
-        if (empty($page)) {
-            $page = 1;
-        }
+        $offset = $this->getQueryOffset($request, $this->mnPageCount);
 
         $queryLog = null;
         $getField = null;
-
-        $offset = ((int)$page - 1) * $this->mnPageCount;
 
         // 筛选
         $strDateQuery = 'created_at';

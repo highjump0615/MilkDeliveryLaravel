@@ -88,20 +88,49 @@ class FactoryStatistics extends Controller
         //
         // 查询已完成的订单
         //
+        $strSql = 'select order_id
+            from (
+                select order_id, max(deliver_at) as max_deliver 
+                from milkmandeliveryplan m
+                left join deliverystations s on s.id = m.station_id
+                where m.status != ' . MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL . '
+                and m.deleted_at is null
+                and s.factory_id=' . $current_factory_id;
+
+        if (!empty($aryBaseData['station_id'])) {
+            $strSql .= ' and m.station_id = ' . $aryBaseData['station_id'];
+        }
+        if (!empty($aryBaseData['area_name'])) {
+            $strSql .= ' and s.address like \'%' . $aryBaseData['area_name'] . '%\'';
+        }
+
+        $strSql .= ' 
+                group by order_id
+            ) as t
+            where 1=1';
+
+        // 日期筛选
+        if (!empty($start_date)) {
+            $strSql .= ' and max_deliver >= \'' . $start_date . '\'';
+        }
+        if (!empty($end_date)) {
+            $strSql .= ' and max_deliver <= \'' . $end_date . '\'';
+        }
+
+//        $nPageSize = 15;
+//        $nOffset = $this->getQueryOffset($request, $nPageSize);
+//        $strSql .= ' limit ' . $nPageSize . ' offset ' . $nOffset;
+
+        $aryOrderId = DB::select(DB::raw($strSql));
+
+        $orderIds = [];
+        foreach ($aryOrderId as $mdp) {
+            $orderIds[] = $mdp->order_id;
+        }
+
         $orders = Order::with('order_products')
             ->where('status',Order::ORDER_FINISHED_STATUS)
-            ->where('factory_id',$current_factory_id)
-            ->whereHas('deliveryStation', function($query) use ($aryBaseData) {
-                if (!empty($aryBaseData['station_id'])) {
-                    $query->where('id', $aryBaseData['station_id']);
-                }
-                if (!empty($aryBaseData['area_name'])) {
-                    $query->where('address', 'LIKE', '%' . $aryBaseData['area_name'] . '%');
-                }
-            })
-            ->wherebetween('ordered_at',[$start_date,$end_date])
-            ->where('is_deleted',0)
-            ->orderBy('created_at', 'desc')
+            ->whereIn('id', $orderIds)
             ->paginate();
 
         foreach ($orders as $or){
