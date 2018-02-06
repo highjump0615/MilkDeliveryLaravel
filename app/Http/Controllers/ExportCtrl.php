@@ -125,7 +125,7 @@ class ExportCtrl extends Controller
                     }
                 });
 
-            })->store('xls', 'exports');
+            })->store('xlsx', 'exports');
 
             //
             // 添加系统日志
@@ -138,7 +138,7 @@ class ExportCtrl extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'path' => 'http://' . $request->server('HTTP_HOST') . '/' . env("SITE_PATH") . 'exports/exportlist.xls'
+                'path' => 'http://' . $request->server('HTTP_HOST') . '/' . env("SITE_PATH") . 'exports/exportlist.xlsx'
             ]);
         }
     }
