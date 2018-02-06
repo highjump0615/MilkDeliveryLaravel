@@ -33,13 +33,19 @@ use DateTime;
 use DateTimeZone;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
-require_once app_path() . "/Lib/Payweixin/WxPayApi.php";
+require_once app_path() . "/Lib/Payweixin/WxPay.Api.php";
+require_once app_path() . "/Lib/Payweixin/WxPay.JsApiPay.php";
 
 
 class WeChatCtrl extends Controller
 {
+    private $kWxOrderProducts = "wx_order_products";
+    private $kWxOrderAmount = "wx_order_amount";
+    private $kWxOrderTradeNo = "wx_order_tradeno";
+
     /**
      * 获取地址
      * @param $factory
@@ -2169,6 +2175,11 @@ class WeChatCtrl extends Controller
             $aryCountPerDay,
             $order);
 
+        // 添加商户订单号
+        $orderTradeNo = $request->session()->get($this->kWxOrderTradeNo);
+        $order->wx_trade_no = $orderTradeNo;
+        $order->save();
+
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
         $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
@@ -2300,6 +2311,10 @@ class WeChatCtrl extends Controller
                 }
             }
         }
+
+        // 在session保存奶品数据
+        $request->session()->put($this->kWxOrderProducts, $wechat_order_products);
+        $request->session()->put($this->kWxOrderAmount, $total_amount);
 
         $type = $request->input('type');
         return view('weixin.querendingdan', [
@@ -2445,6 +2460,10 @@ class WeChatCtrl extends Controller
         }
 
         $total_amount = round($total_amount, 3);
+
+        // 在session保存奶品数据
+        $request->session()->put($this->kWxOrderProducts, $wechat_order_products);
+        $request->session()->put($this->kWxOrderAmount, $total_amount);
 
         return view('weixin.querendingdan', [
             'addr_obj' => $primary_addr_obj,
@@ -2753,6 +2772,11 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+    /**
+     * 打开帮助页面
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function showBangzhu(Request $request) {
         // 初始化
         $factory_id = $this->getCurrentFactoryIdW($request);
@@ -2763,5 +2787,56 @@ class WeChatCtrl extends Controller
         return view('weixin.bangzhu', [
             'content' => $content,
         ]);
-    }    
+    }
+
+    /**
+     * 预支付处理
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function prepareOrderApi(Request $request) {
+
+        $wxuser_id = $this->getCurrentUserIdW();
+        $user = WechatUser::find($wxuser_id);
+
+        // 从session获取奶品信息
+        $wxOrderProducts = $request->session()->get($this->kWxOrderProducts);
+        $dAmount = $request->session()->get($this->kWxOrderAmount);
+
+        // 产品名称
+        $strBody = $wxOrderProducts[0]->product->name;
+        if (count($wxOrderProducts) > 1) {
+            $strBody .= "等" . count($wxOrderProducts) . "种奶品";
+        }
+
+        // 商户订单号
+        $strTradeNo = time() . uniqid();
+
+        // 预支付
+        $worder = new \WxPayUnifiedOrder();
+        $worder->SetBody($strBody);
+        $worder->SetOut_trade_no($strTradeNo);
+        $worder->SetTotal_fee(intval($dAmount * 100));
+        $worder->SetNotify_url("http://paysdk.weixin.qq.com/example/notify.php");
+        $worder->SetTrade_type("JSAPI");
+        $worder->SetOpenid($user->openid);
+
+        $payOrder = \WxPayApi::unifiedOrder($worder);
+
+        // 在session保存商户订单号
+        $request->session()->put($this->kWxOrderTradeNo, $strTradeNo);
+
+        // 写日志
+        Log::info("生成统一订单: " . $strTradeNo);
+        Log::info($payOrder);
+
+        $tools = new \JsApiPay();
+
+        return response()->json([
+            'status'    => $payOrder['return_code'],
+            'message'   => $payOrder['return_msg'],
+            'param'     => $tools->GetJsApiParameters($payOrder),
+            'trade_no'  => $strTradeNo,
+        ]);
+    }
 }

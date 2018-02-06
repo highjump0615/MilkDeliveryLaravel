@@ -932,10 +932,6 @@ class DSDeliveryPlanCtrl extends Controller
             $changestatus['new_order_amount'] = 0;
             $changestatus['new_changed_order_amount'] = 0;
             $changestatus['milkbox_amount'] = 0;
-            $changestatus['jijiangdaoqi'] = 0;
-            $changestatus['jiridaoqi'] = 0;
-
-            $milkman = null;
 
             $delivery_info = array();
             $comment = '';
@@ -962,6 +958,17 @@ class DSDeliveryPlanCtrl extends Controller
                 foreach ($byAddress as $dp) {
                     if (empty($orderData)) {
                         $orderData = $dp->orderDelivery;
+
+                        $orderData['notice'] = MilkManDeliveryPlan::NOTICE_NONE;
+                        if ($dp->deliver_at == $orderData->getDeliveryStartDate()) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER;
+                        }
+                        else if ($dp->deliver_at == $orderData->getDeliveryAlmostEndDate()) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_ALMOST_END;
+                        }
+                        else if ($dp->deliver_at == $orderData->order_end_date) {
+                            $orderData['notice'] = MilkManDeliveryPlan::NOTICE_END_TODAY;
+                        }
                     }
 
                     $name = $dp->order_product->product->simple_name;
@@ -982,7 +989,7 @@ class DSDeliveryPlanCtrl extends Controller
                     $comment = $dp->comment;
 
                     // 计算变化量统计数据
-                    if($dp->flag == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_FLAG_FIRST_ON_ORDER) {
+                    if ($orderData['notice'] == MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER) {
                         // 第一次配送的数量合计
                         $changestatus['new_order_amount'] += $dp->delivery_count;
                     }
@@ -1008,27 +1015,6 @@ class DSDeliveryPlanCtrl extends Controller
                 // 添加到主数组
                 //
                 $this->addToDeliveryInfoWithSort($delivery_info, $orderData);
-            }
-
-            //查询配送计划
-            for ($dd=0; $dd <count($delivery_info) ; $dd++) { 
-                $order_id = $delivery_info[$dd]['id'];
-                $totle_send_time= DB::table('milkmandeliveryplan')
-                     ->select('deliver_at')
-                     ->where('order_id',$order_id)
-                     ->get();
-
-                $jijiangdaoqi_time= array_slice($totle_send_time,-3,1);
-                $jinridaoqi_time= array_slice($totle_send_time,-1,1);
-                $delivery_info[$dd]['jijiangdaoqi'] = '0';
-                $delivery_info[$dd]['jinridaoqi'] = '0';
-                if($deliver_date_str == $jijiangdaoqi_time['0']->deliver_at){
-                    $delivery_info[$dd]['jijiangdaoqi'] = '1';
-                }
-                if($deliver_date_str == $jinridaoqi_time['0']->deliver_at){
-                    $delivery_info[$dd]['jinridaoqi'] = '1';
-                }
-                
             }
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
@@ -1128,13 +1114,14 @@ class DSDeliveryPlanCtrl extends Controller
 
                         // 序号
                         $i++;
-                        if ($oi->flag == 1) {
+
+                        if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER) {
                             $rowData[] = $i . ' 第一次配送';
                         }
-                        else if ($oi->jijiangdaoqi == 1) {
+                        else if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_ALMOST_END) {
                             $rowData[] = $i . ' 即将到期';
                         }
-                        else if ($oi->jinridaoqi == 1) {
+                        else if ($oi['notice'] == MilkManDeliveryPlan::NOTICE_END_TODAY) {
                             $rowData[] = $i . ' 今日到期';
                         }
                         else {
@@ -1183,11 +1170,15 @@ class DSDeliveryPlanCtrl extends Controller
         return \response()->download(public_path() . '/exports/deliverList.xls')->deleteFileAfterSend(true);
     }
 
+    /**
+     * 处理多余量
+     * @param $mkdp
+     */
     public function undelivered_process($mkdp)
     {
         $undelivered_count = $mkdp->changed_plan_count - $mkdp->delivered_count;
 
-        $mkdp->order_product->processExtraCount($mkdp, $undelivered_count);
+        return $mkdp->order_product->processExtraCount($mkdp, $undelivered_count);
     }
 
     /**
@@ -1470,25 +1461,35 @@ class DSDeliveryPlanCtrl extends Controller
      * 查看是否完成返录
      * @param $stationId
      * @param $date
+     * @param bool $strictMode 严格模式
      * @return bool
      */
-    public function isDeliverReportFinished($stationId, $date) {
+    public function isDeliverReportFinished($stationId, $date, $strictMode = false) {
         $bRes = true;
 
-        // 返录全部配送才计算返还问题
-        $deliveryPlanByMilkman = MilkManDeliveryPlan::where('station_id', $stationId)
-            ->where('deliver_at', $date)
-            ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
-            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->distinct()
-            ->get(['milkman_id']);
+        if ($strictMode) {
+            $bRes = !(MilkManDeliveryPlan::where('station_id', $stationId)
+                ->where('deliver_at', $date)
+                ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+                ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                ->exists());
+        }
+        else {
+            // 获取配送员
+            $deliveryPlanByMilkman = MilkManDeliveryPlan::where('station_id', $stationId)
+                ->where('deliver_at', $date)
+                ->wherebetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+                ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                ->distinct()
+                ->get(['milkman_id']);
 
-        foreach ($deliveryPlanByMilkman as $dp) {
-            // 检查所有配送员是否都返录完
-            if (!$this->isDidReport($dp->milkman_id, $date)) {
-                // 还没返录完，退出
-                $bRes = false;
-                break;
+            foreach ($deliveryPlanByMilkman as $dp) {
+                // 检查所有配送员是否都返录完
+                if (!$this->isDidReport($dp->milkman_id, $date)) {
+                    // 还没返录完，退出
+                    $bRes = false;
+                    break;
+                }
             }
         }
 
@@ -1508,6 +1509,7 @@ class DSDeliveryPlanCtrl extends Controller
         $deliver_date_str = $request->session()->get($this->kDateReport);
 
         $deliveryPlans = [];
+        $bResult = true;
 
         $table_info = json_decode($request->getContent(),true);
         foreach ($table_info as $ti){
@@ -1521,66 +1523,68 @@ class DSDeliveryPlanCtrl extends Controller
 
             $delivered_count = preg_replace('/\s+/', '', $delivered_count);
 
-            $milkmandeliverys = MilkManDeliveryPlan::where('deliver_at',$deliver_date_str)
+            $mdp = MilkManDeliveryPlan::where('deliver_at',$deliver_date_str)
                 ->where('milkman_id',$current_milkman_id)
                 ->where('type',$delivery_type)
                 ->where('order_product_id',$order_product_id)
                 ->wherebetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
                 ->first();
 
-            if (!$milkmandeliverys) {
+            if (!$mdp) {
                 continue;
             }
 
-            $milkmandeliverys->delivered_count = $delivered_count;
+            //
+            // 更新配送明细数据
+            //
+            $bSuccess = true;
 
-            // 配送数量0是怎么处理，按照正常流程处理
-//            if($delivered_count == 0){
-//                $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL;
-//                $milkmandeliverys->cancel_reason = "配送取消";
-//            }
-//            else{
-                $milkmandeliverys->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
-//            }
+            $mdp->delivered_count = $delivered_count;
+            $mdp->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED;
+            $mdp->report = $report;
 
-            $milkmandeliverys->report = $report;
-            $milkmandeliverys->save();
-
-            if($milkmandeliverys->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
+            if($mdp->type == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER){
 
                 // 计算订单剩余金额
-                $order = $milkmandeliverys->orderDelivery;
-                $order->remaining_amount = $order->remaining_amount - $milkmandeliverys->delivered_count * $milkmandeliverys->product_price;
+                $order = $mdp->orderDelivery;
+                $order->remaining_amount = $order->remaining_amount - $mdp->delivered_count * $mdp->product_price;
                 $order->save();
 
                 // 如果当天没有配送完，顺延处理
-                if($milkmandeliverys->delivered_count != $milkmandeliverys->changed_plan_count){
-                    $this->undelivered_process($milkmandeliverys);
+                if ($mdp->delivered_count != $mdp->changed_plan_count){
+                    $bSuccess = $this->undelivered_process($mdp);
                 }
 
-                // 计算剩下数量
-                $total_order_counts = MilkManDeliveryPlan::where('order_id',$order_id)
-                        ->whereBetween('status',[MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED,MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
+                if ($bSuccess) {
+                    // 计算剩下数量
+                    $total_order_counts = MilkManDeliveryPlan::where('order_id', $order_id)
+                        ->whereBetween('status', [MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED, MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT])
                         ->count();
 
-                // 如果没有剩下的，订单变成已完成
-                if($total_order_counts == 0){
-                    $order->status = Order::ORDER_FINISHED_STATUS;
-                    $order->save();
+                    // 如果没有剩下的，订单变成已完成
+                    if ($total_order_counts == 0) {
+                        $order->status = Order::ORDER_FINISHED_STATUS;
+                        $order->save();
 
-                    // 订单余额到客户账户里加回去
-                    $order->customer->remain_amount += $order->remaining_amount;
-                    $order->customer->save();
+                        // 订单余额到客户账户里加回去
+                        $order->customer->remain_amount += $order->remaining_amount;
+                        $order->customer->save();
+                    }
+
+                    //
+                    // 更新库存数据
+                    //
+                    if (!isset($deliveryPlans[$mdp->getProductId()])) {
+                        $deliveryPlans[$mdp->getProductId()] = 0;
+                    }
+
+                    $deliveryPlans[$mdp->getProductId()] += $delivered_count;
                 }
+            }
 
-                //
-                // 更新库存数据
-                //
-                if (!isset($deliveryPlans[$milkmandeliverys->getProductId()])) {
-                    $deliveryPlans[$milkmandeliverys->getProductId()] = 0;
-                }
-
-                $deliveryPlans[$milkmandeliverys->getProductId()] += $delivered_count;
+            $bResult &= $bSuccess;
+            if ($bSuccess) {
+                $mdp->save();
             }
         }
 
@@ -1597,72 +1601,77 @@ class DSDeliveryPlanCtrl extends Controller
         //
 
         // 返录全部配送才计算返还问题
-        if (!$this->isDeliverReportFinished($nStationId, $deliver_date_str)) {
-            // 还没返录完，退出
-            return Response::json(['status'=>"success"]);
-        }
+        if ($this->isDeliverReportFinished($nStationId, $deliver_date_str, true)) {
+            // 查询已配送完的配送订单
+            $deliver_finished_plans = MilkManDeliveryPlan::where('station_id', $nStationId)
+                ->where('deliver_at', $deliver_date_str)
+                ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+                ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
+                ->get();
 
-        // 查询已配送完的配送订单
-        $deliver_finished_plans = MilkManDeliveryPlan::where('station_id', $nStationId)
-            ->where('deliver_at',$deliver_date_str)
-            ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-            ->where('type',MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
-            ->get();
-
-        // 配送业务实际配送数量
-        $aryReceiveCount = array();
-        foreach ($deliver_finished_plans as $dfp){
-            $aryReceiveCount[strval($dfp->order_product->product->id)] = 0;
-        }
-        foreach ($deliver_finished_plans as $dfp){
-            $aryReceiveCount[strval($dfp->order_product->product->id)] += $dfp->delivered_count;
-        }
-
-        $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString($deliver_date_str))
-            ->where('station_id', $this->getCurrentStationId())
-            ->where('status','>=',DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
-            ->get();
-
-        $dCostReturnTotal = 0;
-        foreach ($plan_info as $pi) {
-            // 没有配送此奶品，默认配送量是0
-            if (!isset($aryReceiveCount[strval($pi->product_id)])) {
-                $aryReceiveCount[strval($pi->product_id)] = 0;
+            // 配送业务实际配送数量
+            $aryReceiveCount = array();
+            foreach ($deliver_finished_plans as $dfp) {
+                $aryReceiveCount[strval($dfp->order_product->product->id)] = 0;
+            }
+            foreach ($deliver_finished_plans as $dfp) {
+                $aryReceiveCount[strval($dfp->order_product->product->id)] += $dfp->delivered_count;
             }
 
-            // 没有发货就当成0计算
-            if (empty($pi->actual_count)) {
-                $pi->actual_count = 0;
+            $plan_info = DSProductionPlan::where('produce_end_at', getPrevDateString($deliver_date_str))
+                ->where('station_id', $this->getCurrentStationId())
+                ->where('status', '>=', DSProductionPlan::DSPRODUCTION_PASSED_PLAN)
+                ->get();
+
+            $dCostReturnTotal = 0;
+            foreach ($plan_info as $pi) {
+                // 没有配送此奶品，默认配送量是0
+                if (!isset($aryReceiveCount[strval($pi->product_id)])) {
+                    $aryReceiveCount[strval($pi->product_id)] = 0;
+                }
+
+                // 没有发货就当成0计算
+                if (empty($pi->actual_count)) {
+                    $pi->actual_count = 0;
+                }
+
+                // 自营订单实际扣款
+                $dCostReal = ($pi->actual_count - $aryReceiveCount[strval($pi->product_id)]) * $pi->settle_product_price;
+                $dCostReturn = -$pi->getSelfOrderMoney() + $dCostReal;
+
+                $dCostReturnTotal += $dCostReturn;
             }
 
-            // 自营订单实际扣款
-            $dCostReal = ($pi->actual_count - $aryReceiveCount[strval($pi->product_id)]) * $pi->settle_product_price;
-            $dCostReturn = -$pi->getSelfOrderMoney() + $dCostReal;
+            // 没有返还金额，不要添加返还记录
+            if ($dCostReturnTotal != 0) {
+                // 添加返还记录
+                $balancehistory = new DSBusinessCreditBalanceHistory;
+                $balancehistory->station_id = $nStationId;
+                $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_RETURN;
+                $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
+                $balancehistory->amount = $dCostReturnTotal;
+                $balancehistory->return_amount = 0;
+                $balancehistory->save();
 
-            $dCostReturnTotal += $dCostReturn;
+                // 从自营账号扣款
+                $delivery_transation = DeliveryStation::find($nStationId);
+                $delivery_transation->addSelfOrderAccount($balancehistory->amount);
+
+                // 添加奶站通知
+                $notification = new NotificationsAdmin();
+                $notification->sendToStationNotification($nStationId,
+                    DSNotification::CATEGORY_TRANSACTION,
+                    "回报金钱",
+                    "您本次订单计划多余扣除货款" . $dCostReturnTotal . "元已退回您的自营账户。");
+            }
         }
 
-        // 没有返还金额，不要添加返还记录
-        if ($dCostReturnTotal != 0) {
-            // 添加返还记录
-            $balancehistory = new DSBusinessCreditBalanceHistory;
-            $balancehistory->station_id = $nStationId;
-            $balancehistory->type = DSBusinessCreditBalanceHistory::DSBCBH_OUT_RETURN;
-            $balancehistory->io_type = DSBusinessCreditBalanceHistory::DSBCBH_OUT;
-            $balancehistory->amount = $dCostReturnTotal;
-            $balancehistory->return_amount = 0;
-            $balancehistory->save();
-
-            // 从自营账号扣款
-            $delivery_transation = DeliveryStation::find($nStationId);
-            $delivery_transation->addSelfOrderAccount($balancehistory->amount);
-
-            // 添加奶站通知
-            $notification = new NotificationsAdmin();
-            $notification->sendToStationNotification($nStationId,
-                DSNotification::CATEGORY_TRANSACTION,
-                "回报金钱",
-                "您本次订单计划多余扣除货款" . $dCostReturnTotal . "元已退回您的自营账户。");
+        $jsonRet = Response::json(['status'=>"success"]);
+        if (!$bResult) {
+            $jsonRet = Response::json([
+                "status"    => "fail",
+                "message"   => "没法处理发生变化的返录数量",
+            ]);
         }
 
         return Response::json(['status'=>"success"]);

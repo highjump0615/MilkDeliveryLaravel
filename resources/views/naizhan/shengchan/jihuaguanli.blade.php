@@ -112,5 +112,5 @@
 	</div>
 @endsection
 @section('script')
-	<script src="<?=asset('js/pages/naizhan/jihuaguanli.js') ?>"></script>
+	<script src="<?=asset('js/pages/naizhan/jihuaguanli.js?180128') ?>"></script>
 @endsection

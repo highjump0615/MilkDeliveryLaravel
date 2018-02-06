@@ -217,14 +217,11 @@ class OrderProduct extends Model
      * @return int|mixed
      */
     public function getDeliveryTypeCount($dateDeliver) {
-        $nTypeCount = 0;
+        // 默认是每次数量
+        $nTypeCount = $this->count_per_day;
 
-        // 天天送、隔日送直接返回每次数量
-        if ($this->isDayCountAvailable()) {
-            $nTypeCount = $this->count_per_day;
-        }
         // 按周送、随心送需要查询具体规则内容
-        else {
+        if (!$this->isDayCountAvailable()) {
             $strCustom = rtrim($this->custom_order_dates, ',');
             $aryStrCustom = explode(',', $strCustom);
 
@@ -250,11 +247,6 @@ class OrderProduct extends Model
                         break;
                     }
                 }
-
-                // 配送规则里找不着，返回剩余数量
-                if ($i >= count($aryStrCustom)) {
-                    $nTypeCount = $this->total_count;
-                }
             }
         }
 
@@ -268,6 +260,7 @@ class OrderProduct extends Model
      * @return mixed
      */
     public function getClosestDeliverDate($date) {
+        // 默认返回当天
         $dateDeliverNew = $date;
 
         if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY ||
@@ -315,11 +308,6 @@ class OrderProduct extends Model
                     $dateDeliverNew = getStringFromDate($dtIndex);
                     break;
                 }
-            }
-
-            // 规则里找不着，默认是最后的第二天
-            if ($i >= count($aryDate)) {
-                $dateDeliverNew = getNextDateString($aryDate[count($aryDate)-1]);
             }
         }
 
@@ -409,18 +397,33 @@ class OrderProduct extends Model
      * @return mixed
      */
     public function getLastDeliveryPlan() {
-        return $this->milkmanDeliveryPlan()->orderBy('deliver_at', 'desc')->first();
+        // 已被删除，获取此product的配送明细
+        if ($this->trashed()) {
+            $queryDeliveryPlan = MilkManDeliveryPlan::where('order_id', $this->order_id)
+                ->whereHas('orderProduct', function ($query) {
+                    $query->where('product_id', $this->product->id);
+                });
+        }
+        // 此orderProduct的配送明细
+        else {
+            $queryDeliveryPlan = $this->milkmanDeliveryPlan();
+        }
+
+        return $queryDeliveryPlan->orderBy('deliver_at', 'desc')->first();
     }
 
     /**
      * 出现了多余量 生成或删除配送计划
-     * @param $planSrc - 导致这多余量的配送明细
+     * @param $planSrc - 引起这多余量的配送明细
      * @param $extra - 多余数量，正数或负数
+     * @return bool
      */
     public function processExtraCount($planSrc, $extra) {
 
         $nCountExtra = $extra;
         $lastDeliverPlan = null;
+
+        $bResult = true;
 
         while ($nCountExtra != 0) {
 
@@ -458,6 +461,22 @@ class OrderProduct extends Model
                 // 最后那条没有多余空间，要新创建一个配送任务
                 if ($nIncrease == 0) {
 
+                    // 决定orderProduct
+                    $nOrderProductId = $this->id;
+                    if ($this->trashed()) {
+                        $op = $this->order->order_products()
+                            ->where('product_id', $this->product_id)
+                            ->first();
+
+                        // 已换成别的产品，失败
+                        if (empty($op)) {
+                            $bResult = false;
+                            break;
+                        }
+
+                        $nOrderProductId = $op->id;
+                    }
+
                     if (!empty($lastDeliverPlan)) {
                         $deliveryPlan = $lastDeliverPlan->replicate();
                         $deliveryPlan->deliver_at = $this->getNextDeliverDate($lastDeliverPlan->deliver_at);
@@ -469,7 +488,6 @@ class OrderProduct extends Model
 //                        $deliveryPlan->milkman_id = $this->order->milkman_id;
                         $deliveryPlan->station_id = $this->order->delivery_station_id;
                         $deliveryPlan->order_id = $this->order_id;
-                        $deliveryPlan->order_product_id = $this->id;
 
                         $deliveryPlan->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_PASSED;
                         $deliveryPlan->determineStatus();
@@ -480,6 +498,7 @@ class OrderProduct extends Model
                         $deliveryPlan->deliver_at = $this->getNextDeliverDate($this->order->restart_at, false);
                     }
 
+                    $deliveryPlan->order_product_id = $nOrderProductId;
                     $deliveryPlan->milkman_id = null;
 
                     $deliveryPlan->produce_at = $this->getProductionDate($deliveryPlan->deliver_at);
@@ -511,6 +530,14 @@ class OrderProduct extends Model
             // 多余量是负数，删除配送明细
             //
             else {
+                // 如果最后明细是当前的，失败
+                if (!empty($lastDeliverPlan) &&
+                    !empty($planSrc) &&
+                    $lastDeliverPlan->id == $planSrc->id) {
+                    $bResult = false;
+                    break;
+                }
+
                 // 计算减少量
                 $nDecrease = min($lastDeliverPlan->changed_plan_count, -$nCountExtra);
                 $nCount = $lastDeliverPlan->changed_plan_count - $nDecrease;
@@ -529,5 +556,7 @@ class OrderProduct extends Model
 
             $lastDeliverPlan = $deliveryPlan;
         }
+
+        return $bResult;
     }
 }

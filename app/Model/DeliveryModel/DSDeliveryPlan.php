@@ -9,9 +9,7 @@ use Auth;
 class DSDeliveryPlan extends Model
 {
     protected $table = "dsdeliveryplan";
-
-    public $timestamps = false;
-
+    
     protected $fillable =[
         'station_id',
         'deliver_at',

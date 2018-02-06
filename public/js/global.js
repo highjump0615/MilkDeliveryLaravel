@@ -4,8 +4,6 @@
 
 /*var BASE_URL = location.origin + (location.port && ":" + location.port) + "/";*/
 var BASE_URL = location.origin + "/";
-var API_URL = BASE_URL + "milk/public/api/";
-var SITE_URL = BASE_URL + 'milk/public/';
 
 var gnUserTypeAdmin = 1;
 var gnUserTypeFactory = 2;

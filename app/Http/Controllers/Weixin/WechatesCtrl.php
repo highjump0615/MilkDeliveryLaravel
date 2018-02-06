@@ -263,8 +263,9 @@ class WechatesCtrl extends Controller
         }else $userMesArr = array();
         return $userMesArr;
     }
+
 	//自定义菜单
-	public function createMenu()
+	public function createMenu($url)
 	{
 //		$wxmenu = Wxmenu::where('factoryid',$this->factoryid)->get();
 //		$jsonmenu = '{ "button":[ ';
@@ -275,7 +276,7 @@ class WechatesCtrl extends Controller
 //		$jsonmenu = substr($jsonmenu,0,-1);
 //		$jsonmenu .= ']}';
 
-        $strUrl = "http://www.xiannaipai.com/milk/public/weixin";
+        $strUrl = $url . "weixin";
 
 		$jsonmenu = '{
 		    "button":[

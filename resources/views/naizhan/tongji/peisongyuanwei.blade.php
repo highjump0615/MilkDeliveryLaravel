@@ -149,5 +149,5 @@
 	</div>
 @endsection
 @section('script')
-	<script src="<?=asset('js/pages/naizhan/peisongyuanwei.js') ?>"></script>
+	<script src="<?=asset('js/pages/naizhan/peisongyuanwei.js?180128') ?>"></script>
 @endsection

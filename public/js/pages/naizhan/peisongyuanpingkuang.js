@@ -12,7 +12,7 @@ $(document).on('click','#find',function () {
     var milkman_id = $('#milkman option:selected').val();
     var start_date = $('#start').val();
     var end_date = $('#end').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/pingkuang/peisongyuanpingkuang/?milkman_id="+milkman_id+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"naizhan/pingkuang/peisongyuanpingkuang?milkman_id="+milkman_id+"&start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

@@ -82,55 +82,6 @@
         @endif
     </div>
 
-    <!-- 本地版不支持支付 -->
-    @if (!App::environment('local'))
-    <?php
-
-    ini_set('date.timezone', 'Asia/Shanghai');
-
-    //error_reporting(E_ERROR);
-
-    include_once app_path() . "/Lib/Payweixin/WxPayConfig.php";
-    include_once app_path() . "/Lib/Payweixin/WxPayApi.php";
-    include_once app_path() . "/Lib/Payweixin/WxPayJsApiPay.php";
-    include_once app_path() . "/Lib/Payweixin/WxPayException.php";
-    include_once app_path() . "/Lib/Payweixin/WxPayData.php";
-
-
-    $tools = new JsApiPay();
-
-
-    $input = new WxPayUnifiedOrder();
-    $input->SetBody("test");
-    $input->SetAttach("test");
-    $input->SetOut_trade_no(WxPayConfig::getMCHID() . date("YmdHis"));
-    $input->SetTotal_fee("" . round($total_amount * 100, 0));
-    $input->SetTime_start(date("YmdHis"));
-    //$input->SetTime_expire(date("YmdHis", time() + 600));
-    $input->SetGoods_tag("test");
-    $input->SetNotify_url("http://niu.vfushun.com/milk/public/Payweixin/notify.php");
-    $input->SetTrade_type("JSAPI");
-    $input->SetOpenid($openid);
-
-    $worder = WxPayApi::unifiedOrder($input);
-
-//    function printf_info($data)
-//    {
-//        foreach($data as $key=>$value){
-//            echo "<font color='#00ff55;'>$key</font> : $value <br/>";
-//        }
-//    }
-//    printf_info($order);
-
-    if ($total_amount > 0)
-        $jsApiParameters = $tools->GetJsApiParameters($worder);
-    else
-        $jsApiParameters = '';
-
-    $editAddress = $tools->GetEditAddressParameters();
-    ?>
-    @endif
-
 @endsection
 @section('script')
     <script src="<?=asset('weixin/js/fullcalendar.min.js')?>"></script>
@@ -139,42 +90,43 @@
         var today = "{{getCurDateString()}}";
 
         // 调用微信JS api 支付
-        function jsApiCall() {
-            WeixinJSBridge.invoke(
-                    'getBrandWCPayRequest',
+        function jsApiCall(param) {
+            var objParam = JSON.parse(param);
 
-                    <?php
-                            if (isset($jsApiParameters) && $jsApiParameters != '')
-                                echo $jsApiParameters . ',';
-                            ?>
-                    function (res) {
-                        WeixinJSBridge.log(res.err_msg);
-                        if (res.err_msg == 'get_brand_wcpay_request:ok') {
-                            //                            alert('支付成功了');
-                            makeOrder();
-                        }
-                        else {
-                                                       // alert(res.err_msg);
-                            window.location = SITE_URL + "weixin/zhifushibai";
-                        }
+            WeixinJSBridge.invoke(
+                'getBrandWCPayRequest',
+                objParam,
+                function (res) {
+                    WeixinJSBridge.log(res.err_msg);
+                    // 支付成功
+                    if (res.err_msg == 'get_brand_wcpay_request:ok') {
+                        makeOrder();
                     }
+                    // 用户取消
+                    else if (res.err_msg == 'get_brand_wcpay_request:cancel') {
+                    }
+                    // 支付失败
+                    else {
+                        window.location = SITE_URL + "weixin/zhifushibai";
+                    }
+                }
             );
         }
 
-        function callpay() {
+        function callpay(param) {
             if (typeof WeixinJSBridge == "undefined") {
-//                if (document.addEventListener) {
-//                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-//                } else if (document.attachEvent) {
-//                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-//                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
-//                }
+                if (document.addEventListener) {
+                    document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                } else if (document.attachEvent) {
+                    document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                    document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                }
 
                 // 支付模块不存在, 当支付失败
                 window.location = SITE_URL + "weixin/zhifushibai";
             }
             else {
-                jsApiCall();
+                jsApiCall(param);
             }
         }
 
@@ -256,8 +208,33 @@
 
         //make order based on cart
         $('#make_order').click(function () {
-            // 调用支付
-            callpay();
+
+            var order_bt = this;
+
+            // 调用预支付
+            $.ajax({
+                type: "POST",
+                url: SITE_URL + "weixin/api/prepareMakeOrder",
+                data: {},
+                success: function (data) {
+                    console.log(data);
+                    if (data.status === 'SUCCESS') {
+                        // 调用支付
+                        callpay(data.param);
+                    }
+                    else {
+                        if (data.message) {
+                            show_err_msg(data.message);
+                        }
+                        $(order_bt).prop('disabled', false);
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    $(order_bt).prop('disabled', false);
+                    show_warning_msg("操作失败");
+                }
+            });
         });
 
         function go_page_address_list() {

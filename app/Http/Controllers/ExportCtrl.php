@@ -125,7 +125,7 @@ class ExportCtrl extends Controller
                     }
                 });
 
-            })->store('xls', 'exports');
+            })->store('xlsx', 'exports');
 
             //
             // 添加系统日志
@@ -136,7 +136,10 @@ class ExportCtrl extends Controller
                 $this->addSystemLog($request->input('usertype'), $request->input('page'), SysLog::SYSLOG_OPERATION_EXPORT);
             }
 
-            return response()->json(['status' => 'success', 'path' => 'http://' . $request->server('HTTP_HOST') . '/milk/public/exports/exportlist.xls']);
+            return response()->json([
+                'status' => 'success',
+                'path' => 'http://' . $request->server('HTTP_HOST') . '/' . env("SITE_PATH") . 'exports/exportlist.xlsx'
+            ]);
         }
     }
 

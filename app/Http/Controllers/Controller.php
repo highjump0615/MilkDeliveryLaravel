@@ -178,4 +178,23 @@ class Controller extends BaseController
 
         return $nUserId;
     }
+
+    /**
+     * 获取查询offset
+     * @param $request
+     * @param int $pageSize
+     * @return int
+     */
+    protected function getQueryOffset($request, $pageSize = 15) {
+        $page = $request->input('page');
+
+        // 默认是页面1
+        if (empty($page)) {
+            $page = 1;
+        }
+
+        $offset = ((int)$page - 1) * $pageSize;
+
+        return $offset;
+    }
 }

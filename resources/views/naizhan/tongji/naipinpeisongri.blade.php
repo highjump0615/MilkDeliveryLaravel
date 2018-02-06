@@ -160,5 +160,5 @@
 	</div>
 @endsection
 @section('script')
-	<script src="<?=asset('js/pages/naizhan/naipinpeisongri.js') ?>"></script>
+	<script src="<?=asset('js/pages/naizhan/naipinpeisongri.js?180128') ?>"></script>
 @endsection

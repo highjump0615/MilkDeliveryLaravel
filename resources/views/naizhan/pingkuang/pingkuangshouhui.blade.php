@@ -143,5 +143,5 @@
 	</div>
 @endsection
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/pages/naizhan/pingkuangshouhui.js') ?>"></script>
+	<script type="text/javascript" src="<?=asset('js/pages/naizhan/pingkuangshouhui.js?180128') ?>"></script>
 @endsection

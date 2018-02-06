@@ -127,7 +127,7 @@ $(document).on('click','#search',function () {
     var box_name = $('#box_type').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"gongchang/pingkuang/pingkuang/?bottle_name="+bottle_name+"&box_name="+box_name+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"gongchang/pingkuang/pingkuang?bottle_name="+bottle_name+"&box_name="+box_name+"&start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

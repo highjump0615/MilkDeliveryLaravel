@@ -140,13 +140,11 @@
 										<!-- 如果是订单第一次配送，加星号标出来 -->
 										<!-- 如果是订单还有三天到期，加时间符号标出来 -->
 										<!-- 如果是订单第一次配送，加X号标出来 -->
-										@if($oi->flag == 1)
+										@if ($oi['notice'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::NOTICE_FIRST_DEVLIVER)
 											<i class="fa fa-star"></i>
-										@endif
-										@if($oi->jijiangdaoqi == 1)
+										@elseif ($oi['notice'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::NOTICE_ALMOST_END)
 											<i class="fa fa-heart"></i>
-										@endif
-										@if($oi->jinridaoqi== 1)
+										@elseif ($oi['notice'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::NOTICE_END_TODAY)
 											<i class="fa fa-remove"></i>
 										@endif
 										{{$i}}

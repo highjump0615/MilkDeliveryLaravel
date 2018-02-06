@@ -111,5 +111,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/naipinpeisong.js')?>"></script>
+	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/naipinpeisong.js?180128')?>"></script>
 @endsection

@@ -156,7 +156,7 @@
 @section('script')
 	<script src="<?=asset('js/plugins/star-rating/star-rating.js') ?>" type="text/javascript"></script>
 
-    <script src="<?=asset('js/pages/gongchang/pingjia.js') ?>" type="text/javascript"></script>
+    <script src="<?=asset('js/pages/gongchang/pingjia.js?180128') ?>" type="text/javascript"></script>
 
     <!-- optionally if you need to use a theme, then include the theme JS file as mentioned below -->
     <script src="<?=asset('css/plugins/star-rating/themes/krajee-fa/theme.js') ?>"></script>

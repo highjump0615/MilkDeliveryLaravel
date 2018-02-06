@@ -135,5 +135,5 @@
 @endsection
 
 @section('script')
-	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/dingdanleixing.js')?>"></script>
+	<script type="text/javascript" src="<?=asset('js/pages/zongpingtai/dingdanleixing.js?180128')?>"></script>
 @endsection

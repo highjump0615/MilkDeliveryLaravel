@@ -76,7 +76,7 @@
     });
 
     $('button[data-action = "export_csv"]').click(function () {
-    data_export('table1', gnUserTypeStation, '配送员配送统计', 0, 1);
+        data_export('table1', gnUserTypeStation, '配送员配送统计', 2, 0);
 	});
 </script>
 @endsection

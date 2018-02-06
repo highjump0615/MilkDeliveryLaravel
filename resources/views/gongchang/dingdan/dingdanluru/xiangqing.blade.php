@@ -56,6 +56,11 @@
                 <div class="col-md-4" style="padding-left: 0px;">
                     <label class="col-md-6">订单号:</label>
                     <label class="col-md-6">{{$order->number}}</label>
+                    {{--微信订单、商户订单号--}}
+                    @if (!empty($order->wx_trade_no))
+                        <label class="col-md-6">商户订单号:</label>
+                        <label class="col-md-6">{{$order->wx_trade_no}}</label>
+                    @endif
                     <label class="col-md-6">订单状态:</label>
                     <label class="col-md-6">{{$order->status_name}}</label>
 

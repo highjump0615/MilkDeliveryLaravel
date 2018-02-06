@@ -30,10 +30,12 @@
 <body>
 @yield('content')
 <!-- Mainly scripts -->
-<script src="<?=asset('js/global.js')?>"></script>
+<script src="<?=asset('js/global.js?180128')?>"></script>
 <script src="<?=asset('js/jquery-2.1.1.js') ?>"></script>
 <script src="<?=asset('js/bootstrap.min.js') ?>"></script>
 <script src="<?=asset('js/plugins/metisMenu/jquery.metisMenu.js') ?>"></script>
+
+@include('commonjs')
 
 <!-- Custom and plugin javascript -->
 <script src="<?=asset('js/inspinia.js') ?>"></script>

@@ -180,6 +180,6 @@
 
 @section('script')
 
-	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js') ?>"></script>
+	<script src="<?=asset('js/pages/gongchang/dayinchukudan.js?180128') ?>"></script>
 
 @endsection

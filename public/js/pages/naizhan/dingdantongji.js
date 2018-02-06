@@ -12,7 +12,7 @@ $(document).on('click','#search',function () {
     var order_type = $('#order_type option:selected').val();
     var start_date = $('#start_date').val();
     var end_date = $('#end_date').val();
-    window.location.href = SITE_URL+"milk/public/naizhan/tongji/dingdan/?order_type="+order_type+"&start_date="+start_date+"&end_date="+end_date+"";
+    window.location.href = SITE_URL+"naizhan/tongji/dingdan?order_type="+order_type+"&start_date="+start_date+"&end_date="+end_date+"";
 });
 
 $('button[data-action = "print"]').click(function () {

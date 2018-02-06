@@ -61,6 +61,11 @@ class MilkManDeliveryPlan extends Model
     const DP_CANCEL_POSTPONE        = 2;
     const DP_CANCEL_CHANGEORDER     = 3;
 
+    const NOTICE_NONE = 0;
+    const NOTICE_FIRST_DEVLIVER = 1;
+    const NOTICE_ALMOST_END = 2;
+    const NOTICE_END_TODAY = 3;
+
     /**
      * 获取奶站
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -284,24 +289,6 @@ class MilkManDeliveryPlan extends Model
                 $this->status = MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_SENT;
             }
         }
-    }
-
-    /**
-     * 把自己的flag转给下个配送明细
-     */
-    public function transferFlag() {
-        // 获取下一个配送明细
-        $deliverPlanNext = MilkManDeliveryPlan::where('order_product_id', $this->order_product_id)
-            ->where('deliver_at', '>', $this->deliver_at)
-            ->first();
-
-        // 切换两个配送明细的flag
-        $temp = $this->flag;
-        $this->flag = $deliverPlanNext->flag;
-        $deliverPlanNext->flag = $temp;
-
-        $deliverPlanNext->save();
-        $this->save();
     }
 
     /**
