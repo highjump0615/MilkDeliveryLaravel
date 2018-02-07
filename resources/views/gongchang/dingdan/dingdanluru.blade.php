@@ -596,6 +596,6 @@
 
     </script>
 
-    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js?171028') ?>"></script>
+    <script type="text/javascript" src="<?=asset('js/pages/gongchang/order_common.js?180207') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_insert.js?171005') ?>"></script>
 @endsection

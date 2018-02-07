@@ -169,9 +169,9 @@ function setPriceText(tt, price, count) {
 //Calculate the current product value
 function calculate_current_product_value(tr, needFetch) {
 
-    var product_count = $(tr).find('.one_product_total_count').val();
-    if (product_count == undefined || product_count == 0) {
-        return;
+    var product_count = parseInt($(tr).find('.one_product_total_count').val());
+    if (isNaN(product_count)) {
+        product_count = 0;
     }
     //need info: customer_addr or id, product_id, order_type, order_total_count
     var tt = $(tr).find('td .total_amount_per_product .one_p_amount');
