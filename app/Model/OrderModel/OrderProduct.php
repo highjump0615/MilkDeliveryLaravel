@@ -339,6 +339,8 @@ class OrderProduct extends Model
      */
     public function getNextDeliverDate($date, $bNextDay = true) {
 
+        $datePauseStartMin = $this->order->getPauseStartAvailableDate();
+
         do {
             $bRestart = false;
             $dateDeliverNew = $date;
@@ -371,6 +373,12 @@ class OrderProduct extends Model
                 if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
                     $bRestart = true;
                 }
+            }
+
+            // 防御设置的暂停日期比起送日期更早的情况
+            if ($dateDeliverNew < $datePauseStartMin ||
+                $dateDeliverNew < $this->start_at) {
+                $bRestart = true;
             }
 
             $date = $dateDeliverNew;
