@@ -311,10 +311,10 @@
                         <div class="modal-body">
                             <label style="margin-bottom: 30px;">选择暂停的日期</label>
                             <div class="input-daterange input-group col-md-12" id="datepicker">
-                                <input type="text" required class="input-sm form-control"
+                                <input type="text" required class="input-sm form-control readonly"
                                        name="start" id="stop_start"/>
                                 <span class="input-group-addon">至</span>
-                                <input type="text" id="stop_end" required class="input-sm form-control"
+                                <input type="text" id="stop_end" required class="input-sm form-control readonly"
                                        name="end"/>
                             </div>
                             <input type="hidden" name="order_id" value="{{$order->id}}"/>
@@ -399,7 +399,7 @@
     <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
     <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
 
-    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js?180116') ?>"></script>
+    <script src="<?=asset('js/pages/gongchang/order_xiangqing.js?180207') ?>"></script>
     <script src="<?=asset('js/pages/gongchang/order_detail_product.js') ?>"></script>
 
 

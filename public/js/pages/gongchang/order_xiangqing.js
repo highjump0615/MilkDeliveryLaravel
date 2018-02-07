@@ -357,3 +357,7 @@ $('body').on('click', 'button.xiugai_plan_bt', function () {
         });
     }
 });
+
+$(".readonly").keydown(function(e) {
+    e.preventDefault();
+});
