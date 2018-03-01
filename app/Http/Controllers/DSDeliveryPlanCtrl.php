@@ -1242,7 +1242,7 @@ class DSDeliveryPlanCtrl extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         // 是否已生成配送列表？
-        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str, false)->first();
+        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str, true)->first();
 
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
