@@ -1140,7 +1140,7 @@ class OrderCtrl extends Controller
         $dp->station_id = $stationId;
         $dp->order_id = $orderProduct->order_id;
         $dp->order_product_id = $orderProduct->id;
-        $dp->deliver_at = $orderProduct->getClosestDeliverDate($startAt);
+        $dp->deliver_at = $orderProduct->getNextDeliverDate($startAt, false);
         $dp->produce_at = $orderProduct->getProductionDate($dp->deliver_at);
 
         $dp->status = $status;

@@ -333,59 +333,80 @@ class OrderProduct extends Model
     }
 
     /**
+     * 判断此日期是否使用范围内
+     * @param $date
+     * @param $dateMin
+     * @return bool
+     */
+    private function availableForDeliverDate($date, $dateMin) {
+        $bAvailable = true;
+
+        // 如果算出来的日期属于暂停期间, 重新计算
+        if ($this->order)
+        {
+            $dateStop = $this->order->stop_at;
+            $dateRestart = $this->order->order_stop_end_date;
+
+            if ($dateStop <= $date && $date <= $dateRestart) {
+                $bAvailable = false;
+            }
+        }
+
+        // 防御设置的暂停日期比起送日期更早的情况
+        if ($date < $dateMin || $date < $this->start_at) {
+            $bAvailable = false;
+        }
+
+        return $bAvailable;
+    }
+
+    /**
+     * 根据配送规则算出下一个配送日
+     * @param $date
+     * @param $nextDay
+     * @return mixed|null|string
+     */
+    private function calcDeliverDate($date, $nextDay) {
+        $dateDeliverNew = $date;
+
+        // 隔日送
+        if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
+            if ($nextDay) {
+                $dateDeliverNew = getNextDateString($date);
+            }
+        }
+        else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
+            if ($nextDay) {
+                $dateDeliverNew = getDateWithOffsetString(2, $date);
+            }
+        }
+        else {
+            if ($nextDay) {
+                $dateDeliverNew = getNextDateString($date);
+            }
+            $dateDeliverNew = $this->getClosestDeliverDate($dateDeliverNew);
+        }
+
+        return $dateDeliverNew;
+    }
+
+    /**
      * 计算下一个配送规则日期
      * @param $date
+     * @param bool $bNextDay 是否获取下一个配送日期
      * @return string
      */
     public function getNextDeliverDate($date, $bNextDay = true) {
 
         $datePauseStartMin = $this->order->getPauseStartAvailableDate();
+        $dateNew = $this->calcDeliverDate($date, $bNextDay);
 
-        do {
-            $bRestart = false;
-            $dateDeliverNew = $date;
+        // 判断算出的日期是否正常（暂停范围内等）
+        while (!$this->availableForDeliverDate($dateNew, $datePauseStartMin)) {
+            $dateNew = $this->calcDeliverDate($dateNew, true);
+        }
 
-            // 天天送
-            if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EVERY_DAY) {
-                if ($bNextDay) {
-                    $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
-                }
-            }
-            // 隔日送
-            else if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY) {
-                if ($bNextDay) {
-                    $dateDeliverNew = date('Y-m-d', strtotime($date . "+2 days"));
-                }
-            }
-            else {
-                if ($bNextDay) {
-                    $dateDeliverNew = date('Y-m-d', strtotime($date . "+1 days"));
-                }
-                $dateDeliverNew = $this->getClosestDeliverDate($dateDeliverNew);
-            }
-
-            // 如果算出来的日期属于暂停期间, 重新计算
-            if($this->order)
-            {
-                $dateStop = $this->order->stop_at;
-                $dateRestart = $this->order->order_stop_end_date;
-
-                if ($dateStop <= $dateDeliverNew && $dateDeliverNew <= $dateRestart) {
-                    $bRestart = true;
-                }
-            }
-
-            // 防御设置的暂停日期比起送日期更早的情况
-            if ($dateDeliverNew < $datePauseStartMin ||
-                $dateDeliverNew < $this->start_at) {
-                $bRestart = true;
-            }
-
-            $date = $dateDeliverNew;
-
-        } while ($bRestart);
-
-        return $dateDeliverNew;
+        return $dateNew;
     }
 
     /**

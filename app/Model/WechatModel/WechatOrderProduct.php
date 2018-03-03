@@ -68,7 +68,7 @@ class WechatOrderProduct extends OrderProduct
 
         //deliver at
         $startAt = $this->start_at;
-        $deliver_at = $this->getClosestDeliverDate($startAt);
+        $deliver_at = $this->getNextDeliverDate($startAt, false);
 
         //Changed Plan Count
         $first_count =$this->getDeliveryTypeCount($deliver_at);
