@@ -1926,6 +1926,9 @@ class WeChatCtrl extends Controller
     //edit one product in cart
     public function bianjidingdan(Request $request)
     {
+        // log
+        Log::info("bianjidingdan: " . $request->fullUrl());
+
         // 初始值
         $factory_id = $this->getCurrentFactoryIdW($request);
         $factory = Factory::find($factory_id);
