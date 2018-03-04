@@ -52,6 +52,7 @@ use App\Model\FactoryModel\FactoryOrderType;
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductPrice;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 use App\Model\BasicModel\Address;
@@ -206,6 +207,11 @@ class OrderCtrl extends Controller
          * Here, get all after count including current plan and if the count > changed then set, if not fail
          * */
         $rest_with_this = $this->get_rest_plans_count($order_id, $plan_id);
+
+        Log::info("单日修改 -> mdp: " . $plan_id
+            . ", origin: " . $origin
+            . ", changed: " . $changed
+            . ", rest: " . $rest_with_this);
 
         if ($changed <= $rest_with_this) {
 

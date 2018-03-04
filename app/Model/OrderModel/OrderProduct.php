@@ -9,6 +9,7 @@ use App\Model\ProductModel\Product;
 use App\Model\DeliveryModel\DeliveryType;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 
 class OrderProduct extends Model
 {
@@ -398,12 +399,19 @@ class OrderProduct extends Model
      */
     public function getNextDeliverDate($date, $bNextDay = true) {
 
-        $datePauseStartMin = $this->order->getPauseStartAvailableDate();
         $dateNew = $this->calcDeliverDate($date, $bNextDay);
 
-        // 判断算出的日期是否正常（暂停范围内等）
-        while (!$this->availableForDeliverDate($dateNew, $datePauseStartMin)) {
-            $dateNew = $this->calcDeliverDate($dateNew, true);
+        if (!empty($this->order)) {
+            $datePauseStartMin = $this->order->getPauseStartAvailableDate();
+
+            // 判断算出的日期是否正常（暂停范围内等）
+            while (!$this->availableForDeliverDate($dateNew, $datePauseStartMin)) {
+                $dateNew = $this->calcDeliverDate($dateNew, true);
+            }
+        }
+        else {
+            // order is not existing
+            // from wechat order product
         }
 
         return $dateNew;
@@ -499,6 +507,8 @@ class OrderProduct extends Model
 
                         // 已换成别的产品，失败
                         if (empty($op)) {
+                            Log::info("已换成别的产品，失败");
+
                             $bResult = false;
                             break;
                         }
@@ -563,6 +573,9 @@ class OrderProduct extends Model
                 if (!empty($lastDeliverPlan) &&
                     !empty($planSrc) &&
                     $lastDeliverPlan->id == $planSrc->id) {
+
+                    Log::info("最后明细是当前的，失败");
+
                     $bResult = false;
                     break;
                 }

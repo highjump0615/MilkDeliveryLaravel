@@ -35,6 +35,7 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 use App\Model\OrderModel\Order;
 use App\Http\Requests;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 use Excel;
@@ -1553,6 +1554,11 @@ class DSDeliveryPlanCtrl extends Controller
                 // 如果当天没有配送完，顺延处理
                 if ($mdp->delivered_count != $mdp->changed_plan_count){
                     $bSuccess = $this->undelivered_process($mdp);
+
+                    Log::info("返录多余量 -> mdp: " . $mdp->id
+                        . ", changed_plan_count: " . $mdp->changed_plan_count
+                        . ", delivered_count: " . $mdp->delivered_count
+                        . ", result: " . $bSuccess);
                 }
 
                 if ($bSuccess) {
