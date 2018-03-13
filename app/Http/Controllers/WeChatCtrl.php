@@ -1890,6 +1890,9 @@ class WeChatCtrl extends Controller
     //make wop group with cart_ids
     public function make_wop_group(Request $request)
     {
+        // log
+        Log::info("make_wop_group: " . $request->fullUrl());
+
         $cart_ids = $request->input('cart_ids');
 
         $cart_ids = explode(',', $cart_ids);
