@@ -108,8 +108,8 @@
 									<td id="{{$pro['order_product_id']}}">
 										{{$pro['name']}}*{{$pro['count']}}
 									</td>
-									<td @if($pro['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
-										@if($is_todayrefund) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
+									<td @if ($pro['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
+										@if ($pro['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
 									</td>
 									<td class="report"
 										@if (!$is_todayrefund)
