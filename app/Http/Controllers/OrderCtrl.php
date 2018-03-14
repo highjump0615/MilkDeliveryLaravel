@@ -900,9 +900,13 @@ class OrderCtrl extends Controller
             }
             // 没有变化，奶站重新设置
             else {
-                $order->milkmanDeliveryPlan()->update([
-                    'station_id' => $order->delivery_station_id,
-                ]);
+                // 针对没生成配送单的与没取消的明细更新station id
+                $order->milkmanDeliveryPlan()
+                    ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+                    ->whereNull('milkman_id')
+                    ->update([
+                        'station_id' => $order->delivery_station_id,
+                    ]);
             }
         }
         // 新订单生成订单编号
