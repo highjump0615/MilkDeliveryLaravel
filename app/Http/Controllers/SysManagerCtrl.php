@@ -55,7 +55,7 @@ class SysManagerCtrl extends Controller
 
         $offset = $this->getQueryOffset($request, $this->mnPageCount);
 
-        $queryLog = null;
+        $queryLog = SysLog::whereRaw('1=1');
         $getField = null;
 
         // 筛选
@@ -69,17 +69,7 @@ class SysManagerCtrl extends Controller
             $queryLog = SysLog::where($strDateQuery, 'like', $date . '%');
         }
 
-        // 查询数据
-        if ($queryLog) {
-            $queryLog->orderby('created_at', 'desc');
-
-            $count = $queryLog->count();
-            $aryLog = $queryLog->limit($this->mnPageCount)->offset($offset)->get($getField);
-        }
-        else {
-            $count = SysLog::count();
-            $aryLog = SysLog::orderby('created_at', 'desc')->limit($this->mnPageCount)->offset($offset)->get($getField);
-        }
+        $aryLog = $queryLog->orderby('created_at', 'desc')->paginate();
 
         return view('zongpingtai.xitong.chakanrizhi', [
             // 页面信息
@@ -91,12 +81,9 @@ class SysManagerCtrl extends Controller
             // 参数
             'username'          => $username,
             'date'              => $date,
-            'page'              => $page,
 
             // 数据
-            'count'             => $count,
             'logdata'           => $aryLog,
-            'total_page'        => ceil((float)$count / (float)$this->mnPageCount)
         ]);
     }
 }
