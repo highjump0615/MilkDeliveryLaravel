@@ -641,20 +641,7 @@ Route::get('/naizhan/kehu', function (Request $request) {
         'current_page' => $current_page
     ]);
 });
-//pingkuang
-Route::get('/naizhan/pingkuang', function (Request $request) {
-    $child = '';
-    $parent = 'pingkuang';
-    $current_page = 'pingkuang';
-    $pages = App\Model\UserModel\Page::where('backend_type', '3')->where('parent_page', '0')->get();
-    return view('naizhan.pingkuang.peisongyuanpingkuang', [
-        'pages' => $pages,
-        'child' => $child,
-        'parent' => $parent,
-        'current_page' => $current_page
-    ]);
-});
-//xiaoxi
+
 Route::get('/naizhan/xiaoxi', function (Request $request) {
     $child = '';
     $parent = 'xiaoxi';

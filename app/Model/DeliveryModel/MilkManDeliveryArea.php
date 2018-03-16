@@ -2,9 +2,12 @@
 namespace App\Model\DeliveryModel;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MilkManDeliveryArea extends Model
 {
+    use SoftDeletes;
+
     protected $table= 'milkmandeliveryarea';
 
     protected $fillable = [
@@ -13,8 +16,6 @@ class MilkManDeliveryArea extends Model
         'order',
         'deliveryarea_id',
     ];
-
-    public $timestamps = false;
 
     public function milkman()
     {

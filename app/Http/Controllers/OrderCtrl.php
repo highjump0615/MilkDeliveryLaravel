@@ -52,6 +52,7 @@ use App\Model\FactoryModel\FactoryOrderType;
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductPrice;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 use App\Model\BasicModel\Address;
@@ -206,6 +207,11 @@ class OrderCtrl extends Controller
          * Here, get all after count including current plan and if the count > changed then set, if not fail
          * */
         $rest_with_this = $this->get_rest_plans_count($order_id, $plan_id);
+
+        Log::info("单日修改 -> mdp: " . $plan_id
+            . ", origin: " . $origin
+            . ", changed: " . $changed
+            . ", rest: " . $rest_with_this);
 
         if ($changed <= $rest_with_this) {
 
@@ -894,9 +900,13 @@ class OrderCtrl extends Controller
             }
             // 没有变化，奶站重新设置
             else {
-                $order->milkmanDeliveryPlan()->update([
-                    'station_id' => $order->delivery_station_id,
-                ]);
+                // 针对没生成配送单的与没取消的明细更新station id
+                $order->milkmanDeliveryPlan()
+                    ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_CANCEL)
+                    ->whereNull('milkman_id')
+                    ->update([
+                        'station_id' => $order->delivery_station_id,
+                    ]);
             }
         }
         // 新订单生成订单编号
@@ -1140,7 +1150,7 @@ class OrderCtrl extends Controller
         $dp->station_id = $stationId;
         $dp->order_id = $orderProduct->order_id;
         $dp->order_product_id = $orderProduct->id;
-        $dp->deliver_at = $orderProduct->getClosestDeliverDate($startAt);
+        $dp->deliver_at = $orderProduct->getNextDeliverDate($startAt, false);
         $dp->produce_at = $orderProduct->getProductionDate($dp->deliver_at);
 
         $dp->status = $status;
@@ -1203,8 +1213,6 @@ class OrderCtrl extends Controller
      */
     public function getOrderDeliveryPlan(Request $request, $orderId)
     {
-        $result_group=[];
-
         // 配送明细只针对订单的配送
         $op_dps = MilkManDeliveryPlan::where('order_id', $orderId)
             ->where('type', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_TYPE_USER)
@@ -1222,18 +1230,7 @@ class OrderCtrl extends Controller
         {
             // 查看剩余数量
             if (!isset($remainCounts[strval($opdp->order_product_id)])) {
-                // 获取剩余数量
-                $nCountDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
-                    ->where('deliver_at', '<', $opdp->deliver_at)
-                    ->where('status', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-                    ->sum('delivered_count');
-
-                $nCountNotDelivered = MilkManDeliveryPlan::where('order_product_id', $opdp->order_product_id)
-                    ->where('deliver_at', '<', $opdp->deliver_at)
-                    ->where('status', '!=', MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
-                    ->sum('changed_plan_count');
-
-                $remainCounts[strval($opdp->order_product_id)] = $opdp->orderProduct->total_count - ($nCountDelivered + $nCountNotDelivered);
+                $remainCounts[strval($opdp->order_product_id)] = $opdp->orderProduct->getTotalCountRaw() - $opdp->orderProduct->getTotalCountRaw($opdp->deliver_at);
             }
 
             if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)

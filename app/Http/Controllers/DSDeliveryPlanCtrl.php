@@ -35,6 +35,7 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 use App\Model\OrderModel\Order;
 use App\Http\Requests;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 use Excel;
@@ -1242,7 +1243,7 @@ class DSDeliveryPlanCtrl extends Controller
         $pages = Page::where('backend_type','3')->where('parent_page', '0')->orderby('order_no')->get();
 
         // 是否已生成配送列表？
-        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str, false)->first();
+        $deliveryPlan = $this->getMilkmanDeliveryQuery($current_station_id, $deliver_date_str, true)->first();
 
         // 只有生成了配送列表之后才显示反录
         if (!$deliveryPlan ||
@@ -1553,6 +1554,11 @@ class DSDeliveryPlanCtrl extends Controller
                 // 如果当天没有配送完，顺延处理
                 if ($mdp->delivered_count != $mdp->changed_plan_count){
                     $bSuccess = $this->undelivered_process($mdp);
+
+                    Log::info("返录多余量 -> mdp: " . $mdp->id
+                        . ", changed_plan_count: " . $mdp->changed_plan_count
+                        . ", delivered_count: " . $mdp->delivered_count
+                        . ", result: " . $bSuccess);
                 }
 
                 if ($bSuccess) {

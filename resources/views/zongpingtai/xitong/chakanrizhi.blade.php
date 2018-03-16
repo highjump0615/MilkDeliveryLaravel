@@ -58,12 +58,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @if ($count > 0)
-                                    <?php $i = 1; ?>
+                                    <?php $i = 0;?>
                                     @foreach($logdata as $data)
                                     <tr>
                                         <!-- 序号 -->
-                                        <td>{{$i}}</td>
+                                        <td>{{$i + $logdata->firstItem()}}</td>
                                         <!-- 用户名 -->
                                         <td>{{$data->user->name}}</td>
                                         <!-- 角色权限 -->
@@ -81,11 +80,6 @@
                                     </tr>
                                     <?php $i++; ?>
                                     @endforeach
-                                @else
-                                    <tr>
-                                       <td colspan="9">无系统记录</td>
-                                    </tr>
-                                @endif
                                 </tbody>
                              </table>
 
@@ -105,9 +99,8 @@
 @section('script')
     <script type="text/javascript">
         // 全局变量
-        var gnTotalPage = '{{$total_page}}';
-        var gnCurrentPage = '{{$page}}';
-
+        var gnTotalPage = '{{$logdata->lastPage()}}';
+        var gnCurrentPage = '{{$logdata->currentPage()}}';
         gnTotalPage = parseInt(gnTotalPage);
         gnCurrentPage = parseInt(gnCurrentPage);
 
@@ -115,6 +108,7 @@
 
      <script type="text/javascript" src="<?=asset('js/plugins/pagination/jquery.twbsPagination.min.js')?>"></script>
      <script type="text/javascript" src="<?=asset('js/pages/gongchang/pagination.js')?>"></script>
+
      <script type="text/javascript" src="<?=asset('js/pages/zongpingtai/syslog.js')?>"></script>
 
 @endsection
