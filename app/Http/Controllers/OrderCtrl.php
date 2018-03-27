@@ -1230,7 +1230,8 @@ class OrderCtrl extends Controller
         {
             // 查看剩余数量
             if (!isset($remainCounts[strval($opdp->order_product_id)])) {
-                $remainCounts[strval($opdp->order_product_id)] = $opdp->orderProduct->getTotalCountRaw() - $opdp->orderProduct->getTotalCountRaw($opdp->deliver_at);
+                $nCountTotal = max($opdp->orderProduct->getTotalCountRaw(), $opdp->orderProduct->total_count);
+                $remainCounts[strval($opdp->order_product_id)] = $nCountTotal - $opdp->orderProduct->getTotalCountRaw($opdp->deliver_at);
             }
 
             if ($opdp->status == MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
