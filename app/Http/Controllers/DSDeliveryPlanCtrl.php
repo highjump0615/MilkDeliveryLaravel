@@ -1020,24 +1020,21 @@ class DSDeliveryPlanCtrl extends Controller
 
             $milkman_info[$m]['delivery_info'] = $delivery_info;
 
-            $milkman = null;
+            $milkman_info[$m]['milkman_id'] = $m;
+            $milkman_info[$m]['milkman_name'] = "";
+            $milkman_info[$m]['milkman_number'] = "";
 
             // 配送员信息
             foreach ($milkmans as $mm) {
                 if ($mm->id == $m) {
-                    $milkman = $mm;
+                    $milkman_info[$m]['milkman_name'] = $mm->name;
+                    $milkman_info[$m]['milkman_number'] = $mm->phone;
                     break;
                 }
             }
 
-            if (!empty($milkman)) {
-                $milkman_info[$m]['milkman_id'] = $milkman->id;
-                $milkman_info[$m]['milkman_name'] = $milkman->name;
-                $milkman_info[$m]['milkman_number'] = $milkman->phone;
-                $milkman_info[$m]['milkman_products'] = $productsData[$milkman->id];
-
-                $milkman_info[$m]['milkman_changestatus'] = $changestatus;
-            }
+            $milkman_info[$m]['milkman_products'] = $productsData[$m];
+            $milkman_info[$m]['milkman_changestatus'] = $changestatus;
         }
 
         // 在session保存数据
