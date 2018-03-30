@@ -48,7 +48,7 @@ $('button#make_order').click(function () {
 $('button#submit_order').click(function (e) {
 
     e.preventDefault();
-    dnsel_item0
+
     var send_data = makeFormData();
     if (send_data != null) {
         console.log(send_data);
@@ -61,7 +61,7 @@ $('button#submit_order').click(function (e) {
             contentType: false,
             success: function (data) {
                 if (data.status == "success") {
-                    show_success_msg("附加产品成功");
+                    show_success_msg("添加产品成功");
                     //go to shanpin liebiao
                     window.location.href = SITE_URL + "weixin/shangpinliebiao";
                 }

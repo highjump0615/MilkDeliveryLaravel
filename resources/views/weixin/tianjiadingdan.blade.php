@@ -64,6 +64,6 @@ if (isset($previous) && $previous == "naipinxiugai") {
 
     <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
     <script src="<?=asset('weixin/js/freeorder_calendar.js')?>"></script>
-    <script src="<?=asset('weixin/js/pages/productinfo.js?171028')?>"></script>
-    <script src="<?=asset('weixin/js/pages/tianjiadingdan.js?171017')?>"></script>
+    <script src="<?=asset('weixin/js/pages/productinfo.js?180328')?>"></script>
+    <script src="<?=asset('weixin/js/pages/tianjiadingdan.js?180328')?>"></script>
 @endsection

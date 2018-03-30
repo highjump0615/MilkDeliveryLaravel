@@ -24,34 +24,16 @@ if (!empty($current_count_per_day)) {
 
     <div class="dnsti">配送规则：</div>
     <select class="dnsel" id="delivery_type" onChange="javascript:dnsel_changed(this.value)">
-        <option value="dnsel_item0"
-                data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送
-        </option>
-        <option value="dnsel_item1"
-                data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送
-        </option>
-        <option value="dnsel_item2"
-                data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送
-        </option>
-        <option value="dnsel_item3"
-                data-value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送
-        </option>
+        <option value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EVERY_DAY}}">天天送</option>
+        <option value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_EACH_TWICE_DAY}}">隔日送</option>
+        <option value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_WEEK}}">按周送</option>
+        <option value="{{\App\Model\DeliveryModel\DeliveryType::DELIVERY_TYPE_MONTH}}">随心送</option>
     </select>
     <div class="clear"></div>
 </div>
 
 <!-- combo box change -->
 <!-- 天天送 -->
-<div class="dnsli clearfix dnsel_item" id="dnsel_item0" style="display:none;">
-    <div class="dnsti">每天配送数量：</div>
-    <span class="minusplus">
-            <a class="minus" href="javascript:;">-</a>
-            <input type="text" class="deliver_count_per_day" value="{{$nCountEach}}" style="ime-mode: disabled;">
-            <a class="plus" href="javascript:;">+</a>
-        </span>（瓶）
-</div>
-
-<!--隔日送 -->
 <div class="dnsli clearfix dnsel_item" id="dnsel_item1" style="display:none;">
     <div class="dnsti">每天配送数量：</div>
     <span class="minusplus">
@@ -61,14 +43,24 @@ if (!empty($current_count_per_day)) {
         </span>（瓶）
 </div>
 
+<!--隔日送 -->
+<div class="dnsli clearfix dnsel_item" id="dnsel_item2" style="display:none;">
+    <div class="dnsti">每天配送数量：</div>
+    <span class="minusplus">
+            <a class="minus" href="javascript:;">-</a>
+            <input type="text" class="deliver_count_per_day" value="{{$nCountEach}}" style="ime-mode: disabled;">
+            <a class="plus" href="javascript:;">+</a>
+        </span>（瓶）
+</div>
+
 <!-- 按周规则 -->
-<div class="dnsli clearfix dnsel_item" id="dnsel_item2" style="display: none;">
+<div class="dnsli clearfix dnsel_item" id="dnsel_item3" style="display: none;">
     <table class="psgzb" width="" border="0" cellspacing="0" cellpadding="0" id="week">
     </table>
 </div>
 
 <!-- 随心送 -->
-<div class="dnsel_item" id="dnsel_item3" style="display: none;">
+<div class="dnsel_item" id="dnsel_item4" style="display: none;">
     <div class="calender">
         <div class="selectmouth">
             <p style="text-align:right" class="lastmonth" onclick="lastmonth()">< < <</p>

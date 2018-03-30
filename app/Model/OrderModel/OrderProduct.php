@@ -245,6 +245,8 @@ class OrderProduct extends Model
             $strCustom = rtrim($this->custom_order_dates, ',');
             $aryStrCustom = explode(',', $strCustom);
 
+            $nTypeCount = $this->total_count;
+
             // 按周送
             if ($this->delivery_type == DeliveryType::DELIVERY_TYPE_WEEK) {
                 $nIndex = $this->getCustomDateIndexFromDate($dateDeliver);

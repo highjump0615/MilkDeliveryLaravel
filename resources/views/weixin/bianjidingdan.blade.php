@@ -51,9 +51,9 @@
 
     <script type="text/javascript" src="<?=asset('js/pages/order/order_bottle.js') ?>"></script>
     <script src="<?=asset('weixin/js/freeorder_calendar.js')?>"></script>
-    <script src="<?=asset('weixin/js/pages/productinfo.js?171028')?>"></script>
+    <script src="<?=asset('weixin/js/pages/productinfo.js?180328')?>"></script>
     <script src="<?=asset('weixin/js/pages/editproductinfo.js')?>"></script>
-    <script src="<?=asset('weixin/js/pages/bianjidingdan.js')?>"></script>
+    <script src="<?=asset('weixin/js/pages/bianjidingdan.js?180328')?>"></script>
 
 @endsection
 
