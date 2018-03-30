@@ -27,8 +27,32 @@ $(document).on('change','#date_select',function(){
 });
 
 $(document).on('click','#save',function(){
+    var bValid = true;
+
+    // check validation
+    $('.delivered_count').each(function() {
+        // 只检查输入框
+        if (!$(this).attr('contenteditable')) {
+            return;
+        }
+
+        // not number, return with error
+        if (isNaN(parseInt($(this).text()))){
+            show_err_msg('配送数量只能输入数字');
+            $(this).focus();
+            bValid = false;
+
+            return false;
+        }
+    });
+
+    if (!bValid) {
+        return;
+    }
+
     confirmdelivery();
 
+    $('body').css({'cursor': 'progress'});
     $(this).prop('disabled', true);
     $(this).html('正在保存...');
 });
@@ -75,8 +99,8 @@ function savebottlebox() {
 }
 
 function confirmdelivery() {
+
     var url = API_URL + 'naizhan/shengchan/peisongfanru/confirmdelivery';
-    var milkman_id = $('#current_milkman_id').val();
 
     $.ajaxSetup({
         headers: {
@@ -87,28 +111,20 @@ function confirmdelivery() {
     var table_info = [];
 
     $('#delivery_table tr.order_info').each(function () {
-        var order_id = $(this).attr('id');
-        var oder_product_id = $(this).find('.delivered_count').attr('id');
 
         // 只添加输入框的内容
-        var isEditted = $(this).find('.delivered_count').attr('contenteditable');
-        if (!isEditted) {
+        if (!$(this).find('.delivered_count').attr('contenteditable')) {
             return;
         }
 
-        var delivered_product_count = $(this).find('.delivered_count').text();
-        var delivery_type = $(this).attr('ordertype');
+        var mdp_id = $(this).find('.delivered_count').attr('id');
+        var delivered_product_count = parseInt($(this).find('.delivered_count').text());
         var report = $(this).find('.report').text();
-        if(isNaN(parseInt(delivered_product_count)) || delivered_product_count == ''){
-            delivered_product_count = 0;
-        }
+
         var formData = {
-            milkman_id: milkman_id,
-            order_product_id: oder_product_id,
+            mdp_id: mdp_id,
             delivered_count: delivered_product_count,
-            delivery_type: delivery_type,
-            report: report,
-            order_id:order_id,
+            report: report
         };
 
         table_info.push(formData);
@@ -140,6 +156,7 @@ function confirmdelivery() {
 function restoreSaveButton() {
     $('#save').prop('disabled', false);
     $('#save').html('保存');
+    $('body').css({'cursor': 'default'});
 }
 
 $('#date_select .input-group.date').datepicker({
