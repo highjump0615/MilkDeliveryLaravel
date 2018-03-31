@@ -2230,10 +2230,6 @@ class WeChatCtrl extends Controller
 
         $wechat_order_products = array();
 
-        $factory = Factory::find($factory_id);
-        $today_date = new DateTime("now", new DateTimeZone('Asia/Shanghai'));
-        $today = $today_date->format('Y-m-d');
-
         $start_at_new = getNextDateString($order->order_end_date);
 
         $wopids = "";
@@ -2336,7 +2332,7 @@ class WeChatCtrl extends Controller
             'plans' => $plans,
             'order' => $order_id,
             'type' => $type,
-            'today' => $today,
+            'today' => getCurDateString(),
         ]);
     }
 

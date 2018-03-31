@@ -2,10 +2,6 @@
  * Created by Administrator on 3/25/17.
  */
 
-Date.prototype.toISOString = function(){
-    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
-};
-
 var obj = $('#uecontent');
 // 详细内容空间是否存在
 if (obj.length > 0) {
@@ -33,22 +29,12 @@ function dnsel_changed(id) {
     $("#dnsel_item" + id).show();
 }
 
-function pad(number){
-    var r= String(number);
-    if(r.length === 1){
-        r= '0'+r;
-    }
-    return r;
-}
-
 function check_bottle_count() {
     var count_input = $('#total_count');
     var min_b = parseInt($(count_input).attr('min'));
     var current_b = $(count_input).val();
-    if (current_b < min_b) {
-        return true;
-    }
-    return false;
+    
+    return current_b < min_b;
 }
 
 var able_date, gStartDateMin;

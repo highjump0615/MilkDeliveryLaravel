@@ -341,7 +341,8 @@
                                        type="text"
                                        class="form-control"
                                        id="start_at"
-                                       name="start_at">
+                                       name="start_at"
+                                       value="{{$order->restart_at}}">
                                 <span class="input-group-addon">
                                     <i class="fa fa-calendar"></i>
                                 </span>
