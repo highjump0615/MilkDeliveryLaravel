@@ -88,38 +88,29 @@
 								<?php $i++; $j=0; ?>
 								@foreach($di->product as $pro)
 									<?php $j++; ?>
-								<tr class="order_info" id="{{$di->id}}" ordertype="{{$di->delivery_type}}">
+								<tr class="order_info">
 									@if($j == 1)
-									<td rowspan="{{count($di->product)}}" class="by_order" value="{{$di->id}}">{{$i}}</td>
+									<td rowspan="{{count($di->product)}}" class="by_order">{{$i}}</td>
 									<td rowspan="{{count($di->product)}}" class="text-left">{{$di->address}}</td>
-									@if($di->delivery_type==1)
-										<td rowspan="{{count($di->product)}}"
-											>{{$di->customer->name}}
-										</td>
-									@else
-										<td rowspan="{{count($di->product)}}">
-											{{$di->customer_name}}
-										</td>
+									<td rowspan="{{count($di->product)}}">{{$di->customer_name}}</td>
+									<td rowspan="{{count($di->product)}}">{{$di->phone}}</td>
 									@endif
-									<td rowspan="{{count($di->product)}}">
-										{{$di->phone}}
-									</td>
-									@endif
-									<td id="{{$pro['order_product_id']}}">
-										{{$pro['name']}}*{{$pro['count']}}
-									</td>
-									<td @if ($pro['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) contenteditable="true" style="border-bottom-width: 2px; border-bottom-color: #0a6aa1" @endif id="{{$pro['order_product_id']}}" class="delivered_count">
-										@if ($pro['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif
-									</td>
+									<td>{{$pro['name']}}*{{$pro['count']}}</td>
+									<td @if ($pro['status'] != \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED)
+										contenteditable="true"
+										style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"
+										@endif
+										id="{{$pro['id']}}"
+										class="delivered_count"
+										>@if ($pro['status'] == \App\Model\DeliveryModel\MilkManDeliveryPlan::MILKMAN_DELIVERY_PLAN_STATUS_FINNISHED) {{$pro['delivered_count']}} @else {{$pro['count']}} @endif</td>
 									<td class="report"
 										@if (!$is_todayrefund)
 											contenteditable="true"
 											style="border-bottom-width: 2px; border-bottom-color: #0a6aa1"
 										@endif>{{$pro['report']}}</td>
 									@if($j == 1)
-										<td rowspan="{{count($di->product)}}">
-											@if($di->milkbox_install > 0){{$di->milkbox_install}}@endif
-										</td>
+										<td rowspan="{{count($di->product)}}"
+											>@if($di->milkbox_install > 0){{$di->milkbox_install}}@endif</td>
 									@endif
 									<td rowspan="{{count($di->product)}}">{{$pro['comment']}}</td>
 								</tr>
@@ -183,5 +174,5 @@
 @endsection
 @section('script')
 	<!--Save & Cancel Information-->
-	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180108') ?>"></script>
+	<script src="<?=asset('js/ajax/shengchan_peisongfanru_ajax.js?180330') ?>"></script>
 @endsection

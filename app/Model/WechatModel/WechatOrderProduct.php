@@ -90,12 +90,8 @@ class WechatOrderProduct extends OrderProduct
 
             $new_count = $this->getDeliveryTypeCount($deliver_at);
 
-            if($total_count - $new_count>0)
-                $ndp->changed_plan_count= $new_count;
-            else
-                $ndp->changed_plan_count= min($total_count, $new_count);
-
-            $total_count -= $new_count;
+            $ndp->changed_plan_count= min($total_count, $new_count);
+            $total_count -= $ndp->changed_plan_count;
 
             $wp_plans[] = $ndp;
         }

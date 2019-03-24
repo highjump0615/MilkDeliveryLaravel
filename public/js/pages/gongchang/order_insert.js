@@ -264,9 +264,9 @@ $('#customer_form').on("submit", function (e) {
                 if (data.message) {
                     show_err_msg(data.message);
                 }
-                $('#station_list').empty();
-                $('#station_list').val('').trigger('chosen:updated');
 
+                // update station list
+                $('#station_list').empty();
                 if(data.station_id && data.station_name)
                 {
                     var station_data = '<option value="' + data.station_id + '">' + data.station_name + '</option>';
@@ -421,8 +421,14 @@ $('#product_form').on('submit', function (e) {
         sendData.push({'name': 'milk_card_check', 'value': 'off'});
     }
 
+    // 验证配送区域与配送员
     var milkman_id = $('#station_list option:selected').data('milkman');
     var deliveryarea_id = $('#station_list option:selected').data('deliveryarea');
+
+    if (!milkman_id || !deliveryarea_id) {
+        show_err_msg("奶站没有配送员或该地区没有覆盖可配送的范围");
+        return;
+    }
 
     enableSubmitButton(that, false);
 

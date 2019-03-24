@@ -22,25 +22,23 @@ function change_order_day_num()
     //get total count
     var total_count = parseInt($('#total_count').val());
 
-    var delivery_type = $('#delivery_type option:selected').data('value');
+    var delivery_type = parseInt($('#delivery_type option:selected').val());
 
     var order_day_num=0;
 
-    if (delivery_type == gnDeliveryTypeEveryDay)
+    if (delivery_type === gnDeliveryTypeEveryDay ||
+        delivery_type === gnDeliveryTypeTwice)
     {
-        var count_per = parseInt($('#dnsel_item0 .deliver_count_per_day').val());
+        var objInput = $('#dnsel_item' + delivery_type).find('.deliver_count_per_day');
+        var count_per = parseInt(objInput.val());
         order_day_num = Math.ceil(total_count/count_per, 1);
 
-    } else if ( delivery_type == gnDeliveryTypeTwice)
-    {
-        var count_per = parseInt($('#dnsel_item1 .deliver_count_per_day').val());
-        order_day_num = Math.round(total_count/count_per, 1);
-
-    } else if ( delivery_type == gnDeliveryTypeWeek)
+    }
+    else if ( delivery_type === gnDeliveryTypeWeek)
     {
         //show custom bottle count on week
         var custom_date = week.get_submit_value();
-        if(!custom_date || custom_date=="" || custom_date==undefined)
+        if (!custom_date)
             order_day_num="";
         else
             order_day_num = get_order_days_from_week(total_count, custom_date);

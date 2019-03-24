@@ -43,3 +43,15 @@ function verifyIdNum() {
         e.target.setCustomValidity('身份证号不符合');
     });
 }
+
+Date.prototype.toISOString = function () {
+    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate());
+};
+
+function pad(number) {
+    var r = String(number);
+    if (r.length === 1) {
+        r = '0' + r;
+    }
+    return r;
+}

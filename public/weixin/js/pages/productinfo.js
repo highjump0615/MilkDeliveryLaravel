@@ -2,10 +2,6 @@
  * Created by Administrator on 3/25/17.
  */
 
-Date.prototype.toISOString = function(){
-    return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() +1) + '-'+pad(this.getUTCDate());
-};
-
 var obj = $('#uecontent');
 // 详细内容空间是否存在
 if (obj.length > 0) {
@@ -29,26 +25,16 @@ $('select#order_type').change(function () {
 });
 
 function dnsel_changed(id) {
-    $(".dnsel_item").css("display", "none");
-    $("#" + id).css("display", "block");
-}
-
-function pad(number){
-    var r= String(number);
-    if(r.length === 1){
-        r= '0'+r;
-    }
-    return r;
+    $(".dnsel_item").hide();
+    $("#dnsel_item" + id).show();
 }
 
 function check_bottle_count() {
     var count_input = $('#total_count');
     var min_b = parseInt($(count_input).attr('min'));
     var current_b = $(count_input).val();
-    if (current_b < min_b) {
-        return true;
-    }
-    return false;
+    
+    return current_b < min_b;
 }
 
 var able_date, gStartDateMin;
@@ -85,7 +71,9 @@ function initProductInfo() {
         gStartDateMin = able_date;
     }
 
-    dnsel_changed("dnsel_item0");
+    // init count input
+    var delivery_type = $('#delivery_type option:selected').val();
+    dnsel_changed(delivery_type)
 }
 
 /**
@@ -121,32 +109,27 @@ function decrementCount(objButton) {
 function makeBaseFormData() {
     var send_data = new FormData();
 
-    var delivery_type = $('#delivery_type option:selected').data('value');
+    var delivery_type = parseInt($('#delivery_type option:selected').val());
     send_data.append('delivery_type', delivery_type);
 
     var count = 0;
     var custom_date = "";
 
-    // 天天送
-    if (($('#dnsel_item0')).css('display') != "none") {
-        count = $('#dnsel_item0 input').val();
-        if (!count) {
+    // 天天送 & 隔日送
+    if (delivery_type === gnDeliveryTypeEveryDay ||
+        delivery_type === gnDeliveryTypeTwice)
+    {
+        var objInput = $('#dnsel_item' + delivery_type).find('input');
+        var count_per = parseInt(objInput.val());
+        if (!count_per) {
             show_warning_msg('请填写产品的所有字段');
             return null;
         }
-        send_data.append('count_per', count);
-    }
-    // 隔日送
-    else if (($('#dnsel_item1')).css('display') != "none") {
-        count = $('#dnsel_item1 input').val();
-        if (!count) {
-            show_warning_msg('请填写产品的所有字段');
-            return null;
-        }
-        send_data.append('count_per', count);
+
+        send_data.append('count_per', count_per);
     }
     // 按周送
-    else if (($('#dnsel_item2')).css('display') != "none") {
+    else if (delivery_type === gnDeliveryTypeWeek) {
         //week dates
         custom_date = week.get_submit_value();
         if (!custom_date) {
