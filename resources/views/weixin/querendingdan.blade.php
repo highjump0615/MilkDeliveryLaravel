@@ -88,6 +88,7 @@
     <script type="text/javascript">
 
         var today = "{{getCurDateString()}}";
+        var gTradeNo;
 
         // 调用微信JS api 支付
         function jsApiCall(param) {
@@ -100,7 +101,8 @@
                     WeixinJSBridge.log(res.err_msg);
                     // 支付成功
                     if (res.err_msg == 'get_brand_wcpay_request:ok') {
-                        makeOrder();
+                        // 跳转到成功页面
+                        window.location = SITE_URL + "weixin/zhifuchenggong?tradeNo=" + gTradeNo;
                     }
                     // 用户取消
                     else if (res.err_msg == 'get_brand_wcpay_request:cancel') {
@@ -160,67 +162,31 @@
 
         });
 
-        /**
-         * 下单
-         */
-        function makeOrder() {
-            var comment = $('#comment').val();
-            var group_id = $('#group_id').val();
-
-            var order_bt = '#make_order';
-            $(order_bt).prop('disabled', true);
-
-            var total_amount = $('#total_amount').val();
-
-            var addr_obj_id = $('#addr_obj_id').val();
-
-            $.ajax({
-                type: "POST",
-                url: SITE_URL + "weixin/api/make_order_by_group",
-                data: {'comment': comment, 'group_id': group_id, 'addr_obj_id':addr_obj_id},
-                success: function (data) {
-                    console.log(data);
-                    if (data.status == 'success') {
-                        // 跳转到成功页面
-                        window.location = SITE_URL + "weixin/zhifuchenggong?order=" + data.order_id;
-                    }
-                    else if(data.status == "fail") {
-                        if (data.message) {
-                            show_err_msg(data.message);
-                        }
-
-                        $(order_bt).prop('disabled', false);
-                    } else {
-
-                        if (data.message) {
-                            show_err_msg(data.message);
-                        }
-                        $(order_bt).prop('disabled', false);
-                    }
-                },
-                error: function (data) {
-                    console.log(data);
-                    $(order_bt).prop('disabled', false);
-                    show_warning_msg("操作失败");
-                }
-            });
-        }
-
         //make order based on cart
         $('#make_order').click(function () {
 
             var order_bt = this;
 
+            var comment = $('#comment').val();
+            var group_id = $('#group_id').val();
+            var addr_obj_id = $('#addr_obj_id').val();
+
             // 调用预支付
             $.ajax({
                 type: "POST",
                 url: SITE_URL + "weixin/api/prepareMakeOrder",
-                data: {},
+                data: {
+                    'comment': comment,
+                    'groupId': group_id,
+                    'addressId':addr_obj_id
+                },
                 success: function (data) {
                     console.log(data);
                     if (data.status === 'SUCCESS') {
                         // 调用支付
                         callpay(data.param);
+
+                        gTradeNo = data.trade_no;
                     }
                     else {
                         if (data.message) {

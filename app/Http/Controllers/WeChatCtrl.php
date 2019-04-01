@@ -16,6 +16,7 @@ use App\Model\OrderModel\OrderCheckers;
 use App\Model\OrderModel\OrderProduct;
 use App\Model\OrderModel\OrderProperty;
 use App\Model\OrderModel\OrderType;
+use App\Model\OrderModel\WechatOrder;
 use App\Model\ProductModel\Product;
 use App\Model\ProductModel\ProductCategory;
 use App\Model\ProductModel\ProductPrice;
@@ -38,6 +39,10 @@ use Illuminate\Support\Facades\URL;
 
 require_once app_path() . "/Lib/Payweixin/WxPay.Api.php";
 require_once app_path() . "/Lib/Payweixin/WxPay.JsApiPay.php";
+require_once app_path() . "/Lib/Payweixin/WxPay.Notify.php";
+
+use WxPayNotify;
+
 
 
 class WeChatCtrl extends Controller
@@ -45,6 +50,10 @@ class WeChatCtrl extends Controller
     private $kWxOrderProducts = "wx_order_products";
     private $kWxOrderAmount = "wx_order_amount";
     private $kWxOrderTradeNo = "wx_order_tradeno";
+
+    private $kOrderComment = "comment";
+    private $kOrderGroupId = "groupId";
+    private $kOrderAddressId = "addressId";
 
     /**
      * 获取地址
@@ -1236,28 +1245,83 @@ class WeChatCtrl extends Controller
         ]);
     }
 
+    public function paymentResult(Request $request) {
+
+        //获取通知的数据
+        $xml = $request->getContent();
+
+        //如果返回成功则验证签名
+        try {
+            $result = \WxPayResults::Init($xml);
+
+            // check result
+            if (array_key_exists("return_code", $result) && $result["return_code"] == "SUCCESS" &&
+                array_key_exists("result_code", $result) && $result["result_code"] == "SUCCESS") {
+
+                // determine transaction id
+                if (array_key_exists("transaction_id", $result)) {
+                    //
+                    // 生成订单
+                    //
+
+                    //  获取临时订单
+                    $wOrder = WechatOrder::where('trade_no', $result["out_trade_no"])->first();
+                    if (!$wOrder) {
+                        return false;
+                    }
+
+                    if ($this->make_order_by_group(
+                        intval($wOrder->factory_id),
+                        intval($wOrder->wxuser_id),
+                        $wOrder->comment,
+                        intval($wOrder->group_id),
+                        intval($wOrder->address_id),
+                        $result["out_trade_no"],
+                        $result["transaction_id"])) {
+
+                        // 订单生成成功，删除临时订单
+                        $wOrder->delete();
+                    }
+                }
+            }
+
+            Log::info($result);
+
+        } catch (\WxPayException $e){
+            $msg = $e->errorMessage();
+
+            Log::info($e);
+        }
+
+        // 返回
+        $result = new WxPayNotify();
+        $result->SetReturn_code("SUCCESS");
+        $result->SetReturn_msg("OK");
+
+        \WxPayApi::replyNotify($result->ToXml());
+    }
+
     public function zhifuchenggong(Request $request)
     {
-        $order_id = $request->input('order');
+        $tradeNo = $request->input('tradeNo');
         $wechat_user_id = $this->getCurrentUserIdW();
         if (!$wechat_user_id)
             abort(403);
         $wechat_user = WechatUser::find($wechat_user_id);
         $cartn = WechatCart::where('wxuser_id', $wechat_user_id)->count();
 
-        $group_id = session('group_id');
-        //delete cart and order item
-        $this->remove_cart_by_group($group_id);
 
         //check whether this user has been loggedin
         //check logged in user's phone number ?= order = phone number
 
         $check = 'nov';
+        $order_id = 0;
         if ($wechat_user->is_loggedin) {
             //the user has loggedin
             $customer_id = $wechat_user->customer_id;
             $customer = Customer::find($customer_id);
-            $order = Order::find($order_id);
+            $order = Order::where('wx_trade_no', $tradeNo)->first();
+            $order_id = $order->id;
 
             if ($customer->phone == $order->phone) {
                 $check = "cpop";
@@ -2056,28 +2120,21 @@ class WeChatCtrl extends Controller
     }
 
     //make order by group
-    public function make_order_by_group(Request $request)
+    public function make_order_by_group($factoryId,
+                                        $wUserId,
+                                        $comment,
+                                        $groupId,
+                                        $addressId,
+                                        $tradeNo,
+                                        $transId)
     {
-        $factory_id = $this->getCurrentFactoryIdW($request);
-        $wxuser_id = $this->getCurrentUserIdW();
-        $wechat_user = WechatUser::find($wxuser_id);
+        $wechat_user = WechatUser::find($wUserId);
 
-        $comment = $request->input('comment');
-        $group_id = $request->input('group_id');
-
-        $addr_obj_id = $request->input('addr_obj_id');
-        $addr_obj = WechatAddress::find($addr_obj_id);
-
+        $addr_obj = WechatAddress::find($addressId);
         if (!$addr_obj)
-            return response()->json(['status' => 'err_stop', 'message' => '地址和电话号码不存在.']);
+            return false;
 
-        //check session address and primary address
-        $addr = $this->getAddress();
         $order_address = $addr_obj->address;
-
-        if (strpos($order_address, $addr) === false) {
-            return response()->json(['status' => 'err_stop', 'message' => '该地址不在所选区域，可在首页更改区域.']);
-        }
 
         $orderctrl = new OrderCtrl();
 
@@ -2088,10 +2145,10 @@ class WeChatCtrl extends Controller
         $station_id = null;
 
         $strAddress = $addr_obj->address . ' ' . $addr_obj->sub_address;
-        $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factory_id, $order_address, $station);
+        $station_milkman = $orderctrl->get_station_milkman_with_address_from_factory($factoryId, $order_address, $station);
 
         // 设置客户信息
-        $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factory_id);
+        $customer = $orderctrl->getCustomer($addr_obj->phone, $strAddress, $factoryId);
         $customer->name = $addr_obj->name;
 
         if ($station_milkman == OrderCtrl::NOT_EXIST_DELIVERY_AREA ||
@@ -2120,7 +2177,7 @@ class WeChatCtrl extends Controller
         $aryDeliveryDate = [];
         $aryCountPerDay = [];
 
-        $wops = WechatOrderProduct::where('group_id', $group_id)->get();
+        $wops = WechatOrderProduct::where('group_id', $groupId)->get();
         $total_amount = 0;
         foreach ($wops as $wop) {
             //wechat order product
@@ -2143,15 +2200,15 @@ class WeChatCtrl extends Controller
             ->first();
 
         //start at: wechat order product's first deliver at
-        $start_at = $wechat_user->order_start_at($group_id);
+        $start_at = $wechat_user->order_start_at($groupId);
 
         $order = null;
         $orderctrl->insert_order_core(
-            $factory_id,
+            $factoryId,
             $station_id,
             null,
             $customer->id,
-            $wxuser_id,
+            $wUserId,
             $addr_obj->phone,
             $strAddress,
             OrderProperty::ORDER_PROPERTY_NEW_ORDER,
@@ -2182,17 +2239,20 @@ class WeChatCtrl extends Controller
             $order);
 
         // 添加商户订单号
-        $orderTradeNo = $request->session()->get($this->kWxOrderTradeNo);
-        $order->wx_trade_no = $orderTradeNo;
+        $order->wx_trade_no = $tradeNo;
+        $order->wx_trans_id = $transId;
         $order->save();
+
+        //delete cart and order item
+        $this->remove_cart_by_group($groupId);
 
         //notification to factory and wechat
         $notification = new NotificationsAdmin;
-        $notification->sendToFactoryNotification($factory_id, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
+        $notification->sendToFactoryNotification($factoryId, FactoryNotification::CATEGORY_CHANGE_ORDER, "微信下单成功", $customer->name . "已经下单, 请管理员尽快审核");
         $notification->sendToWechatNotification($customer->id, '您已经成功下单，我们会尽快安排客服核对您的订单信息');
 
         //if payment fails, delete order
-        return response()->json(['status' => 'success', 'order_id' => $order->id]);
+        return true;
     }
 
     //remove cart and wechat order product from wxuser
@@ -2795,11 +2855,28 @@ class WeChatCtrl extends Controller
      * 预支付处理
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
+     * @throws \WxPayException
      */
     public function prepareOrderApi(Request $request) {
 
+        $comment = $request->input($this->kOrderComment);
+        $groupId = $request->input($this->kOrderGroupId);
+        $addressId = $request->input($this->kOrderAddressId);
+
         $wxuser_id = $this->getCurrentUserIdW();
         $user = WechatUser::find($wxuser_id);
+
+        $addr_obj = WechatAddress::find($addressId);
+        if (!$addr_obj)
+            return response()->json(['status' => 'err_stop', 'message' => '地址和电话号码不存在.']);
+
+        //check session address and primary address
+        $addr = $this->getAddress();
+        $order_address = $addr_obj->address;
+
+        if (strpos($order_address, $addr) === false) {
+            return response()->json(['status' => 'err_stop', 'message' => '该地址不在所选区域，可在首页更改区域.']);
+        }
 
         // 从session获取奶品信息
         $wxOrderProducts = $request->session()->get($this->kWxOrderProducts);
@@ -2811,6 +2888,8 @@ class WeChatCtrl extends Controller
             $strBody .= "等" . count($wxOrderProducts) . "种奶品";
         }
 
+        $tools = new \JsApiPay();
+
         // 商户订单号
         $strTradeNo = time() . uniqid();
 
@@ -2819,20 +2898,29 @@ class WeChatCtrl extends Controller
         $worder->SetBody($strBody);
         $worder->SetOut_trade_no($strTradeNo);
         $worder->SetTotal_fee(intval($dAmount * 100));
-        $worder->SetNotify_url("http://paysdk.weixin.qq.com/example/notify.php");
+        $worder->SetNotify_url('http://' . $request->server('HTTP_HOST') . '/' . env('SITE_PATH') . 'weixin/payresult');
         $worder->SetTrade_type("JSAPI");
         $worder->SetOpenid($user->openid);
 
         $payOrder = \WxPayApi::unifiedOrder($worder);
 
+        $kResultCode = "result_code";
+        if (array_key_exists($kResultCode, $payOrder) && $payOrder[$kResultCode] == "SUCCESS") {
+            // 成功，生成微信临时订单
+            $wo = new WechatOrder;
+
+            $wo->factory_id = $this->getCurrentFactoryIdW($request);
+            $wo->wxuser_id = $wxuser_id;
+            $wo->group_id = $groupId;
+            $wo->address_id = $addressId;
+            $wo->comment = $comment;
+            $wo->trade_no = $strTradeNo;
+
+            $wo->save();
+        }
+
         // 在session保存商户订单号
         $request->session()->put($this->kWxOrderTradeNo, $strTradeNo);
-
-        // 写日志
-        Log::info("生成统一订单: " . $strTradeNo);
-        Log::info($payOrder);
-
-        $tools = new \JsApiPay();
 
         return response()->json([
             'status'    => $payOrder['return_code'],

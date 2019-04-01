@@ -12,10 +12,14 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Model\UserModel\User;
 use Auth;
 use App;
+use Illuminate\Support\Facades\Log;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public $kFactoryId = "factory_id";
+    public $kWechatUserId = "wechat_user_id";
 
     /**
      * 获取登陆的奶站id
@@ -115,14 +119,14 @@ class Controller extends BaseController
             return 1;
         }
 
-        $nId = session('factory_id');
+        $nId = session($this->kFactoryId);
 
         if (empty($nId)) {
             if (isset($_GET['state'])) {
                 $nId = $_GET['state'];
 
                 //save factory id in session
-                $request->session()->put('factory_id', $nId);
+                $request->session()->put($this->kFactoryId, $nId);
             }
         }
 
@@ -146,12 +150,14 @@ class Controller extends BaseController
             return 8;
         }
 
-        $nUserId = session('wechat_user_id');
+        $nUserId = session($this->kWechatUserId);
 
         if (empty($nUserId) && !empty($factory)) {
             if (isset($_GET['code'])) {
                 $wechatObj = WechatesCtrl::withFactory($factory);
                 $codees = $wechatObj->codes($_GET['code']);
+
+                Log::info($codees);
 
                 //save wechat user id
                 if (!empty($codees['openid'])) {
@@ -166,7 +172,7 @@ class Controller extends BaseController
                     }
                     $nUserId = $wechat_user->id;
 
-                    session(['wechat_user_id' => $nUserId]);
+                    session([$this->kWechatUserId => $nUserId]);
                 }
             }
         }

@@ -16,3 +16,5 @@ Homestead.json
 /public/ueditor/php/upload/
 /public/csv/
 /public/exports/
+
+.DS_Store

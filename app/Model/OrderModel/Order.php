@@ -53,6 +53,8 @@ class Order extends Model
         'delivery_on_other_station',
         'delivery_station_id',
         'transaction_id',
+        'wx_trans_id',
+        'wx_trade_no',
         'number',
         'factory_id',
         'is_deleted',
