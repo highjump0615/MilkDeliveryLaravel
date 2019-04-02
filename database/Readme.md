@@ -794,3 +794,13 @@ status | int | 2 | NO | 状态 | | |
 read | int | 11 | NO | 是否已读 | 0: 未读<br>1: 已读 | | 
 created_at | datetime | | YES | 创建时间 | | | 
 updated_at | datetime | | YES | 更新时间 | | | 
+
+<h4 id="wxorder">66. wxorders (微信临时订单)</h4>
+
+字段名称 | 数据类型 | 长度 | 允许空 | 说明 | 备注 | 默认值 | 实例
+--- | ------- | ---- | --- | ----- | ---- | --- | ---
+[wxuser_id](#wxuser) | int | 11 | YES | 微信用户id | | |
+[factory_id](#factory) | int | 11 | YES | 奶厂id | | | 
+group_id | int | 11 | YES | 商品组编号 | | | 
+address_id | int | 11 | YES | 地址id | | |
+comment | text | | YES | 备注 | | |
