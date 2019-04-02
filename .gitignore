@@ -18,3 +18,4 @@ Homestead.json
 /public/exports/
 
 /app/Lib/Payweixin/WxPayConfig.php
+.DS_Store

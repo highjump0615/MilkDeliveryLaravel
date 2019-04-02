@@ -38,7 +38,7 @@ class WxPayNotify extends WxPayNotifyReply
 	 * 2、微信服务器在调用失败或者接到回包为非确认包的时候，会发起重试，需确保你的回调是可以重入
 	 * @param array $data 回调解释出的参数
 	 * @param string $msg 如果回调处理失败，可以将错误信息输出到该方法
-	 * @return true回调出来完成不需要继续回调，false回调处理未完成需要继续回调
+	 * @return booltrue回调出来完成不需要继续回调，false回调处理未完成需要继续回调
 	 */
 	public function NotifyProcess($data, &$msg)
 	{

@@ -915,8 +915,6 @@ Route::group(['prefix'=>'/weixin'], function(){
 
     /* confirm order before purchase */
     Route::get('/querendingdan', 'WeChatCtrl@querendingdan')->name('querendingdan');
-    //make order from cart
-    Route::post('/api/make_order_by_group', 'WeChatCtrl@make_order_by_group');
 
     //edit order product
     Route::get('/bianjidingdan', 'WeChatCtrl@bianjidingdan');
@@ -933,6 +931,7 @@ Route::group(['prefix'=>'/weixin'], function(){
     Route::get('/toushu', 'WeChatCtrl@toushu');
 
     /* pay success */
+    Route::any('/payresult', 'WeChatCtrl@paymentResult');
     Route::get('/zhifuchenggong', 'WeChatCtrl@zhifuchenggong');
     /* pay failure */
     Route::get('/zhifushibai', 'WeChatCtrl@zhifushibai');
