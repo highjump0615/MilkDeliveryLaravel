@@ -161,7 +161,7 @@ class YimeiSmsCtrl extends Controller {
 - BUG: **少数情况下，微信支付成功，但订单没生成**
 
 #### 原因  
-把生成订单接入点设置为前段收到回复``get_brand_wcpay_request:ok``之后，并没处理支付回调接口
+把生成订单接入点设置为前端收到回复``get_brand_wcpay_request:ok``之后，并没处理支付回调接口
 
 #### 修复
 收到支付回调，结果成功，直接生成订单  
